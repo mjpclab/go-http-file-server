@@ -51,7 +51,7 @@ func NewServer() *Server {
 	var err error
 	if len(p.Template) > 0 {
 		tplObj, err = template.New(path.Base(p.Template)).ParseFiles(p.Template)
-		serverError.CheckFatal(err)
+		serverError.CheckError(err)
 	}
 	if err != nil || len(p.Template) == 0 {
 		tplObj = tpl.Page
