@@ -1,11 +1,13 @@
 package server
 
 import (
-	"../handler"
 	"../param"
-	"fmt"
+	"../serverError"
+	"../serverHandler"
+	"../tpl"
 	"net/http"
-	"os"
+	"path"
+	"text/template"
 )
 
 type Server struct {
@@ -13,6 +15,8 @@ type Server struct {
 	listen  string
 	key     string
 	cert    string
+	tplFile string
+	tplObj  *template.Template
 	handler http.Handler
 }
 
@@ -25,19 +29,31 @@ func (s *Server) ListenAndServe() {
 		err = http.ListenAndServeTLS(s.listen, s.cert, s.key, s.handler)
 	}
 
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
+	serverError.CheckFatal(err)
 }
 
 func NewServer() *Server {
 	p := param.Parse()
-	h := handler.NewHandler(p.Root)
+
+	var tplObj *template.Template
+	var err error
+	if len(p.Template) > 0 {
+		tplObj, err = template.New(path.Base(p.Template)).ParseFiles(p.Template)
+		serverError.CheckFatal(err)
+	}
+	if err != nil || len(p.Template) == 0 {
+		tplObj = tpl.Page
+	}
+
+	handler := serverHandler.NewHandler(p.Root, tplObj)
+
 	return &Server{
 		root:    p.Root,
 		listen:  p.Listen,
 		key:     p.Key,
 		cert:    p.Cert,
-		handler: h,
+		tplFile: p.Template,
+		tplObj:  tplObj,
+		handler: handler,
 	}
 }
