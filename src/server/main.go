@@ -12,9 +12,10 @@ import (
 
 type Server struct {
 	root    string
-	listen  string
 	key     string
 	cert    string
+	useTLS  bool
+	listen  string
 	tplFile string
 	tplObj  *template.Template
 	handler http.Handler
@@ -23,10 +24,10 @@ type Server struct {
 func (s *Server) ListenAndServe() {
 	var err error
 
-	if len(s.key) == 0 || len(s.cert) == 0 {
-		err = http.ListenAndServe(s.listen, s.handler)
-	} else {
+	if s.useTLS {
 		err = http.ListenAndServeTLS(s.listen, s.cert, s.key, s.handler)
+	} else {
+		err = http.ListenAndServe(s.listen, s.handler)
 	}
 
 	serverError.CheckFatal(err)
@@ -34,6 +35,17 @@ func (s *Server) ListenAndServe() {
 
 func NewServer() *Server {
 	p := param.Parse()
+
+	useTLS := len(p.Key) > 0 && len(p.Cert) > 0
+
+	var listen string
+	if len(p.Listen) > 0 {
+		listen = p.Listen
+	} else if useTLS {
+		listen = ":443"
+	} else {
+		listen = ":80"
+	}
 
 	var tplObj *template.Template
 	var err error
@@ -49,9 +61,10 @@ func NewServer() *Server {
 
 	return &Server{
 		root:    p.Root,
-		listen:  p.Listen,
 		key:     p.Key,
 		cert:    p.Cert,
+		useTLS:  useTLS,
+		listen:  listen,
 		tplFile: p.Template,
 		tplObj:  tplObj,
 		handler: handler,

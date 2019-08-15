@@ -23,15 +23,16 @@ to re-embed templates into go files. Then compile the project again.
     Defaults to current working directory.
 
 -listen <[ip]:port>
-    Optional IP and port the server listens on. e.g. ":80".
+    Optional IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
+    If not specified, use ":80" for pure HTTP mode, and ":443" for TLS mode.
 
 -cert <file>
     Specify TLS certificate file.
-    If both "cert" and "key" are specified, the server serves for HTTPS protocol.
+    If both "cert" and "key" are specified, the server serves in TLS mode for HTTPS protocol.
 
 -key <file>
     Specify key file of TLS certificate.
-    If both "cert" and "key" are specified, the server serves for HTTPS protocol.
+    If both "cert" and "key" are specified, the server serves in TLS mode for HTTPS protocol.
 
 -template <file>
     Use a custom template file for rendering pages, instead of builtin template.
