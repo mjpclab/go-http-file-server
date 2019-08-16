@@ -1,7 +1,9 @@
 package serverHandler
 
 import (
+	"net/http"
 	"os"
+	"path"
 	"sort"
 	"strings"
 )
@@ -12,11 +14,21 @@ type pathEntry struct {
 }
 
 type pageData struct {
+	Scheme   string
+	Host     string
 	Path     string
 	Paths    []*pathEntry
 	Item     os.FileInfo
 	SubItems []os.FileInfo
 	Error    error
+}
+
+func getScheme(r *http.Request) string {
+	if r.TLS != nil {
+		return "https:"
+	} else {
+		return "http:"
+	}
 }
 
 func sortSubItems(subItems []os.FileInfo) {
@@ -38,9 +50,9 @@ func sortSubItems(subItems []os.FileInfo) {
 	)
 }
 
-func readdir(realPath *string) (item os.FileInfo, subItems []os.FileInfo, err error) {
+func readdir(realPath string) (item os.FileInfo, subItems []os.FileInfo, err error) {
 	var f *os.File
-	f, err = os.Open(*realPath)
+	f, err = os.Open(realPath)
 	if err != nil {
 		return
 	}
@@ -63,10 +75,10 @@ func readdir(realPath *string) (item os.FileInfo, subItems []os.FileInfo, err er
 	return
 }
 
-func getPathEntries(path *string) []*pathEntry {
+func getPathEntries(path string) []*pathEntry {
 	var pathParts []string
-	if len(*path) > 0 {
-		pathParts = strings.Split(*path, "/")
+	if len(path) > 0 {
+		pathParts = strings.Split(path, "/")
 	} else {
 		pathParts = []string{}
 	}
@@ -82,20 +94,24 @@ func getPathEntries(path *string) []*pathEntry {
 	return pathEntries
 }
 
-func getPageData(root, requestPath *string) (*pageData) {
-	realPath := *root + *requestPath
+func getPageData(root string, r *http.Request) *pageData {
+	requestPath := path.Clean(r.URL.Path)
+	realPath := root + requestPath
 
-	path := (*requestPath)[1:]
+	scheme := getScheme(r)
+	relPath := requestPath[1:]
+	pathEntries := getPathEntries(relPath)
+	item, subItems, err := readdir(realPath)
 
-	pathEntries := getPathEntries(&path)
-
-	item, subItems, err := readdir(&realPath)
-
-	return &pageData{
-		Path:     path,
+	data := &pageData{
+		Scheme:   scheme,
+		Host:     r.Host,
+		Path:     relPath,
 		Paths:    pathEntries,
 		Item:     item,
 		SubItems: subItems,
 		Error:    err,
 	}
+
+	return data
 }

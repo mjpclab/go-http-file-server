@@ -11,11 +11,11 @@ const pageTplStr = `
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="initial-scale=1">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="renderer" content="webkit">
-    <meta name="wap-font-scale" content="no">
-    <base href="/{{.Path}}{{if .Path}}/{{end}}"/>
+    <meta name="viewport" content="initial-scale=1"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="wap-font-scale" content="no"/>
+    <base href="{{.Scheme}}//{{.Host}}/{{if .Path}}{{.Path}}/{{end}}"/>
 
     <title>{{.Path}}</title>
 
@@ -84,14 +84,13 @@ const pageTplStr = `
         }
 
         .item-list {
-            display: flex;
-            flex-flow: column nowrap;
             padding: 1em;
         }
 
         .item-list a {
             display: flex;
             flex-flow: row nowrap;
+            align-items: center;
             border-bottom: 1px #f5f5f5 solid;
         }
 

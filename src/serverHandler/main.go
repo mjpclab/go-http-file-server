@@ -3,7 +3,6 @@ package serverHandler
 import (
 	"../serverError"
 	"net/http"
-	"path"
 	"text/template"
 )
 
@@ -14,8 +13,7 @@ type handler struct {
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	requestPath := path.Clean(r.URL.Path)
-	pageData := getPageData(&h.root, &requestPath)
+	pageData := getPageData(h.root, r)
 
 	if pageData.Item != nil && !pageData.Item.IsDir() {
 		h.defaultFileServer.ServeHTTP(w, r)

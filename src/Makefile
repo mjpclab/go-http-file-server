@@ -1,6 +1,6 @@
 build:
 	go build main.go
-mktpl:
+tpls:
 	sed -i -e '/= `/,/`/ { /`/!d }' tpl/page.go
 	sed -i -e '/= `/rtpl/page.html' tpl/page.go
-rebuild: mktpl build
+rebuild: tpls build

@@ -12,7 +12,7 @@ go build main.go
 If default html template file under `src/tpl` changed, run
 ```bash
 cd src
-make mktpl
+make tpls
 ```
 to re-embed templates into go files. Then compile the project again.
 
