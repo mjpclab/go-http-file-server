@@ -1,7 +1,9 @@
 package tpl
 
 import (
+	"../fmtSize"
 	"../serverError"
+	"path"
 	"text/template"
 )
 
@@ -148,7 +150,7 @@ const pageTplStr = `
         {{$isDir := .IsDir}}
         <a href="{{.Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
             <span class="name">{{.Name}}{{if $isDir}}/{{end}}</span>
-            <span class="size">{{if not $isDir}}{{.Size}}{{end}}</span>
+            <span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
             <span class="time">{{printf "%04d-%02d-%02d %02d:%02d" .ModTime.Year .ModTime.Month .ModTime.Day .ModTime.Hour .ModTime.Minute}}</span>
         </a>
     {{end}}
@@ -162,13 +164,35 @@ const pageTplStr = `
 </html>
 `
 
-var Page *template.Template
+var defaultPage *template.Template
 
 func init() {
-	tpl := template.New("page")
+	tpl := template.New("page").Funcs(template.FuncMap{
+		"fmtSize": fmtSize.FmtSize,
+	})
+
 	var err error
-	Page, err = tpl.Parse(pageTplStr)
+	defaultPage, err = tpl.Parse(pageTplStr)
 	if serverError.CheckError(err) {
-		Page = template.Must(tpl.Parse("Builtin Template Error"))
+		defaultPage = template.Must(tpl.Parse("Builtin Template Error"))
 	}
+}
+
+func LoadPage(tplPath string) *template.Template {
+	var tplObj *template.Template
+	var err error
+
+	if len(tplPath) > 0 {
+		tplObj, err = template.New(path.Base(tplPath)).Funcs(template.FuncMap{
+			"fmtSize": fmtSize.FmtSize,
+		}).ParseFiles(tplPath)
+		serverError.CheckError(err)
+	}
+	if err != nil || len(tplPath) == 0 {
+		tplObj = defaultPage
+	}
+
+	tplObj = tplObj
+
+	return tplObj
 }

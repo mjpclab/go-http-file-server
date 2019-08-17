@@ -6,7 +6,6 @@ import (
 	"../serverHandler"
 	"../tpl"
 	"net/http"
-	"path"
 	"text/template"
 )
 
@@ -47,15 +46,7 @@ func NewServer() *Server {
 		listen = ":80"
 	}
 
-	var tplObj *template.Template
-	var err error
-	if len(p.Template) > 0 {
-		tplObj, err = template.New(path.Base(p.Template)).ParseFiles(p.Template)
-		serverError.CheckError(err)
-	}
-	if err != nil || len(p.Template) == 0 {
-		tplObj = tpl.Page
-	}
+	tplObj := tpl.LoadPage(p.Template)
 
 	handler := serverHandler.NewHandler(p.Root, tplObj)
 
