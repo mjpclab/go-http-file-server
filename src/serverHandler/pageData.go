@@ -96,7 +96,7 @@ func getPathEntries(path string) []*pathEntry {
 
 func getPageData(root string, r *http.Request) *pageData {
 	requestPath := path.Clean(r.URL.Path)
-	realPath := root + requestPath
+	realPath := path.Clean(root + requestPath)
 
 	scheme := getScheme(r)
 	relPath := requestPath[1:]
