@@ -37,14 +37,7 @@ func NewServer() *Server {
 
 	useTLS := len(p.Key) > 0 && len(p.Cert) > 0
 
-	var listen string
-	if len(p.Listen) > 0 {
-		listen = p.Listen
-	} else if useTLS {
-		listen = ":443"
-	} else {
-		listen = ":80"
-	}
+	listen := normalizePort(p.Listen, useTLS)
 
 	tplObj := tpl.LoadPage(p.Template)
 

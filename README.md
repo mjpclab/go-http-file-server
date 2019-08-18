@@ -22,9 +22,9 @@ to re-embed templates into go files. Then compile the project again.
     Root directory of the server.
     Defaults to current working directory.
 
--listen <[ip]:port>
+-listen <ip|[:]port|ip:port>
     Optional IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
-    If not specified, use ":80" for pure HTTP mode, and ":443" for TLS mode.
+    If port is not specified, use "80" for pure HTTP mode, or "443" for TLS mode.
 
 -cert <file>
     Specify TLS certificate file.
