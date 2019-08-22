@@ -18,6 +18,7 @@ type pageData struct {
 	Host     string
 	Path     string
 	Paths    []*pathEntry
+	File     *os.File
 	Item     os.FileInfo
 	SubItems []os.FileInfo
 	Error    error
@@ -50,15 +51,13 @@ func sortSubItems(subItems []os.FileInfo) {
 	)
 }
 
-func readdir(realPath string) (item os.FileInfo, subItems []os.FileInfo, err error) {
-	var f *os.File
-	f, err = os.Open(realPath)
+func readdir(realPath string) (file *os.File, item os.FileInfo, subItems []os.FileInfo, err error) {
+	file, err = os.Open(realPath)
 	if err != nil {
 		return
 	}
-	defer f.Close()
 
-	item, err = f.Stat()
+	item, err = file.Stat()
 	if err != nil {
 		return
 	}
@@ -67,7 +66,7 @@ func readdir(realPath string) (item os.FileInfo, subItems []os.FileInfo, err err
 		return
 	}
 
-	subItems, err = f.Readdir(-1)
+	subItems, err = file.Readdir(-1)
 	if err == nil {
 		sortSubItems(subItems)
 	}
@@ -101,13 +100,14 @@ func getPageData(root string, r *http.Request) *pageData {
 	scheme := getScheme(r)
 	relPath := requestPath[1:]
 	pathEntries := getPathEntries(relPath)
-	item, subItems, err := readdir(realPath)
+	file, item, subItems, err := readdir(realPath)
 
 	data := &pageData{
 		Scheme:   scheme,
 		Host:     r.Host,
 		Path:     relPath,
 		Paths:    pathEntries,
+		File:     file,
 		Item:     item,
 		SubItems: subItems,
 		Error:    err,

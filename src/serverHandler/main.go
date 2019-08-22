@@ -7,16 +7,24 @@ import (
 )
 
 type handler struct {
-	root              string
-	template          *template.Template
-	defaultFileServer http.Handler
+	root     string
+	template *template.Template
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pageData := getPageData(h.root, r)
+	file := pageData.File
+	item := pageData.Item
 
-	if pageData.Item != nil && !pageData.Item.IsDir() {
-		h.defaultFileServer.ServeHTTP(w, r)
+	if file != nil {
+		defer func() {
+			err := file.Close()
+			serverError.CheckError(err)
+		}()
+	}
+
+	if item != nil && !item.IsDir() {
+		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
 		return
 	}
 
@@ -26,9 +34,8 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func NewHandler(root string, template *template.Template) *handler {
 	h := &handler{
-		root:              root,
-		template:          template,
-		defaultFileServer: http.FileServer(http.Dir(root)),
+		root:     root,
+		template: template,
 	}
 	return h
 }
