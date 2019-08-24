@@ -167,14 +167,13 @@ const pageTplStr = `
 var defaultPage *template.Template
 
 func init() {
-	tpl := template.New("page").Funcs(template.FuncMap{
-		"fmtSize": fmtSize.FmtSize,
-	})
+	tplObj := template.New("page")
+	tplObj = addFuncMap(tplObj)
 
 	var err error
-	defaultPage, err = tpl.Parse(pageTplStr)
+	defaultPage, err = tplObj.Parse(pageTplStr)
 	if serverError.CheckError(err) {
-		defaultPage = template.Must(tpl.Parse("Builtin Template Error"))
+		defaultPage = template.Must(tplObj.Parse("Builtin Template Error"))
 	}
 }
 
@@ -183,16 +182,20 @@ func LoadPage(tplPath string) *template.Template {
 	var err error
 
 	if len(tplPath) > 0 {
-		tplObj, err = template.New(path.Base(tplPath)).Funcs(template.FuncMap{
-			"fmtSize": fmtSize.FmtSize,
-		}).ParseFiles(tplPath)
+		tplObj = template.New(path.Base(tplPath))
+		tplObj = addFuncMap(tplObj)
+		tplObj, err = tplObj.ParseFiles(tplPath)
 		serverError.CheckError(err)
 	}
 	if err != nil || len(tplPath) == 0 {
 		tplObj = defaultPage
 	}
 
-	tplObj = tplObj
-
 	return tplObj
+}
+
+func addFuncMap(tpl *template.Template) *template.Template {
+	return tpl.Funcs(template.FuncMap{
+		"fmtSize": fmtSize.FmtSize,
+	})
 }
