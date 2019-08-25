@@ -7,12 +7,14 @@ import (
 )
 
 type handler struct {
-	root     string
-	template *template.Template
+	root      string
+	urlPrefix string
+	aliases   map[string]string
+	template  *template.Template
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	pageData := getPageData(h.root, r)
+	pageData := h.getPageData(r)
 	file := pageData.File
 	item := pageData.Item
 
@@ -32,10 +34,12 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	serverError.CheckError(err)
 }
 
-func NewHandler(root string, template *template.Template) *handler {
+func NewHandler(root, urlPrefix string, aliases map[string]string, template *template.Template) *handler {
 	h := &handler{
-		root:     root,
-		template: template,
+		root:      root,
+		urlPrefix: urlPrefix,
+		aliases:   aliases,
+		template:  template,
 	}
 	return h
 }

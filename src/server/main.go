@@ -10,23 +10,31 @@ import (
 )
 
 type Server struct {
-	root    string
-	key     string
-	cert    string
-	useTLS  bool
-	listen  string
-	tplFile string
-	tplObj  *template.Template
-	handler http.Handler
+	root     string
+	key      string
+	cert     string
+	useTLS   bool
+	listen   string
+	tplFile  string
+	tplObj   *template.Template
+	aliases  map[string]string
+	handlers map[string]http.Handler
 }
 
 func (s *Server) ListenAndServe() {
 	var err error
 
+	for urlPath, handler := range s.handlers {
+		http.Handle(urlPath, handler)
+		if len(urlPath) > 0 {
+			http.Handle(urlPath+"/", handler)
+		}
+	}
+
 	if s.useTLS {
-		err = http.ListenAndServeTLS(s.listen, s.cert, s.key, s.handler)
+		err = http.ListenAndServeTLS(s.listen, s.cert, s.key, nil)
 	} else {
-		err = http.ListenAndServe(s.listen, s.handler)
+		err = http.ListenAndServe(s.listen, nil)
 	}
 
 	serverError.CheckFatal(err)
@@ -41,16 +49,26 @@ func NewServer() *Server {
 
 	tplObj := tpl.LoadPage(p.Template)
 
-	handler := serverHandler.NewHandler(p.Root, tplObj)
+	aliases := p.Aliases
+	handlers := map[string]http.Handler{}
+
+	if _, hasAlias := aliases["/"]; !hasAlias {
+		handlers["/"] = serverHandler.NewHandler(p.Root, "/", aliases, tplObj)
+	}
+
+	for urlPath, fsPath := range p.Aliases {
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, aliases, tplObj)
+	}
 
 	return &Server{
-		root:    p.Root,
-		key:     p.Key,
-		cert:    p.Cert,
-		useTLS:  useTLS,
-		listen:  listen,
-		tplFile: p.Template,
-		tplObj:  tplObj,
-		handler: handler,
+		root:     p.Root,
+		key:      p.Key,
+		cert:     p.Cert,
+		useTLS:   useTLS,
+		listen:   listen,
+		tplFile:  p.Template,
+		tplObj:   tplObj,
+		aliases:  aliases,
+		handlers: handlers,
 	}
 }

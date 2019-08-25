@@ -23,6 +23,10 @@ to re-embed templates into go files. Then compile the project again.
     Root directory of the server.
     Defaults to current working directory.
 
+-a <separator><url-path><separator><file-system-path>
+--alias <separator><url-path><separator><file-system-path>
+    Set path alias. e.g. ":/doc:/usr/share/doc"
+
 -l <ip|[:]port|ip:port>
 --listen <ip|[:]port|ip:port>
     Optional IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
