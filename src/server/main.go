@@ -18,6 +18,7 @@ type Server struct {
 	tplFile  string
 	tplObj   *template.Template
 	aliases  map[string]string
+	uploads  map[string]bool
 	handlers map[string]http.Handler
 }
 
@@ -50,15 +51,17 @@ func NewServer() *Server {
 	tplObj := tpl.LoadPage(p.Template)
 
 	aliases := p.Aliases
+	uploads := p.Uploads
 	handlers := map[string]http.Handler{}
 
 	if _, hasAlias := aliases["/"]; !hasAlias {
-		handlers["/"] = serverHandler.NewHandler(p.Root, "/", aliases, tplObj)
+		handlers["/"] = serverHandler.NewHandler(p.Root, "/", aliases, uploads, tplObj)
 	}
 
 	for urlPath, fsPath := range p.Aliases {
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, aliases, tplObj)
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, aliases,uploads, tplObj)
 	}
+
 
 	return &Server{
 		root:     p.Root,
@@ -69,6 +72,7 @@ func NewServer() *Server {
 		tplFile:  p.Template,
 		tplObj:   tplObj,
 		aliases:  aliases,
+		uploads:  uploads,
 		handlers: handlers,
 	}
 }

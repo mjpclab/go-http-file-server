@@ -1,8 +1,6 @@
 package serverHandler
 
-import (
-	"os"
-)
+import "os"
 
 type renamedFileInfo struct {
 	name string

@@ -18,6 +18,12 @@ to re-embed templates into go files. Then compile the project again.
 
 ## Usage
 ```
+-l <ip|[:]port|ip:port>
+--listen <ip|[:]port|ip:port>
+    Optional IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
+    If port is not specified, use "80" for pure HTTP mode, or "443" for TLS mode.
+    flag "-l" or "--listen" can be ommitted.
+
 -r <directory>
 --root <directory>
     Root directory of the server.
@@ -27,11 +33,11 @@ to re-embed templates into go files. Then compile the project again.
 --alias <separator><url-path><separator><file-system-path>
     Set path alias. e.g. ":/doc:/usr/share/doc"
 
--l <ip|[:]port|ip:port>
---listen <ip|[:]port|ip:port>
-    Optional IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
-    If port is not specified, use "80" for pure HTTP mode, or "443" for TLS mode.
-    flag "-l" or "--listen" can be ommitted.
+-u <url-path>
+--upload <url-path>
+    Set url path that allows to upload files.
+    If filename exists, will try to add or increase numeric prefix.
+    Use it with care.
 
 --c <file>
 --cert <file>

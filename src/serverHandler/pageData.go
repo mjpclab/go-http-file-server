@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"../util"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"sort"
@@ -15,14 +16,15 @@ type pathEntry struct {
 }
 
 type pageData struct {
-	Scheme   string
-	Host     string
-	Path     string
-	Paths    []*pathEntry
-	File     *os.File
-	Item     os.FileInfo
-	SubItems []os.FileInfo
-	Errors   []error
+	Scheme    string
+	Host      string
+	Path      string
+	Paths     []*pathEntry
+	File      *os.File
+	Item      os.FileInfo
+	SubItems  []os.FileInfo
+	CanUpload bool
+	Errors    []error
 }
 
 func getScheme(r *http.Request) string {
@@ -33,37 +35,45 @@ func getScheme(r *http.Request) string {
 	}
 }
 
-func (h *handler) readdir(rawRequestPath, requestPath string, errors *[]error) (file *os.File, item os.FileInfo, subItems []os.FileInfo) {
+func (h *handler) stat(requestPath string) (file *os.File, item os.FileInfo, errs []error) {
+	errs = []error{}
 	var err error
 
 	fsPath := path.Clean(h.root + requestPath)
 
 	file, err = os.Open(fsPath)
 	if err != nil {
-		*errors = append(*errors, err)
+		errs = append(errs, err)
 		return
 	}
 
 	item, err = file.Stat()
 	if err != nil {
-		*errors = append(*errors, err)
-		return
-	}
-
-	if !item.IsDir() {
-		return
-	}
-
-	subItems, err = file.Readdir(-1)
-	if err != nil {
-		*errors = append(*errors, err)
+		errs = append(errs, err)
 		return
 	}
 
 	return
 }
 
-func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo, errors *[]error) {
+func (h *handler) readdir(file *os.File, item os.FileInfo) (subItems []os.FileInfo, errs []error) {
+	if file == nil || item == nil || !item.IsDir() {
+		return
+	}
+
+	var err error
+	subItems, err = file.Readdir(0)
+	if err != nil {
+		errs = append(errs, err)
+		return
+	}
+
+	return
+}
+
+func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo) []error {
+	errs := []error{}
+
 	for aliasUrlPath, aliasFsPath := range h.aliases {
 		if len(aliasUrlPath) <= len(rawRequestPath) {
 			continue
@@ -103,7 +113,7 @@ func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo, err
 			if err == nil {
 				aliasSubItem = NewRenamedFileInfo(nextName, aliasSubItem)
 			} else {
-				*errors = append(*errors, err)
+				errs = append(errs, err)
 				aliasSubItem = NewFakeFileInfo(nextName, true)
 			}
 		} else {
@@ -123,6 +133,8 @@ func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo, err
 			*subItems = append(*subItems, aliasSubItem)
 		}
 	}
+
+	return errs
 }
 
 func sortSubItems(subItems []os.FileInfo) {
@@ -152,7 +164,11 @@ func getPathEntries(path string) []*pathEntry {
 		pathParts = []string{}
 	}
 
-	pathEntries := make([]*pathEntry, len(pathParts))
+	for i, length := 0, len(pathParts); i < length; i++ {
+		pathParts[i] = url.PathEscape(pathParts[i])
+	}
+
+	pathEntries := make([]*pathEntry, 0, len(pathParts))
 	for i, part := range pathParts {
 		pathEntries = append(pathEntries, &pathEntry{
 			Name: part,
@@ -166,26 +182,40 @@ func getPathEntries(path string) []*pathEntry {
 func (h *handler) getPageData(r *http.Request) *pageData {
 	rawRequestPath := util.CleanUrlPath(r.URL.Path)
 	requestPath := util.CleanUrlPath(rawRequestPath[len(h.urlPrefix):]) // strip url prefix path
+	errs := []error{}
 
 	scheme := getScheme(r)
 
 	relPath := rawRequestPath[1:]
 	pathEntries := getPathEntries(relPath)
 
-	errors := []error{}
-	file, item, subItems := h.readdir(rawRequestPath, requestPath, &errors)
-	h.mergeAlias(rawRequestPath, &subItems, &errors)
+	file, item, _errs := h.stat(requestPath)
+	errs = append(errs, _errs...)
+
+	canUpload := item != nil && h.uploads[rawRequestPath]
+	if canUpload && r.Method == "POST" {
+		_errs := h.saveUploadFiles(requestPath, r)
+		errs = append(errs, _errs...)
+	}
+
+	subItems, _errs := h.readdir(file, item)
+	errs = append(errs, _errs...)
+
+	_errs = h.mergeAlias(rawRequestPath, &subItems)
+	errs = append(errs, _errs...)
+
 	sortSubItems(subItems)
 
 	data := &pageData{
-		Scheme:   scheme,
-		Host:     r.Host,
-		Path:     relPath,
-		Paths:    pathEntries,
-		File:     file,
-		Item:     item,
-		SubItems: subItems,
-		Errors:   errors,
+		Scheme:    scheme,
+		Host:      r.Host,
+		Path:      relPath,
+		Paths:     pathEntries,
+		File:      file,
+		Item:      item,
+		SubItems:  subItems,
+		CanUpload: canUpload,
+		Errors:    errs,
 	}
 
 	return data

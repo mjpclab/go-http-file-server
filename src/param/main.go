@@ -13,6 +13,7 @@ import "../serverError"
 type Param struct {
 	Root     string
 	Aliases  map[string]string
+	Uploads  map[string]bool
 	Key      string
 	Cert     string
 	Listen   string
@@ -29,6 +30,9 @@ func init() {
 	serverError.CheckFatal(err)
 
 	err = argParser.AddFlagsValues("aliases", []string{"-a", "--alias"}, nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
+	serverError.CheckFatal(err)
+
+	err = argParser.AddFlagsValues("uploads", []string{"-u", "--upload"}, nil, "url path that allow upload files")
 	serverError.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("key", []string{"-k", "--key"}, "", "TLS certificate key path")
@@ -88,6 +92,16 @@ func init() {
 			}
 
 			param.Aliases[urlPath] = fsPath
+		}
+	}
+
+	// normalize uploads
+	param.Uploads = map[string]bool{}
+	arrUploads := result.GetValues("uploads")
+	if arrUploads != nil {
+		for _, upload := range arrUploads {
+			upload = util.CleanUrlPath(upload)
+			param.Uploads[upload] = true
 		}
 	}
 }

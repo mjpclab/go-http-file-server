@@ -3,6 +3,7 @@ package tpl
 import (
 	"../fmtSize"
 	"../serverError"
+	"net/url"
 	"path"
 	"text/template"
 )
@@ -35,7 +36,7 @@ const pageTplStr = `
 		body {
 			color: #333;
 			font-size: 0.625em;
-			font-family: Consolas, "DejaVu Sans Mono", Monospaced;
+			font-family: Consolas, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
 		}
 
 		a {
@@ -48,6 +49,11 @@ const pageTplStr = `
 		a:hover {
 			color: #000;
 			background: #f5f5f5;
+		}
+
+		input, button {
+			margin: 0;
+			padding: 0.25em 0;
 		}
 
 		.path-list {
@@ -85,8 +91,41 @@ const pageTplStr = `
 			display: none;
 		}
 
-		.item-list {
+		.upload {
+			position: relative;
+			margin: 1em;
 			padding: 1em;
+			background: #f7f7f7;
+		}
+
+		.upload.dragging::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			opacity: 0.7;
+			background: #c9c;
+		}
+
+		.upload form {
+			margin: 0;
+			padding: 0;
+		}
+
+		.upload input {
+			display: block;
+			width: 100%;
+			box-sizing: border-box;
+		}
+
+		.upload input + input {
+			margin-top: 0.5em;
+		}
+
+		.item-list {
+			margin: 1em;
 		}
 
 		.item-list a {
@@ -133,10 +172,19 @@ const pageTplStr = `
 
 <div class="path-list">
 	<a href="/">/</a>
-    {{range .Paths}}{{with .}}
-		<a href="{{.Path}}">{{.Name}}</a>
-    {{end}}{{end}}
+    {{range $path := .Paths}}
+		<a href="{{$path.Path}}">{{html $path.Name}}</a>
+    {{end}}
 </div>
+
+{{if .CanUpload}}
+	<div class="upload">
+		<form method="POST" enctype="multipart/form-data">
+			<input type="file" name="files" class="files" multiple="multiple" accept="*/*"/>
+			<input type="submit" value="Upload"/>
+		</form>
+	</div>
+{{end}}
 
 <div class="item-list">
 	<a href="../">
@@ -146,18 +194,65 @@ const pageTplStr = `
 	</a>
     {{range .SubItems}}
         {{$isDir := .IsDir}}
-		<a href="{{.Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
-			<span class="name">{{.Name}}{{if $isDir}}/{{end}}</span>
+		<a href="./{{path .Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
+			<span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
 			<span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
 			<span class="time">{{printf "%04d-%02d-%02d %02d:%02d" .ModTime.Year .ModTime.Month .ModTime.Day .ModTime.Hour .ModTime.Minute}}</span>
 		</a>
     {{end}}
 </div>
 
-{{range .Errors}}{{with .}}
-	<div class="error">{{.}}</div>
-{{end}}{{end}}
+{{range $error := .Errors}}
+	<div class="error">{{$error}}</div>
+{{end}}
 
+<script type="text/javascript">
+    (function () {
+        if (!document.querySelector) {
+            return;
+        }
+
+        var upload = document.querySelector('.upload');
+        if (!upload || !upload.addEventListener) {
+            return;
+        }
+        var fileInput = upload.querySelector('.files');
+
+        var addClass = function (ele, className) {
+            ele && ele.classList && ele.classList.add(className)
+        };
+
+        var removeClass = function (ele, className) {
+            ele && ele.classList && ele.classList.remove(className)
+        };
+
+        var onDragEnterOver = function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            addClass(e.currentTarget, 'dragging');
+        };
+
+        var onDragLeave = function (e) {
+            removeClass(e.currentTarget, 'dragging');
+        };
+
+        var onDrop = function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            removeClass(e.currentTarget, 'dragging');
+
+            if (!e.dataTransfer.files) {
+                return;
+            }
+            fileInput.files = e.dataTransfer.files;
+        };
+
+        upload.addEventListener('dragenter', onDragEnterOver);
+        upload.addEventListener('dragover', onDragEnterOver);
+        upload.addEventListener('dragleave', onDragLeave);
+        upload.addEventListener('drop', onDrop);
+    })()
+</script>
 </body>
 </html>
 `
@@ -195,5 +290,6 @@ func LoadPage(tplPath string) *template.Template {
 func addFuncMap(tpl *template.Template) *template.Template {
 	return tpl.Funcs(template.FuncMap{
 		"fmtSize": fmtSize.FmtSize,
+		"path":    url.PathEscape,
 	})
 }
