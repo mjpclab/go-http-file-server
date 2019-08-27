@@ -39,17 +39,17 @@ to re-embed templates into go files. Then compile the project again.
     If filename exists, will try to add or increase numeric prefix.
     Use it with care.
 
---c <file>
+-c <file>
 --cert <file>
     Specify TLS certificate file.
     If both "cert" and "key" are specified, the server serves in TLS mode for HTTPS protocol.
 
---k <file>
+-k <file>
 --key <file>
     Specify key file of TLS certificate.
     If both "cert" and "key" are specified, the server serves in TLS mode for HTTPS protocol.
 
---t <file>
+-t <file>
 --template <file>
     Use a custom template file for rendering pages, instead of builtin template.
 ```
