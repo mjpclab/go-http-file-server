@@ -52,4 +52,16 @@ to re-embed templates into go files. Then compile the project again.
 -t <file>
 --template <file>
     Use a custom template file for rendering pages, instead of builtin template.
+
+-L <file>
+--access-log <file>
+    Access log file.
+    Set "-" to use stdout.
+    Set to empty to disable access log.
+
+-E <file>
+--error-log <file>
+    Error log file.
+    Set "-" to use stderr.
+    Set to empty to disable error log.
 ```

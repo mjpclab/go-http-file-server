@@ -11,13 +11,15 @@ import (
 import "../serverError"
 
 type Param struct {
-	Root     string
-	Aliases  map[string]string
-	Uploads  map[string]bool
-	Key      string
-	Cert     string
-	Listen   string
-	Template string
+	Root      string
+	Aliases   map[string]string
+	Uploads   map[string]bool
+	Key       string
+	Cert      string
+	Listen    string
+	Template  string
+	AccessLog string
+	ErrorLog  string
 }
 
 var param Param
@@ -44,7 +46,13 @@ func init() {
 	err = argParser.AddFlagsValue("listen", []string{"-l", "--listen"}, "", "address and port to listen")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("template", []string{"-t", "--template"}, "", "address and port to listen")
+	err = argParser.AddFlagsValue("template", []string{"-t", "--template"}, "", "custom template file for page")
+	serverError.CheckFatal(err)
+
+	err = argParser.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "", "access log file, use \"-\" for stdout")
+	serverError.CheckFatal(err)
+
+	err = argParser.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "-", "error log file, use \"-\" for stderr")
 	serverError.CheckFatal(err)
 
 	err = argParser.AddFlags("help", []string{"-h", "--help"}, "print this help")
@@ -72,6 +80,8 @@ func init() {
 		}
 	}
 	param.Template = result.GetValue("template")
+	param.AccessLog = result.GetValue("accesslog")
+	param.ErrorLog = result.GetValue("errorlog")
 
 	// normalize aliases
 	param.Aliases = map[string]string{}

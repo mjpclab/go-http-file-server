@@ -270,7 +270,7 @@ func init() {
 	}
 }
 
-func LoadPage(tplPath string) *template.Template {
+func LoadPage(tplPath string) (*template.Template, error) {
 	var tplObj *template.Template
 	var err error
 
@@ -278,13 +278,12 @@ func LoadPage(tplPath string) *template.Template {
 		tplObj = template.New(path.Base(tplPath))
 		tplObj = addFuncMap(tplObj)
 		tplObj, err = tplObj.ParseFiles(tplPath)
-		serverError.CheckError(err)
 	}
 	if err != nil || len(tplPath) == 0 {
 		tplObj = defaultPage
 	}
 
-	return tplObj
+	return tplObj, err
 }
 
 func addFuncMap(tpl *template.Template) *template.Template {

@@ -4,6 +4,7 @@ import (
 	"../param"
 	"../serverError"
 	"../serverHandler"
+	"../serverLog"
 	"../tpl"
 	"net/http"
 	"text/template"
@@ -20,6 +21,20 @@ type Server struct {
 	aliases  map[string]string
 	uploads  map[string]bool
 	handlers map[string]http.Handler
+	logger   *serverLog.Logger
+}
+
+var p *param.Param
+var logger *serverLog.Logger
+
+func init() {
+	p = param.Parse()
+
+	var err error
+	logger, err = serverLog.NewLogger(p.AccessLog, p.ErrorLog)
+	if !serverError.CheckFatal(err) {
+		serverError.SetLogger(logger)
+	}
 }
 
 func (s *Server) ListenAndServe() {
@@ -32,36 +47,36 @@ func (s *Server) ListenAndServe() {
 		}
 	}
 
+	s.logger.Log("Start to listen on " + s.listen)
+
 	if s.useTLS {
 		err = http.ListenAndServeTLS(s.listen, s.cert, s.key, nil)
 	} else {
 		err = http.ListenAndServe(s.listen, nil)
 	}
 
-	serverError.CheckFatal(err)
+	serverError.LogFatal(err)
 }
 
 func NewServer() *Server {
-	p := param.Parse()
-
 	useTLS := len(p.Key) > 0 && len(p.Cert) > 0
 
 	listen := normalizePort(p.Listen, useTLS)
 
-	tplObj := tpl.LoadPage(p.Template)
+	tplObj, err := tpl.LoadPage(p.Template)
+	serverError.LogError(err)
 
 	aliases := p.Aliases
 	uploads := p.Uploads
 	handlers := map[string]http.Handler{}
 
 	if _, hasAlias := aliases["/"]; !hasAlias {
-		handlers["/"] = serverHandler.NewHandler(p.Root, "/", aliases, uploads, tplObj)
+		handlers["/"] = serverHandler.NewHandler(p.Root, "/", aliases, uploads, tplObj, logger)
 	}
 
 	for urlPath, fsPath := range p.Aliases {
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, aliases,uploads, tplObj)
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, aliases, uploads, tplObj, logger)
 	}
-
 
 	return &Server{
 		root:     p.Root,
@@ -74,5 +89,6 @@ func NewServer() *Server {
 		aliases:  aliases,
 		uploads:  uploads,
 		handlers: handlers,
+		logger:   logger,
 	}
 }

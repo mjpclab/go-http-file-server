@@ -35,7 +35,7 @@ func getAvailableFilename(fsPrefix, filename string) string {
 	filename = filename[digits:]
 	for {
 		num++
-		newFilename := strconv.Itoa(num) + filename;
+		newFilename := strconv.Itoa(num) + filename
 		if _, err := os.Lstat(fsPrefix + newFilename); os.IsNotExist(err) {
 			return newFilename
 		}
