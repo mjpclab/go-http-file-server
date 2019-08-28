@@ -35,21 +35,16 @@ func getScheme(r *http.Request) string {
 	}
 }
 
-func (h *handler) stat(requestPath string) (file *os.File, item os.FileInfo, errs []error) {
-	errs = []error{}
-	var err error
-
+func (h *handler) stat(requestPath string) (file *os.File, item os.FileInfo, err error) {
 	fsPath := path.Clean(h.root + requestPath)
 
 	file, err = os.Open(fsPath)
 	if err != nil {
-		errs = append(errs, err)
 		return
 	}
 
 	item, err = file.Stat()
 	if err != nil {
-		errs = append(errs, err)
 		return
 	}
 
@@ -189,8 +184,10 @@ func (h *handler) getPageData(r *http.Request) *pageData {
 	relPath := rawRequestPath[1:]
 	pathEntries := getPathEntries(relPath)
 
-	file, item, _errs := h.stat(requestPath)
-	errs = append(errs, _errs...)
+	file, item, _err := h.stat(requestPath)
+	if _err != nil {
+		errs = append(errs, _err)
+	}
 
 	canUpload := item != nil && h.uploads[rawRequestPath]
 	if canUpload && r.Method == "POST" {
