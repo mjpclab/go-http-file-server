@@ -159,15 +159,16 @@ func getPathEntries(path string) []*pathEntry {
 		pathParts = []string{}
 	}
 
+	escapedPathParts := make([]string, len(pathParts))
 	for i, length := 0, len(pathParts); i < length; i++ {
-		pathParts[i] = url.PathEscape(pathParts[i])
+		escapedPathParts[i] = url.PathEscape(pathParts[i])
 	}
 
 	pathEntries := make([]*pathEntry, 0, len(pathParts))
 	for i, part := range pathParts {
 		pathEntries = append(pathEntries, &pathEntry{
 			Name: part,
-			Path: "/" + strings.Join(pathParts[:i+1], "/"),
+			Path: "/" + strings.Join(escapedPathParts[:i+1], "/"),
 		})
 	}
 
