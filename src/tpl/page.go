@@ -1,7 +1,6 @@
 package tpl
 
 import (
-	"../fmtSize"
 	"../serverError"
 	"../util"
 	"net/url"
@@ -291,7 +290,7 @@ func LoadPage(tplPath string) *template.Template {
 func addFuncMap(tpl *template.Template) *template.Template {
 	return tpl.Funcs(template.FuncMap{
 		"path":    url.PathEscape,
-		"fmtSize": fmtSize.FmtSize,
+		"fmtSize": util.FormatSize,
 		"fmtTime": util.FormatTimeMinute,
 	})
 }

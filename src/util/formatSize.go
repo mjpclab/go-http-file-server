@@ -1,4 +1,4 @@
-package fmtSize
+package util
 
 import (
 	"strconv"
@@ -29,7 +29,7 @@ func fmtUnit(unitName string, unitValue int64, srcValue int64) string {
 	return b.String()
 }
 
-func FmtSize(size int64) string {
+func FormatSize(size int64) string {
 	switch {
 	case size > PB:
 		return fmtUnit("P", PB, size)

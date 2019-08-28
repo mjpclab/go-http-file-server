@@ -1,4 +1,4 @@
-package fmtSize
+package util
 
 import (
 	"testing"
