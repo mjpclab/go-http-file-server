@@ -22,19 +22,27 @@ func getLogEntry(payload string) string {
 	return sb.String()
 }
 
-func (l *Logger) Log(payload string) {
-	if l.accLogFile == nil {
+func (l *Logger) AccessFileAvail() bool {
+	return l.accLogFile != nil
+}
+
+func (l *Logger) ErrorFileAvail() bool {
+	return l.errLogFile != nil
+}
+
+func (l *Logger) LogAccess(payload string) {
+	if !l.AccessFileAvail() {
 		return
 	}
 
 	_, e := l.accLogFile.WriteString(getLogEntry(payload))
 	if e != nil {
-		l.Error(e.Error())
+		l.LogError(e.Error())
 	}
 }
 
-func (l *Logger) Error(payload string) {
-	if l.errLogFile == nil {
+func (l *Logger) LogError(payload string) {
+	if !l.ErrorFileAvail() {
 		return
 	}
 

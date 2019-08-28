@@ -47,7 +47,7 @@ func (s *Server) ListenAndServe() {
 		}
 	}
 
-	s.logger.Log("Start to listen on " + s.listen)
+	s.logger.LogAccess("Start to listen on " + s.listen)
 
 	if s.useTLS {
 		err = http.ListenAndServeTLS(s.listen, s.cert, s.key, nil)

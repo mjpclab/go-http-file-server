@@ -26,7 +26,7 @@ func (h *handler) LogRequest(w http.ResponseWriter, r *http.Request) {
 	sb.WriteByte(' ')
 	sb.WriteString(r.RequestURI)
 
-	h.logger.Log(sb.String())
+	h.logger.LogAccess(sb.String())
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
