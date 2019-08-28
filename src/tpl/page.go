@@ -3,6 +3,7 @@ package tpl
 import (
 	"../fmtSize"
 	"../serverError"
+	"../util"
 	"net/url"
 	"path"
 	"text/template"
@@ -197,7 +198,7 @@ const pageTplStr = `
 		<a href="./{{path .Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
 			<span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
 			<span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
-			<span class="time">{{printf "%04d-%02d-%02d %02d:%02d" .ModTime.Year .ModTime.Month .ModTime.Day .ModTime.Hour .ModTime.Minute}}</span>
+			<span class="time">{{fmtTime .ModTime}}</span>
 		</a>
     {{end}}
 </div>
@@ -289,7 +290,8 @@ func LoadPage(tplPath string) *template.Template {
 
 func addFuncMap(tpl *template.Template) *template.Template {
 	return tpl.Funcs(template.FuncMap{
-		"fmtSize": fmtSize.FmtSize,
 		"path":    url.PathEscape,
+		"fmtSize": fmtSize.FmtSize,
+		"fmtTime": util.FormatTimeMinute,
 	})
 }
