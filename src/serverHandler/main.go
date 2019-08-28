@@ -18,6 +18,10 @@ type handler struct {
 }
 
 func (h *handler) LogRequest(w http.ResponseWriter, r *http.Request) {
+	if !h.logger.AccessFileAvail() {
+		return
+	}
+
 	sb := strings.Builder{}
 
 	sb.WriteString(r.RemoteAddr)
