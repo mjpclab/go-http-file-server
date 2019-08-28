@@ -31,12 +31,17 @@ func (h *handler) LogRequest(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.LogRequest(w, r)
-
-	pageData := h.getPageData(r)
+	pageData, notFound, internalError := h.getPageData(r)
 
 	if r.Method == "POST" {
 		http.Redirect(w, r, r.URL.String(), http.StatusFound)
 		return
+	}
+
+	if internalError {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else if notFound {
+		w.WriteHeader(http.StatusNotFound)
 	}
 
 	file := pageData.File

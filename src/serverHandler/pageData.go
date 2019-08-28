@@ -174,7 +174,7 @@ func getPathEntries(path string) []*pathEntry {
 	return pathEntries
 }
 
-func (h *handler) getPageData(r *http.Request) *pageData {
+func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, internalError bool) {
 	rawRequestPath := util.CleanUrlPath(r.URL.Path)
 	requestPath := util.CleanUrlPath(rawRequestPath[len(h.urlPrefix):]) // strip url prefix path
 	errs := []error{}
@@ -184,26 +184,30 @@ func (h *handler) getPageData(r *http.Request) *pageData {
 	relPath := rawRequestPath[1:]
 	pathEntries := getPathEntries(relPath)
 
-	file, item, _err := h.stat(requestPath)
-	if _err != nil {
-		errs = append(errs, _err)
+	file, item, _statErr := h.stat(requestPath)
+	if _statErr != nil {
+		errs = append(errs, _statErr)
+		notFound = os.IsNotExist(_statErr)
 	}
 
 	canUpload := item != nil && h.uploads[rawRequestPath]
 	if canUpload && r.Method == "POST" {
-		_errs := h.saveUploadFiles(requestPath, r)
-		errs = append(errs, _errs...)
+		_uploadErrs := h.saveUploadFiles(requestPath, r)
+		errs = append(errs, _uploadErrs...)
+		internalError = internalError || len(_uploadErrs) > 0
 	}
 
-	subItems, _errs := h.readdir(file, item)
-	errs = append(errs, _errs...)
+	subItems, _readdirErrs := h.readdir(file, item)
+	errs = append(errs, _readdirErrs...)
+	internalError = internalError || len(_readdirErrs) > 0
 
-	_errs = h.mergeAlias(rawRequestPath, &subItems)
-	errs = append(errs, _errs...)
+	_mergeErrs := h.mergeAlias(rawRequestPath, &subItems)
+	errs = append(errs, _mergeErrs...)
+	internalError = internalError || len(_mergeErrs) > 0
 
 	sortSubItems(subItems)
 
-	data := &pageData{
+	data = &pageData{
 		Scheme:    scheme,
 		Host:      r.Host,
 		Path:      relPath,
@@ -215,5 +219,5 @@ func (h *handler) getPageData(r *http.Request) *pageData {
 		Errors:    errs,
 	}
 
-	return data
+	return
 }
