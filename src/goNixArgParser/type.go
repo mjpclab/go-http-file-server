@@ -35,12 +35,10 @@ type ParseResult struct {
 
 type ArgType int
 
-const (
-	UnknownArg ArgType = iota
-	FlagArg
-	ValueArg
-	RestArg
-)
+const UnknownArg ArgType = 0
+const FlagArg ArgType = 1
+const ValueArg ArgType = 2
+const RestArg ArgType = 3
 
 type Arg struct {
 	Text string

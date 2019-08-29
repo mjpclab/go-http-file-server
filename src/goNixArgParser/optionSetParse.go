@@ -146,14 +146,12 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 	args = s.splitConcatAssignArgs(args)
 
 	// walk
-	for i, argCount, peeked := 0, len(args), 0;
-		i < argCount;
-	i, peeked = i+1+peeked, 0 {
+	for i, argCount, peeked := 0, len(args), 0; i < argCount; i, peeked = i+1+peeked, 0 {
 		arg := args[i]
 
 		if arg.Type == UnknownArg {
 			rests = append(rests, arg.Text)
-			continue;
+			continue
 		}
 
 		opt := flagOptionMap[arg.Text]

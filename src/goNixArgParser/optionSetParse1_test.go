@@ -8,7 +8,7 @@ import (
 func TestParse(t *testing.T) {
 	var err error
 
-	s := NewOptionSet("-");
+	s := NewOptionSet("-")
 	err = s.Append(&Option{
 		Key:         "tag",
 		Summary:     "tag summary",

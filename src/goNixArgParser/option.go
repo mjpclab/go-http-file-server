@@ -9,9 +9,16 @@ func (opt *Option) String() string {
 
 	for i, flag := range opt.Flags {
 		if i > 0 {
-			sb.WriteString(", ")
+			sb.WriteString("|")
 		}
 		sb.WriteString(flag.Name)
+	}
+
+	if opt.AcceptValue {
+		sb.WriteString(" <value>")
+		if opt.MultiValues {
+			sb.WriteString(", ...")
+		}
 	}
 
 	if len(opt.Summary) > 0 {
