@@ -19,6 +19,8 @@ to re-embed templates into go files. Then compile the project again.
 
 ## Usage
 ```
+server [options]
+
 -l|--listen <ip|[:]port|ip:port>
     Optional IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
     If port is not specified, use "80" for pure HTTP mode, or "443" for TLS mode.
@@ -66,4 +68,41 @@ to re-embed templates into go files. Then compile the project again.
     Error log file.
     Set "-" to use stderr.
     Set to empty to disable error log.
+```
+
+## Examples
+Start server on port 8080, root directory is current working  directory:
+```sh
+server -l 8080
+``` 
+
+Start server on port 8080, root directory is /usr/share/doc:
+```sh
+server -l 8080 -r /usr/share/doc
+```
+
+Start server on default port, root directory is /tmp, and allow upload files to file system directory /tmp/data:
+```sh
+server -r /tmp -u /data
+```
+
+Share files from /etc, but also mount /usr/share/doc to url path /doc
+```sh
+server -r /etc -a :/doc:/usr/share/doc
+```
+
+Start server on port 8080, serve for HTTPS protocol
+```sh
+server -k /path/to/certificate/key -c /path/to/certificate/file -l 8080
+```
+
+Do not show hidden unix directories and files that starts with `.`.
+Tips: wrap wildcard by quotes to prevent expanding by shell.
+```sh
+server -H '.*'
+```
+
+Show access log on console:
+```sh
+server -L -
 ```
