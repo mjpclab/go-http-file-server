@@ -7,19 +7,13 @@ import (
 	"../serverLog"
 	"../tpl"
 	"net/http"
-	"text/template"
 )
 
 type Server struct {
-	root     string
 	key      string
 	cert     string
 	useTLS   bool
 	listen   string
-	tplFile  string
-	tplObj   *template.Template
-	aliases  map[string]string
-	uploads  map[string]bool
 	handlers map[string]http.Handler
 	logger   *serverLog.Logger
 }
@@ -67,27 +61,21 @@ func NewServer() *Server {
 	serverError.LogError(err)
 
 	aliases := p.Aliases
-	uploads := p.Uploads
 	handlers := map[string]http.Handler{}
 
 	if _, hasAlias := aliases["/"]; !hasAlias {
-		handlers["/"] = serverHandler.NewHandler(p.Root, "/", aliases, uploads, tplObj, logger)
+		handlers["/"] = serverHandler.NewHandler(p.Root, "/", p, tplObj, logger)
 	}
 
 	for urlPath, fsPath := range p.Aliases {
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, aliases, uploads, tplObj, logger)
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, tplObj, logger)
 	}
 
 	return &Server{
-		root:     p.Root,
 		key:      p.Key,
 		cert:     p.Cert,
 		useTLS:   useTLS,
 		listen:   listen,
-		tplFile:  p.Template,
-		tplObj:   tplObj,
-		aliases:  aliases,
-		uploads:  uploads,
 		handlers: handlers,
 		logger:   logger,
 	}

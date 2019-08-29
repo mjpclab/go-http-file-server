@@ -1,9 +1,11 @@
 package serverHandler
 
 import (
+	"../param"
 	"../serverError"
 	"../serverLog"
 	"net/http"
+	"regexp"
 	"strings"
 	"text/template"
 )
@@ -13,6 +15,12 @@ type handler struct {
 	urlPrefix string
 	aliases   map[string]string
 	uploads   map[string]bool
+	shows     *regexp.Regexp
+	showDirs  *regexp.Regexp
+	showFiles *regexp.Regexp
+	hides     *regexp.Regexp
+	hideDirs  *regexp.Regexp
+	hideFiles *regexp.Regexp
 	template  *template.Template
 	logger    *serverLog.Logger
 }
@@ -71,16 +79,21 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func NewHandler(
 	root string,
 	urlPrefix string,
-	aliases map[string]string,
-	uploads map[string]bool,
+	p *param.Param,
 	template *template.Template,
 	logger *serverLog.Logger,
 ) *handler {
 	h := &handler{
 		root:      root,
 		urlPrefix: urlPrefix,
-		aliases:   aliases,
-		uploads:   uploads,
+		aliases:   p.Aliases,
+		uploads:   p.Uploads,
+		shows:     p.Shows,
+		showDirs:  p.ShowDirs,
+		showFiles: p.ShowFiles,
+		hides:     p.Hides,
+		hideDirs:  p.HideDirs,
+		hideFiles: p.HideFiles,
 		template:  template,
 		logger:    logger,
 	}

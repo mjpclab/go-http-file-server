@@ -5,6 +5,7 @@ import (
 	"../util"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
@@ -18,11 +19,29 @@ type Param struct {
 	Cert      string
 	Listen    string
 	Template  string
+	Shows     *regexp.Regexp
+	ShowDirs  *regexp.Regexp
+	ShowFiles *regexp.Regexp
+	Hides     *regexp.Regexp
+	HideDirs  *regexp.Regexp
+	HideFiles *regexp.Regexp
 	AccessLog string
 	ErrorLog  string
 }
 
 var param Param
+
+func getWildcardRegexp(whildcards []string) (*regexp.Regexp, error) {
+	if len(whildcards) > 0 {
+		for i, show := range whildcards {
+			whildcards[i] = util.WildcardToRegexp(show)
+		}
+		exp := strings.Join(whildcards, "|")
+		return regexp.Compile(exp)
+	}
+
+	return nil, nil
+}
 
 func init() {
 	// define option
@@ -47,6 +66,20 @@ func init() {
 	serverError.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("template", []string{"-t", "--template"}, "", "custom template file for page")
+	serverError.CheckFatal(err)
+
+	err = argParser.AddFlagsValues("shows", []string{"-S", "--show"}, nil, "show directories or files match wildcard")
+	serverError.CheckFatal(err)
+	err = argParser.AddFlagsValues("showdirs", []string{"-SD", "--show-dir"}, nil, "show directories match wildcard")
+	serverError.CheckFatal(err)
+	err = argParser.AddFlagsValues("showfiles", []string{"-SF", "--show-file"}, nil, "show files match wildcard")
+	serverError.CheckFatal(err)
+
+	err = argParser.AddFlagsValues("hides", []string{"-H", "--hide"}, nil, "hide directories or files match wildcard")
+	serverError.CheckFatal(err)
+	err = argParser.AddFlagsValues("hidedirs", []string{"-HD", "--hide-dir"}, nil, "hide directories match wildcard")
+	serverError.CheckFatal(err)
+	err = argParser.AddFlagsValues("hidefiles", []string{"-HF", "--hide-file"}, nil, "hide files match wildcard")
 	serverError.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "", "access log file, use \"-\" for stdout")
@@ -114,6 +147,32 @@ func init() {
 			param.Uploads[upload] = true
 		}
 	}
+
+	// shows
+	shows, err := getWildcardRegexp(result.GetValues("shows"))
+	serverError.CheckFatal(err)
+	param.Shows = shows
+
+	showDirs, err := getWildcardRegexp(result.GetValues("showdirs"))
+	serverError.CheckFatal(err)
+	param.ShowDirs = showDirs
+
+	showFiles, err := getWildcardRegexp(result.GetValues("showfiles"))
+	serverError.CheckFatal(err)
+	param.ShowFiles = showFiles
+
+	// hides
+	hides, err := getWildcardRegexp(result.GetValues("hides"))
+	serverError.CheckFatal(err)
+	param.Hides = hides
+
+	hideDirs, err := getWildcardRegexp(result.GetValues("hidedirs"))
+	serverError.CheckFatal(err)
+	param.HideDirs = hideDirs
+
+	hideFiles, err := getWildcardRegexp(result.GetValues("hidefiles"))
+	serverError.CheckFatal(err)
+	param.HideFiles = hideFiles
 }
 
 func Parse() *Param {
