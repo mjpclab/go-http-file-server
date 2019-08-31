@@ -42,7 +42,7 @@ func (h *handler) LogRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.LogRequest(w, r)
+	go h.LogRequest(w, r)
 	pageData, notFound, internalError := h.getPageData(r)
 
 	if r.Method == "POST" {
