@@ -28,6 +28,7 @@ type Flag struct {
 }
 
 type ParseResult struct {
+	inputs   []*Arg
 	params   map[string][]string
 	defaults map[string][]string
 	rests    []string

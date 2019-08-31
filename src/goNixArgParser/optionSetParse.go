@@ -138,7 +138,6 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 	rests := []string{}
 
 	flagOptionMap := s.flagOptionMap
-	flagMap := s.flagMap
 
 	args := s.getNormalizedArgs(initArgs)
 	args = s.splitMergedArgs(args)
@@ -150,6 +149,7 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 		arg := args[i]
 
 		if arg.Type == UnknownArg {
+			arg.Type = RestArg
 			rests = append(rests, arg.Text)
 			continue
 		}
@@ -162,13 +162,15 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 		}
 
 		if !opt.MultiValues { // option has 1 value
-			if i == argCount-1 || flagMap[args[i+1].Text] != nil { // no more value or next flag found
+			if i == argCount-1 || args[i+1].Type == FlagArg { // no more value or next flag found
 				if opt.OverridePrev || params[opt.Key] == nil {
 					params[opt.Key] = []string{}
 				}
 			} else {
 				if opt.OverridePrev || params[opt.Key] == nil {
-					params[opt.Key] = []string{args[i+1].Text}
+					nextArg := args[i+1]
+					nextArg.Type = ValueArg
+					params[opt.Key] = []string{nextArg.Text}
 				}
 				peeked++
 			}
@@ -182,12 +184,14 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 				break
 			}
 
-			if flagMap[args[i+peeked+1].Text] != nil { // next flag found
+			if args[i+peeked+1].Type == FlagArg { // next flag found
 				break
 			}
 
 			peeked++
-			value := args[i+peeked].Text
+			peekedArg := args[i+peeked]
+			peekedArg.Type = ValueArg
+			value := peekedArg.Text
 			if len(opt.Delimiter) == 0 {
 				values = append(values, value)
 			} else {
@@ -203,6 +207,7 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 	}
 
 	return &ParseResult{
+		inputs:   args,
 		params:   params,
 		defaults: defaults,
 		rests:    rests,

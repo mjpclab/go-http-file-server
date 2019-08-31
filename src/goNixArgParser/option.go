@@ -1,52 +1,52 @@
 package goNixArgParser
 
 import (
-	"strings"
+	"bytes"
 )
 
 func (opt *Option) String() string {
-	sb := &strings.Builder{}
+	buffer := &bytes.Buffer{}
 
 	for i, flag := range opt.Flags {
 		if i > 0 {
-			sb.WriteString("|")
+			buffer.WriteString("|")
 		}
-		sb.WriteString(flag.Name)
+		buffer.WriteString(flag.Name)
 	}
 
 	if opt.AcceptValue {
-		sb.WriteString(" <value>")
+		buffer.WriteString(" <value>")
 		if opt.MultiValues {
-			sb.WriteString(", ...")
+			buffer.WriteString(", ...")
 		}
 	}
 
 	if len(opt.Summary) > 0 {
-		sb.WriteByte('\n')
-		sb.WriteString(opt.Summary)
+		buffer.WriteByte('\n')
+		buffer.WriteString(opt.Summary)
 	}
 
 	if len(opt.Description) > 0 {
-		sb.WriteByte('\n')
-		sb.WriteString(opt.Description)
+		buffer.WriteByte('\n')
+		buffer.WriteString(opt.Description)
 	}
 
-	db := &strings.Builder{}
+	dftBuffer := &bytes.Buffer{}
 	for _, d := range opt.DefaultValue {
 		if len(d) > 0 {
-			if db.Len() > 0 {
-				db.WriteString(", ")
+			if dftBuffer.Len() > 0 {
+				dftBuffer.WriteString(", ")
 			}
-			db.WriteString(d)
+			dftBuffer.WriteString(d)
 		}
 	}
-	if db.Len() > 0 {
-		sb.WriteByte('\n')
-		sb.WriteString("Default: ")
-		sb.WriteString(db.String())
+	if dftBuffer.Len() > 0 {
+		buffer.WriteByte('\n')
+		buffer.WriteString("Default: ")
+		buffer.WriteString(dftBuffer.String())
 	}
 
-	sb.WriteByte('\n')
+	buffer.WriteByte('\n')
 
-	return sb.String()
+	return buffer.String()
 }

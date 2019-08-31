@@ -1,11 +1,11 @@
 package goNixArgParser
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
 	"path"
-	"strings"
 )
 
 func NewOptionSet(mergeOptionPrefix string) *OptionSet {
@@ -120,13 +120,13 @@ func (s *OptionSet) AddFlagsValues(key string, flags, defaultValues []string, su
 }
 
 func (s *OptionSet) String() string {
-	sb := &strings.Builder{}
+	buffer := &bytes.Buffer{}
 	for _, opt := range s.options {
-		sb.WriteByte('\n')
-		sb.WriteString(opt.String())
+		buffer.WriteByte('\n')
+		buffer.WriteString(opt.String())
 	}
-	sb.WriteByte('\n')
-	return sb.String()
+	buffer.WriteByte('\n')
+	return buffer.String()
 }
 
 func (s *OptionSet) PrintHelp() {
