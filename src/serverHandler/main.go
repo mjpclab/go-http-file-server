@@ -26,7 +26,7 @@ type handler struct {
 }
 
 func (h *handler) LogRequest(w http.ResponseWriter, r *http.Request) {
-	if !h.logger.AccessFileAvail() {
+	if !h.logger.CanLogAccess() {
 		return
 	}
 

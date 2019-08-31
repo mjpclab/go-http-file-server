@@ -22,16 +22,16 @@ func getLogEntry(payload string) string {
 	return buffer.String()
 }
 
-func (l *Logger) AccessFileAvail() bool {
+func (l *Logger) CanLogAccess() bool {
 	return l.accLogFile != nil
 }
 
-func (l *Logger) ErrorFileAvail() bool {
+func (l *Logger) CanLogError() bool {
 	return l.errLogFile != nil
 }
 
 func (l *Logger) LogAccess(payload string) {
-	if !l.AccessFileAvail() {
+	if !l.CanLogAccess() {
 		return
 	}
 
@@ -42,7 +42,7 @@ func (l *Logger) LogAccess(payload string) {
 }
 
 func (l *Logger) LogError(payload string) {
-	if !l.ErrorFileAvail() {
+	if !l.CanLogError() {
 		return
 	}
 
