@@ -4,9 +4,9 @@ import (
 	"../param"
 	"../serverError"
 	"../serverLog"
+	"bytes"
 	"net/http"
 	"regexp"
-	"strings"
 	"text/template"
 )
 
@@ -30,15 +30,15 @@ func (h *handler) LogRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sb := strings.Builder{}
+	buffer := &bytes.Buffer{}
 
-	sb.WriteString(r.RemoteAddr)
-	sb.WriteByte(' ')
-	sb.WriteString(r.Method)
-	sb.WriteByte(' ')
-	sb.WriteString(r.RequestURI)
+	buffer.WriteString(r.RemoteAddr)
+	buffer.WriteByte(' ')
+	buffer.WriteString(r.Method)
+	buffer.WriteByte(' ')
+	buffer.WriteString(r.RequestURI)
 
-	h.logger.LogAccess(sb.String())
+	h.logger.LogAccess(buffer.String())
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

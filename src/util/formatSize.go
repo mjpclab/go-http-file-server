@@ -1,8 +1,8 @@
 package util
 
 import (
+	"bytes"
 	"strconv"
-	"strings"
 )
 
 const (
@@ -22,11 +22,11 @@ func fmtUnit(unitName string, unitValue int64, srcValue int64) string {
 		prefix++
 	}
 
-	b := strings.Builder{}
-	b.WriteString(strconv.Itoa(prefix))
-	b.WriteString(unitName)
+	buffer := &bytes.Buffer{}
+	buffer.WriteString(strconv.Itoa(prefix))
+	buffer.WriteString(unitName)
 
-	return b.String()
+	return buffer.String()
 }
 
 func FormatSize(size int64) string {

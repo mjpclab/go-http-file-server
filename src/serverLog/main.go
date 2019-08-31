@@ -2,8 +2,8 @@ package serverLog
 
 import (
 	"../util"
+	"bytes"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -13,13 +13,13 @@ type Logger struct {
 }
 
 func getLogEntry(payload string) string {
-	sb := strings.Builder{}
-	sb.WriteString(util.FormatTimeNanosecond(time.Now()))
-	sb.WriteByte(' ')
-	sb.WriteString(payload)
-	sb.WriteByte('\n')
+	buffer := &bytes.Buffer{}
+	buffer.WriteString(util.FormatTimeNanosecond(time.Now()))
+	buffer.WriteByte(' ')
+	buffer.WriteString(payload)
+	buffer.WriteByte('\n')
 
-	return sb.String()
+	return buffer.String()
 }
 
 func (l *Logger) AccessFileAvail() bool {

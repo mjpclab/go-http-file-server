@@ -4,7 +4,7 @@ Share local file system by HTTP.
 ![Go HTTP File Server pages](doc/ghfs.gif)
 
 ## Compile
-Minimal required Go version is 1.10.
+Minimal required Go version is 1.8.
 ```bash
 cd src
 go build main.go
