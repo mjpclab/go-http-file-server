@@ -23,7 +23,7 @@ func LogError(err error) bool {
 		return true
 	}
 
-	logger.LogError(err.Error())
+	logger.LogErrorString(err.Error())
 	return true
 }
 

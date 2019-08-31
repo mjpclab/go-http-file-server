@@ -12,14 +12,14 @@ type Logger struct {
 	errLogFile *os.File
 }
 
-func getLogEntry(payload string) string {
+func getLogEntry(payload []byte) []byte {
 	buffer := &bytes.Buffer{}
 	buffer.WriteString(util.FormatTimeNanosecond(time.Now()))
 	buffer.WriteByte(' ')
-	buffer.WriteString(payload)
+	buffer.Write(payload)
 	buffer.WriteByte('\n')
 
-	return buffer.String()
+	return buffer.Bytes()
 }
 
 func (l *Logger) CanLogAccess() bool {
@@ -30,26 +30,33 @@ func (l *Logger) CanLogError() bool {
 	return l.errLogFile != nil
 }
 
-func (l *Logger) LogAccess(payload string) {
+func (l *Logger) LogAccess(payload []byte) {
 	if !l.CanLogAccess() {
 		return
 	}
 
-	_, e := l.accLogFile.WriteString(getLogEntry(payload))
+	_, e := l.accLogFile.Write(getLogEntry(payload))
 	if e != nil {
-		l.LogError(e.Error())
+		l.LogError([]byte(e.Error()))
 	}
 }
+func (l *Logger) LogAccessString(payload string) {
+	l.LogAccess([]byte(payload))
+}
 
-func (l *Logger) LogError(payload string) {
+func (l *Logger) LogError(payload []byte) {
 	if !l.CanLogError() {
 		return
 	}
 
-	_, e := l.errLogFile.WriteString(getLogEntry(payload))
+	_, e := l.errLogFile.Write(getLogEntry(payload))
 	if e != nil {
 		os.Stdout.WriteString(e.Error() + "\n")
 	}
+}
+
+func (l *Logger) LogErrorString(payload string) {
+	l.LogError([]byte(payload))
 }
 
 func NewLogger(accessFilename, errorFilename string) (*Logger, error) {

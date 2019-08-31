@@ -38,7 +38,7 @@ func (h *handler) LogRequest(w http.ResponseWriter, r *http.Request) {
 	buffer.WriteByte(' ')
 	buffer.WriteString(r.RequestURI)
 
-	h.logger.LogAccess(buffer.String())
+	h.logger.LogAccess(buffer.Bytes())
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
