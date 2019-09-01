@@ -233,7 +233,9 @@ const pageTplStr = `
         };
 
         var onDragLeave = function (e) {
-            removeClass(e.currentTarget, 'dragging');
+            if (e.target === e.currentTarget) {
+                removeClass(e.currentTarget, 'dragging');
+            }
         };
 
         var onDrop = function (e) {
