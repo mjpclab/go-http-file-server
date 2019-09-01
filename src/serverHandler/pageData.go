@@ -232,6 +232,7 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		notFound = os.IsNotExist(_statErr)
+		internalError = internalError || !notFound
 	}
 
 	canUpload := item != nil && h.uploads[rawRequestPath]
