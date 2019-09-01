@@ -4,7 +4,6 @@ import (
 	"../param"
 	"../serverError"
 	"../serverLog"
-	"bytes"
 	"net/http"
 	"regexp"
 	"text/template"
@@ -25,25 +24,17 @@ type handler struct {
 	logger    *serverLog.Logger
 }
 
-func (h *handler) LogRequest(w http.ResponseWriter, r *http.Request) {
-	if !h.logger.CanLogAccess() {
-		return
-	}
-
-	buffer := &bytes.Buffer{}
-
-	buffer.WriteString(r.RemoteAddr)
-	buffer.WriteByte(' ')
-	buffer.WriteString(r.Method)
-	buffer.WriteByte(' ')
-	buffer.WriteString(r.RequestURI)
-
-	h.logger.LogAccess(buffer.Bytes())
-}
-
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	go h.LogRequest(w, r)
+	go h.logRequest(r)
+
 	pageData, notFound, internalError := h.getPageData(r)
+	if len(pageData.Errors) > 0 {
+		go func() {
+			for _, err := range pageData.Errors {
+				serverError.LogError(err)
+			}
+		}()
+	}
 
 	if r.Method == "POST" {
 		http.Redirect(w, r, r.URL.String(), http.StatusFound)

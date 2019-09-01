@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 )
 
@@ -74,7 +75,8 @@ func (h *handler) saveUploadFiles(requestPath string, r *http.Request) (errs []e
 			continue
 		}
 
-		fsPath := h.root + requestPath + "/" + fsFilename
+		fsPath := path.Clean(h.root + requestPath + "/" + fsFilename)
+		go h.logUpload(filename, fsPath, r)
 		file, err := os.Create(fsPath)
 		if err != nil {
 			errs = append(errs, err)
