@@ -41,7 +41,7 @@ const pageTplStr = `
 
 		a {
 			display: block;
-			padding: 0.25em 0.5em;
+			padding: 0.4em 0.5em;
 			color: inherit;
 			text-decoration: none;
 		}
@@ -57,7 +57,7 @@ const pageTplStr = `
 		}
 
 		.path-list {
-			font-size: 1.4em;
+			font-size: 1.5em;
 			overflow: hidden;
 			border-bottom: 1px #999 solid;
 		}
@@ -74,13 +74,14 @@ const pageTplStr = `
 		.path-list a:after {
 			content: '';
 			position: absolute;
-			top: 0.6em;
+			top: 50%;
 			right: 0.4em;
 			width: 0.4em;
 			height: 0.4em;
 			border: 1px solid;
 			border-color: #ccc #ccc transparent transparent;
-			transform: rotate(45deg);
+			-webkit-transform: rotate(45deg) translateY(-50%);
+			transform: rotate(45deg) translateY(-50%);
 		}
 
 		.path-list a:last-child {
@@ -143,7 +144,7 @@ const pageTplStr = `
 		.item-list .name {
 			flex: 1 1 0;
 			margin-left: 0;
-			font-size: 1.4em;
+			font-size: 1.5em;
 			word-break: break-all;
 		}
 
