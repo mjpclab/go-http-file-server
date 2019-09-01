@@ -172,8 +172,8 @@ const pageTplStr = `
 
 <div class="path-list">
 	<a href="/">/</a>
-    {{range $path := .Paths}}
-		<a href="{{$path.Path}}">{{html $path.Name}}</a>
+    {{range .Paths}}
+		<a href="{{.Path}}">{{html .Name}}</a>
     {{end}}
 </div>
 
@@ -202,8 +202,8 @@ const pageTplStr = `
     {{end}}
 </div>
 
-{{range $error := .Errors}}
-	<div class="error">{{$error}}</div>
+{{range .Errors}}
+	<div class="error">{{.}}</div>
 {{end}}
 
 <script type="text/javascript">
