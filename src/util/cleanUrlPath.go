@@ -7,10 +7,10 @@ func CleanUrlPath(urlPath string) string {
 		return "/"
 	}
 
-	urlPath = path.Clean(urlPath)
 	if urlPath[0] != '/' {
 		urlPath = "/" + urlPath
 	}
+	urlPath = path.Clean(urlPath)
 
 	return urlPath
 }
