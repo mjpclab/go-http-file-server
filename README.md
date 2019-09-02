@@ -68,6 +68,7 @@ server [options]
     Error log file.
     Set "-" to use stderr.
     Set to empty to disable error log.
+    Defaults to "-".
 ```
 
 ## Examples
