@@ -41,12 +41,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if internalError {
-		w.WriteHeader(http.StatusInternalServerError)
-	} else if notFound {
-		w.WriteHeader(http.StatusNotFound)
-	}
-
 	file := pageData.File
 	item := pageData.Item
 
@@ -57,12 +51,22 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
-	if item != nil && !item.IsDir() {
+	if file != nil && item != nil && !item.IsDir() {
 		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
 		return
 	}
 
-	w.Header().Set("Cache-Control", "public, max-age=0")
+
+	header := w.Header()
+	header.Set("Content-Type", "text/html; charset=utf-8;")
+	header.Set("Cache-Control", "public, max-age=0")
+	if internalError {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else if notFound {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 	err := h.template.Execute(w, pageData)
 	serverError.LogError(err)
 }
