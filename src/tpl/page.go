@@ -99,7 +99,8 @@ const pageTplStr = `
 			background: #f7f7f7;
 		}
 
-		.upload.dragging::before {
+		.upload::before {
+			display: none;
 			content: '';
 			position: absolute;
 			left: 0;
@@ -108,6 +109,10 @@ const pageTplStr = `
 			bottom: 0;
 			opacity: 0.7;
 			background: #c9c;
+		}
+
+		.upload.dragging::before {
+			display: block;
 		}
 
 		.upload form {
@@ -220,11 +225,11 @@ const pageTplStr = `
         var fileInput = upload.querySelector('.files');
 
         var addClass = function (ele, className) {
-            ele && ele.classList && ele.classList.add(className)
+            ele && ele.classList && ele.classList.add(className);
         };
 
         var removeClass = function (ele, className) {
-            ele && ele.classList && ele.classList.remove(className)
+            ele && ele.classList && ele.classList.remove(className);
         };
 
         var onDragEnterOver = function (e) {
