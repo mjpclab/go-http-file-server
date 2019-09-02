@@ -14,7 +14,7 @@ type Logger struct {
 
 func getLogEntry(payload []byte) []byte {
 	buffer := &bytes.Buffer{}
-	buffer.WriteString(util.FormatTimeNanosecond(time.Now()))
+	buffer.WriteString(util.FormatTimeSecond(time.Now()))
 	buffer.WriteByte(' ')
 	buffer.Write(payload)
 	buffer.WriteByte('\n')
