@@ -5,16 +5,16 @@ import (
 	"testing"
 )
 
-func TestOptionSet(t *testing.T) {
+func TestParse2(t *testing.T) {
 	var err error
 
-	s := NewOptionSet("")
+	s := NewOptionSet("", nil)
 
 	err = s.Append(&Option{
-		Key:          "deft",
-		Flags:        []*Flag{&Flag{Name: "-df"}, &Flag{Name: "--default"}},
-		AcceptValue:  true,
-		DefaultValue: []string{"myDefault"},
+		Key:           "deft",
+		Flags:         []*Flag{&Flag{Name: "-df"}, &Flag{Name: "--default"}},
+		AcceptValue:   true,
+		DefaultValues: []string{"myDefault"},
 	})
 	if err != nil {
 		t.Error(err)
@@ -40,22 +40,22 @@ func TestOptionSet(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.AddFlagValue("port", "--port", "21", "port to listen")
+	err = s.AddFlagValue("port", "--port", "", "21", "port to listen")
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = s.AddFlagValues("ports", "--ports", []string{"80", "8080"}, "ports to listen for http")
+	err = s.AddFlagValues("ports", "--ports", "", []string{"80", "8080"}, "ports to listen for http")
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = s.AddFlagsValue("file", []string{"-f", "--files"}, "", "file to open")
+	err = s.AddFlagsValue("file", []string{"-f", "--files"}, "", "", "file to open")
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = s.AddFlagsValues("props", []string{"-p", "--props"}, []string{}, "properties")
+	err = s.AddFlagsValues("props", []string{"-p", "--props"}, "", []string{}, "properties")
 	if err != nil {
 		t.Error(err)
 	}
@@ -72,36 +72,36 @@ func TestOptionSet(t *testing.T) {
 	}
 
 	parsed := s.Parse(args)
-	if parsed.GetValue("deft") != "myDefault" {
+	if v, _ := parsed.GetValue("deft"); v != "myDefault" {
 		t.Error("deft")
 	}
-	if !parsed.HasKey("flag") {
+	if !parsed.HasFlagKey("flag") {
 		t.Error("flag")
 	}
-	if !parsed.HasKey("flags") {
+	if !parsed.HasFlagKey("flags") {
 		t.Error("flags")
 	}
-	if !parsed.HasKey("p") {
+	if !parsed.HasFlagKey("p") {
 		t.Error("p")
 	}
-	if !parsed.HasKey("q") {
+	if !parsed.HasFlagKey("q") {
 		t.Error("q")
 	}
-	if parsed.GetValue("port") != "22" {
+	if v, _ := parsed.GetValue("port"); v != "22" {
 		t.Error("port")
 	}
 
-	ports := parsed.GetValues("ports")
+	ports, _ := parsed.GetValues("ports")
 	fmt.Println("ports:", ports)
 	if len(ports) != 3 {
 		t.Error("ports")
 	}
 
-	if parsed.GetValue("file") != "file1" {
+	if v, _ := parsed.GetValue("file"); v != "file1" {
 		t.Error("file")
 	}
 
-	props := parsed.GetValues("props")
+	props, _ := parsed.GetValues("props")
 	fmt.Println("props:", props)
 	if len(props) != 5 {
 		t.Error("props")

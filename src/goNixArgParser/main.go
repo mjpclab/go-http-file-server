@@ -2,34 +2,43 @@ package goNixArgParser
 
 import "os"
 
-var CommandLine *OptionSet = NewOptionSet("-")
+var CommandLine *Command
+
+func init() {
+	var commandName string
+	if len(os.Args) > 0 {
+		commandName = os.Args[0]
+	}
+
+	CommandLine = NewSimpleCommand(commandName, "")
+}
 
 func Append(opt *Option) error {
-	return CommandLine.Append(opt)
+	return CommandLine.OptionSet.Append(opt)
 }
 
 func AddFlag(key, flag, summary string) error {
-	return CommandLine.AddFlag(key, flag, summary)
+	return CommandLine.OptionSet.AddFlag(key, flag, summary)
 }
 
 func AddFlags(key string, flags []string, summary string) error {
-	return CommandLine.AddFlags(key, flags, summary)
+	return CommandLine.OptionSet.AddFlags(key, flags, summary)
 }
 
-func AddFlagValue(key, flag, defaultValue, summary string) error {
-	return CommandLine.AddFlagValue(key, flag, defaultValue, summary)
+func AddFlagValue(key, flag, envVar, defaultValue, summary string) error {
+	return CommandLine.OptionSet.AddFlagValue(key, flag, envVar, defaultValue, summary)
 }
 
-func AddFlagValues(key, flag string, defaultValues []string, summary string) error {
-	return CommandLine.AddFlagValues(key, flag, defaultValues, summary)
+func AddFlagValues(key, flag, envVar string, defaultValues []string, summary string) error {
+	return CommandLine.OptionSet.AddFlagValues(key, flag, envVar, defaultValues, summary)
 }
 
-func AddFlagsValue(key string, flags []string, defaultValue, summary string) error {
-	return CommandLine.AddFlagsValue(key, flags, defaultValue, summary)
+func AddFlagsValue(key string, flags []string, envVar, defaultValue, summary string) error {
+	return CommandLine.OptionSet.AddFlagsValue(key, flags, envVar, defaultValue, summary)
 }
 
-func AddFlagsValues(key string, flags, defaultValues []string, summary string) error {
-	return CommandLine.AddFlagsValues(key, flags, defaultValues, summary)
+func AddFlagsValues(key string, flags []string, envVar string, defaultValues []string, summary string) error {
+	return CommandLine.OptionSet.AddFlagsValues(key, flags, envVar, defaultValues, summary)
 }
 
 func PrintHelp() {
@@ -37,5 +46,5 @@ func PrintHelp() {
 }
 
 func Parse() *ParseResult {
-	return CommandLine.Parse(os.Args[1:])
+	return CommandLine.Parse(os.Args)
 }

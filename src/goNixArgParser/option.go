@@ -4,7 +4,16 @@ import (
 	"bytes"
 )
 
-func (opt *Option) String() string {
+func (opt *Option) isDelimiter(r rune) bool {
+	for _, delimiter := range opt.Delimiters {
+		if r == delimiter {
+			return true
+		}
+	}
+	return false
+}
+
+func (opt *Option) GetHelp() []byte {
 	buffer := &bytes.Buffer{}
 
 	for i, flag := range opt.Flags {
@@ -17,36 +26,47 @@ func (opt *Option) String() string {
 	if opt.AcceptValue {
 		buffer.WriteString(" <value>")
 		if opt.MultiValues {
-			buffer.WriteString(", ...")
+			buffer.WriteString(" ...")
 		}
-	}
-
-	if len(opt.Summary) > 0 {
-		buffer.WriteByte('\n')
-		buffer.WriteString(opt.Summary)
-	}
-
-	if len(opt.Description) > 0 {
-		buffer.WriteByte('\n')
-		buffer.WriteString(opt.Description)
-	}
-
-	dftBuffer := &bytes.Buffer{}
-	for _, d := range opt.DefaultValue {
-		if len(d) > 0 {
-			if dftBuffer.Len() > 0 {
-				dftBuffer.WriteString(", ")
-			}
-			dftBuffer.WriteString(d)
-		}
-	}
-	if dftBuffer.Len() > 0 {
-		buffer.WriteByte('\n')
-		buffer.WriteString("Default: ")
-		buffer.WriteString(dftBuffer.String())
 	}
 
 	buffer.WriteByte('\n')
 
-	return buffer.String()
+	if len(opt.EnvVars) > 0 {
+		buffer.WriteString("EnvVar: ")
+
+		for i, envVar := range opt.EnvVars {
+			if i > 0 {
+				buffer.WriteString(", ")
+			}
+			buffer.WriteString(envVar)
+		}
+
+		buffer.WriteByte('\n')
+	}
+
+	if len(opt.DefaultValues) > 0 {
+		buffer.WriteString("Default: ")
+
+		for i, d := range opt.DefaultValues {
+			if i > 0 {
+				buffer.WriteString(", ")
+			}
+			buffer.WriteString(d)
+		}
+
+		buffer.WriteByte('\n')
+	}
+
+	if len(opt.Summary) > 0 {
+		buffer.WriteString(opt.Summary)
+		buffer.WriteByte('\n')
+	}
+
+	if len(opt.Description) > 0 {
+		buffer.WriteString(opt.Description)
+		buffer.WriteByte('\n')
+	}
+
+	return buffer.Bytes()
 }

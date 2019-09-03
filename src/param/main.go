@@ -31,12 +31,16 @@ type Param struct {
 
 var param Param
 
-func getWildcardRegexp(whildcards []string) (*regexp.Regexp, error) {
-	if len(whildcards) > 0 {
-		for i, show := range whildcards {
-			whildcards[i] = util.WildcardToRegexp(show)
+func getWildcardRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
+	if found && len(wildcards) > 0 {
+		normalizedWildcards := make([]string, 0, len(wildcards))
+		for _, wildcard := range wildcards {
+			if len(wildcard) == 0 {
+				continue
+			}
+			normalizedWildcards = append(normalizedWildcards, util.WildcardToRegexp(wildcard))
 		}
-		exp := strings.Join(whildcards, "|")
+		exp := strings.Join(normalizedWildcards, "|")
 		return regexp.Compile(exp)
 	}
 
@@ -44,48 +48,49 @@ func getWildcardRegexp(whildcards []string) (*regexp.Regexp, error) {
 }
 
 func init() {
+	argParser.CommandLine.Summary = "Simple command line based HTTP file server to share local file system"
+
 	// define option
 	var err error
-
-	err = argParser.AddFlagsValue("root", []string{"-r", "--root"}, ".", "root directory of server")
+	err = argParser.AddFlagsValue("root", []string{"-r", "--root"}, "GHFS_ROOT", ".", "root directory of server")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValues("aliases", []string{"-a", "--alias"}, nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
+	err = argParser.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValues("uploads", []string{"-u", "--upload"}, nil, "url path that allow upload files")
+	err = argParser.AddFlagsValues("uploads", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("key", []string{"-k", "--key"}, "", "TLS certificate key path")
+	err = argParser.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("cert", []string{"-c", "--cert"}, "", "TLS certificate path")
+	err = argParser.AddFlagsValue("cert", []string{"-c", "--cert"}, "GHFS_CERT", "", "TLS certificate path")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("listen", []string{"-l", "--listen"}, "", "address and port to listen")
+	err = argParser.AddFlagsValue("listen", []string{"-l", "--listen"}, "GHFS_LISTEN", "", "address and port to listen")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("template", []string{"-t", "--template"}, "", "custom template file for page")
+	err = argParser.AddFlagsValue("template", []string{"-t", "--template"}, "GHFS_TEMPLATE", "", "custom template file for page")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValues("shows", []string{"-S", "--show"}, nil, "show directories or files match wildcard")
+	err = argParser.AddFlagsValues("shows", []string{"-S", "--show"}, "GHFS_SHOW", nil, "show directories or files match wildcard")
 	serverError.CheckFatal(err)
-	err = argParser.AddFlagsValues("showdirs", []string{"-SD", "--show-dir"}, nil, "show directories match wildcard")
+	err = argParser.AddFlagsValues("showdirs", []string{"-SD", "--show-dir"}, "GHFS_SHOW_DIR", nil, "show directories match wildcard")
 	serverError.CheckFatal(err)
-	err = argParser.AddFlagsValues("showfiles", []string{"-SF", "--show-file"}, nil, "show files match wildcard")
-	serverError.CheckFatal(err)
-
-	err = argParser.AddFlagsValues("hides", []string{"-H", "--hide"}, nil, "hide directories or files match wildcard")
-	serverError.CheckFatal(err)
-	err = argParser.AddFlagsValues("hidedirs", []string{"-HD", "--hide-dir"}, nil, "hide directories match wildcard")
-	serverError.CheckFatal(err)
-	err = argParser.AddFlagsValues("hidefiles", []string{"-HF", "--hide-file"}, nil, "hide files match wildcard")
+	err = argParser.AddFlagsValues("showfiles", []string{"-SF", "--show-file"}, "GHFS_SHOW_FILE", nil, "show files match wildcard")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "", "access log file, use \"-\" for stdout")
+	err = argParser.AddFlagsValues("hides", []string{"-H", "--hide"}, "GHFS_HIDE", nil, "hide directories or files match wildcard")
+	serverError.CheckFatal(err)
+	err = argParser.AddFlagsValues("hidedirs", []string{"-HD", "--hide-dir"}, "GHFS_HIDE_DIR", nil, "hide directories match wildcard")
+	serverError.CheckFatal(err)
+	err = argParser.AddFlagsValues("hidefiles", []string{"-HF", "--hide-file"}, "GHFS_HIDE_FILE", nil, "hide files match wildcard")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "-", "error log file, use \"-\" for stderr")
+	err = argParser.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "GHFS_ACCESS_LOG", "", "access log file, use \"-\" for stdout")
+	serverError.CheckFatal(err)
+
+	err = argParser.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
 	serverError.CheckFatal(err)
 
 	err = argParser.AddFlags("help", []string{"-h", "--help"}, "print this help")
@@ -95,30 +100,27 @@ func init() {
 	result := argParser.Parse()
 
 	// help
-	if result.HasKey("help") {
+	if result.HasFlagKey("help") {
 		argParser.PrintHelp()
 		os.Exit(0)
 	}
 
 	// normalize option
-	param.Root = result.GetValue("root")
-	param.Key = result.GetValue("key")
-	param.Cert = result.GetValue("cert")
-	if result.HasKey("listen") {
-		param.Listen = result.GetValue("listen")
-	} else {
-		rests := result.GetRests()
-		if len(rests) > 0 {
-			param.Listen = rests[0]
-		}
+	param.Root, _ = result.GetValue("root")
+	param.Key, _ = result.GetValue("key")
+	param.Cert, _ = result.GetValue("cert")
+	if rests := result.GetRests(); len(rests) > 0 {
+		param.Listen = rests[len(rests)-1]
+	} else if listen, foundListen := result.GetValue("listen"); foundListen {
+		param.Listen = listen
 	}
-	param.Template = result.GetValue("template")
-	param.AccessLog = result.GetValue("accesslog")
-	param.ErrorLog = result.GetValue("errorlog")
+	param.Template, _ = result.GetValue("template")
+	param.AccessLog, _ = result.GetValue("accesslog")
+	param.ErrorLog, _ = result.GetValue("errorlog")
 
 	// normalize aliases
 	param.Aliases = map[string]string{}
-	arrAlias := result.GetValues("aliases")
+	arrAlias, _ := result.GetValues("aliases")
 	if arrAlias != nil {
 		for _, alias := range arrAlias {
 			sep, sepLen := utf8.DecodeRuneInString(alias)
@@ -140,7 +142,7 @@ func init() {
 
 	// normalize uploads
 	param.Uploads = map[string]bool{}
-	arrUploads := result.GetValues("uploads")
+	arrUploads, _ := result.GetValues("uploads")
 	if arrUploads != nil {
 		for _, upload := range arrUploads {
 			upload = util.CleanUrlPath(upload)

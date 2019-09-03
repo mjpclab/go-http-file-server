@@ -1,5 +1,5 @@
 # Go HTTP File Server
-Share local file system by HTTP.
+Simple command line based HTTP file server to share local file system.
 
 ![Go HTTP File Server pages](doc/ghfs.gif)
 
