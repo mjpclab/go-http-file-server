@@ -12,6 +12,10 @@ type OptionSet struct {
 	restSigns       []string
 	options         []*Option
 
+	hasCanMerge        bool
+	hasCanEqualAssign  bool
+	hasCanConcatAssign bool
+
 	keyOptionMap  map[string]*Option
 	flagOptionMap map[string]*Option
 	flagMap       map[string]*Flag

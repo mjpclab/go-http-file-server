@@ -49,6 +49,7 @@ func (s *OptionSet) isRestSign(input string) bool {
 }
 
 func (s *OptionSet) Append(opt *Option) error {
+	// verify
 	if len(opt.Key) == 0 {
 		return errors.New("key is empty")
 	}
@@ -66,16 +67,32 @@ func (s *OptionSet) Append(opt *Option) error {
 		}
 	}
 
+	// copy
 	optCopied := *opt
 	option := &optCopied
 
+	// append
 	s.options = append(s.options, option)
+
+	// redundant - flag summaries, maps
 	s.keyOptionMap[option.Key] = option
 	for _, flag := range option.Flags {
+		if flag.canMerge {
+			s.hasCanMerge = true
+		}
+		if flag.canEqualAssign {
+			s.hasCanEqualAssign = true
+		}
+		if flag.canConcatAssign {
+			s.hasCanConcatAssign = true
+		}
+
 		flagName := flag.Name
 		s.flagOptionMap[flagName] = option
 		s.flagMap[flagName] = flag
 	}
+
+	// redundant - env maps
 	if option.AcceptValue && len(option.EnvVars) > 0 {
 		for _, envVar := range option.EnvVars {
 			if len(envVar) == 0 {
@@ -93,6 +110,8 @@ func (s *OptionSet) Append(opt *Option) error {
 			}
 		}
 	}
+
+	// redundant - default maps
 	if len(option.DefaultValues) > 0 {
 		s.keyDefaultMap[option.Key] = option.DefaultValues
 	}

@@ -156,9 +156,15 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 	flagOptionMap := s.flagOptionMap
 
 	args := s.getNormalizedArgs(initArgs)
-	args = s.splitMergedArgs(args)
-	args = s.splitEqualAssignArgs(args)
-	args = s.splitConcatAssignArgs(args)
+	if s.hasCanMerge {
+		args = s.splitMergedArgs(args)
+	}
+	if s.hasCanEqualAssign {
+		args = s.splitEqualAssignArgs(args)
+	}
+	if s.hasCanConcatAssign {
+		args = s.splitConcatAssignArgs(args)
+	}
 
 	// walk
 	for i, argCount, peeked := 0, len(args), 0; i < argCount; i, peeked = i+1+peeked, 0 {
