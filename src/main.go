@@ -21,6 +21,8 @@ func init() {
 }
 
 func main() {
+	defer logger.Close()
+
 	s := server.NewServer(p, logger)
 	s.ListenAndServe()
 }

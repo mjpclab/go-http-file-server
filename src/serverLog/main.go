@@ -4,12 +4,20 @@ import (
 	"../util"
 	"bytes"
 	"os"
+	"sync"
 	"time"
 )
 
+const CHAN_BUFFER = 7
+
 type Logger struct {
 	accLogFile *os.File
+	accLogChan chan []byte
+
 	errLogFile *os.File
+	errLogChan chan []byte
+
+	waitGroup sync.WaitGroup
 }
 
 func getLogEntry(payload []byte) []byte {
@@ -31,13 +39,8 @@ func (l *Logger) CanLogError() bool {
 }
 
 func (l *Logger) LogAccess(payload []byte) {
-	if !l.CanLogAccess() {
-		return
-	}
-
-	_, e := l.accLogFile.Write(getLogEntry(payload))
-	if e != nil {
-		l.LogError([]byte(e.Error()))
+	if l.CanLogAccess() {
+		l.accLogChan <- payload
 	}
 }
 func (l *Logger) LogAccessString(payload string) {
@@ -45,13 +48,8 @@ func (l *Logger) LogAccessString(payload string) {
 }
 
 func (l *Logger) LogError(payload []byte) {
-	if !l.CanLogError() {
-		return
-	}
-
-	_, e := l.errLogFile.Write(getLogEntry(payload))
-	if e != nil {
-		os.Stdout.WriteString(e.Error() + "\n")
+	if l.CanLogError() {
+		l.errLogChan <- payload
 	}
 }
 
@@ -59,8 +57,59 @@ func (l *Logger) LogErrorString(payload string) {
 	l.LogError([]byte(payload))
 }
 
+func (l *Logger) enableAccLog() {
+	for {
+		payload, ok := <-l.accLogChan
+		if !ok {
+			break
+		}
+
+		_, e := l.accLogFile.Write(getLogEntry(payload))
+		if e != nil {
+			l.LogError([]byte(e.Error()))
+		}
+	}
+	l.waitGroup.Done()
+}
+
+func (l *Logger) enableErrLog() {
+	for {
+		payload, ok := <-l.errLogChan
+		if !ok {
+			break
+		}
+
+		_, e := l.errLogFile.Write(getLogEntry(payload))
+		if e != nil {
+			os.Stdout.WriteString(e.Error() + "\n")
+		}
+	}
+	l.waitGroup.Done()
+}
+
+func (l *Logger) Close() {
+	if l.accLogChan != nil {
+		close(l.accLogChan)
+	}
+	if l.errLogChan != nil {
+		close(l.errLogChan)
+	}
+
+	l.waitGroup.Wait()
+
+	if l.accLogFile != nil {
+		l.accLogFile.Close()
+	}
+
+	if l.errLogFile != nil {
+		l.errLogFile.Close()
+	}
+}
+
 func NewLogger(accessFilename, errorFilename string) (*Logger, error) {
 	var accLogFile, errLogFile *os.File
+	var accLogChan, errLogChan chan []byte
+
 	var e error
 
 	if len(accessFilename) > 0 {
@@ -72,6 +121,7 @@ func NewLogger(accessFilename, errorFilename string) (*Logger, error) {
 				return nil, e
 			}
 		}
+		accLogChan = make(chan []byte, CHAN_BUFFER)
 	}
 
 	if len(errorFilename) > 0 {
@@ -83,7 +133,25 @@ func NewLogger(accessFilename, errorFilename string) (*Logger, error) {
 				return nil, e
 			}
 		}
+		errLogChan = make(chan []byte, CHAN_BUFFER)
 	}
 
-	return &Logger{accLogFile, errLogFile}, nil
+	logger := &Logger{
+		accLogFile: accLogFile,
+		accLogChan: accLogChan,
+
+		errLogFile: errLogFile,
+		errLogChan: errLogChan,
+	}
+
+	if logger.accLogChan != nil {
+		logger.waitGroup.Add(1)
+		go logger.enableAccLog()
+	}
+	if logger.errLogChan != nil {
+		logger.waitGroup.Add(1)
+		go logger.enableErrLog()
+	}
+
+	return logger, nil
 }

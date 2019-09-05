@@ -36,7 +36,7 @@ func (s *Server) ListenAndServe() {
 		err = http.ListenAndServe(s.listen, nil)
 	}
 
-	serverError.LogFatal(err)
+	serverError.LogError(err)
 }
 
 func NewServer(p *param.Param, logger *serverLog.Logger) *Server {
