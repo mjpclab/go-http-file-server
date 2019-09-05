@@ -130,6 +130,48 @@ const pageTplStr = `
 			margin-top: 0.5em;
 		}
 
+		.archive {
+			margin: 1em;
+			overflow: hidden;
+		}
+
+		.archive a {
+			position: relative;
+			float: left;
+			margin: 0 1em;
+			padding: 1em 1em 1em 3em;
+			border: 2px #f5f5f5 solid
+		}
+
+		.archive a:hover {
+			border-color: #ddd;
+		}
+
+		.archive a:before {
+			content: '';
+			position: absolute;
+			left: 1.1em;
+			top: 1em;
+			height: 1em;
+			width: 3px;
+			background: #aaa;
+		}
+
+		.archive a:after {
+			content: '';
+			position: absolute;
+			left: 0.6em;
+			top: 1.2em;
+			width: 0.5em;
+			height: 0.5em;
+			margin-left: 1px;
+			border: 3px #aaa solid;
+			border-top-color: transparent;
+			border-left-color: transparent;
+			-webkit-transform: rotate(45deg);
+			transform: rotate(45deg);
+		}
+
 		.item-list {
 			margin: 1em;
 		}
@@ -189,6 +231,13 @@ const pageTplStr = `
 			<input type="file" name="files" class="files" multiple="multiple" accept="*/*"/>
 			<input type="submit" value="Upload"/>
 		</form>
+	</div>
+{{end}}
+
+{{if .CanArchive}}
+	<div class="archive">
+		<a href="./?tar" download="download.tar">.tar</a>
+		<a href="./?zip" download="download.zip">.zip</a>
 	</div>
 {{end}}
 

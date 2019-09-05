@@ -10,18 +10,19 @@ import (
 )
 
 type handler struct {
-	root      string
-	urlPrefix string
-	aliases   map[string]string
-	uploads   map[string]bool
-	shows     *regexp.Regexp
-	showDirs  *regexp.Regexp
-	showFiles *regexp.Regexp
-	hides     *regexp.Regexp
-	hideDirs  *regexp.Regexp
-	hideFiles *regexp.Regexp
-	template  *template.Template
-	logger    *serverLog.Logger
+	root       string
+	urlPrefix  string
+	aliases    map[string]string
+	uploads    map[string]bool
+	canArchive bool
+	shows      *regexp.Regexp
+	showDirs   *regexp.Regexp
+	showFiles  *regexp.Regexp
+	hides      *regexp.Regexp
+	hideDirs   *regexp.Regexp
+	hideFiles  *regexp.Regexp
+	template   *template.Template
+	logger     *serverLog.Logger
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -36,9 +37,22 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
-	if r.Method == "POST" {
+	if pageData.CanUpload && r.Method == "POST" {
+		h.saveUploadFiles(pageData.handlerRequestPath, r)
 		http.Redirect(w, r, r.RequestURI, http.StatusFound)
 		return
+	}
+
+	if h.canArchive {
+		if r.URL.RawQuery == "tar" {
+			h.tar(w, r, pageData)
+			return
+		}
+
+		if r.URL.RawQuery == "zip" {
+			h.zip(w, r, pageData)
+			return
+		}
 	}
 
 	file := pageData.File
@@ -57,7 +71,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	header := w.Header()
-	header.Set("Content-Type", "text/html; charset=utf-8;")
+	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 	if internalError {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -78,18 +92,19 @@ func NewHandler(
 	logger *serverLog.Logger,
 ) *handler {
 	h := &handler{
-		root:      root,
-		urlPrefix: urlPrefix,
-		aliases:   p.Aliases,
-		uploads:   p.Uploads,
-		shows:     p.Shows,
-		showDirs:  p.ShowDirs,
-		showFiles: p.ShowFiles,
-		hides:     p.Hides,
-		hideDirs:  p.HideDirs,
-		hideFiles: p.HideFiles,
-		template:  template,
-		logger:    logger,
+		root:       root,
+		urlPrefix:  urlPrefix,
+		aliases:    p.Aliases,
+		uploads:    p.Uploads,
+		canArchive: p.CanArchive,
+		shows:      p.Shows,
+		showDirs:   p.ShowDirs,
+		showFiles:  p.ShowFiles,
+		hides:      p.Hides,
+		hideDirs:   p.HideDirs,
+		hideFiles:  p.HideFiles,
+		template:   template,
+		logger:     logger,
 	}
 	return h
 }

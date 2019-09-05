@@ -16,15 +16,19 @@ type pathEntry struct {
 }
 
 type pageData struct {
-	Scheme    string
-	Host      string
-	Path      string
-	Paths     []*pathEntry
-	File      *os.File
-	Item      os.FileInfo
-	SubItems  []os.FileInfo
-	CanUpload bool
-	Errors    []error
+	rawRequestPath     string
+	handlerRequestPath string
+
+	Scheme     string
+	Host       string
+	Path       string
+	Paths      []*pathEntry
+	File       *os.File
+	Item       os.FileInfo
+	SubItems   []os.FileInfo
+	CanUpload  bool
+	CanArchive bool
+	Errors     []error
 }
 
 func getScheme(r *http.Request) string {
@@ -235,13 +239,6 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 		internalError = internalError || !notFound
 	}
 
-	canUpload := item != nil && h.uploads[rawRequestPath]
-	if canUpload && r.Method == "POST" {
-		_uploadErrs := h.saveUploadFiles(requestPath, r)
-		errs = append(errs, _uploadErrs...)
-		internalError = internalError || len(_uploadErrs) > 0
-	}
-
 	subItems, _readdirErrs := h.readdir(file, item)
 	errs = append(errs, _readdirErrs...)
 	internalError = internalError || len(_readdirErrs) > 0
@@ -253,16 +250,24 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	subItems = h.FilterItems(subItems)
 	sortSubItems(subItems)
 
+	canUpload := item != nil && h.uploads[rawRequestPath]
+
+	canArchive := h.canArchive && len(subItems) > 0
+
 	data = &pageData{
-		Scheme:    scheme,
-		Host:      r.Host,
-		Path:      relPath,
-		Paths:     pathEntries,
-		File:      file,
-		Item:      item,
-		SubItems:  subItems,
-		CanUpload: canUpload,
-		Errors:    errs,
+		rawRequestPath:     rawRequestPath,
+		handlerRequestPath: requestPath,
+
+		Scheme:     scheme,
+		Host:       r.Host,
+		Path:       relPath,
+		Paths:      pathEntries,
+		File:       file,
+		Item:       item,
+		SubItems:   subItems,
+		CanUpload:  canUpload,
+		CanArchive: canArchive,
+		Errors:     errs,
 	}
 
 	return

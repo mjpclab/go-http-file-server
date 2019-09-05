@@ -12,21 +12,22 @@ import (
 import "../serverError"
 
 type Param struct {
-	Root      string
-	Aliases   map[string]string
-	Uploads   map[string]bool
-	Key       string
-	Cert      string
-	Listen    string
-	Template  string
-	Shows     *regexp.Regexp
-	ShowDirs  *regexp.Regexp
-	ShowFiles *regexp.Regexp
-	Hides     *regexp.Regexp
-	HideDirs  *regexp.Regexp
-	HideFiles *regexp.Regexp
-	AccessLog string
-	ErrorLog  string
+	Root       string
+	Aliases    map[string]string
+	Uploads    map[string]bool
+	CanArchive bool
+	Key        string
+	Cert       string
+	Listen     string
+	Template   string
+	Shows      *regexp.Regexp
+	ShowDirs   *regexp.Regexp
+	ShowFiles  *regexp.Regexp
+	Hides      *regexp.Regexp
+	HideDirs   *regexp.Regexp
+	HideFiles  *regexp.Regexp
+	AccessLog  string
+	ErrorLog   string
 }
 
 var param Param
@@ -66,6 +67,9 @@ func init() {
 	err = argParser.AddFlagsValues("uploads", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
 	serverError.CheckFatal(err)
 
+	err = argParser.AddFlags("archive", []string{"-A", "--archive"}, "GHFS_ARCHIVE", "enable download archive of current directory")
+	serverError.CheckFatal(err)
+
 	err = argParser.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
 	serverError.CheckFatal(err)
 
@@ -98,7 +102,7 @@ func init() {
 	err = argParser.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
 	serverError.CheckFatal(err)
 
-	err = argParser.AddFlags("help", []string{"-h", "--help"}, "print this help")
+	err = argParser.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
 	serverError.CheckFatal(err)
 
 	// parse option
@@ -112,6 +116,7 @@ func init() {
 
 	// normalize option
 	param.Root, _ = result.GetValue("root")
+	param.CanArchive = result.HasKey("archive")
 	param.Key, _ = result.GetValue("key")
 	param.Cert, _ = result.GetValue("cert")
 	if rests := result.GetRests(); len(rests) > 0 {
