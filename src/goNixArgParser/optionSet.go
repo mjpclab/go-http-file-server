@@ -93,7 +93,7 @@ func (s *OptionSet) Append(opt *Option) error {
 	}
 
 	// redundant - env maps
-	if option.AcceptValue && len(option.EnvVars) > 0 {
+	if len(option.EnvVars) > 0 {
 		for _, envVar := range option.EnvVars {
 			if len(envVar) == 0 {
 				continue
@@ -118,18 +118,20 @@ func (s *OptionSet) Append(opt *Option) error {
 	return nil
 }
 
-func (s *OptionSet) AddFlag(key, flag, summary string) error {
+func (s *OptionSet) AddFlag(key, flag, envVar, summary string) error {
 	return s.Append(&Option{
 		Key:     key,
 		Flags:   []*Flag{NewSimpleFlag(flag)},
+		EnvVars: StringToSlice(envVar),
 		Summary: summary,
 	})
 }
 
-func (s *OptionSet) AddFlags(key string, flags []string, summary string) error {
+func (s *OptionSet) AddFlags(key string, flags []string, envVar, summary string) error {
 	return s.Append(&Option{
 		Key:     key,
 		Flags:   NewSimpleFlags(flags),
+		EnvVars: StringToSlice(envVar),
 		Summary: summary,
 	})
 }

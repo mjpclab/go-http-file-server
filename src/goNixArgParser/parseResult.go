@@ -27,6 +27,14 @@ func (r *ParseResult) HasDefaultValue(key string) bool {
 	return len(r.defaults[key]) > 0
 }
 
+func (r *ParseResult) HasKey(key string) bool {
+	return r.HasFlagKey(key) || r.HasEnvKey(key) || r.HasDefaultKey(key)
+}
+
+func (r *ParseResult) HasValue(key string) bool {
+	return r.HasFlagValue(key) || r.HasEnvValue(key) || r.HasDefaultValue(key)
+}
+
 func _getValue(source map[string][]string, key string) (value string, found bool) {
 	var values []string
 	values, found = source[key]

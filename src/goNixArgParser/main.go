@@ -17,12 +17,12 @@ func Append(opt *Option) error {
 	return CommandLine.OptionSet.Append(opt)
 }
 
-func AddFlag(key, flag, summary string) error {
-	return CommandLine.OptionSet.AddFlag(key, flag, summary)
+func AddFlag(key, flag, envVar, summary string) error {
+	return CommandLine.OptionSet.AddFlag(key, flag, envVar, summary)
 }
 
-func AddFlags(key string, flags []string, summary string) error {
-	return CommandLine.OptionSet.AddFlags(key, flags, summary)
+func AddFlags(key string, flags []string, envVar, summary string) error {
+	return CommandLine.OptionSet.AddFlags(key, flags, envVar, summary)
 }
 
 func AddFlagValue(key, flag, envVar, defaultValue, summary string) error {

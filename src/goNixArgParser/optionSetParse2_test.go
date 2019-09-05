@@ -20,22 +20,22 @@ func TestParse2(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.AddFlag("flag", "-flag", "flag option")
+	err = s.AddFlag("flag", "-flag", "FLAG", "flag option")
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = s.AddFlag("p", "p", "flag p")
+	err = s.AddFlag("p", "p", "", "flag p")
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = s.AddFlag("q", "q", "flag q")
+	err = s.AddFlag("q", "q", "", "flag q")
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = s.AddFlags("flags", []string{"-flags", "--flags"}, "flags option")
+	err = s.AddFlags("flags", []string{"-flags", "--flags"}, "", "flags option")
 	if err != nil {
 		t.Error(err)
 	}
@@ -75,16 +75,16 @@ func TestParse2(t *testing.T) {
 	if v, _ := parsed.GetValue("deft"); v != "myDefault" {
 		t.Error("deft")
 	}
-	if !parsed.HasFlagKey("flag") {
+	if !parsed.HasKey("flag") {
 		t.Error("flag")
 	}
-	if !parsed.HasFlagKey("flags") {
+	if !parsed.HasKey("flags") {
 		t.Error("flags")
 	}
-	if !parsed.HasFlagKey("p") {
+	if !parsed.HasKey("p") {
 		t.Error("p")
 	}
-	if !parsed.HasFlagKey("q") {
+	if !parsed.HasKey("q") {
 		t.Error("q")
 	}
 	if v, _ := parsed.GetValue("port"); v != "22" {
