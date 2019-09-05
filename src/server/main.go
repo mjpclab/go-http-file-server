@@ -18,19 +18,6 @@ type Server struct {
 	logger   *serverLog.Logger
 }
 
-var p *param.Param
-var logger *serverLog.Logger
-
-func init() {
-	p = param.Parse()
-
-	var err error
-	logger, err = serverLog.NewLogger(p.AccessLog, p.ErrorLog)
-	if !serverError.CheckFatal(err) {
-		serverError.SetLogger(logger)
-	}
-}
-
 func (s *Server) ListenAndServe() {
 	var err error
 
@@ -52,7 +39,7 @@ func (s *Server) ListenAndServe() {
 	serverError.LogFatal(err)
 }
 
-func NewServer() *Server {
+func NewServer(p *param.Param, logger *serverLog.Logger) *Server {
 	useTLS := len(p.Key) > 0 && len(p.Cert) > 0
 
 	listen := normalizePort(p.Listen, useTLS)
