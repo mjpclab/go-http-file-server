@@ -38,6 +38,11 @@ server [options]
     If filename exists, will try to add or increase numeric prefix.
     Use it with care.
 
+-A|--archive
+    Allow user to download the whole contents of current directory as archive file.
+    A download link will appear on top part of the page.
+    Make sure there is no circular symbol links.
+
 -c|--cert <file>
     Specify TLS certificate file.
     If both "cert" and "key" are specified, the server serves in TLS mode for HTTPS protocol.
