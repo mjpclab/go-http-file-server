@@ -22,19 +22,26 @@ func init() {
 	}
 }
 
-func main() {
-	defer logger.Close()
+func cleanup() {
+	logger.Close()
+}
 
+func cleanupOnInterrupt() {
 	// trap SIGINT
-	chInter := make(chan os.Signal)
-	signal.Notify(chInter, os.Interrupt)
+	chSignal := make(chan os.Signal)
+	signal.Notify(chSignal, os.Interrupt)
 	go func() {
-		<-chInter
-		logger.Close()
+		<-chSignal
+		cleanup()
 		os.Exit(0)
 	}()
+}
 
-	// start server
+func main() {
+	defer cleanup()
+
+	cleanupOnInterrupt()
+
 	s := server.NewServer(p, logger)
 	s.ListenAndServe()
 }
