@@ -37,7 +37,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "POST" {
-		http.Redirect(w, r, r.URL.String(), http.StatusFound)
+		http.Redirect(w, r, r.RequestURI, http.StatusFound)
 		return
 	}
 
@@ -55,7 +55,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
 		return
 	}
-
 
 	header := w.Header()
 	header.Set("Content-Type", "text/html; charset=utf-8;")
