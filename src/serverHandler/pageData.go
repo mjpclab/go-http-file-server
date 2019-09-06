@@ -134,13 +134,13 @@ func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo) []e
 			var err error
 			aliasSubItem, err = os.Stat(aliasFsPath)
 			if err == nil {
-				aliasSubItem = NewRenamedFileInfo(nextName, aliasSubItem)
+				aliasSubItem = newRenamedFileInfo(nextName, aliasSubItem)
 			} else {
 				errs = append(errs, err)
-				aliasSubItem = NewFakeFileInfo(nextName, true)
+				aliasSubItem = newFakeFileInfo(nextName, true)
 			}
 		} else {
-			aliasSubItem = NewFakeFileInfo(nextName, true)
+			aliasSubItem = newFakeFileInfo(nextName, true)
 		}
 
 		replaced := false

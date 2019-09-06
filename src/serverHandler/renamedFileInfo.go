@@ -11,6 +11,6 @@ func (info *renamedFileInfo) Name() string {
 	return info.name
 }
 
-func NewRenamedFileInfo(name string, fileInfo os.FileInfo) *renamedFileInfo {
+func newRenamedFileInfo(name string, fileInfo os.FileInfo) *renamedFileInfo {
 	return &renamedFileInfo{name, fileInfo}
 }

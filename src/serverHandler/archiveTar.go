@@ -38,7 +38,7 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 		return err
 	}
 
-	if size == 0 {
+	if size == 0 || f == nil {
 		return nil
 	}
 

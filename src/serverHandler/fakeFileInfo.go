@@ -34,6 +34,6 @@ func (info *fakeFileInfo) Sys() interface{} {
 	return nil
 }
 
-func NewFakeFileInfo(name string, isDir bool) *fakeFileInfo {
+func newFakeFileInfo(name string, isDir bool) *fakeFileInfo {
 	return &fakeFileInfo{name, isDir}
 }

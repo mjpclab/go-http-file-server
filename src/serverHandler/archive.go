@@ -5,6 +5,7 @@ import (
 	"../util"
 	"os"
 	"path"
+	"strings"
 )
 
 func (h *handler) visitFs(
@@ -21,13 +22,19 @@ func (h *handler) visitFs(
 	}
 
 	f, err := os.Open(fsPath)
-	if serverError.LogError(err) {
-		return
-	}
+	serverError.LogError(err)
 
-	fInfo, err := f.Stat()
-	if serverError.LogError(err) {
-		return
+	var fInfo os.FileInfo
+	if err != nil {
+		if os.IsExist(err) {
+			return
+		}
+		fInfo = newFakeFileInfo(path.Base(fsPath), true)
+	} else {
+		fInfo, err = f.Stat()
+		if serverError.LogError(err) {
+			return
+		}
 	}
 
 	if len(relPath) > 0 {
@@ -36,15 +43,37 @@ func (h *handler) visitFs(
 
 	if fInfo.IsDir() {
 		childAliases := map[string]string{}
-		for urlPath, fsPath := range h.aliases {
-			if path.Dir(urlPath) == rawRequestPath {
-				childAliases[urlPath] = fsPath
+		for aliasUrlPath, aliasFsPath := range h.aliases {
+			if path.Dir(aliasUrlPath) == rawRequestPath {
+				childAliases[aliasUrlPath] = aliasFsPath
+				continue
+			}
+
+			var rawRequestPathDir string
+			if rawRequestPath == "/" {
+				rawRequestPathDir = rawRequestPath
+			} else {
+				rawRequestPathDir = rawRequestPath + "/"
+			}
+			if strings.HasPrefix(aliasUrlPath, rawRequestPathDir) {
+				succPath := aliasUrlPath[len(rawRequestPath):]
+				if succPath[0] == '/' {
+					succPath = succPath[1:]
+				}
+				childName := succPath[:strings.Index(succPath, "/")]
+				childUrlPath := util.CleanUrlPath(rawRequestPath + "/" + childName)
+				childFsPath := fsPath + "/" + childName
+				childAliases[childUrlPath] = childFsPath
+				continue
 			}
 		}
 
-		childInfos, err := f.Readdir(0)
-		if serverError.LogError(err) {
-			return
+		var childInfos []os.FileInfo
+		if f != nil {
+			childInfos, err = f.Readdir(0)
+			if serverError.LogError(err) {
+				return
+			}
 		}
 
 		for _, childInfo := range childInfos {
@@ -65,5 +94,6 @@ func (h *handler) visitFs(
 			childRelPath := relPath + "/" + path.Base(childRawRequestPath)
 			h.visitFs(childAliasedFsPath, childRawRequestPath, childRelPath, callback)
 		}
+
 	}
 }
