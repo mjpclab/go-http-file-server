@@ -37,3 +37,20 @@ func (h *handler) logUpload(filename, fsPath string, r *http.Request) {
 
 	h.logger.LogAccess(buffer.Bytes())
 }
+
+func (h *handler) logArchive(filename, relPath string, r *http.Request) {
+	if !h.logger.CanLogAccess() {
+		return
+	}
+
+	buffer := &bytes.Buffer{}
+
+	buffer.WriteString(r.RemoteAddr)
+	buffer.WriteByte(' ')
+	buffer.WriteString("archive file: ")
+	buffer.WriteString(filename)
+	buffer.WriteString(" <- ")
+	buffer.WriteString(relPath)
+
+	h.logger.LogAccess(buffer.Bytes())
+}

@@ -65,6 +65,7 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *pageData
 		pageData.rawRequestPath,
 		"",
 		func(f *os.File, fInfo os.FileInfo, relPath string) {
+			go h.logArchive(filename, relPath, r)
 			err := writeZip(zipWriter, f, fInfo, relPath)
 			if serverError.LogError(err) {
 				runtime.Goexit()
