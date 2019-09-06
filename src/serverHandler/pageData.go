@@ -250,7 +250,15 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	subItems = h.FilterItems(subItems)
 	sortSubItems(subItems)
 
-	canUpload := item != nil && h.uploads[rawRequestPath]
+	canUpload := false
+	if item != nil {
+		for uploadUrlPath, _ := range h.uploads {
+			if util.HasUrlPrefixDir(rawRequestPath, uploadUrlPath) {
+				canUpload = true
+				break
+			}
+		}
+	}
 
 	canArchive := h.canArchive && len(subItems) > 0
 

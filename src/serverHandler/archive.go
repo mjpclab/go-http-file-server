@@ -49,13 +49,7 @@ func (h *handler) visitFs(
 				continue
 			}
 
-			var rawRequestPathDir string
-			if rawRequestPath == "/" {
-				rawRequestPathDir = rawRequestPath
-			} else {
-				rawRequestPathDir = rawRequestPath + "/"
-			}
-			if strings.HasPrefix(aliasUrlPath, rawRequestPathDir) {
+			if util.HasUrlPrefixDir(aliasUrlPath, rawRequestPath) {
 				succPath := aliasUrlPath[len(rawRequestPath):]
 				if succPath[0] == '/' {
 					succPath = succPath[1:]
