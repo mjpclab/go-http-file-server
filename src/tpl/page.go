@@ -161,7 +161,7 @@ const pageTplStr = `
 			content: '';
 			position: absolute;
 			left: 0.6em;
-			top: 1.2em;
+			top: 1.1em;
 			width: 0.5em;
 			height: 0.5em;
 			margin-left: 1px;
