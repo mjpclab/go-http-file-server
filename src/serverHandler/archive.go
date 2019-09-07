@@ -3,6 +3,8 @@ package serverHandler
 import (
 	"../serverError"
 	"../util"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -90,4 +92,14 @@ func (h *handler) visitFs(
 		}
 
 	}
+}
+
+func writeArchiveHeader(w http.ResponseWriter, contentType, filename string) {
+	filename = url.PathEscape(filename)
+
+	header := w.Header()
+	header.Set("Content-Type", contentType)
+	header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+filename)
+	header.Set("Cache-Control", "public, max-age=0")
+	w.WriteHeader(http.StatusOK)
 }

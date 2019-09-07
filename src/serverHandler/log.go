@@ -47,9 +47,9 @@ func (h *handler) logArchive(filename, relPath string, r *http.Request) {
 
 	buffer.WriteString(r.RemoteAddr)
 	buffer.WriteByte(' ')
-	buffer.WriteString("archive file: ")
+	buffer.WriteString("archive file: \"")
 	buffer.WriteString(filename)
-	buffer.WriteString(" <- ")
+	buffer.WriteString("\" <- ")
 	buffer.WriteString(relPath)
 
 	h.logger.LogAccess(buffer.Bytes())

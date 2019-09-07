@@ -5,7 +5,6 @@ import (
 	"archive/tar"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"runtime"
 )
@@ -56,13 +55,8 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *pageData
 		serverError.LogError(err)
 	}()
 
-	filename := url.PathEscape(pageData.ItemName + ".tar")
-
-	header := w.Header()
-	header.Set("Content-Type", "application/octet-stream")
-	header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+filename)
-	header.Set("Cache-Control", "public, max-age=0")
-	w.WriteHeader(http.StatusOK)
+	filename := pageData.ItemName + ".tar"
+	writeArchiveHeader(w, "application/octet-stream", filename)
 
 	h.visitFs(
 		h.root+pageData.handlerRequestPath,

@@ -5,7 +5,6 @@ import (
 	"archive/zip"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"runtime"
 )
@@ -47,13 +46,8 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *pageData
 		serverError.LogError(err)
 	}()
 
-	filename := url.PathEscape(pageData.ItemName + ".zip")
-
-	header := w.Header()
-	header.Set("Content-Type", "application/zip")
-	header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+filename)
-	header.Set("Cache-Control", "public, max-age=0")
-	w.WriteHeader(http.StatusOK)
+	filename := pageData.ItemName + ".zip"
+	writeArchiveHeader(w, "application/zip", filename)
 
 	h.visitFs(
 		h.root+pageData.handlerRequestPath,
