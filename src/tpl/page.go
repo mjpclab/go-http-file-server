@@ -42,7 +42,7 @@ const pageTplStr = `
 		a {
 			display: block;
 			padding: 0.4em 0.5em;
-			color: inherit;
+			color: #000;
 			text-decoration: none;
 		}
 
@@ -60,6 +60,7 @@ const pageTplStr = `
 			font-size: 1.5em;
 			overflow: hidden;
 			border-bottom: 1px #999 solid;
+			zoom: 1;
 		}
 
 		.path-list a {
@@ -133,6 +134,7 @@ const pageTplStr = `
 		.archive {
 			margin: 1em;
 			overflow: hidden;
+			zoom: 1;
 		}
 
 		.archive a {
