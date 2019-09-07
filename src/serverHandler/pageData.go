@@ -25,6 +25,7 @@ type pageData struct {
 	Paths      []*pathEntry
 	File       *os.File
 	Item       os.FileInfo
+	ItemName   string
 	SubItems   []os.FileInfo
 	CanUpload  bool
 	CanArchive bool
@@ -250,6 +251,14 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	subItems = h.FilterItems(subItems)
 	sortSubItems(subItems)
 
+	var itemName string
+	if item != nil {
+		itemName = item.Name()
+	}
+	if len(itemName) == 0 || itemName == "." {
+		itemName = strings.Replace(r.Host, ":", "_", -1)
+	}
+
 	canUpload := false
 	if item != nil {
 		for uploadUrlPath, _ := range h.uploads {
@@ -272,6 +281,7 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 		Paths:      pathEntries,
 		File:       file,
 		Item:       item,
+		ItemName:   itemName,
 		SubItems:   subItems,
 		CanUpload:  canUpload,
 		CanArchive: canArchive,

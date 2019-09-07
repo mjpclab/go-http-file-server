@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"runtime"
-	"strings"
 )
 
 func writeZip(zw *zip.Writer, f *os.File, fInfo os.FileInfo, archivePath string) error {
@@ -48,11 +47,7 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *pageData
 		serverError.LogError(err)
 	}()
 
-	filename := pageData.Item.Name()
-	if filename == "." {
-		filename = strings.Replace(r.Host, ":", "_", -1)
-	}
-	filename = url.PathEscape(filename + ".zip")
+	filename := url.PathEscape(pageData.ItemName + ".zip")
 
 	header := w.Header()
 	header.Set("Content-Type", "application/zip")

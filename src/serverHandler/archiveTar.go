@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"runtime"
-	"strings"
 )
 
 func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string) error {
@@ -57,11 +56,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *pageData
 		serverError.LogError(err)
 	}()
 
-	filename := pageData.Item.Name()
-	if filename == "." {
-		filename = strings.Replace(r.Host, ":", "_", -1)
-	}
-	filename = url.PathEscape(filename + ".tar")
+	filename := url.PathEscape(pageData.ItemName + ".tar")
 
 	header := w.Header()
 	header.Set("Content-Type", "application/octet-stream")
