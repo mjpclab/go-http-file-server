@@ -239,6 +239,7 @@ const pageTplStr = `
 {{if .CanArchive}}
 	<div class="archive">
 		<a href="./?tar" download="{{path .ItemName}}.tar">.tar</a>
+		<a href="./?tgz" download="{{path .ItemName}}.tar.gz">.tar.gz</a>
 		<a href="./?zip" download="{{path .ItemName}}.zip">.zip</a>
 	</div>
 {{end}}

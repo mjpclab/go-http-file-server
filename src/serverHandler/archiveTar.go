@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"../serverError"
 	"archive/tar"
+	"compress/gzip"
 	"io"
 	"net/http"
 	"os"
@@ -56,6 +57,39 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *pageData
 	}()
 
 	filename := pageData.ItemName + ".tar"
+	writeArchiveHeader(w, "application/octet-stream", filename)
+
+	h.visitFs(
+		h.root+pageData.handlerRequestPath,
+		pageData.rawRequestPath,
+		"",
+		func(f *os.File, fInfo os.FileInfo, relPath string) {
+			go h.logArchive(filename, relPath, r)
+			err := writeTar(tw, f, fInfo, relPath)
+			if serverError.LogError(err) {
+				runtime.Goexit()
+			}
+		},
+	)
+}
+
+func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *pageData) {
+	gzw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
+	if serverError.LogError(err) {
+		return
+	}
+	defer func() {
+		err := gzw.Close()
+		serverError.LogError(err)
+	}()
+
+	tw := tar.NewWriter(gzw)
+	defer func() {
+		err := tw.Close()
+		serverError.LogError(err)
+	}()
+
+	filename := pageData.ItemName + ".tar.gz"
 	writeArchiveHeader(w, "application/octet-stream", filename)
 
 	h.visitFs(

@@ -44,12 +44,14 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.canArchive {
-		if r.URL.RawQuery == "tar" {
+		switch r.URL.RawQuery {
+		case "tar":
 			h.tar(w, r, pageData)
 			return
-		}
-
-		if r.URL.RawQuery == "zip" {
+		case "tgz":
+			h.tgz(w, r, pageData)
+			return
+		case "zip":
 			h.zip(w, r, pageData)
 			return
 		}
