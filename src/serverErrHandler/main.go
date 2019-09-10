@@ -1,4 +1,4 @@
-package serverErrorHandler
+package serverErrHandler
 
 import (
 	"../serverLog"
@@ -7,28 +7,30 @@ import (
 	"os"
 )
 
-var logger *serverLog.Logger
-
-func SetLogger(instance *serverLog.Logger) {
-	logger = instance
+type ErrHandler struct {
+	logger *serverLog.Logger
 }
 
-func LogError(err error) bool {
+func NewErrHandler(logger *serverLog.Logger) *ErrHandler {
+	return &ErrHandler{logger}
+}
+
+func (h *ErrHandler) LogError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if logger == nil {
+	if h.logger == nil {
 		CheckError(errors.New("logger not initialized"))
 		CheckError(err)
 		return true
 	}
 
-	logger.LogErrorString(err.Error())
+	h.logger.LogErrorString(err.Error())
 	return true
 }
 
-func LogFatal(err error) bool {
-	hasError := LogError(err)
+func (h *ErrHandler) LogFatal(err error) bool {
+	hasError := h.LogError(err)
 
 	if hasError {
 		os.Exit(1)

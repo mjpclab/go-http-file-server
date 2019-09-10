@@ -2,22 +2,21 @@ package server
 
 import (
 	"../param"
-	"../serverErrorHandler"
+	"../serverErrHandler"
 	"../serverHandler"
 	"../serverLog"
 	"../tpl"
 	"net/http"
 )
 
-var logger *serverLog.Logger
-
 type Server struct {
-	key      string
-	cert     string
-	useTLS   bool
-	listen   string
-	handlers map[string]http.Handler
-	logger   *serverLog.Logger
+	key        string
+	cert       string
+	useTLS     bool
+	listen     string
+	handlers   map[string]http.Handler
+	logger     *serverLog.Logger
+	errHandler *serverErrHandler.ErrHandler
 }
 
 func (s *Server) ListenAndServe() {
@@ -38,44 +37,44 @@ func (s *Server) ListenAndServe() {
 		err = http.ListenAndServe(s.listen, nil)
 	}
 
-	serverErrorHandler.LogError(err)
+	s.errHandler.LogError(err)
 }
 
 func NewServer(p *param.Param) *Server {
-	var err error
-	logger, err = serverLog.NewLogger(p.AccessLog, p.ErrorLog)
-	if !serverErrorHandler.CheckFatal(err) {
-		serverErrorHandler.SetLogger(logger)
-	}
+	logger, err := serverLog.NewLogger(p.AccessLog, p.ErrorLog)
+	serverErrHandler.CheckFatal(err)
+
+	errorHandler := serverErrHandler.NewErrHandler(logger)
 
 	useTLS := len(p.Key) > 0 && len(p.Cert) > 0
 
 	listen := normalizePort(p.Listen, useTLS)
 
 	tplObj, err := tpl.LoadPage(p.Template)
-	serverErrorHandler.LogError(err)
+	errorHandler.LogError(err)
 
 	aliases := p.Aliases
 	handlers := map[string]http.Handler{}
 
 	if _, hasAlias := aliases["/"]; !hasAlias {
-		handlers["/"] = serverHandler.NewHandler(p.Root, "/", p, tplObj, logger)
+		handlers["/"] = serverHandler.NewHandler(p.Root, "/", p, tplObj, logger, errorHandler)
 	}
 
 	for urlPath, fsPath := range p.Aliases {
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, tplObj, logger)
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, tplObj, logger, errorHandler)
 	}
 
 	return &Server{
-		key:      p.Key,
-		cert:     p.Cert,
-		useTLS:   useTLS,
-		listen:   listen,
-		handlers: handlers,
-		logger:   logger,
+		key:        p.Key,
+		cert:       p.Cert,
+		useTLS:     useTLS,
+		listen:     listen,
+		handlers:   handlers,
+		logger:     logger,
+		errHandler: errorHandler,
 	}
 }
 
 func (s *Server) Close() {
-	logger.Close()
+	s.logger.Close()
 }

@@ -2,7 +2,7 @@ package serverHandler
 
 import (
 	"../param"
-	"../serverErrorHandler"
+	"../serverErrHandler"
 	"../serverLog"
 	"net/http"
 	"regexp"
@@ -23,6 +23,7 @@ type handler struct {
 	hideFiles  *regexp.Regexp
 	template   *template.Template
 	logger     *serverLog.Logger
+	errHandler *serverErrHandler.ErrHandler
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +33,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(pageData.Errors) > 0 {
 		go func() {
 			for _, err := range pageData.Errors {
-				serverErrorHandler.LogError(err)
+				h.errHandler.LogError(err)
 			}
 		}()
 	}
@@ -63,7 +64,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if file != nil {
 		defer func() {
 			err := file.Close()
-			serverErrorHandler.LogError(err)
+			h.errHandler.LogError(err)
 		}()
 	}
 
@@ -83,7 +84,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 	err := h.template.Execute(w, pageData)
-	serverErrorHandler.LogError(err)
+	h.errHandler.LogError(err)
 }
 
 func NewHandler(
@@ -92,6 +93,7 @@ func NewHandler(
 	p *param.Param,
 	template *template.Template,
 	logger *serverLog.Logger,
+	errHandler *serverErrHandler.ErrHandler,
 ) *handler {
 	h := &handler{
 		root:       root,
@@ -107,6 +109,7 @@ func NewHandler(
 		hideFiles:  p.HideFiles,
 		template:   template,
 		logger:     logger,
+		errHandler: errHandler,
 	}
 	return h
 }

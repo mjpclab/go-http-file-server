@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unicode/utf8"
 )
-import "../serverErrorHandler"
+import "../serverErrHandler"
 
 type Param struct {
 	Root       string
@@ -59,51 +59,51 @@ func init() {
 	// define option
 	var err error
 	err = argParser.AddFlagsValue("root", []string{"-r", "--root"}, "GHFS_ROOT", ".", "root directory of server")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValues("uploads", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlags("archive", []string{"-A", "--archive"}, "GHFS_ARCHIVE", "enable download archive of current directory")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("cert", []string{"-c", "--cert"}, "GHFS_CERT", "", "TLS certificate path")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("listen", []string{"-l", "--listen"}, "GHFS_LISTEN", "", "address and port to listen")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("template", []string{"-t", "--template"}, "GHFS_TEMPLATE", "", "custom template file for page")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValues("shows", []string{"-S", "--show"}, "GHFS_SHOW", nil, "show directories or files match wildcard")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	err = argParser.AddFlagsValues("showdirs", []string{"-SD", "--show-dir"}, "GHFS_SHOW_DIR", nil, "show directories match wildcard")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	err = argParser.AddFlagsValues("showfiles", []string{"-SF", "--show-file"}, "GHFS_SHOW_FILE", nil, "show files match wildcard")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValues("hides", []string{"-H", "--hide"}, "GHFS_HIDE", nil, "hide directories or files match wildcard")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	err = argParser.AddFlagsValues("hidedirs", []string{"-HD", "--hide-dir"}, "GHFS_HIDE_DIR", nil, "hide directories match wildcard")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	err = argParser.AddFlagsValues("hidefiles", []string{"-HF", "--hide-file"}, "GHFS_HIDE_FILE", nil, "hide files match wildcard")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "GHFS_ACCESS_LOG", "", "access log file, use \"-\" for stdout")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 
 	// parse option
 	result := argParser.Parse()
@@ -162,28 +162,28 @@ func init() {
 
 	// shows
 	shows, err := getWildcardRegexp(result.GetValues("shows"))
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	param.Shows = shows
 
 	showDirs, err := getWildcardRegexp(result.GetValues("showdirs"))
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	param.ShowDirs = showDirs
 
 	showFiles, err := getWildcardRegexp(result.GetValues("showfiles"))
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	param.ShowFiles = showFiles
 
 	// hides
 	hides, err := getWildcardRegexp(result.GetValues("hides"))
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	param.Hides = hides
 
 	hideDirs, err := getWildcardRegexp(result.GetValues("hidedirs"))
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	param.HideDirs = hideDirs
 
 	hideFiles, err := getWildcardRegexp(result.GetValues("hidefiles"))
-	serverErrorHandler.CheckFatal(err)
+	serverErrHandler.CheckFatal(err)
 	param.HideFiles = hideFiles
 }
 

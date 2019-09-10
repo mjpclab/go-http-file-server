@@ -1,7 +1,6 @@
 package serverHandler
 
 import (
-	"../serverErrorHandler"
 	"archive/zip"
 	"io"
 	"net/http"
@@ -43,7 +42,7 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *pageData
 	zipWriter := zip.NewWriter(w)
 	defer func() {
 		err := zipWriter.Close()
-		serverErrorHandler.LogError(err)
+		h.errHandler.LogError(err)
 	}()
 
 	filename := pageData.ItemName + ".zip"
@@ -56,7 +55,7 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *pageData
 		func(f *os.File, fInfo os.FileInfo, relPath string) {
 			go h.logArchive(filename, relPath, r)
 			err := writeZip(zipWriter, f, fInfo, relPath)
-			if serverErrorHandler.LogError(err) {
+			if h.errHandler.LogError(err) {
 				runtime.Goexit()
 			}
 		},
