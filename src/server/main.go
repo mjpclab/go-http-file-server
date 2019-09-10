@@ -2,7 +2,7 @@ package server
 
 import (
 	"../param"
-	"../serverError"
+	"../serverErrorHandler"
 	"../serverHandler"
 	"../serverLog"
 	"../tpl"
@@ -36,7 +36,7 @@ func (s *Server) ListenAndServe() {
 		err = http.ListenAndServe(s.listen, nil)
 	}
 
-	serverError.LogError(err)
+	serverErrorHandler.LogError(err)
 }
 
 func NewServer(p *param.Param, logger *serverLog.Logger) *Server {
@@ -45,7 +45,7 @@ func NewServer(p *param.Param, logger *serverLog.Logger) *Server {
 	listen := normalizePort(p.Listen, useTLS)
 
 	tplObj, err := tpl.LoadPage(p.Template)
-	serverError.LogError(err)
+	serverErrorHandler.LogError(err)
 
 	aliases := p.Aliases
 	handlers := map[string]http.Handler{}

@@ -1,4 +1,4 @@
-package serverError
+package serverErrorHandler
 
 import (
 	"../serverLog"

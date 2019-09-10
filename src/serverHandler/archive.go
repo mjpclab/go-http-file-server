@@ -1,7 +1,7 @@
 package serverHandler
 
 import (
-	"../serverError"
+	"../serverErrorHandler"
 	"../util"
 	"net/http"
 	"net/url"
@@ -24,7 +24,7 @@ func (h *handler) visitFs(
 	}
 
 	f, err := os.Open(fsPath)
-	serverError.LogError(err)
+	serverErrorHandler.LogError(err)
 
 	var fInfo os.FileInfo
 	if err != nil {
@@ -34,7 +34,7 @@ func (h *handler) visitFs(
 		fInfo = newFakeFileInfo(path.Base(fsPath), true)
 	} else {
 		fInfo, err = f.Stat()
-		if serverError.LogError(err) {
+		if serverErrorHandler.LogError(err) {
 			return
 		}
 	}
@@ -67,7 +67,7 @@ func (h *handler) visitFs(
 		var childInfos []os.FileInfo
 		if f != nil {
 			childInfos, err = f.Readdir(0)
-			if serverError.LogError(err) {
+			if serverErrorHandler.LogError(err) {
 				return
 			}
 		}

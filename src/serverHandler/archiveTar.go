@@ -1,7 +1,7 @@
 package serverHandler
 
 import (
-	"../serverError"
+	"../serverErrorHandler"
 	"archive/tar"
 	"compress/gzip"
 	"io"
@@ -53,7 +53,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *pageData
 	tw := tar.NewWriter(w)
 	defer func() {
 		err := tw.Close()
-		serverError.LogError(err)
+		serverErrorHandler.LogError(err)
 	}()
 
 	filename := pageData.ItemName + ".tar"
@@ -66,7 +66,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *pageData
 		func(f *os.File, fInfo os.FileInfo, relPath string) {
 			go h.logArchive(filename, relPath, r)
 			err := writeTar(tw, f, fInfo, relPath)
-			if serverError.LogError(err) {
+			if serverErrorHandler.LogError(err) {
 				runtime.Goexit()
 			}
 		},
@@ -75,18 +75,18 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *pageData
 
 func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *pageData) {
 	gzw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
-	if serverError.LogError(err) {
+	if serverErrorHandler.LogError(err) {
 		return
 	}
 	defer func() {
 		err := gzw.Close()
-		serverError.LogError(err)
+		serverErrorHandler.LogError(err)
 	}()
 
 	tw := tar.NewWriter(gzw)
 	defer func() {
 		err := tw.Close()
-		serverError.LogError(err)
+		serverErrorHandler.LogError(err)
 	}()
 
 	filename := pageData.ItemName + ".tar.gz"
@@ -99,7 +99,7 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *pageData
 		func(f *os.File, fInfo os.FileInfo, relPath string) {
 			go h.logArchive(filename, relPath, r)
 			err := writeTar(tw, f, fInfo, relPath)
-			if serverError.LogError(err) {
+			if serverErrorHandler.LogError(err) {
 				runtime.Goexit()
 			}
 		},

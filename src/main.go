@@ -3,7 +3,7 @@ package main
 import (
 	"./param"
 	"./server"
-	"./serverError"
+	"./serverErrorHandler"
 	"./serverLog"
 	"os"
 	"os/signal"
@@ -17,8 +17,8 @@ func init() {
 
 	var err error
 	logger, err = serverLog.NewLogger(p.AccessLog, p.ErrorLog)
-	if !serverError.CheckFatal(err) {
-		serverError.SetLogger(logger)
+	if !serverErrorHandler.CheckFatal(err) {
+		serverErrorHandler.SetLogger(logger)
 	}
 }
 

@@ -2,7 +2,7 @@ package serverHandler
 
 import (
 	"../param"
-	"../serverError"
+	"../serverErrorHandler"
 	"../serverLog"
 	"net/http"
 	"regexp"
@@ -32,7 +32,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(pageData.Errors) > 0 {
 		go func() {
 			for _, err := range pageData.Errors {
-				serverError.LogError(err)
+				serverErrorHandler.LogError(err)
 			}
 		}()
 	}
@@ -63,7 +63,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if file != nil {
 		defer func() {
 			err := file.Close()
-			serverError.LogError(err)
+			serverErrorHandler.LogError(err)
 		}()
 	}
 
@@ -83,7 +83,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 	err := h.template.Execute(w, pageData)
-	serverError.LogError(err)
+	serverErrorHandler.LogError(err)
 }
 
 func NewHandler(

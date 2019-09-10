@@ -1,7 +1,7 @@
 package tpl
 
 import (
-	"../serverError"
+	"../serverErrorHandler"
 	"../util"
 	"net/url"
 	"path"
@@ -325,7 +325,7 @@ func init() {
 
 	var err error
 	defaultPage, err = tplObj.Parse(pageTplStr)
-	if serverError.CheckError(err) {
+	if serverErrorHandler.CheckError(err) {
 		defaultPage = template.Must(tplObj.Parse("Builtin Template Error"))
 	}
 }
