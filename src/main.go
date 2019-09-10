@@ -25,7 +25,7 @@ func cleanupOnInterrupt() {
 func main() {
 	cleanupOnInterrupt()
 
-	p := param.Parse()
+	p := param.ParseCli()
 	s = server.NewServer(p)
 	defer s.Close()
 	s.ListenAndServe()
