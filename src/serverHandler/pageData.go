@@ -40,25 +40,24 @@ func getScheme(r *http.Request) string {
 	}
 }
 
+func isSlash(c rune) bool {
+	return c == '/'
+}
+
 func getPathEntries(path string) []*pathEntry {
-	var pathParts []string
-	if len(path) > 0 {
-		pathParts = strings.Split(path, "/")
-	} else {
-		pathParts = []string{}
-	}
+	pathParts := strings.FieldsFunc(path, isSlash)
 
 	escapedPathParts := make([]string, len(pathParts))
 	for i, length := 0, len(pathParts); i < length; i++ {
 		escapedPathParts[i] = url.PathEscape(pathParts[i])
 	}
 
-	pathEntries := make([]*pathEntry, 0, len(pathParts))
-	for i, part := range pathParts {
-		pathEntries = append(pathEntries, &pathEntry{
-			Name: part,
+	pathEntries := make([]*pathEntry, len(pathParts))
+	for i, length := 0, len(pathEntries); i < length; i++ {
+		pathEntries[i] = &pathEntry{
+			Name: pathParts[i],
 			Path: "/" + strings.Join(escapedPathParts[:i+1], "/"),
-		})
+		}
 	}
 
 	return pathEntries
