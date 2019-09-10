@@ -3,28 +3,11 @@ package main
 import (
 	"./param"
 	"./server"
-	"./serverErrorHandler"
-	"./serverLog"
 	"os"
 	"os/signal"
 )
 
-var p *param.Param
-var logger *serverLog.Logger
-
-func init() {
-	p = param.Parse()
-
-	var err error
-	logger, err = serverLog.NewLogger(p.AccessLog, p.ErrorLog)
-	if !serverErrorHandler.CheckFatal(err) {
-		serverErrorHandler.SetLogger(logger)
-	}
-}
-
-func cleanup() {
-	logger.Close()
-}
+var s *server.Server
 
 func cleanupOnInterrupt() {
 	// trap SIGINT
@@ -32,16 +15,18 @@ func cleanupOnInterrupt() {
 	signal.Notify(chSignal, os.Interrupt)
 	go func() {
 		<-chSignal
-		cleanup()
+		if s != nil {
+			s.Close()
+		}
 		os.Exit(0)
 	}()
 }
 
 func main() {
-	defer cleanup()
-
 	cleanupOnInterrupt()
 
-	s := server.NewServer(p, logger)
+	p := param.Parse()
+	s = server.NewServer(p)
+	defer s.Close()
 	s.ListenAndServe()
 }

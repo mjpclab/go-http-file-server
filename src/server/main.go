@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+var logger *serverLog.Logger
+
 type Server struct {
 	key      string
 	cert     string
@@ -39,7 +41,13 @@ func (s *Server) ListenAndServe() {
 	serverErrorHandler.LogError(err)
 }
 
-func NewServer(p *param.Param, logger *serverLog.Logger) *Server {
+func NewServer(p *param.Param) *Server {
+	var err error
+	logger, err = serverLog.NewLogger(p.AccessLog, p.ErrorLog)
+	if !serverErrorHandler.CheckFatal(err) {
+		serverErrorHandler.SetLogger(logger)
+	}
+
 	useTLS := len(p.Key) > 0 && len(p.Cert) > 0
 
 	listen := normalizePort(p.Listen, useTLS)
@@ -66,4 +74,8 @@ func NewServer(p *param.Param, logger *serverLog.Logger) *Server {
 		handlers: handlers,
 		logger:   logger,
 	}
+}
+
+func (s *Server) Close() {
+	logger.Close()
 }
