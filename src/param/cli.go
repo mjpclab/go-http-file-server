@@ -123,13 +123,26 @@ func doParseCli() *Param {
 				continue
 			}
 			alias = alias[sepLen:]
-			sepIndex := strings.Index(alias, string(sep))
-
-			urlPath := util.CleanUrlPath(alias[:sepIndex])
-			fsPath := path.Clean(alias[sepIndex+sepLen:])
-			if len(fsPath) == 0 {
-				fsPath = "."
+			if len(alias) == 0 {
+				continue
 			}
+
+			sepIndex := strings.Index(alias, string(sep))
+			if sepIndex == -1 {
+				continue
+			}
+
+			urlPath := alias[:sepIndex]
+			if len(urlPath) == 0 {
+				continue
+			}
+			urlPath = util.CleanUrlPath(urlPath)
+
+			fsPath := alias[sepIndex+sepLen:]
+			if len(fsPath) == 0 {
+				continue
+			}
+			fsPath = path.Clean(fsPath)
 
 			param.Aliases[urlPath] = fsPath
 		}
