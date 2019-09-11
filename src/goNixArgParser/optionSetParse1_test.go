@@ -119,10 +119,10 @@ func TestParse1(t *testing.T) {
 	args := []string{
 		"-t",
 		"-un1", "val1",
-		"--single", "singleval1",
+		"--single", "false",
 		"xxx",
-		"-m", "multival1", "multival2",
-		"--multi", "multival3,multival4",
+		"-m", "111", "222",
+		"--multi", "333,444",
 		"--with-equal=abcde",
 		"--without-equal=bcdef",
 		"-wconcatedvalue",
@@ -143,20 +143,30 @@ func TestParse1(t *testing.T) {
 		t.Error("deft")
 	}
 
-	if v, _ := r.GetValue("deft"); v != "myDefault" {
+	if v, _ := r.GetString("deft"); v != "myDefault" {
 		t.Error("default")
 	}
 
-	single, _ := r.GetValue("single")
+	single, _ := r.GetString("single")
 	fmt.Println("single:", single)
-	if single != "singleval1" {
+	if single != "false" {
 		t.Error("single")
 	}
 
-	multi, _ := r.GetValues("multi")
+	singleBool, _ := r.GetBool("single")
+	if singleBool != false {
+		t.Error(singleBool)
+	}
+
+	multi, _ := r.GetStrings("multi")
 	fmt.Println("multi:", multi)
 	if len(multi) != 4 {
 		t.Error("multi should have 4 values")
+	}
+	multiInts, _ := r.GetInts("multi")
+	fmt.Println("multiInts:", multiInts);
+	if len(multi) != 4 {
+		t.Error("multiInts should have 4 values")
 	}
 
 	if !r.HasFlagKey("flagX") {
@@ -167,12 +177,12 @@ func TestParse1(t *testing.T) {
 		t.Error("flagY")
 	}
 
-	withEqual, _ := r.GetValue("withEqual")
+	withEqual, _ := r.GetString("withEqual")
 	if withEqual != "abcde" {
 		t.Error("withEqual:", withEqual)
 	}
 
-	withConcat, _ := r.GetValue("withConcat")
+	withConcat, _ := r.GetString("withConcat")
 	if withConcat != "concatedvalue" {
 		t.Error("withConcat:", withConcat)
 	}
@@ -180,7 +190,7 @@ func TestParse1(t *testing.T) {
 	fmt.Println("rests:", r.rests)
 
 	fmt.Print("fromenv: ")
-	fmt.Println(r.GetValues("fromenv"))
+	fmt.Println(r.GetStrings("fromenv"))
 
 	fmt.Print(string(s.GetHelp()))
 }

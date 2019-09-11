@@ -65,14 +65,14 @@ func TestParse2(t *testing.T) {
 		"pq",
 		"--flags",
 		"--port", "22",
-		"--ports", "443", "4443",
+		"--ports", "443", "4443", "443",
 		"--ports", "4444",
 		"-f", "file1", "file2",
 		"--props", "aa", "bb", "cc", "dd", "ee",
 	}
 
 	parsed := s.Parse(args)
-	if v, _ := parsed.GetValue("deft"); v != "myDefault" {
+	if v, _ := parsed.GetString("deft"); v != "myDefault" {
 		t.Error("deft")
 	}
 	if !parsed.HasKey("flag") {
@@ -87,21 +87,21 @@ func TestParse2(t *testing.T) {
 	if !parsed.HasKey("q") {
 		t.Error("q")
 	}
-	if v, _ := parsed.GetValue("port"); v != "22" {
+	if v, _ := parsed.GetString("port"); v != "22" {
 		t.Error("port")
 	}
 
-	ports, _ := parsed.GetValues("ports")
+	ports, _ := parsed.GetStrings("ports")
 	fmt.Println("ports:", ports)
 	if len(ports) != 3 {
 		t.Error("ports")
 	}
 
-	if v, _ := parsed.GetValue("file"); v != "file1" {
+	if v, _ := parsed.GetString("file"); v != "file1" {
 		t.Error("file")
 	}
 
-	props, _ := parsed.GetValues("props")
+	props, _ := parsed.GetStrings("props")
 	fmt.Println("props:", props)
 	if len(props) != 5 {
 		t.Error("props")

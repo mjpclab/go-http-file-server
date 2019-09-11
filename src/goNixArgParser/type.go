@@ -32,6 +32,7 @@ type Option struct {
 	MultiValues   bool
 	OverridePrev  bool
 	Delimiters    []rune
+	UniqueValues  bool
 	EnvVars       []string
 	DefaultValues []string
 }

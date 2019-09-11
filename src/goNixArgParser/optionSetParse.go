@@ -220,10 +220,17 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 			peekedArg := args[i+peeked]
 			peekedArg.Type = ValueArg
 			value := peekedArg.Text
+			var appending []string
 			if len(opt.Delimiters) == 0 {
-				values = append(values, value)
+				appending = []string{value}
 			} else {
-				values = append(values, strings.FieldsFunc(value, opt.isDelimiter)...)
+				appending = strings.FieldsFunc(value, opt.isDelimiter)
+			}
+
+			if opt.UniqueValues {
+				values = appendUnique(values, appending...)
+			} else {
+				values = append(values, appending...)
 			}
 		}
 

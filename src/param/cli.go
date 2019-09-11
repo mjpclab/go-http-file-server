@@ -106,23 +106,23 @@ func doParseCli() *Param {
 	}
 
 	// normalize option
-	param.Root, _ = result.GetValue("root")
+	param.Root, _ = result.GetString("root")
 	param.GlobalUpload = result.HasKey("globalupload")
 	param.GlobalArchive = result.HasKey("globalarchive")
-	param.Key, _ = result.GetValue("key")
-	param.Cert, _ = result.GetValue("cert")
+	param.Key, _ = result.GetString("key")
+	param.Cert, _ = result.GetString("cert")
 	if rests := result.GetRests(); len(rests) > 0 {
 		param.Listen = rests[len(rests)-1]
-	} else if listen, foundListen := result.GetValue("listen"); foundListen {
+	} else if listen, foundListen := result.GetString("listen"); foundListen {
 		param.Listen = listen
 	}
-	param.Template, _ = result.GetValue("template")
-	param.AccessLog, _ = result.GetValue("accesslog")
-	param.ErrorLog, _ = result.GetValue("errorlog")
+	param.Template, _ = result.GetString("template")
+	param.AccessLog, _ = result.GetString("accesslog")
+	param.ErrorLog, _ = result.GetString("errorlog")
 
 	// normalize aliases
 	param.Aliases = map[string]string{}
-	arrAlias, _ := result.GetValues("aliases")
+	arrAlias, _ := result.GetStrings("aliases")
 	if arrAlias != nil {
 		for _, alias := range arrAlias {
 			sep, sepLen := utf8.DecodeRuneInString(alias)
@@ -156,42 +156,46 @@ func doParseCli() *Param {
 	}
 
 	// normalize uploads
-	uploadArgValues, _ := result.GetValues("uploads")
+	uploadArgValues, _ := result.GetStrings("uploads")
 	param.Uploads = make([]string, len(uploadArgValues))
 	for i, upload := range uploadArgValues {
-		param.Uploads[i] = util.CleanUrlPath(upload)
+		if len(upload) > 0 {
+			param.Uploads[i] = util.CleanUrlPath(upload)
+		}
 	}
 
 	// normalize archives
-	archiveArgValues, _ := result.GetValues("archives")
+	archiveArgValues, _ := result.GetStrings("archives")
 	param.Archives = make([]string, len(archiveArgValues))
 	for i, archive := range archiveArgValues {
-		param.Archives[i] = util.CleanUrlPath(archive)
+		if len(archive) > 0 {
+			param.Archives[i] = util.CleanUrlPath(archive)
+		}
 	}
 
 	// shows
-	shows, err := getWildcardRegexp(result.GetValues("shows"))
+	shows, err := getWildcardRegexp(result.GetStrings("shows"))
 	serverErrHandler.CheckFatal(err)
 	param.Shows = shows
 
-	showDirs, err := getWildcardRegexp(result.GetValues("showdirs"))
+	showDirs, err := getWildcardRegexp(result.GetStrings("showdirs"))
 	serverErrHandler.CheckFatal(err)
 	param.ShowDirs = showDirs
 
-	showFiles, err := getWildcardRegexp(result.GetValues("showfiles"))
+	showFiles, err := getWildcardRegexp(result.GetStrings("showfiles"))
 	serverErrHandler.CheckFatal(err)
 	param.ShowFiles = showFiles
 
 	// hides
-	hides, err := getWildcardRegexp(result.GetValues("hides"))
+	hides, err := getWildcardRegexp(result.GetStrings("hides"))
 	serverErrHandler.CheckFatal(err)
 	param.Hides = hides
 
-	hideDirs, err := getWildcardRegexp(result.GetValues("hidedirs"))
+	hideDirs, err := getWildcardRegexp(result.GetStrings("hidedirs"))
 	serverErrHandler.CheckFatal(err)
 	param.HideDirs = hideDirs
 
-	hideFiles, err := getWildcardRegexp(result.GetValues("hidefiles"))
+	hideFiles, err := getWildcardRegexp(result.GetStrings("hidefiles"))
 	serverErrHandler.CheckFatal(err)
 	param.HideFiles = hideFiles
 

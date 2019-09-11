@@ -1,5 +1,9 @@
 package goNixArgParser
 
+///////////////////////////////
+// has xxx
+//////////////////////////////
+
 func (r *ParseResult) HasFlagKey(key string) bool {
 	_, found := r.params[key]
 	return found
@@ -35,52 +39,158 @@ func (r *ParseResult) HasValue(key string) bool {
 	return r.HasFlagValue(key) || r.HasEnvValue(key) || r.HasDefaultValue(key)
 }
 
-func _getValue(source map[string][]string, key string) (value string, found bool) {
-	var values []string
-	values, found = source[key]
+///////////////////////////////
+// get single value
+//////////////////////////////
 
-	if found && len(values) > 0 {
-		value = values[0]
-	}
-
-	return
-}
-
-func (r *ParseResult) GetValue(key string) (value string, found bool) {
-	value, found = _getValue(r.params, key)
-
-	if !found {
-		value, found = _getValue(r.envs, key)
-	}
-
-	if !found {
-		value, found = _getValue(r.defaults, key)
-	}
-
-	return
-}
-
-func _getValues(source map[string][]string, key string) (values []string, found bool) {
-	sourceValues, found := source[key]
+func (r *ParseResult) GetString(key string) (value string, found bool) {
+	value, found = getValue(r.params, key)
 	if found {
-		values = make([]string, len(sourceValues))
-		copy(values, sourceValues)
-		return values, true
+		return
 	}
+
+	value, found = getValue(r.envs, key)
+	if found {
+		return
+	}
+
+	value, found = getValue(r.defaults, key)
+	if found {
+		return
+	}
+
 	return
 }
 
-func (r *ParseResult) GetValues(key string) (values []string, found bool) {
-	values, found = _getValues(r.params, key)
-
+func (r *ParseResult) GetBool(key string) (value bool, found bool) {
+	str, found := r.GetString(key)
 	if !found {
-		values, found = _getValues(r.envs, key)
+		return
 	}
 
+	value, err := toBool(str)
+	found = err == nil
+	return
+}
+
+func (r *ParseResult) GetInt(key string) (value int, found bool) {
+	str, found := r.GetString(key)
 	if !found {
-		values, found = _getValues(r.defaults, key)
+		return
 	}
 
+	value, err := toInt(str)
+	found = err == nil
+	return
+}
+
+func (r *ParseResult) GetInt64(key string) (value int64, found bool) {
+	str, found := r.GetString(key)
+	if !found {
+		return
+	}
+
+	value, err := toInt64(str)
+	found = err == nil
+	return
+}
+
+func (r *ParseResult) GetUint64(key string) (value uint64, found bool) {
+	str, found := r.GetString(key)
+	if !found {
+		return
+	}
+
+	value, err := toUint64(str)
+	found = err == nil
+	return
+}
+
+func (r *ParseResult) GetFloat64(key string) (value float64, found bool) {
+	str, found := r.GetString(key)
+	if !found {
+		return
+	}
+
+	value, err := toFloat64(str)
+	found = err == nil
+	return
+}
+
+///////////////////////////////
+// get multi values
+//////////////////////////////
+func (r *ParseResult) GetStrings(key string) (values []string, found bool) {
+	values, found = getValues(r.params, key)
+	if found {
+		return
+	}
+
+	values, found = getValues(r.envs, key)
+	if found {
+		return
+	}
+
+	values, found = getValues(r.defaults, key)
+	if found {
+		return
+	}
+
+	return
+}
+
+func (r *ParseResult) GetBools(key string) (values []bool, found bool) {
+	strs, found := r.GetStrings(key)
+	if !found {
+		return
+	}
+
+	values, err := toBools(strs)
+	found = err == nil
+	return
+}
+
+func (r *ParseResult) GetInts(key string) (values []int, found bool) {
+	strs, found := r.GetStrings(key)
+	if !found {
+		return
+	}
+
+	values, err := toInts(strs)
+	found = err == nil
+	return
+}
+
+func (r *ParseResult) GetInt64s(key string) (values []int64, found bool) {
+	strs, found := r.GetStrings(key)
+	if !found {
+		return
+	}
+
+	values, err := toInt64s(strs)
+	found = err == nil
+	return
+}
+
+func (r *ParseResult) GetUint64s(key string) (values []uint64, found bool) {
+	strs, found := r.GetStrings(key)
+	if !found {
+		return
+	}
+
+	values, err := toUint64s(strs)
+	found = err == nil
+	return
+}
+
+func (r *ParseResult) GetFloat64s(key string) (values []float64, found bool) {
+	strs, found := r.GetStrings(key)
+	if !found {
+		return
+	}
+
+	values, err := toFloat64s(strs)
+	found = err == nil
 	return
 }
 

@@ -104,7 +104,13 @@ func (s *OptionSet) Append(opt *Option) error {
 			}
 
 			if option.MultiValues {
-				s.keyEnvMap[option.Key] = strings.FieldsFunc(envValue, option.isDelimiter)
+				values := strings.FieldsFunc(envValue, option.isDelimiter)
+				if option.UniqueValues {
+					uniqueValues := make([]string, 0, len(values))
+					uniqueValues = appendUnique(uniqueValues, values...)
+					values = uniqueValues
+				}
+				s.keyEnvMap[option.Key] = values
 			} else {
 				s.keyEnvMap[option.Key] = []string{envValue}
 			}
@@ -155,6 +161,7 @@ func (s *OptionSet) AddFlagValues(key, flag, envVar string, defaultValues []stri
 		AcceptValue:   true,
 		MultiValues:   true,
 		Delimiters:    defaultOptionDelimiters,
+		UniqueValues:  true,
 		EnvVars:       StringToSlice(envVar),
 		DefaultValues: defaultValues,
 		Summary:       summary,
@@ -180,6 +187,7 @@ func (s *OptionSet) AddFlagsValues(key string, flags []string, envVar string, de
 		AcceptValue:   true,
 		MultiValues:   true,
 		Delimiters:    defaultOptionDelimiters,
+		UniqueValues:  true,
 		EnvVars:       StringToSlice(envVar),
 		DefaultValues: defaultValues,
 		Summary:       summary,
