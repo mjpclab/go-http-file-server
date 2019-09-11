@@ -33,6 +33,10 @@ server [options]
 -a|--alias <separator><url-path><separator><file-system-path> ...
     Set path alias. e.g. ":/doc:/usr/share/doc"
 
+-U|--global-upload
+    Allow upload files for all directories.
+    Use it with care.
+
 -u|--upload <url-path> ...
     Set url path that allows to upload files.
     If filename exists, will try to add or increase numeric prefix.

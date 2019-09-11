@@ -10,20 +10,21 @@ import (
 )
 
 type handler struct {
-	root       string
-	urlPrefix  string
-	aliases    map[string]string
-	uploads    []string
-	canArchive bool
-	shows      *regexp.Regexp
-	showDirs   *regexp.Regexp
-	showFiles  *regexp.Regexp
-	hides      *regexp.Regexp
-	hideDirs   *regexp.Regexp
-	hideFiles  *regexp.Regexp
-	template   *template.Template
-	logger     *serverLog.Logger
-	errHandler *serverErrHandler.ErrHandler
+	root         string
+	urlPrefix    string
+	aliases      map[string]string
+	globalUpload bool
+	uploads      []string
+	canArchive   bool
+	shows        *regexp.Regexp
+	showDirs     *regexp.Regexp
+	showFiles    *regexp.Regexp
+	hides        *regexp.Regexp
+	hideDirs     *regexp.Regexp
+	hideFiles    *regexp.Regexp
+	template     *template.Template
+	logger       *serverLog.Logger
+	errHandler   *serverErrHandler.ErrHandler
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -96,20 +97,21 @@ func NewHandler(
 	errHandler *serverErrHandler.ErrHandler,
 ) *handler {
 	h := &handler{
-		root:       root,
-		urlPrefix:  urlPrefix,
-		aliases:    p.Aliases,
-		uploads:    p.Uploads,
-		canArchive: p.CanArchive,
-		shows:      p.Shows,
-		showDirs:   p.ShowDirs,
-		showFiles:  p.ShowFiles,
-		hides:      p.Hides,
-		hideDirs:   p.HideDirs,
-		hideFiles:  p.HideFiles,
-		template:   template,
-		logger:     logger,
-		errHandler: errHandler,
+		root:         root,
+		urlPrefix:    urlPrefix,
+		aliases:      p.Aliases,
+		globalUpload: p.GlobalUpload,
+		uploads:      p.Uploads,
+		canArchive:   p.CanArchive,
+		shows:        p.Shows,
+		showDirs:     p.ShowDirs,
+		showFiles:    p.ShowFiles,
+		hides:        p.Hides,
+		hideDirs:     p.HideDirs,
+		hideFiles:    p.HideFiles,
+		template:     template,
+		logger:       logger,
+		errHandler:   errHandler,
 	}
 	return h
 }

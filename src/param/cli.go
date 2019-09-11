@@ -45,6 +45,9 @@ func init() {
 	err = argParser.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverErrHandler.CheckFatal(err)
 
+	err = argParser.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
+	serverErrHandler.CheckFatal(err)
+
 	err = argParser.AddFlagsValues("uploads", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
 	serverErrHandler.CheckFatal(err)
 
@@ -101,6 +104,7 @@ func doParseCli() *Param {
 
 	// normalize option
 	param.Root, _ = result.GetValue("root")
+	param.GlobalUpload = result.HasKey("globalupload")
 	param.CanArchive = result.HasKey("archive")
 	param.Key, _ = result.GetValue("key")
 	param.Cert, _ = result.GetValue("cert")
