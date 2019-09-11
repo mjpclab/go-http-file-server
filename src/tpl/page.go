@@ -132,7 +132,7 @@ const pageTplStr = `
 		}
 
 		.archive {
-			margin: 1em;
+			margin: 0 1em;
 			overflow: hidden;
 			zoom: 1;
 		}
@@ -140,7 +140,7 @@ const pageTplStr = `
 		.archive a {
 			position: relative;
 			float: left;
-			margin: 0 1em;
+			margin: 1em 0.5em 0 0.5em;
 			padding: 1em 1em 1em 3em;
 			border: 2px #f5f5f5 solid
 		}
