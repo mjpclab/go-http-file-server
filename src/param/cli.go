@@ -5,10 +5,8 @@ import (
 	"../serverErrHandler"
 	"../util"
 	"os"
-	"path"
 	"regexp"
 	"strings"
-	"unicode/utf8"
 )
 
 var cliParam *Param
@@ -121,57 +119,16 @@ func doParseCli() *Param {
 	param.ErrorLog, _ = result.GetString("errorlog")
 
 	// normalize aliases
-	param.Aliases = map[string]string{}
 	arrAlias, _ := result.GetStrings("aliases")
-	if arrAlias != nil {
-		for _, alias := range arrAlias {
-			sep, sepLen := utf8.DecodeRuneInString(alias)
-			if sepLen == 0 {
-				continue
-			}
-			alias = alias[sepLen:]
-			if len(alias) == 0 {
-				continue
-			}
-
-			sepIndex := strings.Index(alias, string(sep))
-			if sepIndex == -1 {
-				continue
-			}
-
-			urlPath := alias[:sepIndex]
-			if len(urlPath) == 0 {
-				continue
-			}
-			urlPath = util.CleanUrlPath(urlPath)
-
-			fsPath := alias[sepIndex+sepLen:]
-			if len(fsPath) == 0 {
-				continue
-			}
-			fsPath = path.Clean(fsPath)
-
-			param.Aliases[urlPath] = fsPath
-		}
-	}
+	param.Aliases = normalizePathMaps(arrAlias)
 
 	// normalize uploads
-	uploadArgValues, _ := result.GetStrings("uploads")
-	param.Uploads = make([]string, len(uploadArgValues))
-	for i, upload := range uploadArgValues {
-		if len(upload) > 0 {
-			param.Uploads[i] = util.CleanUrlPath(upload)
-		}
-	}
+	arrUploads, _ := result.GetStrings("uploads")
+	param.Uploads = normalizeUrlPaths(arrUploads)
 
 	// normalize archives
-	archiveArgValues, _ := result.GetStrings("archives")
-	param.Archives = make([]string, len(archiveArgValues))
-	for i, archive := range archiveArgValues {
-		if len(archive) > 0 {
-			param.Archives[i] = util.CleanUrlPath(archive)
-		}
-	}
+	arrArchives, _ := result.GetStrings("archives")
+	param.Archives = normalizeUrlPaths(arrArchives)
 
 	// shows
 	shows, err := getWildcardRegexp(result.GetStrings("shows"))
