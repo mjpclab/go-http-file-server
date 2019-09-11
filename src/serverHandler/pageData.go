@@ -260,7 +260,7 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 
 	canUpload := false
 	if item != nil {
-		for uploadUrlPath, _ := range h.uploads {
+		for _, uploadUrlPath := range h.uploads {
 			if util.HasUrlPrefixDir(rawRequestPath, uploadUrlPath) {
 				canUpload = true
 				break

@@ -149,13 +149,10 @@ func doParseCli() *Param {
 	}
 
 	// normalize uploads
-	param.Uploads = map[string]bool{}
-	arrUploads, _ := result.GetValues("uploads")
-	if arrUploads != nil {
-		for _, upload := range arrUploads {
-			upload = util.CleanUrlPath(upload)
-			param.Uploads[upload] = true
-		}
+	uploadArgValues, _ := result.GetValues("uploads")
+	param.Uploads = make([]string, len(uploadArgValues))
+	for i, upload := range uploadArgValues {
+		param.Uploads[i] = util.CleanUrlPath(upload)
 	}
 
 	// shows

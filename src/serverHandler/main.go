@@ -13,7 +13,7 @@ type handler struct {
 	root       string
 	urlPrefix  string
 	aliases    map[string]string
-	uploads    map[string]bool
+	uploads    []string
 	canArchive bool
 	shows      *regexp.Regexp
 	showDirs   *regexp.Regexp

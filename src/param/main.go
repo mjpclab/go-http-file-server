@@ -7,7 +7,7 @@ import (
 type Param struct {
 	Root       string
 	Aliases    map[string]string
-	Uploads    map[string]bool
+	Uploads    []string
 	CanArchive bool
 	Key        string
 	Cert       string
