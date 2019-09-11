@@ -1,6 +1,7 @@
 package serverHandler
 
 import (
+	"../util"
 	"errors"
 	"io"
 	"net/http"
@@ -20,23 +21,10 @@ func getAvailableFilename(fsPrefix, filename string) string {
 		return filename
 	}
 
-	num := 0
-	digits := 0
-	for i, length := 0, len(filename); i < length; i++ {
-		n := filename[i]
-		if n >= '0' && n <= '9' {
-			num *= 10
-			num += int(n - '0')
-			digits++
-		} else {
-			break
-		}
-	}
+	filenamePrefix, filenameSuffix := util.SplitFilename(filename)
 
-	filename = filename[digits:]
-	for {
-		num++
-		newFilename := strconv.Itoa(num) + filename
+	for i := 1; ; i++ {
+		newFilename := filenamePrefix + "-" + strconv.Itoa(i) + filenameSuffix
 		if _, err := os.Lstat(fsPrefix + newFilename); os.IsNotExist(err) {
 			return newFilename
 		}
