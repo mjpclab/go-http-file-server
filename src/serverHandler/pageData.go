@@ -206,18 +206,18 @@ func (h *handler) FilterItems(items []os.FileInfo) []os.FileInfo {
 func sortSubItems(subItems []os.FileInfo) {
 	sort.Slice(
 		subItems,
-		func(i, j int) bool {
-			itemI := subItems[i]
-			itemJ := subItems[j]
+		func(iPrev, iNext int) bool {
+			itemPrev := subItems[iPrev]
+			itemNext := subItems[iNext]
 
-			isDirI := itemI.IsDir()
-			isDirJ := itemJ.IsDir()
+			isDirPrev := itemPrev.IsDir()
+			isDirNext := itemNext.IsDir()
 
-			if (isDirI && isDirJ) || (!isDirI && !isDirJ) {
-				return itemI.Name() < itemJ.Name()
+			if isDirPrev != isDirNext {
+				return isDirPrev
 			}
 
-			return isDirI
+			return itemPrev.Name() < itemNext.Name()
 		},
 	)
 }
