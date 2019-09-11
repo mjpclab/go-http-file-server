@@ -34,18 +34,21 @@ server [options]
     Set path alias. e.g. ":/doc:/usr/share/doc"
 
 -U|--global-upload
-    Allow upload files for all directories.
+    Allow upload files for all url paths.
     Use it with care.
 
 -u|--upload <url-path> ...
-    Set url path that allows to upload files.
+    Set url paths that allows to upload files.
     If filename exists, will try to add or increase numeric prefix.
     Use it with care.
 
--A|--archive
-    Allow user to download the whole contents of current directory as archive file.
+-A|--global-archive
+    Allow user to download the whole contents of current directory for all url paths.
     A download link will appear on top part of the page.
     Make sure there is no circular symbol links.
+
+--archive <url-path> ...
+    Allow user to download the whole contents of current directory for specific url paths.
 
 -c|--cert <file>
     Specify TLS certificate file.

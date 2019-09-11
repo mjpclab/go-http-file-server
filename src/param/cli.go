@@ -51,7 +51,10 @@ func init() {
 	err = argParser.AddFlagsValues("uploads", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlags("archive", []string{"-A", "--archive"}, "GHFS_ARCHIVE", "enable download archive of current directory")
+	err = argParser.AddFlags("globalarchive", []string{"-A", "--global-archive"}, "GHFS_GLOBAL_ARCHIVE", "enable download archive for all directories")
+	serverErrHandler.CheckFatal(err)
+
+	err = argParser.AddFlagValues("archives", "--archive", "", nil, "enable download archive for specific directories")
 	serverErrHandler.CheckFatal(err)
 
 	err = argParser.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
@@ -105,7 +108,7 @@ func doParseCli() *Param {
 	// normalize option
 	param.Root, _ = result.GetValue("root")
 	param.GlobalUpload = result.HasKey("globalupload")
-	param.CanArchive = result.HasKey("archive")
+	param.GlobalArchive = result.HasKey("globalarchive")
 	param.Key, _ = result.GetValue("key")
 	param.Cert, _ = result.GetValue("cert")
 	if rests := result.GetRests(); len(rests) > 0 {
@@ -157,6 +160,13 @@ func doParseCli() *Param {
 	param.Uploads = make([]string, len(uploadArgValues))
 	for i, upload := range uploadArgValues {
 		param.Uploads[i] = util.CleanUrlPath(upload)
+	}
+
+	// normalize archives
+	archiveArgValues, _ := result.GetValues("archives")
+	param.Archives = make([]string, len(archiveArgValues))
+	for i, archive := range archiveArgValues {
+		param.Archives[i] = util.CleanUrlPath(archive)
 	}
 
 	// shows

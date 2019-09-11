@@ -272,7 +272,19 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 		}
 	}
 
-	canArchive := h.canArchive && len(subItems) > 0
+	canArchive := false
+	if len(subItems) > 0 {
+		if h.globalArchive {
+			canArchive = true
+		} else {
+			for _, archiveUrlPath := range h.archives {
+				if util.HasUrlPrefixDir(rawRequestPath, archiveUrlPath) {
+					canArchive = true
+					break
+				}
+			}
+		}
+	}
 
 	data = &pageData{
 		rawRequestPath:     rawRequestPath,
