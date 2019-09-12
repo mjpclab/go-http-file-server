@@ -6,17 +6,21 @@ import (
 	"../serverHandler"
 	"../serverLog"
 	"../tpl"
+	"net"
 	"net/http"
+	"os"
 )
 
 type Server struct {
-	key        string
-	cert       string
-	useTLS     bool
-	listen     string
-	handlers   map[string]http.Handler
-	logger     *serverLog.Logger
-	errHandler *serverErrHandler.ErrHandler
+	key         string
+	cert        string
+	useTLS      bool
+	listenProto string
+	listenAddr  string
+	handlers    map[string]http.Handler
+	logger      *serverLog.Logger
+	listener    net.Listener
+	errHandler  *serverErrHandler.ErrHandler
 }
 
 func (s *Server) ListenAndServe() {
@@ -29,14 +33,22 @@ func (s *Server) ListenAndServe() {
 		}
 	}
 
-	s.logger.LogAccessString("start to listen on " + s.listen)
+	s.logger.LogAccessString("start to listen on " + s.listenProto + ": " + s.listenAddr)
 
-	if s.useTLS {
-		err = http.ListenAndServeTLS(s.listen, s.cert, s.key, nil)
-	} else {
-		err = http.ListenAndServe(s.listen, nil)
+	s.listener, err = net.Listen(s.listenProto, s.listenAddr)
+	if s.errHandler.LogError(err) {
+		return
 	}
 
+	server := &http.Server{}
+	if s.useTLS {
+		err = server.ServeTLS(s.listener, s.cert, s.key)
+	} else {
+		err = server.Serve(s.listener)
+	}
+	s.errHandler.LogError(err)
+
+	err = s.listener.Close()
 	s.errHandler.LogError(err)
 }
 
@@ -48,7 +60,13 @@ func NewServer(p *param.Param) *Server {
 
 	useTLS := len(p.Key) > 0 && len(p.Cert) > 0
 
-	listen := normalizePort(p.Listen, useTLS)
+	listenProto, listenAddr := splitListen(p.Listen, useTLS)
+	if listenProto == "unix" {
+		sockFile, _ := os.Lstat(listenAddr)
+		if sockFile != nil && (sockFile.Mode()&os.ModeSocket != 0) {
+			os.Remove(listenAddr)
+		}
+	}
 
 	tplObj, err := tpl.LoadPage(p.Template)
 	errorHandler.LogError(err)
@@ -65,16 +83,20 @@ func NewServer(p *param.Param) *Server {
 	}
 
 	return &Server{
-		key:        p.Key,
-		cert:       p.Cert,
-		useTLS:     useTLS,
-		listen:     listen,
-		handlers:   handlers,
-		logger:     logger,
-		errHandler: errorHandler,
+		key:         p.Key,
+		cert:        p.Cert,
+		useTLS:      useTLS,
+		listenProto: listenProto,
+		listenAddr:  listenAddr,
+		handlers:    handlers,
+		logger:      logger,
+		errHandler:  errorHandler,
 	}
 }
 
 func (s *Server) Close() {
 	s.logger.Close()
+	if s.listener != nil {
+		s.listener.Close()
+	}
 }
