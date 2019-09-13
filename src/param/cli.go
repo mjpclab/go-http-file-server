@@ -4,6 +4,7 @@ import (
 	"../goNixArgParser"
 	"../serverErrHandler"
 	"../util"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -89,6 +90,9 @@ func init() {
 	err = optionSet.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
 	serverErrHandler.CheckFatal(err)
 
+	err = optionSet.AddFlagValue("config", "--config", "", "", "print this help")
+	serverErrHandler.CheckFatal(err)
+
 	err = optionSet.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
 	serverErrHandler.CheckFatal(err)
 }
@@ -103,6 +107,17 @@ func doParseCli() *Param {
 	if result.HasFlagKey("help") {
 		cliCmd.PrintHelp()
 		os.Exit(0)
+	}
+
+	// config file
+	if config, _ := result.GetString("config"); len(config) > 0 {
+		configStr, err := ioutil.ReadFile(config)
+		if !serverErrHandler.CheckError(err) && len(configStr) > 0 {
+			configs := strings.Fields(string(configStr))
+			if len(configs) > 0 {
+				result = cliCmd.Parse(os.Args, configs)
+			}
+		}
 	}
 
 	// normalize option

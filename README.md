@@ -21,10 +21,11 @@ to re-embed templates into go files. Then compile the project again.
 ```
 server [options]
 
--l|--listen <ip|[:]port|ip:port>
+-l|--listen <ip|port|:port|ip:port|socket>
     Optional IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
     If port is not specified, use "80" for pure HTTP mode, or "443" for TLS mode.
-    flag "-l" or "--listen" can be ommitted.
+    If value contains "/" then treat it as a unix socket file.
+    Flag "-l" or "--listen" can be ommitted.
 
 -r|--root <directory>
     Root directory of the server.
@@ -81,6 +82,16 @@ server [options]
     Set "-" to use stderr.
     Set to empty to disable error log.
     Defaults to "-".
+
+--config <file>
+    External config file to load.
+
+    Its content is option list of any other options,
+    same as the form specified on command line,
+    separated by whitespace characters.
+
+    The external config's priority is lower than arguments specified on command line.
+    If one option is specified on command line, then external config is ignored.
 ```
 
 ## Examples
