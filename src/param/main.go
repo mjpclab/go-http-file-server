@@ -76,3 +76,24 @@ func normalizeUrlPaths(inputs []string) []string {
 
 	return outputs
 }
+
+func getWildcardRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
+	if !found || len(wildcards) == 0 {
+		return nil, nil
+	}
+
+	normalizedWildcards := make([]string, 0, len(wildcards))
+	for _, wildcard := range wildcards {
+		if len(wildcard) == 0 {
+			continue
+		}
+		normalizedWildcards = append(normalizedWildcards, util.WildcardToRegexp(wildcard))
+	}
+
+	if len(normalizedWildcards) == 0 {
+		return nil, nil
+	}
+
+	exp := strings.Join(normalizedWildcards, "|")
+	return regexp.Compile(exp)
+}

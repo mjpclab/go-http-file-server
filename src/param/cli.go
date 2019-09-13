@@ -3,36 +3,13 @@ package param
 import (
 	"../goNixArgParser"
 	"../serverErrHandler"
-	"../util"
 	"io/ioutil"
 	"os"
-	"regexp"
 	"strings"
 )
 
 var cliParam *Param
 var cliCmd *goNixArgParser.Command
-
-func getWildcardRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
-	if !found || len(wildcards) == 0 {
-		return nil, nil
-	}
-
-	normalizedWildcards := make([]string, 0, len(wildcards))
-	for _, wildcard := range wildcards {
-		if len(wildcard) == 0 {
-			continue
-		}
-		normalizedWildcards = append(normalizedWildcards, util.WildcardToRegexp(wildcard))
-	}
-
-	if len(normalizedWildcards) == 0 {
-		return nil, nil
-	}
-
-	exp := strings.Join(normalizedWildcards, "|")
-	return regexp.Compile(exp)
-}
 
 func init() {
 	cliCmd = goNixArgParser.NewSimpleCommand(os.Args[0], "Simple command line based HTTP file server to share local file system")
