@@ -136,7 +136,7 @@ func TestParse1(t *testing.T) {
 		"-s", "1",
 		"--with-equal=notwork",
 	}
-	r := s.Parse(args)
+	r := s.Parse(args, nil)
 	fmt.Printf("%+v\n", r)
 
 	if r.HasFlagKey("deft") {
@@ -145,6 +145,11 @@ func TestParse1(t *testing.T) {
 
 	if v, _ := r.GetString("deft"); v != "myDefault" {
 		t.Error("default")
+	}
+
+	r.SetConfig("deft", "cfgDefault")
+	if deftValue, _ := r.GetString("deft"); deftValue != "cfgDefault" {
+		t.Error(deftValue)
 	}
 
 	single, _ := r.GetString("single")
@@ -158,13 +163,18 @@ func TestParse1(t *testing.T) {
 		t.Error(singleBool)
 	}
 
+	r.SetConfig("single", "cfg")
+	if singleValue, _ := r.GetString("single"); singleValue != "false" {
+		t.Error(singleValue)
+	}
+
 	multi, _ := r.GetStrings("multi")
 	fmt.Println("multi:", multi)
 	if len(multi) != 4 {
 		t.Error("multi should have 4 values")
 	}
 	multiInts, _ := r.GetInts("multi")
-	fmt.Println("multiInts:", multiInts);
+	fmt.Println("multiInts:", multiInts)
 	if len(multi) != 4 {
 		t.Error("multiInts should have 4 values")
 	}
@@ -187,7 +197,7 @@ func TestParse1(t *testing.T) {
 		t.Error("withConcat:", withConcat)
 	}
 
-	fmt.Println("rests:", r.rests)
+	fmt.Println("rests:", r.GetRests())
 
 	fmt.Print("fromenv: ")
 	fmt.Println(r.GetStrings("fromenv"))

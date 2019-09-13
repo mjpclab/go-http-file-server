@@ -35,7 +35,7 @@ func TestParseCommand1(t *testing.T) {
 	cmd := getGitCommand()
 	args := []string{"git", "remote", "set-url", "--push", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
 
-	result := cmd.Parse(args)
+	result := cmd.Parse(args, nil)
 	if result.commands[0] != "git" ||
 		result.commands[1] != "remote" ||
 		result.commands[2] != "set-url" {
@@ -46,9 +46,9 @@ func TestParseCommand1(t *testing.T) {
 		t.Error("push")
 	}
 
-	if result.rests[0] != "origin" ||
-		result.rests[1] != "https://github.com/mjpclab/goNixArgParser.git" {
-		t.Error("rests", result.rests)
+	if result.argRests[0] != "origin" ||
+		result.argRests[1] != "https://github.com/mjpclab/goNixArgParser.git" {
+		t.Error("rests", result.argRests)
 	}
 
 	cmd.PrintHelp()
@@ -58,16 +58,16 @@ func TestParseCommand2(t *testing.T) {
 	cmd := getGitCommand()
 	args := []string{"git", "remote", "xxx", "set-url", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
 
-	result := cmd.Parse(args)
+	result := cmd.Parse(args, nil)
 	if result.commands[0] != "git" ||
 		result.commands[1] != "remote" {
 		t.Error("commands", result.commands)
 	}
 
-	if result.rests[0] != "xxx" ||
-		result.rests[1] != "set-url" ||
-		result.rests[2] != "origin" ||
-		result.rests[3] != "https://github.com/mjpclab/goNixArgParser.git" {
-		t.Error("rests", result.rests)
+	if result.argRests[0] != "xxx" ||
+		result.argRests[1] != "set-url" ||
+		result.argRests[2] != "origin" ||
+		result.argRests[3] != "https://github.com/mjpclab/goNixArgParser.git" {
+		t.Error("rests", result.argRests)
 	}
 }

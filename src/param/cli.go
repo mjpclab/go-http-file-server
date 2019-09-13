@@ -1,7 +1,7 @@
 package param
 
 import (
-	argParser "../goNixArgParser"
+	"../goNixArgParser"
 	"../serverErrHandler"
 	"../util"
 	"os"
@@ -10,6 +10,7 @@ import (
 )
 
 var cliParam *Param
+var cliCmd *goNixArgParser.Command
 
 func getWildcardRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
 	if !found || len(wildcards) == 0 {
@@ -33,61 +34,62 @@ func getWildcardRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
 }
 
 func init() {
-	argParser.CommandLine.Summary = "Simple command line based HTTP file server to share local file system"
+	cliCmd = goNixArgParser.NewSimpleCommand(os.Args[0], "Simple command line based HTTP file server to share local file system")
+	optionSet := cliCmd.OptionSet
 
 	// define option
 	var err error
-	err = argParser.AddFlagsValue("root", []string{"-r", "--root"}, "GHFS_ROOT", ".", "root directory of server")
+	err = optionSet.AddFlagsValue("root", []string{"-r", "--root"}, "GHFS_ROOT", ".", "root directory of server")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
+	err = optionSet.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
+	err = optionSet.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValues("uploads", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
+	err = optionSet.AddFlagsValues("uploads", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlags("globalarchive", []string{"-A", "--global-archive"}, "GHFS_GLOBAL_ARCHIVE", "enable download archive for all directories")
+	err = optionSet.AddFlags("globalarchive", []string{"-A", "--global-archive"}, "GHFS_GLOBAL_ARCHIVE", "enable download archive for all directories")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagValues("archives", "--archive", "", nil, "enable download archive for specific directories")
+	err = optionSet.AddFlagValues("archives", "--archive", "", nil, "enable download archive for specific directories")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
+	err = optionSet.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("cert", []string{"-c", "--cert"}, "GHFS_CERT", "", "TLS certificate path")
+	err = optionSet.AddFlagsValue("cert", []string{"-c", "--cert"}, "GHFS_CERT", "", "TLS certificate path")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("listen", []string{"-l", "--listen"}, "GHFS_LISTEN", "", "address and port to listen")
+	err = optionSet.AddFlagsValue("listen", []string{"-l", "--listen"}, "GHFS_LISTEN", "", "address and port to listen")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("template", []string{"-t", "--template"}, "GHFS_TEMPLATE", "", "custom template file for page")
+	err = optionSet.AddFlagsValue("template", []string{"-t", "--template"}, "GHFS_TEMPLATE", "", "custom template file for page")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValues("shows", []string{"-S", "--show"}, "GHFS_SHOW", nil, "show directories or files match wildcard")
+	err = optionSet.AddFlagsValues("shows", []string{"-S", "--show"}, "GHFS_SHOW", nil, "show directories or files match wildcard")
 	serverErrHandler.CheckFatal(err)
-	err = argParser.AddFlagsValues("showdirs", []string{"-SD", "--show-dir"}, "GHFS_SHOW_DIR", nil, "show directories match wildcard")
+	err = optionSet.AddFlagsValues("showdirs", []string{"-SD", "--show-dir"}, "GHFS_SHOW_DIR", nil, "show directories match wildcard")
 	serverErrHandler.CheckFatal(err)
-	err = argParser.AddFlagsValues("showfiles", []string{"-SF", "--show-file"}, "GHFS_SHOW_FILE", nil, "show files match wildcard")
-	serverErrHandler.CheckFatal(err)
-
-	err = argParser.AddFlagsValues("hides", []string{"-H", "--hide"}, "GHFS_HIDE", nil, "hide directories or files match wildcard")
-	serverErrHandler.CheckFatal(err)
-	err = argParser.AddFlagsValues("hidedirs", []string{"-HD", "--hide-dir"}, "GHFS_HIDE_DIR", nil, "hide directories match wildcard")
-	serverErrHandler.CheckFatal(err)
-	err = argParser.AddFlagsValues("hidefiles", []string{"-HF", "--hide-file"}, "GHFS_HIDE_FILE", nil, "hide files match wildcard")
+	err = optionSet.AddFlagsValues("showfiles", []string{"-SF", "--show-file"}, "GHFS_SHOW_FILE", nil, "show files match wildcard")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "GHFS_ACCESS_LOG", "", "access log file, use \"-\" for stdout")
+	err = optionSet.AddFlagsValues("hides", []string{"-H", "--hide"}, "GHFS_HIDE", nil, "hide directories or files match wildcard")
+	serverErrHandler.CheckFatal(err)
+	err = optionSet.AddFlagsValues("hidedirs", []string{"-HD", "--hide-dir"}, "GHFS_HIDE_DIR", nil, "hide directories match wildcard")
+	serverErrHandler.CheckFatal(err)
+	err = optionSet.AddFlagsValues("hidefiles", []string{"-HF", "--hide-file"}, "GHFS_HIDE_FILE", nil, "hide files match wildcard")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
+	err = optionSet.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "GHFS_ACCESS_LOG", "", "access log file, use \"-\" for stdout")
 	serverErrHandler.CheckFatal(err)
 
-	err = argParser.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
+	err = optionSet.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
+	serverErrHandler.CheckFatal(err)
+
+	err = optionSet.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
 	serverErrHandler.CheckFatal(err)
 }
 
@@ -95,11 +97,11 @@ func doParseCli() *Param {
 	param := &Param{}
 
 	// parse option
-	result := argParser.Parse()
+	result := cliCmd.Parse(os.Args, nil)
 
 	// help
 	if result.HasFlagKey("help") {
-		argParser.PrintHelp()
+		cliCmd.PrintHelp()
 		os.Exit(0)
 	}
 

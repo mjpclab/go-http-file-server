@@ -71,7 +71,7 @@ func TestParse2(t *testing.T) {
 		"--props", "aa", "bb", "cc", "dd", "ee",
 	}
 
-	parsed := s.Parse(args)
+	parsed := s.Parse(args, nil)
 	if v, _ := parsed.GetString("deft"); v != "myDefault" {
 		t.Error("deft")
 	}

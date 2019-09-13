@@ -2,6 +2,7 @@ package goNixArgParser
 
 import (
 	"bytes"
+	"strings"
 )
 
 func (opt *Option) isDelimiter(r rune) bool {
@@ -11,6 +12,23 @@ func (opt *Option) isDelimiter(r rune) bool {
 		}
 	}
 	return false
+}
+
+func (opt *Option) splitValues(input string) []string {
+	values := strings.FieldsFunc(input, opt.isDelimiter)
+	values = opt.filterValues(values)
+
+	return values
+}
+
+func (opt *Option) filterValues(values []string) []string {
+	if opt.UniqueValues {
+		uniqueValues := make([]string, 0, len(values))
+		uniqueValues = appendUnique(uniqueValues, values...)
+		values = uniqueValues
+	}
+
+	return values
 }
 
 func (opt *Option) GetHelp() []byte {

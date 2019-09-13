@@ -9,8 +9,9 @@ type Command struct {
 
 type OptionSet struct {
 	mergeFlagPrefix string
-	restSigns       []string
-	options         []*Option
+	restsSigns      []string
+
+	options []*Option
 
 	hasCanMerge        bool
 	hasCanEqualAssign  bool
@@ -61,9 +62,14 @@ type Arg struct {
 }
 
 type ParseResult struct {
+	keyOptionMap map[string]*Option
+
 	commands []string
-	params   map[string][]string
+	args     map[string][]string
 	envs     map[string][]string
+	configs  map[string][]string
 	defaults map[string][]string
-	rests    []string
+
+	argRests    []string
+	configRests []string
 }

@@ -147,28 +147,26 @@ func isValueArg(arg *Arg) bool {
 	}
 }
 
-func (s *OptionSet) Parse(initArgs []string) *ParseResult {
-	params := map[string][]string{}
-	envs := s.keyEnvMap
-	defaults := s.keyDefaultMap
-	rests := []string{}
+func (s *OptionSet) parseArgs(initArgs []string) (args map[string][]string, rests []string) {
+	args = map[string][]string{}
+	rests = []string{}
 
 	flagOptionMap := s.flagOptionMap
 
-	args := s.getNormalizedArgs(initArgs)
+	argObjs := s.getNormalizedArgs(initArgs)
 	if s.hasCanMerge {
-		args = s.splitMergedArgs(args)
+		argObjs = s.splitMergedArgs(argObjs)
 	}
 	if s.hasCanEqualAssign {
-		args = s.splitEqualAssignArgs(args)
+		argObjs = s.splitEqualAssignArgs(argObjs)
 	}
 	if s.hasCanConcatAssign {
-		args = s.splitConcatAssignArgs(args)
+		argObjs = s.splitConcatAssignArgs(argObjs)
 	}
 
 	// walk
-	for i, argCount, peeked := 0, len(args), 0; i < argCount; i, peeked = i+1+peeked, 0 {
-		arg := args[i]
+	for i, argCount, peeked := 0, len(argObjs), 0; i < argCount; i, peeked = i+1+peeked, 0 {
+		arg := argObjs[i]
 
 		if arg.Type == RestSignArg {
 			continue
@@ -185,20 +183,20 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 		opt := flagOptionMap[arg.Text]
 
 		if !opt.AcceptValue { // option has no value
-			params[opt.Key] = []string{}
+			args[opt.Key] = []string{}
 			continue
 		}
 
 		if !opt.MultiValues { // option has 1 value
-			if i == argCount-1 || !isValueArg(args[i+1]) { // no more value
-				if opt.OverridePrev || params[opt.Key] == nil {
-					params[opt.Key] = []string{}
+			if i == argCount-1 || !isValueArg(argObjs[i+1]) { // no more value
+				if opt.OverridePrev || args[opt.Key] == nil {
+					args[opt.Key] = []string{}
 				}
 			} else {
-				if opt.OverridePrev || params[opt.Key] == nil {
-					nextArg := args[i+1]
+				if opt.OverridePrev || args[opt.Key] == nil {
+					nextArg := argObjs[i+1]
 					nextArg.Type = ValueArg
-					params[opt.Key] = []string{nextArg.Text}
+					args[opt.Key] = []string{nextArg.Text}
 				}
 				peeked++
 			}
@@ -212,12 +210,12 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 				break
 			}
 
-			if !isValueArg(args[i+peeked+1]) { // no more value
+			if !isValueArg(argObjs[i+peeked+1]) { // no more value
 				break
 			}
 
 			peeked++
-			peekedArg := args[i+peeked]
+			peekedArg := argObjs[i+peeked]
 			peekedArg.Type = ValueArg
 			value := peekedArg.Text
 			var appending []string
@@ -234,17 +232,33 @@ func (s *OptionSet) Parse(initArgs []string) *ParseResult {
 			}
 		}
 
-		if opt.OverridePrev || params[opt.Key] == nil {
-			params[opt.Key] = values
+		if opt.OverridePrev || args[opt.Key] == nil {
+			args[opt.Key] = values
 		} else {
-			params[opt.Key] = append(params[opt.Key], values...)
+			args[opt.Key] = append(args[opt.Key], values...)
 		}
 	}
 
+	return args, rests
+}
+
+func (s *OptionSet) Parse(initArgs, initConfigs []string) *ParseResult {
+	keyOptionMap := s.keyOptionMap
+
+	args, argRests := s.parseArgs(initArgs)
+	envs := s.keyEnvMap
+	configs, configRests := s.parseArgs(initConfigs)
+	defaults := s.keyDefaultMap
+
 	return &ParseResult{
-		params:   params,
+		keyOptionMap: keyOptionMap,
+
+		args:     args,
 		envs:     envs,
+		configs:  configs,
 		defaults: defaults,
-		rests:    rests,
+
+		argRests:    argRests,
+		configRests: configRests,
 	}
 }

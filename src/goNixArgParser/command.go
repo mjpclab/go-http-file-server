@@ -8,12 +8,12 @@ import (
 
 func NewCommand(
 	name, summary, mergeOptionPrefix string,
-	restSigns []string,
+	restsSigns []string,
 ) *Command {
 	return &Command{
 		Name:        name,
 		Summary:     summary,
-		OptionSet:   NewOptionSet(mergeOptionPrefix, restSigns),
+		OptionSet:   NewOptionSet(mergeOptionPrefix, restsSigns),
 		SubCommands: []*Command{},
 	}
 }
@@ -29,9 +29,9 @@ func NewSimpleCommand(name, summary string) *Command {
 
 func (c *Command) NewSubCommand(
 	name, summary, mergeOptionPrefix string,
-	restSigns []string,
+	restsSigns []string,
 ) *Command {
-	subCommand := NewCommand(name, summary, mergeOptionPrefix, restSigns)
+	subCommand := NewCommand(name, summary, mergeOptionPrefix, restsSigns)
 	c.SubCommands = append(c.SubCommands, subCommand)
 	return subCommand
 }
@@ -78,8 +78,9 @@ func (c *Command) getNormalizedArgs(initArgs []string) ([]*Arg, *Command) {
 	return args, cmd
 }
 
-func (c *Command) Parse(initArgs []string) *ParseResult {
-	args, cmd := c.getNormalizedArgs(initArgs)
+func (c *Command) Parse(initArgs, initConfigs []string) *ParseResult {
+	args, argsLeafCmd := c.getNormalizedArgs(initArgs)
+	configs, configsLeafCmd := c.getNormalizedArgs(initConfigs)
 
 	commands := []string{}
 	for _, arg := range args {
@@ -90,7 +91,15 @@ func (c *Command) Parse(initArgs []string) *ParseResult {
 	}
 
 	optionSetInitArgs := initArgs[len(args):]
-	result := cmd.OptionSet.Parse(optionSetInitArgs)
+
+	var optionSetInitConfigs []string
+	if argsLeafCmd == configsLeafCmd {
+		optionSetInitConfigs = initConfigs[len(configs):]
+	} else {
+		optionSetInitConfigs = []string{}
+	}
+
+	result := argsLeafCmd.OptionSet.Parse(optionSetInitArgs, optionSetInitConfigs)
 	result.commands = commands
 
 	return result
