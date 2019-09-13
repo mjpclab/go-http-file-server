@@ -18,39 +18,49 @@ type pageData struct {
 	rawRequestPath     string
 	handlerRequestPath string
 
-	Scheme     string
-	Host       string
-	Path       string
-	Paths      []*pathEntry
-	File       *os.File
-	Item       os.FileInfo
-	ItemName   string
-	SubItems   []os.FileInfo
-	CanUpload  bool
-	CanArchive bool
-	Errors     []error
-}
-
-func getScheme(r *http.Request) string {
-	if r.TLS != nil {
-		return "https:"
-	} else {
-		return "http:"
-	}
+	IsRoot        bool
+	Path          string
+	Paths         []*pathEntry
+	File          *os.File
+	Item          os.FileInfo
+	ItemName      string
+	SubItems      []os.FileInfo
+	SubItemPrefix string
+	CanUpload     bool
+	CanArchive    bool
+	Errors        []error
 }
 
 func isSlash(c rune) bool {
 	return c == '/'
 }
 
-func getPathEntries(path string) []*pathEntry {
-	pathParts := strings.FieldsFunc(path, isSlash)
+func getPathEntries(path string, tailSlash bool) []*pathEntry {
+	paths := []string{"/"}
+	paths = append(paths, strings.FieldsFunc(path, isSlash)...)
 
-	pathEntries := make([]*pathEntry, len(pathParts))
-	for i, length := 0, len(pathEntries); i < length; i++ {
+	displayPathsCount := len(paths)
+
+	pathsCount := displayPathsCount
+	if !tailSlash {
+		pathsCount--
+	}
+
+	pathEntries := make([]*pathEntry, displayPathsCount)
+	for i := 0; i < displayPathsCount; i++ {
+		var rPath string
+		switch {
+		case i < pathsCount-1:
+			rPath = strings.Repeat("../", pathsCount-1-i)
+		case i == pathsCount-1:
+			rPath = "./"
+		default:
+			rPath = "./" + strings.Join(paths[pathsCount:], "/") + "/"
+		}
+
 		pathEntries[i] = &pathEntry{
-			Name: pathParts[i],
-			Path: "/" + strings.Join(pathParts[:i+1], "/"),
+			Name: paths[i],
+			Path: rPath,
 		}
 	}
 
@@ -217,14 +227,16 @@ func sortSubItems(subItems []os.FileInfo) {
 }
 
 func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, internalError bool) {
-	rawRequestPath := util.CleanUrlPath(r.URL.Path)
+	requestUri := r.URL.Path
+	tailSlash := requestUri[len(requestUri)-1] == '/'
+
+	rawRequestPath := util.CleanUrlPath(requestUri)
 	requestPath := util.CleanUrlPath(rawRequestPath[len(h.urlPrefix):]) // strip url prefix path
 	errs := []error{}
 
-	scheme := getScheme(r)
+	isRoot := rawRequestPath == "/"
 
-	relPath := rawRequestPath[1:]
-	pathEntries := getPathEntries(relPath)
+	pathEntries := getPathEntries(rawRequestPath, tailSlash)
 
 	file, item, _statErr := h.stat(requestPath)
 	if _statErr != nil {
@@ -243,6 +255,13 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 
 	subItems = h.FilterItems(subItems)
 	sortSubItems(subItems)
+
+	var subItemPrefix string
+	if tailSlash {
+		subItemPrefix = "./"
+	} else {
+		subItemPrefix = "./" + path.Base(requestPath) + "/"
+	}
 
 	var itemName string
 	if item != nil {
@@ -284,17 +303,17 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 		rawRequestPath:     rawRequestPath,
 		handlerRequestPath: requestPath,
 
-		Scheme:     scheme,
-		Host:       r.Host,
-		Path:       relPath,
-		Paths:      pathEntries,
-		File:       file,
-		Item:       item,
-		ItemName:   itemName,
-		SubItems:   subItems,
-		CanUpload:  canUpload,
-		CanArchive: canArchive,
-		Errors:     errs,
+		IsRoot:        isRoot,
+		Path:          rawRequestPath,
+		Paths:         pathEntries,
+		File:          file,
+		Item:          item,
+		ItemName:      itemName,
+		SubItems:      subItems,
+		SubItemPrefix: subItemPrefix,
+		CanUpload:     canUpload,
+		CanArchive:    canArchive,
+		Errors:        errs,
 	}
 
 	return

@@ -8,6 +8,7 @@ import (
 )
 
 const pageTplStr = `
+{{$subItemPrefix := .SubItemPrefix}}
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,8 +18,6 @@ const pageTplStr = `
 	<meta name="format-detection" content="telephone=no"/>
 	<meta name="renderer" content="webkit"/>
 	<meta name="wap-font-scale" content="no"/>
-	<base href="{{.Scheme}}//{{.Host}}/{{if .Path}}{{.Path}}/{{end}}"/>
-
 	<title>{{.Path}}</title>
 
 	<style type="text/css">
@@ -220,7 +219,6 @@ const pageTplStr = `
 <body>
 
 <div class="path-list">
-	<a href="/">/</a>
     {{range .Paths}}
 		<a href="{{.Path}}">{{html .Name}}</a>
     {{end}}
@@ -237,21 +235,22 @@ const pageTplStr = `
 
 {{if .CanArchive}}
 	<div class="archive">
-		<a href="./?tar" download="{{.ItemName}}.tar">.tar</a>
-		<a href="./?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
-		<a href="./?zip" download="{{.ItemName}}.zip">.zip</a>
+		<a href="{{$subItemPrefix}}?tar" download="{{.ItemName}}.tar">.tar</a>
+		<a href="{{$subItemPrefix}}?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
+		<a href="{{$subItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
 	</div>
 {{end}}
 
 <div class="item-list">
-	<a href="../">
+	<a href="{{if .IsRoot}}./{{else}}../{{end}}">
 		<span class="name">../</span>
 		<span class="size"></span>
 		<span class="time"></span>
 	</a>
     {{range .SubItems}}
         {{$isDir := .IsDir}}
-		<a href="./{{.Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
+		<a href="{{$subItemPrefix}}{{.Name}}{{if $isDir}}/{{end}}"
+		   class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
 			<span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
 			<span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
 			<span class="time">{{fmtTime .ModTime}}</span>
