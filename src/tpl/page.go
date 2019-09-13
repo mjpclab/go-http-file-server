@@ -3,9 +3,8 @@ package tpl
 import (
 	"../serverErrHandler"
 	"../util"
-	"net/url"
+	"html/template"
 	"path"
-	"text/template"
 )
 
 const pageTplStr = `
@@ -238,9 +237,9 @@ const pageTplStr = `
 
 {{if .CanArchive}}
 	<div class="archive">
-		<a href="./?tar" download="{{path .ItemName}}.tar">.tar</a>
-		<a href="./?tgz" download="{{path .ItemName}}.tar.gz">.tar.gz</a>
-		<a href="./?zip" download="{{path .ItemName}}.zip">.zip</a>
+		<a href="./?tar" download="{{.ItemName}}.tar">.tar</a>
+		<a href="./?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
+		<a href="./?zip" download="{{.ItemName}}.zip">.zip</a>
 	</div>
 {{end}}
 
@@ -252,7 +251,7 @@ const pageTplStr = `
 	</a>
     {{range .SubItems}}
         {{$isDir := .IsDir}}
-		<a href="./{{path .Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
+		<a href="./{{.Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
 			<span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
 			<span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
 			<span class="time">{{fmtTime .ModTime}}</span>
@@ -348,7 +347,6 @@ func LoadPage(tplPath string) (*template.Template, error) {
 
 func addFuncMap(tpl *template.Template) *template.Template {
 	return tpl.Funcs(template.FuncMap{
-		"path":    url.PathEscape,
 		"fmtSize": util.FormatSize,
 		"fmtTime": util.FormatTimeMinute,
 	})

@@ -4,9 +4,9 @@ import (
 	"../param"
 	"../serverErrHandler"
 	"../serverLog"
+	"html/template"
 	"net/http"
 	"regexp"
-	"text/template"
 )
 
 type handler struct {

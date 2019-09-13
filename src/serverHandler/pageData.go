@@ -3,7 +3,6 @@ package serverHandler
 import (
 	"../util"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"sort"
@@ -47,16 +46,11 @@ func isSlash(c rune) bool {
 func getPathEntries(path string) []*pathEntry {
 	pathParts := strings.FieldsFunc(path, isSlash)
 
-	escapedPathParts := make([]string, len(pathParts))
-	for i, length := 0, len(pathParts); i < length; i++ {
-		escapedPathParts[i] = url.PathEscape(pathParts[i])
-	}
-
 	pathEntries := make([]*pathEntry, len(pathParts))
 	for i, length := 0, len(pathEntries); i < length; i++ {
 		pathEntries[i] = &pathEntry{
 			Name: pathParts[i],
-			Path: "/" + strings.Join(escapedPathParts[:i+1], "/"),
+			Path: "/" + strings.Join(pathParts[:i+1], "/"),
 		}
 	}
 

@@ -227,9 +227,9 @@
 
 {{if .CanArchive}}
 	<div class="archive">
-		<a href="./?tar" download="{{path .ItemName}}.tar">.tar</a>
-		<a href="./?tgz" download="{{path .ItemName}}.tar.gz">.tar.gz</a>
-		<a href="./?zip" download="{{path .ItemName}}.zip">.zip</a>
+		<a href="./?tar" download="{{.ItemName}}.tar">.tar</a>
+		<a href="./?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
+		<a href="./?zip" download="{{.ItemName}}.zip">.zip</a>
 	</div>
 {{end}}
 
@@ -241,7 +241,7 @@
 	</a>
     {{range .SubItems}}
         {{$isDir := .IsDir}}
-		<a href="./{{path .Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
+		<a href="./{{.Name}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
 			<span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
 			<span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
 			<span class="time">{{fmtTime .ModTime}}</span>
