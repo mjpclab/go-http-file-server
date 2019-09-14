@@ -219,18 +219,18 @@ func getSubItemPrefix(requestPath string, tailSlash bool) (subItemPrefix string)
 func sortSubItems(subItems []os.FileInfo) {
 	sort.Slice(
 		subItems,
-		func(iPrev, iNext int) bool {
-			itemPrev := subItems[iPrev]
-			itemNext := subItems[iNext]
+		func(prevIndex, nextIndex int) bool {
+			prevItem := subItems[prevIndex]
+			nextItem := subItems[nextIndex]
 
-			isDirPrev := itemPrev.IsDir()
-			isDirNext := itemNext.IsDir()
+			prevIsDir := prevItem.IsDir()
+			nextIsDir := nextItem.IsDir()
 
-			if isDirPrev != isDirNext {
-				return isDirPrev
+			if prevIsDir != nextIsDir {
+				return prevIsDir
 			}
 
-			return itemPrev.Name() < itemNext.Name()
+			return util.CompareNumInStr(prevItem.Name(), nextItem.Name())
 		},
 	)
 }
