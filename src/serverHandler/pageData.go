@@ -207,6 +207,15 @@ func (h *handler) FilterItems(items []os.FileInfo) []os.FileInfo {
 	return filtered
 }
 
+func getSubItemPrefix(requestPath string, tailSlash bool) (subItemPrefix string) {
+	if tailSlash {
+		subItemPrefix = "./"
+	} else {
+		subItemPrefix = "./" + path.Base(requestPath) + "/"
+	}
+	return
+}
+
 func sortSubItems(subItems []os.FileInfo) {
 	sort.Slice(
 		subItems,
@@ -224,6 +233,52 @@ func sortSubItems(subItems []os.FileInfo) {
 			return itemPrev.Name() < itemNext.Name()
 		},
 	)
+}
+
+func getItemName(item os.FileInfo, r *http.Request) (itemName string) {
+	if item != nil {
+		itemName = item.Name()
+	}
+	if len(itemName) == 0 || itemName == "." {
+		itemName = strings.Replace(r.Host, ":", "_", -1)
+	}
+	return
+}
+
+func (h *handler) getCanUpload(item os.FileInfo, rawRequestPath string) bool {
+	if item == nil {
+		return false
+	}
+
+	if h.globalUpload {
+		return true
+	}
+
+	for _, uploadUrlPath := range h.uploads {
+		if util.HasUrlPrefixDir(rawRequestPath, uploadUrlPath) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (h *handler) getCanArchive(subItems []os.FileInfo, rawRequestPath string) bool {
+	if len(subItems) == 0 {
+		return false
+	}
+
+	if h.globalArchive {
+		return true
+	}
+
+	for _, archiveUrlPath := range h.archives {
+		if util.HasUrlPrefixDir(rawRequestPath, archiveUrlPath) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, internalError bool) {
@@ -245,6 +300,8 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 		internalError = internalError || !notFound
 	}
 
+	itemName := getItemName(item, r)
+
 	subItems, _readdirErrs := h.readdir(file, item)
 	errs = append(errs, _readdirErrs...)
 	internalError = internalError || len(_readdirErrs) > 0
@@ -256,48 +313,11 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	subItems = h.FilterItems(subItems)
 	sortSubItems(subItems)
 
-	var subItemPrefix string
-	if tailSlash {
-		subItemPrefix = "./"
-	} else {
-		subItemPrefix = "./" + path.Base(requestPath) + "/"
-	}
+	subItemPrefix := getSubItemPrefix(requestPath, tailSlash)
 
-	var itemName string
-	if item != nil {
-		itemName = item.Name()
-	}
-	if len(itemName) == 0 || itemName == "." {
-		itemName = strings.Replace(r.Host, ":", "_", -1)
-	}
+	canUpload := h.getCanUpload(item, rawRequestPath)
 
-	canUpload := false
-	if item != nil {
-		if h.globalUpload {
-			canUpload = true
-		} else {
-			for _, uploadUrlPath := range h.uploads {
-				if util.HasUrlPrefixDir(rawRequestPath, uploadUrlPath) {
-					canUpload = true
-					break
-				}
-			}
-		}
-	}
-
-	canArchive := false
-	if len(subItems) > 0 {
-		if h.globalArchive {
-			canArchive = true
-		} else {
-			for _, archiveUrlPath := range h.archives {
-				if util.HasUrlPrefixDir(rawRequestPath, archiveUrlPath) {
-					canArchive = true
-					break
-				}
-			}
-		}
-	}
+	canArchive := h.getCanArchive(subItems, rawRequestPath)
 
 	data = &pageData{
 		rawRequestPath:     rawRequestPath,
