@@ -57,9 +57,9 @@ func (l *Logger) LogErrorString(payload string) {
 	l.LogError([]byte(payload))
 }
 
-func (l *Logger) enableAccLog() {
+func (l *Logger) enableAccLog(ch chan []byte) {
 	for {
-		payload, ok := <-l.accLogChan
+		payload, ok := <-ch
 		if !ok {
 			break
 		}
@@ -72,9 +72,9 @@ func (l *Logger) enableAccLog() {
 	l.waitGroup.Done()
 }
 
-func (l *Logger) enableErrLog() {
+func (l *Logger) enableErrLog(ch chan []byte) {
 	for {
-		payload, ok := <-l.errLogChan
+		payload, ok := <-ch
 		if !ok {
 			break
 		}
@@ -150,11 +150,11 @@ func NewLogger(accessFilename, errorFilename string) (*Logger, error) {
 
 	if logger.accLogChan != nil {
 		logger.waitGroup.Add(1)
-		go logger.enableAccLog()
+		go logger.enableAccLog(accLogChan)
 	}
 	if logger.errLogChan != nil {
 		logger.waitGroup.Add(1)
-		go logger.enableErrLog()
+		go logger.enableErrLog(errLogChan)
 	}
 
 	return logger, nil
