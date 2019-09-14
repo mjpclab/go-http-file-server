@@ -90,19 +90,23 @@ func (l *Logger) enableErrLog() {
 func (l *Logger) Close() {
 	if l.accLogChan != nil {
 		close(l.accLogChan)
+		l.accLogChan = nil
 	}
 	if l.errLogChan != nil {
 		close(l.errLogChan)
+		l.errLogChan = nil
 	}
 
 	l.waitGroup.Wait()
 
 	if l.accLogFile != nil {
 		l.accLogFile.Close()
+		l.accLogFile = nil
 	}
 
 	if l.errLogFile != nil {
 		l.errLogFile.Close()
+		l.errLogFile = nil
 	}
 }
 

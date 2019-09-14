@@ -23,6 +23,25 @@ type Server struct {
 	errHandler  *serverErrHandler.ErrHandler
 }
 
+func (s *Server) openTransListener() (err error) {
+	s.listener, err = net.Listen(s.listenProto, s.listenAddr)
+	s.errHandler.LogError(err)
+
+	return
+}
+
+func (s *Server) closeTransListener() (err error) {
+	if s.listener == nil {
+		return
+	}
+
+	err = s.listener.Close()
+	s.listener = nil
+	s.errHandler.LogError(err)
+
+	return
+}
+
 func (s *Server) ListenAndServe() {
 	var err error
 
@@ -35,8 +54,7 @@ func (s *Server) ListenAndServe() {
 
 	s.logger.LogAccessString("start to listen on " + s.listenProto + ": " + s.listenAddr)
 
-	s.listener, err = net.Listen(s.listenProto, s.listenAddr)
-	if s.errHandler.LogError(err) {
+	if s.openTransListener() != nil {
 		return
 	}
 
@@ -48,8 +66,7 @@ func (s *Server) ListenAndServe() {
 	}
 	s.errHandler.LogError(err)
 
-	err = s.listener.Close()
-	s.errHandler.LogError(err)
+	s.closeTransListener()
 }
 
 func NewServer(p *param.Param) *Server {
@@ -96,7 +113,5 @@ func NewServer(p *param.Param) *Server {
 
 func (s *Server) Close() {
 	s.logger.Close()
-	if s.listener != nil {
-		s.listener.Close()
-	}
+	s.closeTransListener()
 }
