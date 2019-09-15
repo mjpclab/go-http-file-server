@@ -4,20 +4,14 @@ import (
 	"../util"
 	"bytes"
 	"os"
-	"sync"
 	"time"
 )
 
 const CHAN_BUFFER = 7
 
 type Logger struct {
-	accLogFile *os.File
-	accLogChan chan []byte
-
-	errLogFile *os.File
-	errLogChan chan []byte
-
-	waitGroup sync.WaitGroup
+	accLogMan *logMan
+	errLogMan *logMan
 }
 
 func getLogEntry(payload []byte) []byte {
@@ -31,133 +25,57 @@ func getLogEntry(payload []byte) []byte {
 }
 
 func (l *Logger) CanLogAccess() bool {
-	return l.accLogFile != nil
+	return l.accLogMan.CanLog()
 }
 
 func (l *Logger) CanLogError() bool {
-	return l.errLogFile != nil
+	return l.errLogMan.CanLog()
 }
 
 func (l *Logger) LogAccess(payload []byte) {
-	if l.CanLogAccess() {
-		l.accLogChan <- payload
-	}
+	l.accLogMan.Log(payload)
 }
 func (l *Logger) LogAccessString(payload string) {
-	l.LogAccess([]byte(payload))
+	l.accLogMan.LogString(payload)
 }
 
 func (l *Logger) LogError(payload []byte) {
-	if l.CanLogError() {
-		l.errLogChan <- payload
-	}
+	l.errLogMan.Log(payload)
 }
 
 func (l *Logger) LogErrorString(payload string) {
-	l.LogError([]byte(payload))
+	l.errLogMan.LogString(payload)
 }
 
-func (l *Logger) enableAccLog(ch chan []byte) {
-	for {
-		payload, ok := <-ch
-		if !ok {
-			break
-		}
+func (l *Logger) Open() (errors []error) {
+	var err error
 
-		_, e := l.accLogFile.Write(getLogEntry(payload))
-		if e != nil {
-			l.LogError([]byte(e.Error()))
-		}
+	err = l.accLogMan.Open()
+	if err != nil {
+		errors = append(errors, err)
+	} else {
+		l.accLogMan.Enable()
 	}
-	l.waitGroup.Done()
-}
 
-func (l *Logger) enableErrLog(ch chan []byte) {
-	for {
-		payload, ok := <-ch
-		if !ok {
-			break
-		}
+	err = l.errLogMan.Open()
+	if err != nil {
+		errors = append(errors, err)
+	} else {
+		l.errLogMan.Enable()
+	}
 
-		_, e := l.errLogFile.Write(getLogEntry(payload))
-		if e != nil {
-			os.Stdout.WriteString(e.Error() + "\n")
-		}
-	}
-	l.waitGroup.Done()
-}
-
-func (l *Logger) Open() {
-	if l.accLogChan != nil {
-		l.waitGroup.Add(1)
-		go l.enableAccLog(l.accLogChan)
-	}
-	if l.errLogChan != nil {
-		l.waitGroup.Add(1)
-		go l.enableErrLog(l.errLogChan)
-	}
+	return
 }
 
 func (l *Logger) Close() {
-	if l.accLogChan != nil {
-		close(l.accLogChan)
-		l.accLogChan = nil
-	}
-	if l.errLogChan != nil {
-		close(l.errLogChan)
-		l.errLogChan = nil
-	}
-
-	l.waitGroup.Wait()
-
-	if l.accLogFile != nil {
-		l.accLogFile.Close()
-		l.accLogFile = nil
-	}
-
-	if l.errLogFile != nil {
-		l.errLogFile.Close()
-		l.errLogFile = nil
-	}
+	l.accLogMan.Close()
+	l.errLogMan.Close()
 }
 
-func NewLogger(accessFilename, errorFilename string) (*Logger, error) {
-	var accLogFile, errLogFile *os.File
-	var accLogChan, errLogChan chan []byte
-
-	var e error
-
-	if len(accessFilename) > 0 {
-		if accessFilename == "-" {
-			accLogFile = os.Stdout
-		} else {
-			accLogFile, e = os.OpenFile(accessFilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0664)
-			if e != nil {
-				return nil, e
-			}
-		}
-		accLogChan = make(chan []byte, CHAN_BUFFER)
-	}
-
-	if len(errorFilename) > 0 {
-		if errorFilename == "-" {
-			errLogFile = os.Stderr
-		} else {
-			errLogFile, e = os.OpenFile(errorFilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0664)
-			if e != nil {
-				return nil, e
-			}
-		}
-		errLogChan = make(chan []byte, CHAN_BUFFER)
-	}
-
+func NewLogger(accLogFilename, errLogFilename string) *Logger {
 	logger := &Logger{
-		accLogFile: accLogFile,
-		accLogChan: accLogChan,
-
-		errLogFile: errLogFile,
-		errLogChan: errLogChan,
+		accLogMan: NewLogMan(accLogFilename, os.Stdout),
+		errLogMan: NewLogMan(errLogFilename, os.Stderr),
 	}
-
-	return logger, nil
+	return logger
 }

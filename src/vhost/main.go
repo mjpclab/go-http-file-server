@@ -111,9 +111,9 @@ func (v *VHost) Close() {
 
 func NewVHost(p *param.Param) *VHost {
 	// logger
-	logger, err := serverLog.NewLogger(p.AccessLog, p.ErrorLog)
-	serverErrHandler.CheckFatal(err)
-	logger.Open()
+	logger := serverLog.NewLogger(p.AccessLog, p.ErrorLog)
+	errors := logger.Open()
+	serverErrHandler.CheckFatal(errors...)
 
 	// ErrHandler
 	errHandler := serverErrHandler.NewErrHandler(logger)

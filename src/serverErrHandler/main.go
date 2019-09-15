@@ -39,17 +39,22 @@ func (h *ErrHandler) LogFatal(err error) bool {
 	return hasError
 }
 
-func CheckError(err error) bool {
-	if err == nil {
-		return false
+func CheckError(errs ...error) bool {
+	hasError := false
+
+	for _, err := range errs {
+		if err == nil {
+			continue
+		}
+		hasError = true
+		fmt.Fprintln(os.Stderr, err)
 	}
 
-	fmt.Fprintln(os.Stderr, err)
-	return true
+	return hasError
 }
 
-func CheckFatal(err error) bool {
-	hasError := CheckError(err)
+func CheckFatal(errs ...error) bool {
+	hasError := CheckError(errs...)
 
 	if hasError {
 		os.Exit(1)
