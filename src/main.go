@@ -2,12 +2,12 @@ package main
 
 import (
 	"./param"
-	"./server"
+	"./vhost"
 	"os"
 	"os/signal"
 )
 
-var s *server.Server
+var h *vhost.VHost
 
 func cleanupOnInterrupt() {
 	// trap SIGINT
@@ -15,9 +15,7 @@ func cleanupOnInterrupt() {
 	signal.Notify(chSignal, os.Interrupt)
 	go func() {
 		<-chSignal
-		if s != nil {
-			s.Close()
-		}
+		h.Close()
 		os.Exit(0)
 	}()
 }
@@ -26,7 +24,9 @@ func main() {
 	cleanupOnInterrupt()
 
 	p := param.ParseCli()
-	s = server.NewServer(p)
-	defer s.Close()
-	s.ListenAndServe()
+	h = vhost.NewVHost(p)
+	if h != nil {
+		h.Open()
+		defer h.Close()
+	}
 }

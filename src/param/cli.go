@@ -41,7 +41,13 @@ func init() {
 	err = optionSet.AddFlagsValue("cert", []string{"-c", "--cert"}, "GHFS_CERT", "", "TLS certificate path")
 	serverErrHandler.CheckFatal(err)
 
-	err = optionSet.AddFlagsValue("listen", []string{"-l", "--listen"}, "GHFS_LISTEN", "", "address and port to listen")
+	err = optionSet.AddFlagsValues("listen", []string{"-l", "--listen"}, "GHFS_LISTEN", nil, "address and port to listen")
+	serverErrHandler.CheckFatal(err)
+
+	err = optionSet.AddFlagValues("listenplain", "--listen-plain", "GHFS_LISTEN_PLAIN", nil, "address and port to listen, force plain http protocol")
+	serverErrHandler.CheckFatal(err)
+
+	err = optionSet.AddFlagValues("listentls", "--listen-tls", "GHFS_LISTEN_TLS", nil, "address and port to listen, force https protocol")
 	serverErrHandler.CheckFatal(err)
 
 	err = optionSet.AddFlagsValue("template", []string{"-t", "--template"}, "GHFS_TEMPLATE", "", "custom template file for page")
@@ -103,14 +109,20 @@ func doParseCli() *Param {
 	param.GlobalArchive = result.HasKey("globalarchive")
 	param.Key, _ = result.GetString("key")
 	param.Cert, _ = result.GetString("cert")
-	if rests := result.GetRests(); len(rests) > 0 {
-		param.Listen = rests[len(rests)-1]
-	} else if listen, foundListen := result.GetString("listen"); foundListen {
-		param.Listen = listen
-	}
 	param.Template, _ = result.GetString("template")
 	param.AccessLog, _ = result.GetString("accesslog")
 	param.ErrorLog, _ = result.GetString("errorlog")
+
+	// normalize listen
+	listen, _ := result.GetStrings("listen")
+	param.Listen = append(param.Listen, listen...)
+
+	listenRests := result.GetRests()
+	param.Listen = append(param.Listen, listenRests...)
+
+	param.ListenPlain, _ = result.GetStrings("listenplain")
+
+	param.ListenTLS, _ = result.GetStrings("listentls")
 
 	// normalize aliases
 	arrAlias, _ := result.GetStrings("aliases")

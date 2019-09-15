@@ -17,7 +17,9 @@ type Param struct {
 	Archives      []string
 	Key           string
 	Cert          string
-	Listen        string
+	Listen        []string
+	ListenPlain   []string
+	ListenTLS     []string
 	Template      string
 	Shows         *regexp.Regexp
 	ShowDirs      *regexp.Regexp

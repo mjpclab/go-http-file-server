@@ -87,6 +87,17 @@ func (l *Logger) enableErrLog(ch chan []byte) {
 	l.waitGroup.Done()
 }
 
+func (l *Logger) Open() {
+	if l.accLogChan != nil {
+		l.waitGroup.Add(1)
+		go l.enableAccLog(l.accLogChan)
+	}
+	if l.errLogChan != nil {
+		l.waitGroup.Add(1)
+		go l.enableErrLog(l.errLogChan)
+	}
+}
+
 func (l *Logger) Close() {
 	if l.accLogChan != nil {
 		close(l.accLogChan)
@@ -146,15 +157,6 @@ func NewLogger(accessFilename, errorFilename string) (*Logger, error) {
 
 		errLogFile: errLogFile,
 		errLogChan: errLogChan,
-	}
-
-	if logger.accLogChan != nil {
-		logger.waitGroup.Add(1)
-		go logger.enableAccLog(accLogChan)
-	}
-	if logger.errLogChan != nil {
-		logger.waitGroup.Add(1)
-		go logger.enableErrLog(errLogChan)
 	}
 
 	return logger, nil

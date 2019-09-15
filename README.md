@@ -4,7 +4,7 @@ Simple command line based HTTP file server to share local file system.
 ![Go HTTP File Server pages](doc/ghfs.gif)
 
 ## Compile
-Minimal required Go version is 1.8.
+Minimal required Go version is 1.9.
 ```bash
 cd src
 go build main.go
@@ -21,11 +21,16 @@ to re-embed templates into go files. Then compile the project again.
 ```
 server [options]
 
--l|--listen <ip|port|:port|ip:port|socket>
-    Optional IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
+-l|--listen <ip|port|:port|ip:port|socket> ...
+    IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
+    If --cert and --key are specified, port listens for TLS connection.
     If port is not specified, use "80" for pure HTTP mode, or "443" for TLS mode.
     If value contains "/" then treat it as a unix socket file.
     Flag "-l" or "--listen" can be ommitted.
+--listen-plain <ip|port|:port|ip:port|socket> ...
+    Similar to --listen, but force to use non-TLS mode
+--listen-tls <ip|port|:port|ip:port|socket> ...
+    Similar to --listen, but force to use TLS mode, will failed if cert or key is not specified.
 
 -r|--root <directory>
     Root directory of the server.
@@ -53,11 +58,9 @@ server [options]
 
 -c|--cert <file>
     Specify TLS certificate file.
-    If both "cert" and "key" are specified, the server serves in TLS mode for HTTPS protocol.
 
 -k|--key <file>
     Specify key file of TLS certificate.
-    If both "cert" and "key" are specified, the server serves in TLS mode for HTTPS protocol.
 
 -t|--template <file>
     Use a custom template file for rendering pages, instead of builtin template.
