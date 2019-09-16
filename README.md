@@ -3,6 +3,14 @@ Simple command line based HTTP file server to share local file system.
 
 ![Go HTTP File Server pages](doc/ghfs.gif)
 
+## Features
+- More friendly UI than Apache/Nginx directory index page
+- Adapt for mobile display
+- Can download the whole contents of current directory as archive file if enabled
+- Can upload files to current directory if enabled
+- Can specify a custom template for page rendering
+- Support location alias(mount another directory to url location)
+
 ## Compile
 Minimal required Go version is 1.9.
 ```bash
@@ -10,12 +18,12 @@ cd src
 go build main.go
 ```
 
-If default html template file under `src/tpl` changed, run
+If default html template file under `src/tpl` changed, need to re-embed templates into go files:
 ```bash
 cd src
 make tpls
 ```
-to re-embed templates into go files. Then compile the project again.
+Then compile the project again.
 
 ## Usage
 ```
