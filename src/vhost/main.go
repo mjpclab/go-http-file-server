@@ -86,6 +86,11 @@ func (v *VHost) Open() {
 	return
 }
 
+func (v *VHost) ReOpenLog() {
+	errors := v.logger.ReOpen()
+	serverErrHandler.CheckError(errors...)
+}
+
 func (v *VHost) Close() {
 	ctxTimeout, _ := context.WithTimeout(v.ctx, time.Second*3)
 

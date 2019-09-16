@@ -72,6 +72,22 @@ func (l *Logger) Close() {
 	l.errLogMan.Close()
 }
 
+func (l *Logger) ReOpen() (errors []error) {
+	var err error
+
+	err = l.accLogMan.ReOpen()
+	if err != nil {
+		errors = append(errors, err)
+	}
+
+	err = l.errLogMan.ReOpen()
+	if err != nil {
+		errors = append(errors, err)
+	}
+
+	return
+}
+
 func NewLogger(accLogFilename, errLogFilename string) *Logger {
 	logger := &Logger{
 		accLogMan: NewLogMan(accLogFilename, os.Stdout),

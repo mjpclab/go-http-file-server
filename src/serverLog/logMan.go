@@ -28,15 +28,16 @@ func (l *logMan) Open() (err error) {
 		}
 	}
 
-	l.ch = make(chan []byte, CHAN_BUFFER)
 	return
 }
 
 func (l *logMan) Enable() {
-	ch := l.ch
-	if ch == nil {
+	if l.file == nil {
 		return
 	}
+
+	ch := make(chan []byte, CHAN_BUFFER)
+	l.ch = ch
 
 	l.wg.Add(1)
 	go func() {
@@ -67,6 +68,21 @@ func (l *logMan) Close() {
 		l.file.Close()
 		l.file = nil
 	}
+}
+
+func (l *logMan) ReOpen() (err error) {
+	oldFile := l.file
+	if oldFile == nil || oldFile == l.dashFile {
+		return
+	}
+
+	err = l.Open()
+	if err != nil {
+		return
+	}
+
+	err = oldFile.Close()
+	return
 }
 
 func (l *logMan) CanLog() bool {
