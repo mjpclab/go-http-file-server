@@ -19,27 +19,53 @@ func StringToSlice(input string) []string {
 func NewOptionSet(
 	mergeOptionPrefix string,
 	restsSigns []string,
+	groupSeps []string,
 ) *OptionSet {
 	s := &OptionSet{
 		mergeFlagPrefix: mergeOptionPrefix,
 		restsSigns:      restsSigns,
-		options:         []*Option{},
-		keyOptionMap:    map[string]*Option{},
-		flagOptionMap:   map[string]*Option{},
-		flagMap:         map[string]*Flag{},
-		keyEnvMap:       map[string][]string{},
-		keyDefaultMap:   map[string][]string{},
+		groupSeps:       groupSeps,
+
+		options: []*Option{},
+
+		keyOptionMap:  map[string]*Option{},
+		flagOptionMap: map[string]*Option{},
+		flagMap:       map[string]*Flag{},
+		keyEnvMap:     map[string][]string{},
+		keyDefaultMap: map[string][]string{},
 	}
 	return s
 }
 
+func (s *OptionSet) MergeOptionPrefix() string {
+	return s.mergeFlagPrefix
+}
+
+func (s *OptionSet) RestsSigns() []string {
+	return s.restsSigns
+}
+
+func (s *OptionSet) GroupSeps() []string {
+	return s.groupSeps
+}
+
 func NewSimpleOptionSet() *OptionSet {
-	return NewOptionSet("-", []string{"--"})
+	return NewOptionSet("-", []string{"--"}, []string{",,"})
 }
 
 func (s *OptionSet) isRestSign(input string) bool {
 	for _, sign := range s.restsSigns {
 		if input == sign {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *OptionSet) isGroupSeps(input string) bool {
+	for _, sep := range s.groupSeps {
+		if input == sep {
 			return true
 		}
 	}

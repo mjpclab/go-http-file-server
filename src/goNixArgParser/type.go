@@ -10,6 +10,7 @@ type Command struct {
 type OptionSet struct {
 	mergeFlagPrefix string
 	restsSigns      []string
+	groupSeps       []string
 
 	options []*Option
 
@@ -54,6 +55,7 @@ const (
 	ValueArg
 	RestSignArg
 	RestArg
+	GroupSepArg
 )
 
 type Arg struct {

@@ -8,11 +8,11 @@ import (
 func TestParse2(t *testing.T) {
 	var err error
 
-	s := NewOptionSet("", nil)
+	s := NewOptionSet("", nil, nil)
 
 	err = s.Append(&Option{
 		Key:           "deft",
-		Flags:         []*Flag{&Flag{Name: "-df"}, &Flag{Name: "--default"}},
+		Flags:         []*Flag{{Name: "-df"}, {Name: "--default"}},
 		AcceptValue:   true,
 		DefaultValues: []string{"myDefault"},
 	})

@@ -4,26 +4,6 @@ import (
 	"strings"
 )
 
-func (s *OptionSet) getNormalizedArgs(initArgs []string) []*Arg {
-	args := make([]*Arg, 0, len(initArgs))
-
-	foundRestSign := false
-	for _, arg := range initArgs {
-		if foundRestSign {
-			args = append(args, NewArg(arg, RestArg))
-		} else if s.isRestSign(arg) {
-			foundRestSign = true
-			args = append(args, NewArg(arg, RestSignArg))
-		} else if s.flagMap[arg] != nil {
-			args = append(args, NewArg(arg, FlagArg))
-		} else {
-			args = append(args, NewArg(arg, UnknownArg))
-		}
-	}
-
-	return args
-}
-
 func (s *OptionSet) splitMergedArg(arg *Arg) (args []*Arg, success bool) {
 	flagMap := s.flagMap
 	argText := arg.Text
@@ -147,13 +127,12 @@ func isValueArg(arg *Arg) bool {
 	}
 }
 
-func (s *OptionSet) parseArgs(initArgs []string) (args map[string][]string, rests []string) {
+func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, rests []string) {
 	args = map[string][]string{}
 	rests = []string{}
 
 	flagOptionMap := s.flagOptionMap
 
-	argObjs := s.getNormalizedArgs(initArgs)
 	if s.hasCanMerge {
 		argObjs = s.splitMergedArgs(argObjs)
 	}
@@ -242,12 +221,12 @@ func (s *OptionSet) parseArgs(initArgs []string) (args map[string][]string, rest
 	return args, rests
 }
 
-func (s *OptionSet) Parse(initArgs, initConfigs []string) *ParseResult {
+func (s *OptionSet) parseInGroup(argObjs, configObjs []*Arg) *ParseResult {
 	keyOptionMap := s.keyOptionMap
 
-	args, argRests := s.parseArgs(initArgs)
+	args, argRests := s.parseArgsInGroup(argObjs)
 	envs := s.keyEnvMap
-	configs, configRests := s.parseArgs(initConfigs)
+	configs, configRests := s.parseArgsInGroup(configObjs)
 	defaults := s.keyDefaultMap
 
 	return &ParseResult{
@@ -261,4 +240,107 @@ func (s *OptionSet) Parse(initArgs, initConfigs []string) *ParseResult {
 		argRests:    argRests,
 		configRests: configRests,
 	}
+}
+
+func (s *OptionSet) getNormalizedArgs(initArgs []string) []*Arg {
+	args := make([]*Arg, 0, len(initArgs)+1)
+
+	foundRestSign := false
+	for _, arg := range initArgs {
+		switch {
+		case s.isGroupSeps(arg):
+			foundRestSign = false
+			args = append(args, NewArg(arg, GroupSepArg))
+		case foundRestSign:
+			args = append(args, NewArg(arg, RestArg))
+		case s.isRestSign(arg):
+			foundRestSign = true
+			args = append(args, NewArg(arg, RestSignArg))
+		case s.flagMap[arg] != nil:
+			args = append(args, NewArg(arg, FlagArg))
+		default:
+			args = append(args, NewArg(arg, UnknownArg))
+		}
+	}
+
+	return args
+}
+
+func splitArgsIntoGroups(argObjs []*Arg) [][]*Arg {
+	argObjs = append(argObjs, NewArg("", GroupSepArg))
+
+	groups := [][]*Arg{}
+	items := []*Arg{}
+	for _, argObj := range argObjs {
+		if argObj.Type != GroupSepArg {
+			items = append(items, argObj)
+			continue
+		}
+
+		if len(items) > 0 {
+			groups = append(groups, items)
+			items = []*Arg{}
+		}
+	}
+
+	return groups
+}
+
+func (s *OptionSet) getArgsConfigsGroups(initArgs, initConfigs []string) ([][]*Arg, [][]*Arg) {
+	args := s.getNormalizedArgs(initArgs)
+	argsGroups := splitArgsIntoGroups(args)
+	argsGroupsCount := len(argsGroups)
+
+	configs := s.getNormalizedArgs(initConfigs)
+	configsGroups := splitArgsIntoGroups(configs)
+	configsGroupsCount := len(configsGroups)
+
+	length := argsGroupsCount
+	if configsGroupsCount > length {
+		length = configsGroupsCount
+	}
+
+	for i := 0; i < length-argsGroupsCount; i++ {
+		argsGroups = append(argsGroups, []*Arg{})
+	}
+
+	for i := 0; i < length-configsGroupsCount; i++ {
+		configsGroups = append(configsGroups, []*Arg{})
+	}
+
+	return argsGroups, configsGroups
+}
+
+func (s *OptionSet) ParseGroups(initArgs, initConfigs []string) []*ParseResult {
+	argsGroups, configsGroups := s.getArgsConfigsGroups(initArgs, initConfigs)
+
+	results := []*ParseResult{}
+	for i, length := 0, len(argsGroups); i < length; i++ {
+		result := s.parseInGroup(argsGroups[i], configsGroups[i])
+		results = append(results, result)
+	}
+
+	return results
+}
+
+func (s *OptionSet) Parse(initArgs, initConfigs []string) *ParseResult {
+	argsGroups, configsGroups := s.getArgsConfigsGroups(initArgs, initConfigs)
+
+	var args []*Arg
+	if len(argsGroups) > 0 {
+		args = argsGroups[0]
+	} else {
+		args = []*Arg{}
+	}
+
+	var configs []*Arg
+	if len(configsGroups) > 0 {
+		configs = configsGroups[0]
+	} else {
+		configs = []*Arg{}
+	}
+
+	result := s.parseInGroup(args, configs)
+
+	return result
 }

@@ -8,12 +8,12 @@ import (
 
 func NewCommand(
 	name, summary, mergeOptionPrefix string,
-	restsSigns []string,
+	restsSigns, groupSeps []string,
 ) *Command {
 	return &Command{
 		Name:        name,
 		Summary:     summary,
-		OptionSet:   NewOptionSet(mergeOptionPrefix, restsSigns),
+		OptionSet:   NewOptionSet(mergeOptionPrefix, restsSigns, groupSeps),
 		SubCommands: []*Command{},
 	}
 }
@@ -29,9 +29,9 @@ func NewSimpleCommand(name, summary string) *Command {
 
 func (c *Command) NewSubCommand(
 	name, summary, mergeOptionPrefix string,
-	restsSigns []string,
+	restsSigns, groupSeps []string,
 ) *Command {
-	subCommand := NewCommand(name, summary, mergeOptionPrefix, restsSigns)
+	subCommand := NewCommand(name, summary, mergeOptionPrefix, restsSigns, groupSeps)
 	c.SubCommands = append(c.SubCommands, subCommand)
 	return subCommand
 }
@@ -55,11 +55,11 @@ func (c *Command) GetSubCommand(name string) *Command {
 	return nil
 }
 
-func (c *Command) getNormalizedArgs(initArgs []string) ([]*Arg, *Command) {
+func (c *Command) getNormalizedArgs(initArgs []string) (*Command, []*Arg) {
 	cmd := c
 
 	if len(initArgs) == 0 {
-		return []*Arg{}, cmd
+		return cmd, []*Arg{}
 	}
 
 	args := make([]*Arg, 0, len(initArgs))
@@ -75,34 +75,52 @@ func (c *Command) getNormalizedArgs(initArgs []string) ([]*Arg, *Command) {
 		}
 	}
 
-	return args, cmd
+	return cmd, args
 }
 
-func (c *Command) Parse(initArgs, initConfigs []string) *ParseResult {
-	args, argsLeafCmd := c.getNormalizedArgs(initArgs)
-	configs, configsLeafCmd := c.getNormalizedArgs(initConfigs)
+func (c *Command) splitCommandsArgs(initArgs, initConfigs []string) (
+	argsLeafCmd *Command,
+	commands, optionSetInitArgs, optionSetInitConfigs []string,
+) {
+	argsLeafCmd, argCmds := c.getNormalizedArgs(initArgs)
+	configsLeafCmd, configCmds := c.getNormalizedArgs(initConfigs)
 
-	commands := []string{}
-	for _, arg := range args {
+	commands = []string{}
+	for _, arg := range argCmds {
 		if arg.Type != CommandArg {
 			break
 		}
 		commands = append(commands, arg.Text)
 	}
 
-	optionSetInitArgs := initArgs[len(args):]
+	optionSetInitArgs = initArgs[len(argCmds):]
 
-	var optionSetInitConfigs []string
 	if argsLeafCmd == configsLeafCmd {
-		optionSetInitConfigs = initConfigs[len(configs):]
+		optionSetInitConfigs = initConfigs[len(configCmds):]
 	} else {
 		optionSetInitConfigs = []string{}
 	}
 
-	result := argsLeafCmd.OptionSet.Parse(optionSetInitArgs, optionSetInitConfigs)
+	return
+}
+
+func (c *Command) Parse(initArgs, initConfigs []string) *ParseResult {
+	leafCmd, commands, optionSetInitArgs, optionSetInitConfigs := c.splitCommandsArgs(initArgs, initConfigs)
+	result := leafCmd.OptionSet.Parse(optionSetInitArgs, optionSetInitConfigs)
 	result.commands = commands
 
 	return result
+}
+
+func (c *Command) ParseGroups(initArgs, initConfigs []string) []*ParseResult {
+	leafCmd, commands, optionSetInitArgs, optionSetInitConfigs := c.splitCommandsArgs(initArgs, initConfigs)
+	results := leafCmd.OptionSet.ParseGroups(optionSetInitArgs, optionSetInitConfigs)
+
+	for _, result := range results {
+		result.commands = commands
+	}
+
+	return results
 }
 
 func (c *Command) GetHelp() []byte {

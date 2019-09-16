@@ -241,3 +241,10 @@ func (r *ParseResult) GetRests() (rests []string) {
 
 	return
 }
+
+///////////////////////////////
+// commands
+//////////////////////////////
+func (r *ParseResult) GetCommands() []string {
+	return copys(r.commands)
+}
