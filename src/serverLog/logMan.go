@@ -86,7 +86,7 @@ func (l *logMan) ReOpen() (err error) {
 }
 
 func (l *logMan) CanLog() bool {
-	return l.file != nil
+	return l.file != nil && l.ch != nil
 }
 
 func (l *logMan) Log(payload []byte) {
