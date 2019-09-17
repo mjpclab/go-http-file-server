@@ -40,6 +40,10 @@ server [options]
 --listen-tls <ip|port|:port|ip:port|socket> ...
     Similar to --listen, but force to use TLS mode, will failed if cert or key is not specified.
 
+--hostname <hostname> ...
+    Specify hostname associated with current virtual host.
+    If hostname starts with ".", treat it as a suffix, to match all levels of sub domains.
+
 -r|--root <directory>
     Root directory of the server.
     Defaults to current working directory.
@@ -95,7 +99,7 @@ server [options]
     Defaults to "-".
 
 --config <file>
-    External config file to load.
+    External config file to load for current virtual host.
 
     Its content is option list of any other options,
     same as the form specified on command line,
@@ -103,6 +107,10 @@ server [options]
 
     The external config's priority is lower than arguments specified on command line.
     If one option is specified on command line, then external config is ignored.
+
+,,
+    To specify multiple virtual hosts with options, split these hosts' options by this sign.
+    Options above can be specified for each virtual host.
 ```
 
 ## Examples
@@ -140,4 +148,23 @@ server -H '.*'
 Show access log on console:
 ```sh
 server -L -
+```
+
+Start 2 virtual hosts:
+- server 1
+    - listen on port 80 for http
+    - listen on port 443 for https
+        - cert file: /cert/server1.pem
+        - key file: /cert/server1.key
+    - hostname server1.example.com
+    - root directory /var/www/server1
+- server 2
+    - listen on port 80 for http
+    - listen on port 443 for https
+        - cert file: /cert/server2.pem
+        - key file: /cert/server2.key
+    - hostname server2.example.com
+    - root directory /var/www/server2
+```sh
+server --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.key --hostname server1.example.com -r /var/www/server1 ,, --listen-plain 80 --listen-tls 443 -c /cert/server2.pem -k /cert/server2.key --hostname server2.example.com -r /var/www/server2
 ```

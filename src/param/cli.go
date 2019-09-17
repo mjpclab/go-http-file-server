@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var cliParam *Param
+var cliParams []*Param
 var cliCmd *goNixArgParser.Command
 
 func init() {
@@ -50,6 +50,9 @@ func init() {
 	err = optionSet.AddFlagValues("listentls", "--listen-tls", "GHFS_LISTEN_TLS", nil, "address and port to listen, force https protocol")
 	serverErrHandler.CheckFatal(err)
 
+	err = optionSet.AddFlagValues("hostnames", "--hostname", "", nil, "hostname for the virtual host")
+	serverErrHandler.CheckFatal(err)
+
 	err = optionSet.AddFlagsValue("template", []string{"-t", "--template"}, "GHFS_TEMPLATE", "", "custom template file for page")
 	serverErrHandler.CheckFatal(err)
 
@@ -80,96 +83,130 @@ func init() {
 	serverErrHandler.CheckFatal(err)
 }
 
-func doParseCli() *Param {
-	param := &Param{}
+func doParseCli() []*Param {
+	params := []*Param{}
+
+	args := os.Args
 
 	// parse option
-	result := cliCmd.Parse(os.Args, nil)
+	results := cliCmd.ParseGroups(args, nil)
+	configs := []string{}
+	groupSeps := cliCmd.OptionSet.GroupSeps()[0]
+	foundConfig := false
+	for i, length := 0, len(results); i < length; i++ {
+		result := results[i]
 
-	// help
-	if result.HasFlagKey("help") {
-		cliCmd.PrintHelp()
-		os.Exit(0)
-	}
-
-	// config file
-	if config, _ := result.GetString("config"); len(config) > 0 {
-		configStr, err := ioutil.ReadFile(config)
-		if !serverErrHandler.CheckError(err) && len(configStr) > 0 {
-			configs := strings.Fields(string(configStr))
-			if len(configs) > 0 {
-				result = cliCmd.Parse(os.Args, configs)
-			}
+		// help
+		if result.HasFlagKey("help") {
+			cliCmd.PrintHelp()
+			os.Exit(0)
 		}
+
+		// config file
+		config, _ := result.GetString("config")
+		if len(config) == 0 {
+			configs = append(configs, groupSeps)
+			continue
+		}
+
+		configStr, err := ioutil.ReadFile(config)
+		if serverErrHandler.CheckError(err) || len(configStr) == 0 {
+			configs = append(configs, groupSeps)
+			continue
+		}
+
+		configArgs := strings.Fields(string(configStr))
+		if len(configArgs) == 0 {
+			configs = append(configs, groupSeps)
+			continue
+		}
+
+		foundConfig = true
+		configs = append(configs, configArgs...)
+		configs = append(configs, groupSeps)
 	}
 
-	// normalize option
-	param.Root, _ = result.GetString("root")
-	param.GlobalUpload = result.HasKey("globalupload")
-	param.GlobalArchive = result.HasKey("globalarchive")
-	param.Key, _ = result.GetString("key")
-	param.Cert, _ = result.GetString("cert")
-	param.Template, _ = result.GetString("template")
-	param.AccessLog, _ = result.GetString("accesslog")
-	param.ErrorLog, _ = result.GetString("errorlog")
+	if foundConfig {
+		results = cliCmd.ParseGroups(args, configs)
+	}
 
-	// normalize listen
-	listen, _ := result.GetStrings("listen")
-	param.Listen = append(param.Listen, listen...)
+	for _, result := range results {
+		param := &Param{}
 
-	listenRests := result.GetRests()
-	param.Listen = append(param.Listen, listenRests...)
+		// normalize option
+		param.Root, _ = result.GetString("root")
+		param.GlobalUpload = result.HasKey("globalupload")
+		param.GlobalArchive = result.HasKey("globalarchive")
+		param.Key, _ = result.GetString("key")
+		param.Cert, _ = result.GetString("cert")
+		param.Hostnames, _ = result.GetStrings("hostnames")
+		param.Template, _ = result.GetString("template")
+		param.AccessLog, _ = result.GetString("accesslog")
+		param.ErrorLog, _ = result.GetString("errorlog")
 
-	param.ListenPlain, _ = result.GetStrings("listenplain")
+		// normalize listen
+		listen, _ := result.GetStrings("listen")
+		param.Listen = append(param.Listen, listen...)
 
-	param.ListenTLS, _ = result.GetStrings("listentls")
+		listenRests := result.GetRests()
+		param.Listen = append(param.Listen, listenRests...)
 
-	// normalize aliases
-	arrAlias, _ := result.GetStrings("aliases")
-	param.Aliases = normalizePathMaps(arrAlias)
+		param.ListenPlain, _ = result.GetStrings("listenplain")
 
-	// normalize uploads
-	arrUploads, _ := result.GetStrings("uploads")
-	param.Uploads = normalizeUrlPaths(arrUploads)
+		param.ListenTLS, _ = result.GetStrings("listentls")
 
-	// normalize archives
-	arrArchives, _ := result.GetStrings("archives")
-	param.Archives = normalizeUrlPaths(arrArchives)
+		// normalize aliases
+		arrAlias, _ := result.GetStrings("aliases")
+		param.Aliases = normalizePathMaps(arrAlias)
 
-	// shows
-	shows, err := getWildcardRegexp(result.GetStrings("shows"))
-	serverErrHandler.CheckFatal(err)
-	param.Shows = shows
+		// normalize uploads
+		arrUploads, _ := result.GetStrings("uploads")
+		param.Uploads = normalizeUrlPaths(arrUploads)
 
-	showDirs, err := getWildcardRegexp(result.GetStrings("showdirs"))
-	serverErrHandler.CheckFatal(err)
-	param.ShowDirs = showDirs
+		// normalize archives
+		arrArchives, _ := result.GetStrings("archives")
+		param.Archives = normalizeUrlPaths(arrArchives)
 
-	showFiles, err := getWildcardRegexp(result.GetStrings("showfiles"))
-	serverErrHandler.CheckFatal(err)
-	param.ShowFiles = showFiles
+		// shows
+		shows, err := getWildcardRegexp(result.GetStrings("shows"))
+		serverErrHandler.CheckFatal(err)
+		param.Shows = shows
 
-	// hides
-	hides, err := getWildcardRegexp(result.GetStrings("hides"))
-	serverErrHandler.CheckFatal(err)
-	param.Hides = hides
+		showDirs, err := getWildcardRegexp(result.GetStrings("showdirs"))
+		serverErrHandler.CheckFatal(err)
+		param.ShowDirs = showDirs
 
-	hideDirs, err := getWildcardRegexp(result.GetStrings("hidedirs"))
-	serverErrHandler.CheckFatal(err)
-	param.HideDirs = hideDirs
+		showFiles, err := getWildcardRegexp(result.GetStrings("showfiles"))
+		serverErrHandler.CheckFatal(err)
+		param.ShowFiles = showFiles
 
-	hideFiles, err := getWildcardRegexp(result.GetStrings("hidefiles"))
-	serverErrHandler.CheckFatal(err)
-	param.HideFiles = hideFiles
+		// hides
+		hides, err := getWildcardRegexp(result.GetStrings("hides"))
+		serverErrHandler.CheckFatal(err)
+		param.Hides = hides
 
-	return param
+		hideDirs, err := getWildcardRegexp(result.GetStrings("hidedirs"))
+		serverErrHandler.CheckFatal(err)
+		param.HideDirs = hideDirs
+
+		hideFiles, err := getWildcardRegexp(result.GetStrings("hidefiles"))
+		serverErrHandler.CheckFatal(err)
+		param.HideFiles = hideFiles
+
+		params = append(params, param)
+	}
+
+	if len(params) == 0 {
+		params = append(params, &Param{})
+	}
+
+	return params
 }
 
-func ParseCli() *Param {
-	if cliParam == nil {
-		cliParam = doParseCli()
+func ParseCli() []*Param {
+	if cliParams == nil {
+		cliParams = doParseCli()
 	}
 
-	paramCopied := *cliParam
-	return &paramCopied
+	return cliParams
 }

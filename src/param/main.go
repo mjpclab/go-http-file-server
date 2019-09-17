@@ -20,6 +20,7 @@ type Param struct {
 	Listen        []string
 	ListenPlain   []string
 	ListenTLS     []string
+	Hostnames     []string
 	Template      string
 	Shows         *regexp.Regexp
 	ShowDirs      *regexp.Regexp

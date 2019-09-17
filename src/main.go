@@ -1,14 +1,14 @@
 package main
 
 import (
+	"./app"
 	"./param"
-	"./vhost"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-var h *vhost.VHost
+var appInst *app.App
 
 func cleanupOnInterrupt() {
 	chSignal := make(chan os.Signal)
@@ -16,7 +16,7 @@ func cleanupOnInterrupt() {
 
 	go func() {
 		<-chSignal
-		h.Close()
+		appInst.Close()
 		os.Exit(0)
 	}()
 }
@@ -27,7 +27,7 @@ func reOpenLogOnHup() {
 
 	go func() {
 		for range chSignal {
-			h.ReOpenLog()
+			appInst.ReOpenLog()
 		}
 	}()
 }
@@ -35,11 +35,12 @@ func reOpenLogOnHup() {
 func main() {
 	cleanupOnInterrupt()
 
-	p := param.ParseCli()
-	h = vhost.NewVHost(p)
-	if h != nil {
+	params := param.ParseCli()
+	appInst = app.NewApp(params)
+
+	if appInst != nil {
 		reOpenLogOnHup()
-		h.Open()
-		defer h.Close()
+		appInst.Open()
+		defer appInst.Close()
 	}
 }
