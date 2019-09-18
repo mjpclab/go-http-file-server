@@ -189,7 +189,9 @@ const pageTplStr = `
 		}
 
 		.item-list .name {
-			flex: 1 1 0;
+			flex-grow: 1;
+			flex-shrink: 1;
+			flex-basis: 0;
 			margin-left: 0;
 			font-size: 1.5em;
 			word-break: break-all;
@@ -207,6 +209,7 @@ const pageTplStr = `
 			text-align: right;
 			white-space: nowrap;
 			overflow: hidden;
+			float: right;
 		}
 
 		.error {
