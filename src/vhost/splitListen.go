@@ -30,7 +30,7 @@ func splitListen(listen string, useTLS bool) (proto, addr string) {
 	}
 
 	// :port
-	if listen[0] == ':' && isDecimalDigits(listen[1:]) {
+	if listen[0] == ':' {
 		return "tcp", listen
 	}
 
