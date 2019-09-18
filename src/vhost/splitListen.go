@@ -1,6 +1,7 @@
 package vhost
 
 import (
+	"../util"
 	"strings"
 )
 
@@ -10,17 +11,6 @@ func getDefaultPort(useTLS bool) string {
 	} else {
 		return ":80"
 	}
-}
-
-func isDecimalDigits(input string) bool {
-	for i, length := 0, len(input); i < length; i++ {
-		b := input[i]
-		if b < '0' || b > '9' {
-			return false
-		}
-	}
-
-	return true
 }
 
 func splitListen(listen string, useTLS bool) (proto, addr string) {
@@ -35,7 +25,7 @@ func splitListen(listen string, useTLS bool) (proto, addr string) {
 	}
 
 	// port
-	if isDecimalDigits(listen) {
+	if util.IsDigits(listen) {
 		return "tcp", ":" + listen
 	}
 
