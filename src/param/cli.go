@@ -196,10 +196,6 @@ func doParseCli() []*Param {
 		params = append(params, param)
 	}
 
-	if len(params) == 0 {
-		params = append(params, &Param{})
-	}
-
 	return params
 }
 

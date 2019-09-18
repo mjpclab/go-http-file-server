@@ -112,9 +112,15 @@ func (c *Command) Parse(initArgs, initConfigs []string) *ParseResult {
 	return result
 }
 
-func (c *Command) ParseGroups(initArgs, initConfigs []string) []*ParseResult {
+func (c *Command) ParseGroups(initArgs, initConfigs []string) (results []*ParseResult) {
 	leafCmd, commands, optionSetInitArgs, optionSetInitConfigs := c.splitCommandsArgs(initArgs, initConfigs)
-	results := leafCmd.OptionSet.ParseGroups(optionSetInitArgs, optionSetInitConfigs)
+
+	if len(optionSetInitArgs) == 0 && len(optionSetInitConfigs) == 0 {
+		result := leafCmd.OptionSet.Parse(optionSetInitArgs, optionSetInitConfigs)
+		results = append(results, result)
+	} else {
+		results = leafCmd.OptionSet.ParseGroups(optionSetInitArgs, optionSetInitConfigs)
+	}
 
 	for _, result := range results {
 		result.commands = commands
