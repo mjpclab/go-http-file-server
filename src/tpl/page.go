@@ -217,6 +217,12 @@ const pageTplStr = `
 			padding: 1em;
 			background: #ffc;
 		}
+
+		@media only screen and (max-width: 350px) {
+			.item-list .time {
+				display: none;
+			}
+		}
 	</style>
 </head>
 <body>
