@@ -140,7 +140,7 @@ const pageTplStr = `
 			float: left;
 			margin: 1em 0.5em 0 0.5em;
 			padding: 1em 1em 1em 3em;
-			border: 2px #f5f5f5 solid
+			border: 2px #f5f5f5 solid;
 		}
 
 		.archive a:hover {
@@ -272,53 +272,53 @@ const pageTplStr = `
 {{end}}
 
 <script type="text/javascript">
-    (function () {
-        if (!document.querySelector) {
-            return;
-        }
+	(function () {
+		if (!document.querySelector) {
+			return;
+		}
 
-        var upload = document.querySelector('.upload');
-        if (!upload || !upload.addEventListener) {
-            return;
-        }
-        var fileInput = upload.querySelector('.files');
+		var upload = document.querySelector('.upload');
+		if (!upload || !upload.addEventListener) {
+			return;
+		}
+		var fileInput = upload.querySelector('.files');
 
-        var addClass = function (ele, className) {
-            ele && ele.classList && ele.classList.add(className);
-        };
+		var addClass = function (ele, className) {
+			ele && ele.classList && ele.classList.add(className);
+		};
 
-        var removeClass = function (ele, className) {
-            ele && ele.classList && ele.classList.remove(className);
-        };
+		var removeClass = function (ele, className) {
+			ele && ele.classList && ele.classList.remove(className);
+		};
 
-        var onDragEnterOver = function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-            addClass(e.currentTarget, 'dragging');
-        };
+		var onDragEnterOver = function (e) {
+			e.stopPropagation();
+			e.preventDefault();
+			addClass(e.currentTarget, 'dragging');
+		};
 
-        var onDragLeave = function (e) {
-            if (e.target === e.currentTarget) {
-                removeClass(e.currentTarget, 'dragging');
-            }
-        };
+		var onDragLeave = function (e) {
+			if (e.target === e.currentTarget) {
+				removeClass(e.currentTarget, 'dragging');
+			}
+		};
 
-        var onDrop = function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-            removeClass(e.currentTarget, 'dragging');
+		var onDrop = function (e) {
+			e.stopPropagation();
+			e.preventDefault();
+			removeClass(e.currentTarget, 'dragging');
 
-            if (!e.dataTransfer.files) {
-                return;
-            }
-            fileInput.files = e.dataTransfer.files;
-        };
+			if (!e.dataTransfer.files) {
+				return;
+			}
+			fileInput.files = e.dataTransfer.files;
+		};
 
-        upload.addEventListener('dragenter', onDragEnterOver);
-        upload.addEventListener('dragover', onDragEnterOver);
-        upload.addEventListener('dragleave', onDragLeave);
-        upload.addEventListener('drop', onDrop);
-    })()
+		upload.addEventListener('dragenter', onDragEnterOver);
+		upload.addEventListener('dragover', onDragEnterOver);
+		upload.addEventListener('dragleave', onDragLeave);
+		upload.addEventListener('drop', onDrop);
+	})();
 </script>
 </body>
 </html>
