@@ -2,20 +2,16 @@ package app
 
 import (
 	"../param"
+	"../serverErrHandler"
 	"../vhost"
 	"crypto/tls"
+	"errors"
 	"net"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
 )
-
-func stderrLog(messages ...string) {
-	for _, message := range messages {
-		os.Stderr.WriteString(message + "\n")
-	}
-}
 
 type App struct {
 	vhosts  []*vhost.VHost
@@ -38,7 +34,7 @@ func (app *App) Open() {
 		l.listener, err = net.Listen(l.proto, l.addr)
 		if err != nil {
 			hasError = true
-			stderrLog(err.Error())
+			serverErrHandler.CheckError(err)
 		}
 
 		if err == nil && l.proto == "unix" {
@@ -79,7 +75,7 @@ func (app *App) Open() {
 			}
 			if err != nil {
 				hasError = true
-				stderrLog(err.Error() + "\n")
+				serverErrHandler.CheckError(err)
 			}
 			wgStop.Done()
 		}()
@@ -142,7 +138,7 @@ func NewApp(params []*param.Param) *App {
 			item := app.listens.findItemByAddr(vhAddr)
 			if item != nil && item.useTLS != vhListen.UseTLS {
 				hasErr = true
-				stderrLog(vhAddr + " cannot served for both PLAIN and TLS mode")
+				serverErrHandler.CheckError(errors.New(vhAddr + " cannot served for both PLAIN and TLS mode"))
 			}
 
 			// listen, hostname duplicated
@@ -150,7 +146,7 @@ func NewApp(params []*param.Param) *App {
 				item := app.listens.findItemByAddrHostname(vhAddr, vhHostname)
 				if item != nil {
 					hasErr = true
-					stderrLog(vhAddr + " " + vhHostname + " duplicated Listen and Hostname")
+					serverErrHandler.CheckError(errors.New(vhAddr + " " + vhHostname + " duplicated Listen and Hostname"))
 				}
 			}
 		}
@@ -199,7 +195,7 @@ func NewApp(params []*param.Param) *App {
 				cert, err := tls.LoadX509KeyPair(vhListen.Cert, vhListen.Key)
 				if err != nil {
 					hasErr = true
-					stderrLog(err.Error())
+					serverErrHandler.CheckError(err)
 				}
 				item.certs = append(item.certs, cert)
 			}
