@@ -59,8 +59,8 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *pageData
 	writeArchiveHeader(w, "application/octet-stream", filename)
 
 	h.visitFs(
-		h.root+pageData.handlerRequestPath,
-		pageData.rawRequestPath,
+		h.root+pageData.handlerReqPath,
+		pageData.rawReqPath,
 		"",
 		func(f *os.File, fInfo os.FileInfo, relPath string) {
 			go h.logArchive(filename, relPath, r)
@@ -92,8 +92,8 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *pageData
 	writeArchiveHeader(w, "application/octet-stream", filename)
 
 	h.visitFs(
-		h.root+pageData.handlerRequestPath,
-		pageData.rawRequestPath,
+		h.root+pageData.handlerReqPath,
+		pageData.rawReqPath,
 		"",
 		func(f *os.File, fInfo os.FileInfo, relPath string) {
 			go h.logArchive(filename, relPath, r)

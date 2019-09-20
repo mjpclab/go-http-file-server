@@ -15,8 +15,8 @@ type pathEntry struct {
 }
 
 type pageData struct {
-	rawRequestPath     string
-	handlerRequestPath string
+	rawReqPath     string
+	handlerReqPath string
 
 	IsRoot        bool
 	Path          string
@@ -67,10 +67,8 @@ func getPathEntries(path string, tailSlash bool) []*pathEntry {
 	return pathEntries
 }
 
-func (h *handler) stat(requestPath string) (file *os.File, item os.FileInfo, err error) {
-	fsPath := path.Clean(h.root + requestPath)
-
-	file, err = os.Open(fsPath)
+func stat(reqFsPath string) (file *os.File, item os.FileInfo, err error) {
+	file, err = os.Open(reqFsPath)
 	if err != nil {
 		return
 	}
@@ -83,7 +81,7 @@ func (h *handler) stat(requestPath string) (file *os.File, item os.FileInfo, err
 	return
 }
 
-func (h *handler) readdir(file *os.File, item os.FileInfo) (subItems []os.FileInfo, errs []error) {
+func readdir(file *os.File, item os.FileInfo) (subItems []os.FileInfo, errs []error) {
 	if file == nil || item == nil || !item.IsDir() {
 		return
 	}
@@ -117,7 +115,7 @@ func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo) []e
 		if len(aliasPrefix) != 1 && aliasSuffix[0] != '/' {
 			// aliasUrlPath doesn't cover the whole directory name
 			// e.g:
-			// rawRequestPath == "/abc/def/ghi"
+			// rawReqPath == "/abc/def/ghi"
 			// aliasPrefix == "/abc/de"
 			continue
 		}
@@ -285,15 +283,16 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
 
-	rawRequestPath := util.CleanUrlPath(requestUri)
-	requestPath := util.CleanUrlPath(rawRequestPath[len(h.urlPrefix):]) // strip url prefix path
+	rawReqPath := util.CleanUrlPath(requestUri)
+	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
 	errs := []error{}
 
-	isRoot := rawRequestPath == "/"
+	isRoot := rawReqPath == "/"
 
-	pathEntries := getPathEntries(rawRequestPath, tailSlash)
+	pathEntries := getPathEntries(rawReqPath, tailSlash)
 
-	file, item, _statErr := h.stat(requestPath)
+	reqFsPath := path.Clean(h.root + reqPath)
+	file, item, _statErr := stat(reqFsPath)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		notFound = os.IsNotExist(_statErr)
@@ -302,29 +301,29 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErrs := h.readdir(file, item)
+	subItems, _readdirErrs := readdir(file, item)
 	errs = append(errs, _readdirErrs...)
 	internalError = internalError || len(_readdirErrs) > 0
 
-	_mergeErrs := h.mergeAlias(rawRequestPath, &subItems)
+	_mergeErrs := h.mergeAlias(rawReqPath, &subItems)
 	errs = append(errs, _mergeErrs...)
 	internalError = internalError || len(_mergeErrs) > 0
 
 	subItems = h.FilterItems(subItems)
 	sortSubItems(subItems)
 
-	subItemPrefix := getSubItemPrefix(requestPath, tailSlash)
+	subItemPrefix := getSubItemPrefix(reqPath, tailSlash)
 
-	canUpload := h.getCanUpload(item, rawRequestPath)
+	canUpload := h.getCanUpload(item, rawReqPath)
 
-	canArchive := h.getCanArchive(subItems, rawRequestPath)
+	canArchive := h.getCanArchive(subItems, rawReqPath)
 
 	data = &pageData{
-		rawRequestPath:     rawRequestPath,
-		handlerRequestPath: requestPath,
+		rawReqPath:     rawReqPath,
+		handlerReqPath: reqPath,
 
 		IsRoot:        isRoot,
-		Path:          rawRequestPath,
+		Path:          rawReqPath,
 		Paths:         pathEntries,
 		File:          file,
 		Item:          item,

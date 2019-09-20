@@ -49,8 +49,8 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *pageData
 	writeArchiveHeader(w, "application/zip", filename)
 
 	h.visitFs(
-		h.root+pageData.handlerRequestPath,
-		pageData.rawRequestPath,
+		h.root+pageData.handlerReqPath,
+		pageData.rawReqPath,
 		"",
 		func(f *os.File, fInfo os.FileInfo, relPath string) {
 			go h.logArchive(filename, relPath, r)

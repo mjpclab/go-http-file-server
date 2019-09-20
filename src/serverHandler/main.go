@@ -41,7 +41,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pageData.CanUpload && r.Method == "POST" {
-		h.saveUploadFiles(pageData.handlerRequestPath, r)
+		h.saveUploadFiles(pageData.handlerReqPath, r)
 		http.Redirect(w, r, r.RequestURI, http.StatusFound)
 		return
 	}
