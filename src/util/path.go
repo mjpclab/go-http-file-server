@@ -23,13 +23,9 @@ func HasUrlPrefixDir(urlPath, prefix string) bool {
 		return true
 	}
 
-	var prefixDir string
-
-	if prefix == "/" {
-		prefixDir = prefix
-	} else {
-		prefixDir = prefix + "/"
+	if prefix[len(prefix)-1] != '/' {
+		prefix = prefix + "/"
 	}
 
-	return strings.HasPrefix(urlPath, prefixDir)
+	return strings.HasPrefix(urlPath, prefix)
 }
