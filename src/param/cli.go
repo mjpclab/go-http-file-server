@@ -26,13 +26,19 @@ func init() {
 	err = optionSet.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
 	serverErrHandler.CheckFatal(err)
 
-	err = optionSet.AddFlagsValues("uploads", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
+	err = optionSet.AddFlagsValues("uploadurls", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
+	serverErrHandler.CheckFatal(err)
+
+	err = optionSet.AddFlagsValues("uploaddirs", []string{"-p", "--upload-dir"}, "", nil, "file system path that allow upload files")
 	serverErrHandler.CheckFatal(err)
 
 	err = optionSet.AddFlags("globalarchive", []string{"-A", "--global-archive"}, "GHFS_GLOBAL_ARCHIVE", "enable download archive for all directories")
 	serverErrHandler.CheckFatal(err)
 
-	err = optionSet.AddFlagValues("archives", "--archive", "", nil, "enable download archive for specific directories")
+	err = optionSet.AddFlagValues("archiveurls", "--archive", "", nil, "url path that enable download as archive for specific directories")
+	serverErrHandler.CheckFatal(err)
+
+	err = optionSet.AddFlagValues("archivedirs", "--archive-dir", "", nil, "file system path that enable download as archive for specific directories")
 	serverErrHandler.CheckFatal(err)
 
 	err = optionSet.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
@@ -159,13 +165,21 @@ func doParseCli() []*Param {
 		arrAlias, _ := result.GetStrings("aliases")
 		param.Aliases = normalizePathMaps(arrAlias)
 
-		// normalize uploads
-		arrUploads, _ := result.GetStrings("uploads")
-		param.Uploads = normalizeUrlPaths(arrUploads)
+		// normalize upload urls
+		arrUploadUrls, _ := result.GetStrings("uploadurls")
+		param.UploadUrls = normalizeUrlPaths(arrUploadUrls)
 
-		// normalize archives
-		arrArchives, _ := result.GetStrings("archives")
-		param.Archives = normalizeUrlPaths(arrArchives)
+		// normalize upload dirs
+		arrUploadDirs, _ := result.GetStrings("uploaddirs")
+		param.UploadDirs = normalizeFsPaths(arrUploadDirs)
+
+		// normalize archive urls
+		arrArchiveUrls, _ := result.GetStrings("archiveurls")
+		param.ArchiveUrls = normalizeUrlPaths(arrArchiveUrls)
+
+		// normalize archive dirs
+		arrArchiveDirs, _ := result.GetStrings("archivedirs")
+		param.ArchiveDirs = normalizeFsPaths(arrArchiveDirs)
 
 		// shows
 		shows, err := getWildcardRegexp(result.GetStrings("shows"))

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -243,7 +244,7 @@ func getItemName(item os.FileInfo, r *http.Request) (itemName string) {
 	return
 }
 
-func (h *handler) getCanUpload(item os.FileInfo, rawRequestPath string) bool {
+func (h *handler) getCanUpload(item os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if item == nil {
 		return false
 	}
@@ -252,8 +253,14 @@ func (h *handler) getCanUpload(item os.FileInfo, rawRequestPath string) bool {
 		return true
 	}
 
-	for _, uploadUrlPath := range h.uploads {
-		if util.HasUrlPrefixDir(rawRequestPath, uploadUrlPath) {
+	for _, uploadUrl := range h.uploadUrls {
+		if util.HasUrlPrefixDir(rawReqPath, uploadUrl) {
+			return true
+		}
+	}
+
+	for _, uploadDir := range h.uploadDirs {
+		if util.HasFsPrefixDir(reqFsPath, uploadDir) {
 			return true
 		}
 	}
@@ -261,7 +268,7 @@ func (h *handler) getCanUpload(item os.FileInfo, rawRequestPath string) bool {
 	return false
 }
 
-func (h *handler) getCanArchive(subItems []os.FileInfo, rawRequestPath string) bool {
+func (h *handler) getCanArchive(subItems []os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if len(subItems) == 0 {
 		return false
 	}
@@ -270,8 +277,14 @@ func (h *handler) getCanArchive(subItems []os.FileInfo, rawRequestPath string) b
 		return true
 	}
 
-	for _, archiveUrlPath := range h.archives {
-		if util.HasUrlPrefixDir(rawRequestPath, archiveUrlPath) {
+	for _, archiveUrl := range h.archiveUrls {
+		if util.HasUrlPrefixDir(rawReqPath, archiveUrl) {
+			return true
+		}
+	}
+
+	for _, archiveDir := range h.archiveDirs {
+		if util.HasFsPrefixDir(reqFsPath, archiveDir) {
 			return true
 		}
 	}
@@ -291,7 +304,11 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 
 	pathEntries := getPathEntries(rawReqPath, tailSlash)
 
-	reqFsPath := path.Clean(h.root + reqPath)
+	reqFsPath, _absErr := filepath.Abs(h.root + reqPath)
+	if _absErr != nil {
+		reqFsPath = path.Clean(h.root + reqPath)
+	}
+
 	file, item, _statErr := stat(reqFsPath)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
@@ -314,9 +331,9 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 
 	subItemPrefix := getSubItemPrefix(reqPath, tailSlash)
 
-	canUpload := h.getCanUpload(item, rawReqPath)
+	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 
-	canArchive := h.getCanArchive(subItems, rawReqPath)
+	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 
 	data = &pageData{
 		rawReqPath:     rawReqPath,

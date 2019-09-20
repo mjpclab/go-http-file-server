@@ -54,19 +54,21 @@ server [options]
 -U|--global-upload
     Allow upload files for all url paths.
     Use it with care.
-
 -u|--upload <url-path> ...
     Set url paths that allows to upload files.
     If filename exists, will try to add or increase numeric prefix.
     Use it with care.
+--upload-dir <fs-path> ...
+    Similar to --upload, but use file system path instead of url path.
 
 -A|--global-archive
     Allow user to download the whole contents of current directory for all url paths.
     A download link will appear on top part of the page.
     Make sure there is no circular symbol links.
-
 --archive <url-path> ...
     Allow user to download the whole contents of current directory for specific url paths.
+--archive-dir <fs-path> ...
+    Similar to --archive, but use file system path instead of url path.
 
 -c|--cert <file>
     Specify TLS certificate file.

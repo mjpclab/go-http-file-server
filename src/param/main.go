@@ -3,6 +3,7 @@ package param
 import (
 	"../util"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -12,9 +13,11 @@ type Param struct {
 	Root          string
 	Aliases       map[string]string
 	GlobalUpload  bool
-	Uploads       []string
+	UploadUrls    []string
+	UploadDirs    []string
 	GlobalArchive bool
-	Archives      []string
+	ArchiveUrls   []string
+	ArchiveDirs   []string
 	Key           string
 	Cert          string
 	Listen        []string
@@ -72,9 +75,29 @@ func normalizeUrlPaths(inputs []string) []string {
 	outputs := make([]string, 0, len(inputs))
 
 	for _, input := range inputs {
-		if len(input) > 0 {
-			outputs = append(outputs, util.CleanUrlPath(input))
+		if len(input) == 0 {
+			continue
 		}
+		outputs = append(outputs, util.CleanUrlPath(input))
+	}
+
+	return outputs
+}
+
+func normalizeFsPaths(inputs []string) []string {
+	outputs := make([]string, 0, len(inputs))
+
+	for _, input := range inputs {
+		if len(input) == 0 {
+			continue
+		}
+
+		abs, err := filepath.Abs(input)
+		if err != nil {
+			continue
+		}
+
+		outputs = append(outputs, abs)
 	}
 
 	return outputs

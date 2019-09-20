@@ -14,9 +14,11 @@ type handler struct {
 	urlPrefix     string
 	aliases       map[string]string
 	globalUpload  bool
-	uploads       []string
+	uploadUrls    []string
+	uploadDirs    []string
 	globalArchive bool
-	archives      []string
+	archiveUrls   []string
+	archiveDirs   []string
 	shows         *regexp.Regexp
 	showDirs      *regexp.Regexp
 	showFiles     *regexp.Regexp
@@ -102,9 +104,11 @@ func NewHandler(
 		urlPrefix:     urlPrefix,
 		aliases:       p.Aliases,
 		globalUpload:  p.GlobalUpload,
-		uploads:       p.Uploads,
+		uploadUrls:    p.UploadUrls,
+		uploadDirs:    p.UploadDirs,
 		globalArchive: p.GlobalArchive,
-		archives:      p.Archives,
+		archiveUrls:   p.ArchiveUrls,
+		archiveDirs:   p.ArchiveDirs,
 		shows:         p.Shows,
 		showDirs:      p.ShowDirs,
 		showFiles:     p.ShowFiles,
