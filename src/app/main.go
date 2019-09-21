@@ -200,9 +200,6 @@ func NewApp(params []*param.Param) *App {
 				item.certs = append(item.certs, cert)
 			}
 			item.vhosts = append(item.vhosts, vh)
-
-			// verified
-			app.listens = append(app.listens, )
 		}
 
 		if hasErr {
