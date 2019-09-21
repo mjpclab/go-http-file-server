@@ -53,7 +53,7 @@ func (app *App) Open() {
 		item := l
 
 		server := &http.Server{
-			Handler: http.HandlerFunc(item.handlerFunc),
+			Handler: item.handler,
 		}
 		if item.useTLS {
 			tlsConfig := &tls.Config{
@@ -189,31 +189,33 @@ func NewApp(params []*param.Param) *App {
 	// handler for each listen item
 	for _, l := range app.listens {
 		item := l
-		item.handlerFunc = func(w http.ResponseWriter, r *http.Request) {
+
+		if len(item.vhosts) == 1 {
+			item.handler = item.vhosts[0].Mux
+			continue
+		}
+
+		item.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var serveVHost *vhost.VHost
 
-			if len(item.vhosts) == 1 {
-				serveVHost = item.vhosts[0]
-			} else {
-				hostname := r.Host
-				colonIndex := strings.LastIndexByte(hostname, ':')
-				if colonIndex >= 0 {
-					hostname = hostname[:colonIndex]
-				}
+			hostname := r.Host
+			colonIndex := strings.LastIndexByte(hostname, ':')
+			if colonIndex >= 0 {
+				hostname = hostname[:colonIndex]
+			}
 
-				for _, vh := range item.vhosts {
-					if vh.MatchHostname(hostname) {
-						serveVHost = vh
-						break
-					}
+			for _, vh := range item.vhosts {
+				if vh.MatchHostname(hostname) {
+					serveVHost = vh
+					break
 				}
-				if serveVHost == nil {
-					serveVHost = item.vhosts[0]
-				}
+			}
+			if serveVHost == nil {
+				serveVHost = item.vhosts[0]
 			}
 
 			serveVHost.Mux.ServeHTTP(w, r)
-		}
+		})
 	}
 
 	return app

@@ -8,15 +8,15 @@ import (
 )
 
 type ListenItem struct {
-	proto       string
-	addr        string
-	useTLS      bool
-	hostnames   []string
-	certs       []tls.Certificate
-	handlerFunc http.HandlerFunc
-	listener    net.Listener
-	server      *http.Server
-	vhosts      []*vhost.VHost
+	proto     string
+	addr      string
+	useTLS    bool
+	hostnames []string
+	certs     []tls.Certificate
+	handler   http.Handler
+	listener  net.Listener
+	server    *http.Server
+	vhosts    []*vhost.VHost
 }
 
 type Listens []*ListenItem
