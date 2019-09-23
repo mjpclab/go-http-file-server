@@ -247,7 +247,7 @@ func getItemName(item os.FileInfo, r *http.Request) (itemName string) {
 }
 
 func (h *handler) getCanUpload(item os.FileInfo, rawReqPath, reqFsPath string) bool {
-	if item == nil {
+	if item == nil || !item.IsDir() {
 		return false
 	}
 

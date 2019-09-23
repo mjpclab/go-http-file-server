@@ -57,6 +57,13 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}()
 	}
+	file := pageData.File
+	if file != nil {
+		defer func() {
+			err := file.Close()
+			h.errHandler.LogError(err)
+		}()
+	}
 
 	if pageData.CanUpload && r.Method == "POST" {
 		h.saveUploadFiles(pageData.handlerReqPath, r)
@@ -85,16 +92,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	file := pageData.File
 	item := pageData.Item
-
-	if file != nil {
-		defer func() {
-			err := file.Close()
-			h.errHandler.LogError(err)
-		}()
-	}
-
 	if file != nil && item != nil && !item.IsDir() {
 		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
 		return
