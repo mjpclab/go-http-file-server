@@ -22,6 +22,7 @@ type pageData struct {
 	IsRoot        bool
 	Path          string
 	Paths         []*pathEntry
+	RootRelPath   string
 	File          *os.File
 	Item          os.FileInfo
 	ItemName      string
@@ -318,6 +319,12 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	isRoot := rawReqPath == "/"
 
 	pathEntries := getPathEntries(rawReqPath, tailSlash)
+	var rootRelPath string
+	if len(pathEntries) > 0 {
+		rootRelPath = pathEntries[0].Path
+	} else {
+		rootRelPath = "./"
+	}
 
 	reqFsPath, _absErr := filepath.Abs(h.root + reqPath)
 	if _absErr != nil {
@@ -357,6 +364,7 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 		IsRoot:        isRoot,
 		Path:          rawReqPath,
 		Paths:         pathEntries,
+		RootRelPath:   rootRelPath,
 		File:          file,
 		Item:          item,
 		ItemName:      itemName,

@@ -40,6 +40,15 @@ type handler struct {
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	go h.logRequest(r)
 
+	if len(r.URL.RawQuery) > 0 {
+		queryValues := r.URL.Query()
+		assertPath := queryValues.Get("assert")
+		if len(assertPath) > 0 {
+			h.assert(w, r, assertPath)
+			return
+		}
+	}
+
 	pageData, notFound, internalError := h.getPageData(r)
 	if len(pageData.Errors) > 0 {
 		go func() {
@@ -62,7 +71,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if pageData.CanArchive {
+	if pageData.CanArchive && len(r.URL.RawQuery) > 0 {
 		switch r.URL.RawQuery {
 		case "tar":
 			h.tar(w, r, pageData)
