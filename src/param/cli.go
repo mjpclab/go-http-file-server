@@ -41,6 +41,12 @@ func init() {
 	err = optionSet.AddFlagValues("archivedirs", "--archive-dir", "", nil, "file system path that enable download as archive for specific directories")
 	serverErrHandler.CheckFatal(err)
 
+	err = optionSet.AddFlag("globalcors", "--global-cors", "GHFS_GLOBAL_CORS", "enable CORS headers for all directories")
+	serverErrHandler.CheckFatal(err)
+
+	err = optionSet.AddFlagValues("corsurls", "--cors", "", nil, "url path that enable CORS headers for specific directories")
+	serverErrHandler.CheckFatal(err)
+
 	err = optionSet.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
 	serverErrHandler.CheckFatal(err)
 
@@ -143,6 +149,7 @@ func doParseCli() []*Param {
 		param.Root, _ = result.GetString("root")
 		param.GlobalUpload = result.HasKey("globalupload")
 		param.GlobalArchive = result.HasKey("globalarchive")
+		param.GlobalCors = result.HasKey("globalcors")
 		param.Key, _ = result.GetString("key")
 		param.Cert, _ = result.GetString("cert")
 		param.Hostnames, _ = result.GetStrings("hostnames")
@@ -180,6 +187,10 @@ func doParseCli() []*Param {
 		// normalize archive dirs
 		arrArchiveDirs, _ := result.GetStrings("archivedirs")
 		param.ArchiveDirs = normalizeFsPaths(arrArchiveDirs)
+
+		// normalize cors urls
+		arrCorsUrls, _ := result.GetStrings("corsurls")
+		param.CorsUrls = normalizeUrlPaths(arrCorsUrls)
 
 		// shows
 		shows, err := getWildcardRegexp(result.GetStrings("shows"))

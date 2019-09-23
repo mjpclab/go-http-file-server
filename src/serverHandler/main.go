@@ -10,24 +10,31 @@ import (
 )
 
 type handler struct {
-	root          string
-	urlPrefix     string
-	aliases       map[string]string
-	globalUpload  bool
-	uploadUrls    []string
-	uploadDirs    []string
+	root      string
+	urlPrefix string
+	aliases   map[string]string
+
+	globalUpload bool
+	uploadUrls   []string
+	uploadDirs   []string
+
 	globalArchive bool
 	archiveUrls   []string
 	archiveDirs   []string
-	shows         *regexp.Regexp
-	showDirs      *regexp.Regexp
-	showFiles     *regexp.Regexp
-	hides         *regexp.Regexp
-	hideDirs      *regexp.Regexp
-	hideFiles     *regexp.Regexp
-	template      *template.Template
-	logger        *serverLog.Logger
-	errHandler    *serverErrHandler.ErrHandler
+
+	globalCors bool
+	corsUrls   []string
+
+	shows     *regexp.Regexp
+	showDirs  *regexp.Regexp
+	showFiles *regexp.Regexp
+	hides     *regexp.Regexp
+	hideDirs  *regexp.Regexp
+	hideFiles *regexp.Regexp
+	template  *template.Template
+
+	logger     *serverLog.Logger
+	errHandler *serverErrHandler.ErrHandler
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +53,13 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.saveUploadFiles(pageData.handlerReqPath, r)
 		http.Redirect(w, r, r.RequestURI, http.StatusFound)
 		return
+	}
+
+	if pageData.CanCors {
+		h.cors(w, r)
+		if r.Method == "OPTIONS" {
+			return
+		}
 	}
 
 	if pageData.CanArchive {
@@ -100,24 +114,31 @@ func NewHandler(
 	errHandler *serverErrHandler.ErrHandler,
 ) *handler {
 	h := &handler{
-		root:          root,
-		urlPrefix:     urlPrefix,
-		aliases:       p.Aliases,
-		globalUpload:  p.GlobalUpload,
-		uploadUrls:    p.UploadUrls,
-		uploadDirs:    p.UploadDirs,
+		root:      root,
+		urlPrefix: urlPrefix,
+		aliases:   p.Aliases,
+
+		globalUpload: p.GlobalUpload,
+		uploadUrls:   p.UploadUrls,
+		uploadDirs:   p.UploadDirs,
+
 		globalArchive: p.GlobalArchive,
 		archiveUrls:   p.ArchiveUrls,
 		archiveDirs:   p.ArchiveDirs,
-		shows:         p.Shows,
-		showDirs:      p.ShowDirs,
-		showFiles:     p.ShowFiles,
-		hides:         p.Hides,
-		hideDirs:      p.HideDirs,
-		hideFiles:     p.HideFiles,
-		template:      template,
-		logger:        logger,
-		errHandler:    errHandler,
+
+		globalCors: p.GlobalCors,
+		corsUrls:   p.CorsUrls,
+
+		shows:     p.Shows,
+		showDirs:  p.ShowDirs,
+		showFiles: p.ShowFiles,
+		hides:     p.Hides,
+		hideDirs:  p.HideDirs,
+		hideFiles: p.HideFiles,
+		template:  template,
+
+		logger:     logger,
+		errHandler: errHandler,
 	}
 	return h
 }

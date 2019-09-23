@@ -29,6 +29,7 @@ type pageData struct {
 	SubItemPrefix string
 	CanUpload     bool
 	CanArchive    bool
+	CanCors       bool
 	Errors        []error
 }
 
@@ -292,6 +293,20 @@ func (h *handler) getCanArchive(subItems []os.FileInfo, rawReqPath, reqFsPath st
 	return false
 }
 
+func (h *handler) getCanCors(rawReqPath string) bool {
+	if h.globalCors {
+		return true
+	}
+
+	for _, corsUrl := range h.corsUrls {
+		if util.HasUrlPrefixDir(rawReqPath, corsUrl) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, internalError bool) {
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
@@ -332,8 +347,8 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	subItemPrefix := getSubItemPrefix(reqPath, tailSlash)
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
-
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
+	canCors := h.getCanCors(rawReqPath)
 
 	data = &pageData{
 		rawReqPath:     rawReqPath,
@@ -347,9 +362,12 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 		ItemName:      itemName,
 		SubItems:      subItems,
 		SubItemPrefix: subItemPrefix,
-		CanUpload:     canUpload,
-		CanArchive:    canArchive,
-		Errors:        errs,
+
+		CanUpload:  canUpload,
+		CanArchive: canArchive,
+		CanCors:    canCors,
+
+		Errors: errs,
 	}
 
 	return

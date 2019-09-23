@@ -70,6 +70,11 @@ server [options]
 --archive-dir <fs-path> ...
     Similar to --archive, but use file system path instead of url path.
 
+--global-cors
+    Allow CORS requests for all url paths.
+--cors <url-path> ...
+    Allow CORS requests for specific url paths.
+
 -c|--cert <file>
     Specify TLS certificate file.
 

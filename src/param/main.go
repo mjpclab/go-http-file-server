@@ -10,29 +10,37 @@ import (
 )
 
 type Param struct {
-	Root          string
-	Aliases       map[string]string
-	GlobalUpload  bool
-	UploadUrls    []string
-	UploadDirs    []string
+	Root    string
+	Aliases map[string]string
+
+	GlobalUpload bool
+	UploadUrls   []string
+	UploadDirs   []string
+
 	GlobalArchive bool
 	ArchiveUrls   []string
 	ArchiveDirs   []string
-	Key           string
-	Cert          string
-	Listen        []string
-	ListenPlain   []string
-	ListenTLS     []string
-	Hostnames     []string
-	Template      string
-	Shows         *regexp.Regexp
-	ShowDirs      *regexp.Regexp
-	ShowFiles     *regexp.Regexp
-	Hides         *regexp.Regexp
-	HideDirs      *regexp.Regexp
-	HideFiles     *regexp.Regexp
-	AccessLog     string
-	ErrorLog      string
+
+	GlobalCors bool
+	CorsUrls   []string
+
+	Key         string
+	Cert        string
+	Listen      []string
+	ListenPlain []string
+	ListenTLS   []string
+	Hostnames   []string
+	Template    string
+
+	Shows     *regexp.Regexp
+	ShowDirs  *regexp.Regexp
+	ShowFiles *regexp.Regexp
+	Hides     *regexp.Regexp
+	HideDirs  *regexp.Regexp
+	HideFiles *regexp.Regexp
+
+	AccessLog string
+	ErrorLog  string
 }
 
 func normalizePathMaps(inputs []string) map[string]string {
