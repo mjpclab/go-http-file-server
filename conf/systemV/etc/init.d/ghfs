@@ -1,0 +1,77 @@
+#!/bin/sh
+#
+# ghfs - Go HTTP File Server
+#
+# chkconfig:   35 85 15
+# description: Go HTTP File Server
+# processname: ghfs
+# config:      /etc/ghfs.conf
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+ghfs="/usr/local/bin/ghfs"
+prog=$(basename $ghfs)
+
+start() {
+    echo -n $"Starting $prog: "
+    "$ghfs" --config=/etc/ghfs.conf &
+    retval=$?
+    [ $retval -eq 0 ] && success || failure
+    echo
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    killproc "$prog"
+    retval=$?
+    echo
+    return $retval
+}
+
+restart() {
+    stop
+    start
+}
+
+_status() {
+    status $prog
+}
+
+_status_q() {
+    _status > /dev/null 2>&1
+}
+
+case "$1" in
+    start)
+        _status_q && exit 0
+        $1
+        ;;
+    stop)
+        _status_q || exit 0
+        $1
+        ;;
+    restart|reload)
+        restart
+        ;;
+    status)
+        _status
+        ;;
+    status_q)
+        _status_q
+        ;;
+    condrestart|try-restart)
+        _status_q || exit 7
+        restart
+	    ;;
+    *)
+        echo $"Usage: $0 {start|stop|reload|status|restart}"
+        exit 2
+esac
