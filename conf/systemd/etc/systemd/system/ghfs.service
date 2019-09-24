@@ -1,0 +1,13 @@
+[Unit]
+Description=Go http file server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ghfs --config=/etc/ghfs.conf
+ExecReload=/bin/kill -s HUP $MAINPID
+KillSignal=SIGTERM
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
