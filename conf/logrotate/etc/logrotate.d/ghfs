@@ -1,0 +1,13 @@
+/var/log/ghfs/*.log {
+	weekly
+	missingok
+	rotate 10
+	compress
+	delaycompress
+	notifempty
+	create
+	sharedscripts
+	postrotate
+		kill -SIGHUP $(pidof ghfs)
+	endscript
+}
