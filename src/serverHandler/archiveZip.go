@@ -21,7 +21,13 @@ func writeZip(zw *zip.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 		size = fInfo.Size()
 	}
 
-	w, err := zw.Create(archivePath)
+	header, err := zip.FileInfoHeader(fInfo)
+	if err != nil {
+		return err
+	}
+	header.Name = archivePath
+
+	w, err := zw.CreateHeader(header)
 	if err != nil {
 		return err
 	}
