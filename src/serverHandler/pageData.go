@@ -246,6 +246,22 @@ func getItemName(item os.FileInfo, r *http.Request) (itemName string) {
 	return
 }
 
+func hasUrlOrDirPrefix(urls []string, reqUrl string, dirs []string, reqDir string) bool {
+	for _, url := range urls {
+		if util.HasUrlPrefixDir(reqUrl, url) {
+			return true
+		}
+	}
+
+	for _, dir := range dirs {
+		if util.HasFsPrefixDir(reqDir, dir) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (h *handler) getCanUpload(item os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if item == nil || !item.IsDir() {
 		return false
@@ -255,19 +271,7 @@ func (h *handler) getCanUpload(item os.FileInfo, rawReqPath, reqFsPath string) b
 		return true
 	}
 
-	for _, uploadUrl := range h.uploadUrls {
-		if util.HasUrlPrefixDir(rawReqPath, uploadUrl) {
-			return true
-		}
-	}
-
-	for _, uploadDir := range h.uploadDirs {
-		if util.HasFsPrefixDir(reqFsPath, uploadDir) {
-			return true
-		}
-	}
-
-	return false
+	return hasUrlOrDirPrefix(h.uploadUrls, rawReqPath, h.uploadDirs, reqFsPath)
 }
 
 func (h *handler) getCanArchive(subItems []os.FileInfo, rawReqPath, reqFsPath string) bool {
@@ -279,33 +283,15 @@ func (h *handler) getCanArchive(subItems []os.FileInfo, rawReqPath, reqFsPath st
 		return true
 	}
 
-	for _, archiveUrl := range h.archiveUrls {
-		if util.HasUrlPrefixDir(rawReqPath, archiveUrl) {
-			return true
-		}
-	}
-
-	for _, archiveDir := range h.archiveDirs {
-		if util.HasFsPrefixDir(reqFsPath, archiveDir) {
-			return true
-		}
-	}
-
-	return false
+	return hasUrlOrDirPrefix(h.archiveUrls, rawReqPath, h.archiveDirs, reqFsPath)
 }
 
-func (h *handler) getCanCors(rawReqPath string) bool {
+func (h *handler) getCanCors(rawReqPath, reqFsPath string) bool {
 	if h.globalCors {
 		return true
 	}
 
-	for _, corsUrl := range h.corsUrls {
-		if util.HasUrlPrefixDir(rawReqPath, corsUrl) {
-			return true
-		}
-	}
-
-	return false
+	return hasUrlOrDirPrefix(h.corsUrls, rawReqPath, h.corsDirs, reqFsPath)
 }
 
 func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, internalError bool) {
@@ -355,7 +341,7 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
-	canCors := h.getCanCors(rawReqPath)
+	canCors := h.getCanCors(rawReqPath, reqFsPath)
 
 	data = &pageData{
 		rawReqPath:     rawReqPath,

@@ -44,7 +44,10 @@ func init() {
 	err = optionSet.AddFlag("globalcors", "--global-cors", "GHFS_GLOBAL_CORS", "enable CORS headers for all directories")
 	serverErrHandler.CheckFatal(err)
 
-	err = optionSet.AddFlagValues("corsurls", "--cors", "", nil, "url path that enable CORS headers for specific directories")
+	err = optionSet.AddFlagValues("corsurls", "--cors", "", nil, "url path that enable CORS headers")
+	serverErrHandler.CheckFatal(err)
+
+	err = optionSet.AddFlagValues("corsdirs", "--cors-dir", "", nil, "file system path that enable CORS headers")
 	serverErrHandler.CheckFatal(err)
 
 	err = optionSet.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
@@ -191,6 +194,10 @@ func doParseCli() []*Param {
 		// normalize cors urls
 		arrCorsUrls, _ := result.GetStrings("corsurls")
 		param.CorsUrls = normalizeUrlPaths(arrCorsUrls)
+
+		// normalize cors dirs
+		arrCorsDirs, _ := result.GetStrings("corsdirs")
+		param.CorsDirs = normalizeFsPaths(arrCorsDirs)
 
 		// shows
 		shows, err := getWildcardRegexp(result.GetStrings("shows"))

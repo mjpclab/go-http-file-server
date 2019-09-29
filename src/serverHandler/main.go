@@ -24,6 +24,7 @@ type handler struct {
 
 	globalCors bool
 	corsUrls   []string
+	corsDirs   []string
 
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
@@ -135,6 +136,7 @@ func NewHandler(
 
 		globalCors: p.GlobalCors,
 		corsUrls:   p.CorsUrls,
+		corsDirs:   p.CorsDirs,
 
 		shows:     p.Shows,
 		showDirs:  p.ShowDirs,

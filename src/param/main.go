@@ -23,6 +23,7 @@ type Param struct {
 
 	GlobalCors bool
 	CorsUrls   []string
+	CorsDirs   []string
 
 	Key         string
 	Cert        string
