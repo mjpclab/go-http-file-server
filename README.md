@@ -48,18 +48,19 @@ server [options]
     Root directory of the server.
     Defaults to current working directory.
 
--a|--alias <separator><url-path><separator><file-system-path> ...
+-a|--alias <separator><url-path><separator><fs-path> ...
     Set path alias. e.g. ":/doc:/usr/share/doc"
 
 -U|--global-upload
     Allow upload files for all url paths.
+    If filename exists, will try to add or increase numeric suffix.
     Use it with care.
 -u|--upload <url-path> ...
     Set url paths that allows to upload files.
-    If filename exists, will try to add or increase numeric prefix.
     Use it with care.
 --upload-dir <fs-path> ...
     Similar to --upload, but use file system path instead of url path.
+    Use it with care.
 
 -A|--global-archive
     Allow user to download the whole contents of current directory for all url paths.
@@ -71,9 +72,11 @@ server [options]
     Similar to --archive, but use file system path instead of url path.
 
 --global-cors
-    Allow CORS requests for all url paths.
+    Allow CORS requests for all url path.
 --cors <url-path> ...
-    Allow CORS requests for specific url paths.
+    Allow CORS requests for specific url path.
+--cors-dir <fs-path> ...
+    Allow CORS requests for specific file system path.
 
 -c|--cert <file>
     Specify TLS certificate file.
@@ -113,7 +116,7 @@ server [options]
     separated by whitespace characters.
 
     The external config's priority is lower than arguments specified on command line.
-    If one option is specified on command line, then external config is ignored.
+    If one option is specified on command line, then external config of that option is ignored.
 
 ,,
     To specify multiple virtual hosts with options, split these hosts' options by this sign.
