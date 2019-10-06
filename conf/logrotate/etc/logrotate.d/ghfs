@@ -8,6 +8,6 @@
 	create
 	sharedscripts
 	postrotate
-		kill -SIGHUP $(pidof ghfs)
+		kill -HUP $(pidof ghfs)
 	endscript
 }
