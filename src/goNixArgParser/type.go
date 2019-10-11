@@ -1,10 +1,10 @@
 package goNixArgParser
 
 type Command struct {
-	Name        string
-	Summary     string
-	OptionSet   *OptionSet
-	SubCommands []*Command
+	name        string
+	summary     string
+	options     *OptionSet
+	subCommands []*Command
 }
 
 type OptionSet struct {
@@ -42,6 +42,7 @@ type Option struct {
 type Flag struct {
 	Name            string
 	canMerge        bool
+	canFollowAssign bool
 	canEqualAssign  bool
 	canConcatAssign bool
 }

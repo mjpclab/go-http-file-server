@@ -17,12 +17,12 @@ func StringToSlice(input string) []string {
 }
 
 func NewOptionSet(
-	mergeOptionPrefix string,
+	mergeFlagPrefix string,
 	restsSigns []string,
 	groupSeps []string,
 ) *OptionSet {
 	s := &OptionSet{
-		mergeFlagPrefix: mergeOptionPrefix,
+		mergeFlagPrefix: mergeFlagPrefix,
 		restsSigns:      restsSigns,
 		groupSeps:       groupSeps,
 
@@ -37,7 +37,7 @@ func NewOptionSet(
 	return s
 }
 
-func (s *OptionSet) MergeOptionPrefix() string {
+func (s *OptionSet) MergeFlagPrefix() string {
 	return s.mergeFlagPrefix
 }
 

@@ -7,52 +7,68 @@ import (
 )
 
 func NewCommand(
-	name, summary, mergeOptionPrefix string,
+	name, summary, mergeFlagPrefix string,
 	restsSigns, groupSeps []string,
 ) *Command {
 	return &Command{
-		Name:        name,
-		Summary:     summary,
-		OptionSet:   NewOptionSet(mergeOptionPrefix, restsSigns, groupSeps),
-		SubCommands: []*Command{},
+		name:        name,
+		summary:     summary,
+		options:     NewOptionSet(mergeFlagPrefix, restsSigns, groupSeps),
+		subCommands: []*Command{},
 	}
 }
 
 func NewSimpleCommand(name, summary string) *Command {
 	return &Command{
-		Name:        name,
-		Summary:     summary,
-		OptionSet:   NewSimpleOptionSet(),
-		SubCommands: []*Command{},
+		name:        name,
+		summary:     summary,
+		options:     NewSimpleOptionSet(),
+		subCommands: []*Command{},
 	}
 }
 
 func (c *Command) NewSubCommand(
-	name, summary, mergeOptionPrefix string,
+	name, summary, mergeFlagPrefix string,
 	restsSigns, groupSeps []string,
 ) *Command {
-	subCommand := NewCommand(name, summary, mergeOptionPrefix, restsSigns, groupSeps)
-	c.SubCommands = append(c.SubCommands, subCommand)
+	subCommand := NewCommand(name, summary, mergeFlagPrefix, restsSigns, groupSeps)
+	c.subCommands = append(c.subCommands, subCommand)
 	return subCommand
 }
 
 func (c *Command) NewSimpleSubCommand(name, summary string) *Command {
 	subCommand := NewSimpleCommand(name, summary)
-	c.SubCommands = append(c.SubCommands, subCommand)
+	c.subCommands = append(c.subCommands, subCommand)
 	return subCommand
 }
 
 func (c *Command) GetSubCommand(name string) *Command {
-	if c.SubCommands == nil {
+	if c.subCommands == nil {
 		return nil
 	}
 
-	for _, cmd := range c.SubCommands {
-		if cmd.Name == name {
+	for _, cmd := range c.subCommands {
+		if cmd.name == name {
 			return cmd
 		}
 	}
 	return nil
+}
+
+func (c *Command) Name() string {
+	return c.name
+}
+
+func (c *Command) Summary() string {
+	return c.summary
+}
+
+func (c *Command) Options() *OptionSet {
+	return c.options
+}
+
+func (c *Command) SubCommands() []*Command {
+	return c.subCommands
 }
 
 func (c *Command) getNormalizedArgs(initArgs []string) (*Command, []*Arg) {
@@ -65,7 +81,7 @@ func (c *Command) getNormalizedArgs(initArgs []string) (*Command, []*Arg) {
 	args := make([]*Arg, 0, len(initArgs))
 
 	for i, arg := range initArgs {
-		if i == 0 && cmd.Name == arg {
+		if i == 0 && cmd.name == arg {
 			args = append(args, NewArg(arg, CommandArg))
 		} else if subCmd := cmd.GetSubCommand(arg); subCmd != nil {
 			args = append(args, NewArg(arg, CommandArg))
@@ -106,7 +122,7 @@ func (c *Command) splitCommandsArgs(initArgs, initConfigs []string) (
 
 func (c *Command) Parse(initArgs, initConfigs []string) *ParseResult {
 	leafCmd, commands, optionSetInitArgs, optionSetInitConfigs := c.splitCommandsArgs(initArgs, initConfigs)
-	result := leafCmd.OptionSet.Parse(optionSetInitArgs, optionSetInitConfigs)
+	result := leafCmd.options.Parse(optionSetInitArgs, optionSetInitConfigs)
 	result.commands = commands
 
 	return result
@@ -116,10 +132,10 @@ func (c *Command) ParseGroups(initArgs, initConfigs []string) (results []*ParseR
 	leafCmd, commands, optionSetInitArgs, optionSetInitConfigs := c.splitCommandsArgs(initArgs, initConfigs)
 
 	if len(optionSetInitArgs) == 0 && len(optionSetInitConfigs) == 0 {
-		result := leafCmd.OptionSet.Parse(optionSetInitArgs, optionSetInitConfigs)
+		result := leafCmd.options.Parse(optionSetInitArgs, optionSetInitConfigs)
 		results = append(results, result)
 	} else {
-		results = leafCmd.OptionSet.ParseGroups(optionSetInitArgs, optionSetInitConfigs)
+		results = leafCmd.options.ParseGroups(optionSetInitArgs, optionSetInitConfigs)
 	}
 
 	for _, result := range results {
@@ -132,32 +148,32 @@ func (c *Command) ParseGroups(initArgs, initConfigs []string) (results []*ParseR
 func (c *Command) GetHelp() []byte {
 	buffer := &bytes.Buffer{}
 
-	if len(c.Name) > 0 {
-		buffer.WriteString(path.Base(c.Name))
+	if len(c.name) > 0 {
+		buffer.WriteString(path.Base(c.name))
 		buffer.WriteString(": ")
 	}
-	if len(c.Summary) > 0 {
-		buffer.WriteString(c.Summary)
+	if len(c.summary) > 0 {
+		buffer.WriteString(c.summary)
 	}
-	if len(c.Name) > 0 || len(c.Summary) > 0 {
+	if len(c.name) > 0 || len(c.summary) > 0 {
 		buffer.WriteByte('\n')
 	} else {
 		buffer.WriteString("Usage:\n")
 	}
 
-	optionsHelp := c.OptionSet.GetHelp()
+	optionsHelp := c.options.GetHelp()
 	if len(optionsHelp) > 0 {
 		buffer.WriteString("\nOptions:\n\n")
 		buffer.Write(optionsHelp)
 	}
 
-	if len(c.SubCommands) > 0 {
+	if len(c.subCommands) > 0 {
 		buffer.WriteString("\nSub commands:\n\n")
-		for _, cmd := range c.SubCommands {
-			buffer.WriteString(cmd.Name)
+		for _, cmd := range c.subCommands {
+			buffer.WriteString(cmd.name)
 			buffer.WriteByte('\n')
-			if len(cmd.Summary) > 0 {
-				buffer.WriteString(cmd.Summary)
+			if len(cmd.summary) > 0 {
+				buffer.WriteString(cmd.summary)
 				buffer.WriteByte('\n')
 			}
 			buffer.WriteByte('\n')

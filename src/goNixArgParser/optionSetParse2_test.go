@@ -55,7 +55,14 @@ func TestParse2(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.AddFlagsValues("props", []string{"-p", "--props"}, "", []string{}, "properties")
+	err = s.Append(&Option{
+		Key:         "props",
+		Summary:     "properties",
+		Description: "single description",
+		Flags:       []*Flag{NewSimpleFlag("-p"), NewFlag("--props", false, true, true, false)},
+		AcceptValue: true,
+		MultiValues: true,
+	})
 	if err != nil {
 		t.Error(err)
 	}
@@ -68,7 +75,7 @@ func TestParse2(t *testing.T) {
 		"--ports", "443", "4443", "443",
 		"--ports", "4444",
 		"-f", "file1", "file2",
-		"--props", "aa", "bb", "cc", "dd", "ee",
+		"--props=aa", "bb", "cc", "dd", "ee",
 	}
 
 	parsed := s.Parse(args, nil)
