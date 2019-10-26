@@ -1,7 +1,7 @@
 package goNixArgParser
 
 type Command struct {
-	name        string
+	names       []string
 	summary     string
 	options     *OptionSet
 	subCommands []*Command
@@ -15,8 +15,8 @@ type OptionSet struct {
 	options []*Option
 
 	hasCanMerge        bool
-	hasCanEqualAssign  bool
 	hasCanConcatAssign bool
+	hasAssignSigns     bool
 
 	keyOptionMap  map[string]*Option
 	flagOptionMap map[string]*Option
@@ -43,8 +43,8 @@ type Flag struct {
 	Name            string
 	canMerge        bool
 	canFollowAssign bool
-	canEqualAssign  bool
 	canConcatAssign bool
+	assignSigns     []string
 }
 
 type ArgType int

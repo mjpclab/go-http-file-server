@@ -6,6 +6,7 @@ import (
 
 func (s *OptionSet) splitMergedArg(arg *Arg) (args []*Arg, success bool) {
 	flagMap := s.flagMap
+	optionMap := s.flagOptionMap
 	argText := arg.Text
 
 	if arg.Type != UnknownArg ||
@@ -18,20 +19,38 @@ func (s *OptionSet) splitMergedArg(arg *Arg) (args []*Arg, success bool) {
 		return
 	}
 
+	var prevFlag *Flag
 	mergedArgs := argText[len(s.mergeFlagPrefix):]
 	splittedArgs := make([]*Arg, 0, len(mergedArgs))
 	for i, mergedArg := range mergedArgs {
 		splittedArg := s.mergeFlagPrefix + string(mergedArg)
 		flag := flagMap[splittedArg]
-		if flag == nil || !flag.canMerge {
+
+		if flag != nil {
+			if !flag.canMerge {
+				return
+			}
+			splittedArgs = append(splittedArgs, NewArg(splittedArg, FlagArg))
+			prevFlag = flag
+			continue
+		}
+
+		if len(splittedArg) <= 1 {
 			return
 		}
-		splittedArgs = append(splittedArgs, NewArg(splittedArg, FlagArg))
 
-		if flag.canEqualAssign && i < len(mergedArgs)-1 && mergedArgs[i+1] == '=' {
-			splittedArgs = append(splittedArgs, NewArg(mergedArgs[i+2:], ValueArg))
-			break
+		if prevFlag == nil {
+			return
 		}
+
+		option := optionMap[prevFlag.Name]
+		if option == nil || !option.AcceptValue {
+			return
+		}
+
+		// re-generate standalone flag with values
+		splittedArgs[len(splittedArgs)-1] = NewArg(prevFlag.Name+mergedArgs[i:], UnknownArg)
+		break
 	}
 
 	return splittedArgs, true
@@ -50,7 +69,7 @@ func (s *OptionSet) splitMergedArgs(initArgs []*Arg) []*Arg {
 	return args
 }
 
-func (s *OptionSet) splitEqualAssignArg(arg *Arg) (args []*Arg) {
+func (s *OptionSet) splitAssignSignArg(arg *Arg) (args []*Arg) {
 	args = make([]*Arg, 0, 2)
 
 	if arg.Type != UnknownArg {
@@ -59,32 +78,35 @@ func (s *OptionSet) splitEqualAssignArg(arg *Arg) (args []*Arg) {
 	}
 
 	argText := arg.Text
-	equalIndex := strings.IndexByte(argText, '=')
-	if equalIndex == -1 {
-		args = append(args, arg)
-		return
+	for _, flag := range s.flagMap {
+		for _, assignSign := range flag.assignSigns {
+			flagName := flag.Name
+
+			if len(assignSign) == 0 || !s.flagOptionMap[flagName].AcceptValue {
+				continue
+			}
+
+			prefix := flagName + assignSign
+			if !strings.HasPrefix(argText, prefix) {
+				continue
+			}
+			flagValue := argText[len(prefix):]
+
+			args = append(args, NewArg(flagName, FlagArg))
+			args = append(args, NewArg(flagValue, ValueArg))
+			return
+		}
 	}
 
-	flagName := argText[:equalIndex]
-	flagValue := argText[equalIndex+1:]
-	flag := s.flagMap[flagName]
-	if flag == nil ||
-		!flag.canEqualAssign ||
-		!s.flagOptionMap[flagName].AcceptValue {
-		args = append(args, arg)
-		return
-	}
-
-	args = append(args, NewArg(flagName, FlagArg))
-	args = append(args, NewArg(flagValue, ValueArg))
+	args = append(args, arg)
 	return
 }
 
-func (s *OptionSet) splitEqualAssignArgs(initArgs []*Arg) []*Arg {
+func (s *OptionSet) splitAssignSignArgs(initArgs []*Arg) []*Arg {
 	args := make([]*Arg, 0, len(initArgs))
 
 	for _, initArg := range initArgs {
-		args = append(args, s.splitEqualAssignArg(initArg)...)
+		args = append(args, s.splitAssignSignArg(initArg)...)
 	}
 
 	return args
@@ -148,8 +170,8 @@ func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, 
 	if s.hasCanMerge {
 		argObjs = s.splitMergedArgs(argObjs)
 	}
-	if s.hasCanEqualAssign {
-		argObjs = s.splitEqualAssignArgs(argObjs)
+	if s.hasAssignSigns {
+		argObjs = s.splitAssignSignArgs(argObjs)
 	}
 	if s.hasCanConcatAssign {
 		argObjs = s.splitConcatAssignArgs(argObjs)

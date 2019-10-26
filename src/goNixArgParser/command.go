@@ -7,20 +7,25 @@ import (
 )
 
 func NewCommand(
-	name, summary, mergeFlagPrefix string,
+	names []string,
+	summary, mergeFlagPrefix string,
 	restsSigns, groupSeps []string,
 ) *Command {
 	return &Command{
-		name:        name,
+		names:       names,
 		summary:     summary,
 		options:     NewOptionSet(mergeFlagPrefix, restsSigns, groupSeps),
 		subCommands: []*Command{},
 	}
 }
 
-func NewSimpleCommand(name, summary string) *Command {
+func NewSimpleCommand(name, summary string, aliasNames ...string) *Command {
+	names := make([]string, 0, 1+len(aliasNames))
+	names = append(names, name)
+	names = append(names, aliasNames...)
+
 	return &Command{
-		name:        name,
+		names:       names,
 		summary:     summary,
 		options:     NewSimpleOptionSet(),
 		subCommands: []*Command{},
@@ -28,18 +33,28 @@ func NewSimpleCommand(name, summary string) *Command {
 }
 
 func (c *Command) NewSubCommand(
-	name, summary, mergeFlagPrefix string,
+	names []string,
+	summary, mergeFlagPrefix string,
 	restsSigns, groupSeps []string,
 ) *Command {
-	subCommand := NewCommand(name, summary, mergeFlagPrefix, restsSigns, groupSeps)
+	subCommand := NewCommand(names, summary, mergeFlagPrefix, restsSigns, groupSeps)
 	c.subCommands = append(c.subCommands, subCommand)
 	return subCommand
 }
 
-func (c *Command) NewSimpleSubCommand(name, summary string) *Command {
-	subCommand := NewSimpleCommand(name, summary)
+func (c *Command) NewSimpleSubCommand(name, summary string, aliasNames ...string) *Command {
+	subCommand := NewSimpleCommand(name, summary, aliasNames...)
 	c.subCommands = append(c.subCommands, subCommand)
 	return subCommand
+}
+
+func (c *Command) hasName(name string) bool {
+	for _, n := range c.names {
+		if n == name {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Command) GetSubCommand(name string) *Command {
@@ -48,15 +63,23 @@ func (c *Command) GetSubCommand(name string) *Command {
 	}
 
 	for _, cmd := range c.subCommands {
-		if cmd.name == name {
+		if cmd.hasName(name) {
 			return cmd
 		}
 	}
 	return nil
 }
 
-func (c *Command) Name() string {
-	return c.name
+func (c *Command) Name() (name string) {
+	if len(c.names) > 0 {
+		name = c.names[0]
+	}
+
+	return
+}
+
+func (c *Command) Names() []string {
+	return c.names
 }
 
 func (c *Command) Summary() string {
@@ -81,10 +104,10 @@ func (c *Command) getNormalizedArgs(initArgs []string) (*Command, []*Arg) {
 	args := make([]*Arg, 0, len(initArgs))
 
 	for i, arg := range initArgs {
-		if i == 0 && cmd.name == arg {
-			args = append(args, NewArg(arg, CommandArg))
+		if i == 0 && cmd.hasName(arg) {
+			args = append(args, NewArg(cmd.Name(), CommandArg))
 		} else if subCmd := cmd.GetSubCommand(arg); subCmd != nil {
-			args = append(args, NewArg(arg, CommandArg))
+			args = append(args, NewArg(subCmd.Name(), CommandArg))
 			cmd = subCmd
 		} else {
 			break
@@ -103,9 +126,6 @@ func (c *Command) splitCommandsArgs(initArgs, initConfigs []string) (
 
 	commands = []string{}
 	for _, arg := range argCmds {
-		if arg.Type != CommandArg {
-			break
-		}
 		commands = append(commands, arg.Text)
 	}
 
@@ -148,14 +168,15 @@ func (c *Command) ParseGroups(initArgs, initConfigs []string) (results []*ParseR
 func (c *Command) GetHelp() []byte {
 	buffer := &bytes.Buffer{}
 
-	if len(c.name) > 0 {
-		buffer.WriteString(path.Base(c.name))
+	name := c.Name()
+	if len(name) > 0 {
+		buffer.WriteString(path.Base(name))
 		buffer.WriteString(": ")
 	}
 	if len(c.summary) > 0 {
 		buffer.WriteString(c.summary)
 	}
-	if len(c.name) > 0 || len(c.summary) > 0 {
+	if buffer.Len() > 0 {
 		buffer.WriteByte('\n')
 	} else {
 		buffer.WriteString("Usage:\n")
@@ -170,7 +191,7 @@ func (c *Command) GetHelp() []byte {
 	if len(c.subCommands) > 0 {
 		buffer.WriteString("\nSub commands:\n\n")
 		for _, cmd := range c.subCommands {
-			buffer.WriteString(cmd.name)
+			buffer.WriteString(cmd.Name())
 			buffer.WriteByte('\n')
 			if len(cmd.summary) > 0 {
 				buffer.WriteString(cmd.summary)

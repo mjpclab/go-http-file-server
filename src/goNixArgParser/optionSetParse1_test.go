@@ -82,7 +82,7 @@ func TestParse1(t *testing.T) {
 	err = s.Append(&Option{
 		Key: "withEqual",
 		Flags: []*Flag{
-			{Name: "--with-equal", canEqualAssign: true},
+			{Name: "--with-equal", assignSigns: []string{"="}},
 		},
 		AcceptValue: true,
 	})
@@ -104,7 +104,7 @@ func TestParse1(t *testing.T) {
 	err = s.Append(&Option{
 		Key: "fromenv",
 		Flags: []*Flag{
-			{Name: "--from-env", canEqualAssign: true},
+			{Name: "--from-env", assignSigns: []string{"="}},
 		},
 		AcceptValue:   true,
 		MultiValues:   true,

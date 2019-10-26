@@ -105,11 +105,11 @@ func (s *OptionSet) Append(opt *Option) error {
 		if flag.canMerge {
 			s.hasCanMerge = true
 		}
-		if flag.canEqualAssign {
-			s.hasCanEqualAssign = true
-		}
 		if flag.canConcatAssign {
 			s.hasCanConcatAssign = true
+		}
+		if len(flag.assignSigns) > 0 {
+			s.hasAssignSigns = true
 		}
 
 		flagName := flag.Name

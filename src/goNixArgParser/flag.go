@@ -1,18 +1,27 @@
 package goNixArgParser
 
-func NewFlag(name string, canMerge, canFollowAssign, canEqualAssign, canConcatAssign bool) *Flag {
+func NewFlag(name string, canMerge, canFollowAssign, canConcatAssign bool, assignSigns []string) *Flag {
 	return &Flag{
 		Name:            name,
 		canMerge:        canMerge,
 		canFollowAssign: canFollowAssign,
-		canEqualAssign:  canEqualAssign,
 		canConcatAssign: canConcatAssign,
+		assignSigns:     assignSigns,
 	}
 }
 
 func NewSimpleFlag(name string) *Flag {
 	isSingleChar := len(name) == 1 || (len(name) == 2 && name[0] == '-')
-	return NewFlag(name, isSingleChar, true, !isSingleChar, false)
+
+	canMerge := isSingleChar
+	canConcatAssign := isSingleChar
+
+	assignSigns := make([]string, 0, 1)
+	if !isSingleChar {
+		assignSigns = append(assignSigns, "=")
+	}
+
+	return NewFlag(name, canMerge, true, canConcatAssign, assignSigns)
 }
 
 func NewSimpleFlags(names []string) []*Flag {

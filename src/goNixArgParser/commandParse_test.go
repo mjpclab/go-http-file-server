@@ -11,9 +11,11 @@ func getGitCommand() *Command {
 	cmdGit.options.AddFlag("version", "--version", "", "display version")
 	cmdGit.options.AddFlag("help", "--help", "", "show git help")
 
-	cmdSetUrl := cmdGit.NewSimpleSubCommand("remote", "manage remotes").NewSimpleSubCommand("set-url", "set remote url")
+	cmdRemote := cmdGit.NewSimpleSubCommand("remote", "manage remotes", "rmt", "rt")
+	cmdSetUrl := cmdRemote.NewSimpleSubCommand("set-url", "set remote url")
 	cmdSetUrl.options.AddFlag("push", "--push", "", "")
 	cmdSetUrl.options.AddFlagValue("dummy", "--dummy", "", "", "dummy option")
+	cmdSetUrl.options.AddFlagValue("dummyX", "--dummy-x", "", "", "dummy-x option")
 
 	cmdReset := cmdGit.NewSimpleSubCommand("reset", "reset command")
 	cmdReset.options.AddFlag("hard", "--hard", "", "hard reset")
@@ -25,7 +27,7 @@ func getGitCommand() *Command {
 
 func TestNormalizeCmdArgs(t *testing.T) {
 	cmd := getGitCommand()
-	args := []string{"git", "remote", "set-url", "--push", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
+	args := []string{"git", "rmt", "set-url", "--push", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
 	_, normalizedArgs := cmd.getNormalizedArgs(args)
 	for i, arg := range normalizedArgs {
 		fmt.Printf("%d %+v\n", i, arg)
@@ -34,7 +36,7 @@ func TestNormalizeCmdArgs(t *testing.T) {
 
 func TestParseCommand1(t *testing.T) {
 	cmd := getGitCommand()
-	args := []string{"git", "remote", "set-url", "--push", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
+	args := []string{"git", "rmt", "set-url", "--push", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
 
 	result := cmd.Parse(args, nil)
 	if result.commands[0] != "git" ||
@@ -75,8 +77,8 @@ func TestParseCommand2(t *testing.T) {
 
 func TestParseCommand3(t *testing.T) {
 	cmd := getGitCommand()
-	args := []string{"git", "remote", "set-url", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
-	configArgs := []string{"git", "remote", "set-url", "--dummy", "dummyconfigvalue"}
+	args := []string{"git", "rmt", "set-url", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
+	configArgs := []string{"git", "rt", "set-url", "--dummy", "dummyconfigvalue"}
 	result := cmd.Parse(args, configArgs)
 
 	dummy, _ := result.GetString("dummy")
@@ -98,11 +100,17 @@ func TestParseCommand3(t *testing.T) {
 func TestParseCommand4(t *testing.T) {
 	cmd := getGitCommand()
 	args := []string{"git", "remote", "set-url", "--dummy", "dummy0", "github", "https://github.com/mjpclab/goNixArgParser.git", ",,", "--dummy", "dummy1", "bitbucket", "https://bitbucket.com/mjpclab/goNixArgParser.git"}
-	results := cmd.ParseGroups(args, nil)
+	configArgs := []string{"git", "remote", "set-url", "--dummy-x", "dummyXValue"}
+	results := cmd.ParseGroups(args, configArgs)
 
 	dummy0, _ := results[0].GetString("dummy")
 	if dummy0 != "dummy0" {
 		t.Error(results[0].GetStrings("dummy"))
+	}
+
+	dummyX, _ := results[0].GetString("dummyX")
+	if dummyX != "dummyXValue" {
+		t.Error(results[0].GetStrings("dummyX"))
 	}
 
 	dummy1, _ := results[1].GetString("dummy")
@@ -112,6 +120,18 @@ func TestParseCommand4(t *testing.T) {
 }
 
 func TestParseCommand5(t *testing.T) {
+	cmd := getGitCommand()
+	args := []string{"git", "remote", "set-url", "--dummy", "dummy0"}
+	configArgs := []string{"git", "no-such-cmd", "set-url", "--dummy-x", "dummyXValue"}
+	result := cmd.Parse(args, configArgs)
+
+	dummyX, _ := result.GetString("dummyX")
+	if dummyX != "" {
+		t.Error("dummyX")
+	}
+}
+
+func TestParseCommand6(t *testing.T) {
 	cmd := getGitCommand()
 	args := []string{"git", "remote", "set-url", "github", "https://github.com/mjpclab/goNixArgParser.git", ",,", "bitbucket", "https://bitbucket.com/mjpclab/goNixArgParser.git"}
 	configArgs := []string{"git", "remote", "set-url", "--dummy", "dummy0", ",,", "--dummy", "dummy1"}

@@ -20,7 +20,7 @@ func TestParse3(t *testing.T) {
 
 	err = s.Append(&Option{
 		Key:         "port",
-		Flags:       []*Flag{{Name: "-p", canMerge: true, canEqualAssign: true, canFollowAssign: true}, {Name: "--port", canFollowAssign: true}},
+		Flags:       []*Flag{{Name: "-p", canMerge: true, canFollowAssign: true, assignSigns: []string{"="}}, {Name: "--port", canFollowAssign: true}},
 		AcceptValue: true,
 	})
 	if err != nil {
