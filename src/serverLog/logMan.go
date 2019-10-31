@@ -1,8 +1,12 @@
 package serverLog
 
 import (
+	"../util"
+	"bytes"
+	"fmt"
 	"os"
 	"sync"
+	"time"
 )
 
 type logMan struct {
@@ -12,6 +16,16 @@ type logMan struct {
 
 	dashFile *os.File
 	wg       sync.WaitGroup
+}
+
+func getLogEntry(payload []byte) []byte {
+	buffer := &bytes.Buffer{}
+	buffer.WriteString(util.FormatTimeSecond(time.Now()))
+	buffer.WriteByte(' ')
+	buffer.Write(payload)
+	buffer.WriteByte('\n')
+
+	return buffer.Bytes()
 }
 
 func (l *logMan) Open() (err error) {
@@ -41,15 +55,10 @@ func (l *logMan) Enable() {
 
 	l.wg.Add(1)
 	go func() {
-		for {
-			payload, ok := <-ch
-			if !ok {
-				break
-			}
-
+		for payload := range ch {
 			_, e := l.file.Write(getLogEntry(payload))
 			if e != nil {
-				os.Stderr.WriteString(e.Error() + "\n")
+				fmt.Fprintln(os.Stderr, e)
 			}
 		}
 		l.wg.Done()

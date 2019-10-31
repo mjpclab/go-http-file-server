@@ -1,10 +1,7 @@
 package serverLog
 
 import (
-	"../util"
-	"bytes"
 	"os"
-	"time"
 )
 
 const CHAN_BUFFER = 7
@@ -12,16 +9,6 @@ const CHAN_BUFFER = 7
 type Logger struct {
 	accLogMan *logMan
 	errLogMan *logMan
-}
-
-func getLogEntry(payload []byte) []byte {
-	buffer := &bytes.Buffer{}
-	buffer.WriteString(util.FormatTimeSecond(time.Now()))
-	buffer.WriteByte(' ')
-	buffer.Write(payload)
-	buffer.WriteByte('\n')
-
-	return buffer.Bytes()
 }
 
 func (l *Logger) CanLogAccess() bool {
