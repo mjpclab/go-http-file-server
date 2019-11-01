@@ -50,15 +50,15 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	pageData, notFound, internalError := h.getPageData(r)
-	if len(pageData.Errors) > 0 {
+	data, notFound, internalError := h.getResponseData(r)
+	if len(data.Errors) > 0 {
 		go func() {
-			for _, err := range pageData.Errors {
+			for _, err := range data.Errors {
 				h.errHandler.LogError(err)
 			}
 		}()
 	}
-	file := pageData.File
+	file := data.File
 	if file != nil {
 		defer func() {
 			err := file.Close()
@@ -66,34 +66,34 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
-	if pageData.CanUpload && r.Method == "POST" {
-		h.saveUploadFiles(pageData.handlerReqPath, r)
+	if data.CanUpload && r.Method == "POST" {
+		h.saveUploadFiles(data.handlerReqPath, r)
 		http.Redirect(w, r, r.RequestURI, http.StatusFound)
 		return
 	}
 
-	if pageData.CanCors {
+	if data.CanCors {
 		h.cors(w, r)
 		if r.Method == "OPTIONS" {
 			return
 		}
 	}
 
-	if pageData.CanArchive && len(r.URL.RawQuery) > 0 {
+	if data.CanArchive && len(r.URL.RawQuery) > 0 {
 		switch r.URL.RawQuery {
 		case "tar":
-			h.tar(w, r, pageData)
+			h.tar(w, r, data)
 			return
 		case "tgz":
-			h.tgz(w, r, pageData)
+			h.tgz(w, r, data)
 			return
 		case "zip":
-			h.zip(w, r, pageData)
+			h.zip(w, r, data)
 			return
 		}
 	}
 
-	item := pageData.Item
+	item := data.Item
 	if file != nil && item != nil && !item.IsDir() {
 		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
 		return
@@ -109,7 +109,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}
-	err := h.template.Execute(w, pageData)
+	err := h.template.Execute(w, data)
 	h.errHandler.LogError(err)
 }
 

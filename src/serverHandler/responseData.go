@@ -15,7 +15,7 @@ type pathEntry struct {
 	Path string
 }
 
-type pageData struct {
+type responseData struct {
 	rawReqPath     string
 	handlerReqPath string
 
@@ -294,7 +294,7 @@ func (h *handler) getCanCors(rawReqPath, reqFsPath string) bool {
 	return hasUrlOrDirPrefix(h.corsUrls, rawReqPath, h.corsDirs, reqFsPath)
 }
 
-func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, internalError bool) {
+func (h *handler) getResponseData(r *http.Request) (data *responseData, notFound, internalError bool) {
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
 
@@ -343,7 +343,7 @@ func (h *handler) getPageData(r *http.Request) (data *pageData, notFound, intern
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 
-	data = &pageData{
+	data = &responseData{
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 
