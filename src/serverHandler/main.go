@@ -50,7 +50,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, notFound, internalError := h.getResponseData(r)
+	data := h.getResponseData(r)
 	if len(data.Errors) > 0 {
 		go func() {
 			for _, err := range data.Errors {
@@ -99,18 +99,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	header := w.Header()
-	header.Set("Content-Type", "text/html; charset=utf-8")
-	header.Set("Cache-Control", "public, max-age=0")
-	if internalError {
-		w.WriteHeader(http.StatusInternalServerError)
-	} else if notFound {
-		w.WriteHeader(http.StatusNotFound)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
-	err := h.template.Execute(w, data)
-	h.errHandler.LogError(err)
+	h.page(w, r, data)
 }
 
 func NewHandler(

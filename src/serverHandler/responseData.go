@@ -19,6 +19,9 @@ type responseData struct {
 	rawReqPath     string
 	handlerReqPath string
 
+	hasNotFoundError bool
+	hasInternalError bool
+
 	IsRoot        bool
 	Path          string
 	Paths         []*pathEntry
@@ -294,13 +297,15 @@ func (h *handler) getCanCors(rawReqPath, reqFsPath string) bool {
 	return hasUrlOrDirPrefix(h.corsUrls, rawReqPath, h.corsDirs, reqFsPath)
 }
 
-func (h *handler) getResponseData(r *http.Request) (data *responseData, notFound, internalError bool) {
+func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
 
 	rawReqPath := util.CleanUrlPath(requestUri)
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
 	errs := []error{}
+	notFound := false
+	internalError := false
 
 	isRoot := rawReqPath == "/"
 
@@ -346,6 +351,9 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData, notFound
 	data = &responseData{
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
+
+		hasNotFoundError: notFound,
+		hasInternalError: internalError,
 
 		IsRoot:        isRoot,
 		Path:          rawReqPath,
