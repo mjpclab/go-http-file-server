@@ -11,7 +11,7 @@ import (
 
 func (h *handler) visitFs(
 	initFsPath, rawRequestPath, relPath string,
-	callback func(*os.File, os.FileInfo, string),
+	callback func(*os.File, os.FileInfo, string) error,
 ) {
 	aliasedFsPath, hasAlias := h.aliases[rawRequestPath]
 
@@ -39,7 +39,9 @@ func (h *handler) visitFs(
 	}
 
 	if len(relPath) > 0 {
-		callback(f, fInfo, relPath)
+		if callback(f, fInfo, relPath) != nil {
+			return
+		}
 	}
 
 	if fInfo.IsDir() {
