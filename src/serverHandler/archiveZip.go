@@ -54,6 +54,10 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *response
 	filename := pageData.ItemName + ".zip"
 	writeArchiveHeader(w, "application/zip", filename)
 
+	if !needResponseBody(r.Method) {
+		return
+	}
+
 	h.visitFs(
 		h.root+pageData.handlerReqPath,
 		pageData.rawReqPath,

@@ -55,6 +55,10 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 	filename := pageData.ItemName + ".tar"
 	writeArchiveHeader(w, "application/octet-stream", filename)
 
+	if !needResponseBody(r.Method) {
+		return
+	}
+
 	h.visitFs(
 		h.root+pageData.handlerReqPath,
 		pageData.rawReqPath,
@@ -87,6 +91,10 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *response
 
 	filename := pageData.ItemName + ".tar.gz"
 	writeArchiveHeader(w, "application/octet-stream", filename)
+
+	if !needResponseBody(r.Method) {
+		return
+	}
 
 	h.visitFs(
 		h.root+pageData.handlerReqPath,

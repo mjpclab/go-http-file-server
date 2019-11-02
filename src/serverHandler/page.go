@@ -15,6 +15,8 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 		w.WriteHeader(http.StatusOK)
 	}
 
-	err := h.template.Execute(w, data)
-	h.errHandler.LogError(err)
+	if needResponseBody(r.Method) {
+		err := h.template.Execute(w, data)
+		h.errHandler.LogError(err)
+	}
 }

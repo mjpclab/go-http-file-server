@@ -13,5 +13,7 @@ func (h *handler) assert(w http.ResponseWriter, r *http.Request, assertPath stri
 
 	header := w.Header()
 	header.Set("Content-Type", content.ContentType)
-	http.ServeContent(w, r, assertPath, initTime, content.ReadSeeker)
+	if needResponseBody(r.Method) {
+		http.ServeContent(w, r, assertPath, initTime, content.ReadSeeker)
+	}
 }

@@ -74,9 +74,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if data.CanCors {
 		h.cors(w, r)
-		if r.Method == "OPTIONS" {
-			return
-		}
 	}
 
 	if data.CanArchive && len(r.URL.RawQuery) > 0 {
@@ -95,11 +92,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	item := data.Item
 	if file != nil && item != nil && !item.IsDir() {
-		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
-		return
+		h.content(w, r, data)
+	} else {
+		h.page(w, r, data)
 	}
-
-	h.page(w, r, data)
 }
 
 func NewHandler(
