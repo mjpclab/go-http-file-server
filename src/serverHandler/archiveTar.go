@@ -22,13 +22,16 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 		size = fInfo.Size()
 	}
 
-	header, err := tar.FileInfoHeader(fInfo, "")
-	if err != nil {
-		return err
+	header := &tar.Header{
+		Name:       archivePath,
+		Mode:       0664,
+		Size:       size,
+		ModTime:    fInfo.ModTime(),
+		AccessTime: fInfo.ModTime(),
+		ChangeTime: fInfo.ModTime(),
 	}
-	header.Name = archivePath
 
-	err = tw.WriteHeader(header)
+	err := tw.WriteHeader(header)
 	if err != nil {
 		return err
 	}
