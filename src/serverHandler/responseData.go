@@ -34,6 +34,7 @@ type responseData struct {
 	CanUpload     bool
 	CanArchive    bool
 	CanCors       bool
+	NeedAuth      bool
 	Errors        []error
 }
 
@@ -297,6 +298,14 @@ func (h *handler) getCanCors(rawReqPath, reqFsPath string) bool {
 	return hasUrlOrDirPrefix(h.corsUrls, rawReqPath, h.corsDirs, reqFsPath)
 }
 
+func (h *handler) getNeedAuth(rawReqPath, reqFsPath string) bool {
+	if h.globalAuth {
+		return true
+	}
+
+	return hasUrlOrDirPrefix(h.authUrls, rawReqPath, h.authDirs, reqFsPath)
+}
+
 func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
@@ -347,6 +356,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
+	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 
 	data = &responseData{
 		rawReqPath:     rawReqPath,
@@ -368,6 +378,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		CanUpload:  canUpload,
 		CanArchive: canArchive,
 		CanCors:    canCors,
+		NeedAuth:   needAuth,
 
 		Errors: errs,
 	}

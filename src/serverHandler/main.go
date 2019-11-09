@@ -4,6 +4,7 @@ import (
 	"../param"
 	"../serverErrHandler"
 	"../serverLog"
+	"../user"
 	"html/template"
 	"net/http"
 	"regexp"
@@ -25,6 +26,11 @@ type handler struct {
 	globalCors bool
 	corsUrls   []string
 	corsDirs   []string
+
+	globalAuth bool
+	authUrls   []string
+	authDirs   []string
+	users      user.Users
 
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
@@ -66,6 +72,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
+	if data.NeedAuth && !h.auth(w, r) {
+		return
+	}
+
 	if data.CanUpload && r.Method == "POST" {
 		h.saveUploadFiles(data.handlerReqPath, r)
 		http.Redirect(w, r, r.RequestURI, http.StatusFound)
@@ -102,6 +112,7 @@ func NewHandler(
 	root string,
 	urlPrefix string,
 	p *param.Param,
+	users user.Users,
 	template *template.Template,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
@@ -122,6 +133,11 @@ func NewHandler(
 		globalCors: p.GlobalCors,
 		corsUrls:   p.CorsUrls,
 		corsDirs:   p.CorsDirs,
+
+		globalAuth: p.GlobalAuth,
+		authUrls:   p.AuthUrls,
+		authDirs:   p.AuthDirs,
+		users:      users,
 
 		shows:     p.Shows,
 		showDirs:  p.ShowDirs,

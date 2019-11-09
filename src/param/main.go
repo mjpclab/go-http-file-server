@@ -25,6 +25,11 @@ type Param struct {
 	CorsUrls   []string
 	CorsDirs   []string
 
+	GlobalAuth bool
+	AuthUrls   []string
+	AuthDirs   []string
+	Users      map[string]string
+
 	Key         string
 	Cert        string
 	Listen      []string

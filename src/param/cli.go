@@ -3,6 +3,7 @@ package param
 import (
 	"../goNixArgParser"
 	"../serverErrHandler"
+	"errors"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -48,6 +49,18 @@ func init() {
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlagValues("corsdirs", "--cors-dir", "", nil, "file system path that enable CORS headers")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlag("globalauth", "--global-auth", "GHFS_GLOBAL_AUTH", "require Basic Auth for all directories")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("authurls", "--auth", "", nil, "url path that require Basic Auth")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("authdirs", "--auth-dir", "", nil, "file system path that require Basic Auth")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("users", "--user", "", nil, "user info: <username>:<password>")
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
@@ -152,6 +165,7 @@ func doParseCli() []*Param {
 		param.GlobalUpload = result.HasKey("globalupload")
 		param.GlobalArchive = result.HasKey("globalarchive")
 		param.GlobalCors = result.HasKey("globalcors")
+		param.GlobalAuth = result.HasKey("globalauth")
 		param.Key, _ = result.GetString("key")
 		param.Cert, _ = result.GetString("cert")
 		param.Hostnames, _ = result.GetStrings("hostnames")
@@ -197,6 +211,34 @@ func doParseCli() []*Param {
 		// normalize cors dirs
 		arrCorsDirs, _ := result.GetStrings("corsdirs")
 		param.CorsDirs = normalizeFsPaths(arrCorsDirs)
+
+		// normalize auth urls
+		arrAuthUrls, _ := result.GetStrings("authurls")
+		param.AuthUrls = normalizeUrlPaths(arrAuthUrls)
+
+		// normalize auth dirs
+		arrAuthDirs, _ := result.GetStrings("authdirs")
+		param.AuthDirs = normalizeFsPaths(arrAuthDirs)
+
+		// normalize users
+		param.Users = map[string]string{}
+		arrUsers, _ := result.GetStrings("users")
+		for _, userEntry := range arrUsers {
+			username := userEntry
+			password := ""
+
+			colonIndex := strings.IndexByte(userEntry, ':')
+			if colonIndex >= 0 {
+				username = userEntry[:colonIndex]
+				password = userEntry[colonIndex+1:]
+			}
+
+			if _, ok := param.Users[username]; ok {
+				serverErrHandler.CheckError(errors.New("Duplicated username: " + username))
+			} else {
+				param.Users[username] = password
+			}
+		}
 
 		// shows
 		shows, err := getWildcardRegexp(result.GetStrings("shows"))

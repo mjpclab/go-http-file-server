@@ -6,6 +6,7 @@ import (
 	"../serverHandler"
 	"../serverLog"
 	"../tpl"
+	"../user"
 	"net/http"
 )
 
@@ -20,6 +21,11 @@ func NewServeMux(
 	logger *serverLog.Logger,
 	errorHandler *serverErrHandler.ErrHandler,
 ) *ServeMux {
+	users := user.NewUsers()
+	for username, password := range p.Users {
+		users.Add(username, password)
+	}
+
 	tplObj, err := tpl.LoadPage(p.Template)
 	errorHandler.LogError(err)
 
@@ -27,11 +33,11 @@ func NewServeMux(
 	handlers := map[string]http.Handler{}
 
 	if _, hasRootAlias := aliases["/"]; !hasRootAlias {
-		handlers["/"] = serverHandler.NewHandler(p.Root, "/", p, tplObj, logger, errorHandler)
+		handlers["/"] = serverHandler.NewHandler(p.Root, "/", p, users, tplObj, logger, errorHandler)
 	}
 
 	for urlPath, fsPath := range p.Aliases {
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, tplObj, logger, errorHandler)
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, users, tplObj, logger, errorHandler)
 	}
 
 	// create ServeMux

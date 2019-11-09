@@ -78,6 +78,15 @@ server [options]
 --cors-dir <fs-path> ...
     Allow CORS requests for specific file system path.
 
+--global-auth
+    Use Basic Auth for all url path.
+--auth <url-path> ...
+    Use Basic Auth for specific url path.
+--auth-dir <fs-path> ...
+    Use Basic Auth for specific file system path.
+--user [<username>]:[<password>] ...
+    Specify users for Basic Auth, empty username and/or password is allowed.
+
 -c|--cert <file>
     Specify TLS certificate file.
 
