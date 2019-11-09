@@ -138,6 +138,7 @@ display: flex;
 flex-flow: row nowrap;
 align-items: center;
 border-bottom: 1px #f5f5f5 solid;
+zoom: 1;
 }
 .item-list span {
 margin-left: 1em;
