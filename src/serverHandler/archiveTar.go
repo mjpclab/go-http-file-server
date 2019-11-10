@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
 )
 
 func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string) error {
@@ -55,22 +54,14 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 		h.errHandler.LogError(err)
 	}()
 
-	filename := pageData.ItemName + ".tar"
-	writeArchiveHeader(w, "application/octet-stream", filename)
-
-	if !needResponseBody(r.Method) {
-		return
-	}
-
-	h.visitFs(
-		path.Clean(h.root+pageData.handlerReqPath),
-		pageData.rawReqPath,
-		"",
-		func(f *os.File, fInfo os.FileInfo, relPath string) (err error) {
-			go h.logArchive(filename, relPath, r)
-			err = writeTar(tw, f, fInfo, relPath)
-			h.errHandler.LogError(err)
-			return
+	h.archive(
+		w,
+		r,
+		pageData,
+		".tar",
+		"application/octet-stream",
+		func(f *os.File, fInfo os.FileInfo, relPath string) error {
+			return writeTar(tw, f, fInfo, relPath)
 		},
 	)
 }
@@ -91,22 +82,14 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *response
 		h.errHandler.LogError(err)
 	}()
 
-	filename := pageData.ItemName + ".tar.gz"
-	writeArchiveHeader(w, "application/octet-stream", filename)
-
-	if !needResponseBody(r.Method) {
-		return
-	}
-
-	h.visitFs(
-		path.Clean(h.root+pageData.handlerReqPath),
-		pageData.rawReqPath,
-		"",
-		func(f *os.File, fInfo os.FileInfo, relPath string) (err error) {
-			go h.logArchive(filename, relPath, r)
-			err = writeTar(tw, f, fInfo, relPath)
-			h.errHandler.LogError(err)
-			return
+	h.archive(
+		w,
+		r,
+		pageData,
+		".tar.gz",
+		"application/octet-stream",
+		func(f *os.File, fInfo os.FileInfo, relPath string) error {
+			return writeTar(tw, f, fInfo, relPath)
 		},
 	)
 }

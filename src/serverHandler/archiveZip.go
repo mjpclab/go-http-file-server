@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
 )
 
 func writeZip(zw *zip.Writer, f *os.File, fInfo os.FileInfo, archivePath string) error {
@@ -45,22 +44,14 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *response
 		h.errHandler.LogError(err)
 	}()
 
-	filename := pageData.ItemName + ".zip"
-	writeArchiveHeader(w, "application/zip", filename)
-
-	if !needResponseBody(r.Method) {
-		return
-	}
-
-	h.visitFs(
-		path.Clean(h.root+pageData.handlerReqPath),
-		pageData.rawReqPath,
-		"",
-		func(f *os.File, fInfo os.FileInfo, relPath string) (err error) {
-			go h.logArchive(filename, relPath, r)
-			err = writeZip(zipWriter, f, fInfo, relPath)
-			h.errHandler.LogError(err)
-			return
+	h.archive(
+		w,
+		r,
+		pageData,
+		".zip",
+		"application/zip",
+		func(f *os.File, fInfo os.FileInfo, relPath string) error {
+			return writeZip(zipWriter, f, fInfo, relPath)
 		},
 	)
 }

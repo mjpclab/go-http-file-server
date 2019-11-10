@@ -9,9 +9,11 @@ import (
 	"strings"
 )
 
+type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error
+
 func (h *handler) visitFs(
 	initFsPath, rawRequestPath, relPath string,
-	callback func(*os.File, os.FileInfo, string) error,
+	callback archiveCallback,
 ) {
 	aliasedFsPath, hasAlias := h.aliases[rawRequestPath]
 
@@ -93,6 +95,34 @@ func (h *handler) visitFs(
 		}
 
 	}
+}
+
+func (h *handler) archive(
+	w http.ResponseWriter,
+	r *http.Request,
+	pageData *responseData,
+	fileSuffix string,
+	contentType string,
+	cbWriteFile archiveCallback,
+) {
+	targetFilename := pageData.ItemName + fileSuffix
+	writeArchiveHeader(w, contentType, targetFilename)
+
+	if !needResponseBody(r.Method) {
+		return
+	}
+
+	h.visitFs(
+		path.Clean(h.root+pageData.handlerReqPath),
+		pageData.rawReqPath,
+		"",
+		func(f *os.File, fInfo os.FileInfo, relPath string) error {
+			go h.logArchive(targetFilename, relPath, r)
+			err := cbWriteFile(f, fInfo, relPath)
+			h.errHandler.LogError(err)
+			return err
+		},
+	)
 }
 
 func writeArchiveHeader(w http.ResponseWriter, contentType, filename string) {
