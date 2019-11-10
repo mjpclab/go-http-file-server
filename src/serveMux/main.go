@@ -22,8 +22,23 @@ func NewServeMux(
 	errorHandler *serverErrHandler.ErrHandler,
 ) *ServeMux {
 	users := user.NewUsers()
-	for username, password := range p.Users {
-		users.Add(username, password)
+	for _, u := range p.UsersPlain {
+		users.AddPlain(u.Username, u.Password)
+	}
+	for _, u := range p.UsersBase64 {
+		users.AddBase64(u.Username, u.Password)
+	}
+	for _, u := range p.UsersMd5 {
+		users.AddMd5(u.Username, u.Password)
+	}
+	for _, u := range p.UsersSha1 {
+		users.AddSha1(u.Username, u.Password)
+	}
+	for _, u := range p.UsersSha256 {
+		users.AddSha256(u.Username, u.Password)
+	}
+	for _, u := range p.UsersSha512 {
+		users.AddSha512(u.Username, u.Password)
 	}
 
 	tplObj, err := tpl.LoadPage(p.Template)

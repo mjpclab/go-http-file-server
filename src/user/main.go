@@ -2,38 +2,68 @@ package user
 
 import "errors"
 
-type user struct {
-	username string
-	password string
-}
+type Users map[string]user
 
-func newUser(username, password string) *user {
-	return &user{
-		username,
-		password,
-	}
-}
-
-type Users struct {
-	pool map[string]*user
-}
-
-func (users Users) Add(username, password string) error {
-	if _, exist := users.pool[username]; exist {
+func (users Users) checkExist(username string) error {
+	if _, exist := users[username]; exist {
 		return errors.New("username already exist")
 	}
-
-	users.pool[username] = newUser(username, password)
 	return nil
 }
 
+func (users Users) AddPlain(username, password string) (err error) {
+	err = users.checkExist(username);
+	if err == nil {
+		users[username] = newPlainUser(password)
+	}
+	return
+}
+
+func (users Users) AddBase64(username, password string) (err error) {
+	err = users.checkExist(username);
+	if err == nil {
+		users[username] = newBase64User(password)
+	}
+	return
+}
+
+func (users Users) AddMd5(username, password string) (err error) {
+	err = users.checkExist(username);
+	if err == nil {
+		users[username] = newMd5User(password)
+	}
+	return
+}
+
+func (users Users) AddSha1(username, password string) (err error) {
+	err = users.checkExist(username);
+	if err == nil {
+		users[username] = newSha1User(password)
+	}
+	return
+}
+
+func (users Users) AddSha256(username, password string) (err error) {
+	err = users.checkExist(username);
+	if err == nil {
+		users[username] = newSha256User(password)
+	}
+	return
+}
+
+func (users Users) AddSha512(username, password string) (err error) {
+	err = users.checkExist(username);
+	if err == nil {
+		users[username] = newSha512User(password)
+	}
+	return
+}
+
 func (users Users) Auth(username, password string) bool {
-	user, exist := users.pool[username]
-	return exist && user.password == password
+	user, exist := users[username]
+	return exist && user.auth(password)
 }
 
 func NewUsers() Users {
-	return Users{
-		pool: map[string]*user{},
-	}
+	return Users{}
 }

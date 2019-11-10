@@ -3,7 +3,7 @@ package param
 import (
 	"../goNixArgParser"
 	"../serverErrHandler"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -61,6 +61,21 @@ func init() {
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlagValues("users", "--user", "", nil, "user info: <username>:<password>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("usersbase64", "--user-base64", "", nil, "user info: <username>:<base64-password>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("usersmd5", "--user-md5", "", nil, "user info: <username>:<md5-password>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("userssha1", "--user-sha1", "", nil, "user info: <username>:<sha1-password>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("userssha256", "--user-sha256", "", nil, "user info: <username>:<sha256-password>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("userssha512", "--user-sha512", "", nil, "user info: <username>:<sha512-password>")
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
@@ -221,23 +236,29 @@ func doParseCli() []*Param {
 		param.AuthDirs = normalizeFsPaths(arrAuthDirs)
 
 		// normalize users
-		param.Users = map[string]string{}
-		arrUsers, _ := result.GetStrings("users")
-		for _, userEntry := range arrUsers {
-			username := userEntry
-			password := ""
+		arrUsersPlain, _ := result.GetStrings("users")
+		param.UsersPlain = getUsers(arrUsersPlain)
+		arrUsersBase64, _ := result.GetStrings("usersbase64")
+		param.UsersBase64 = getUsers(arrUsersBase64)
+		arrUsersMd5, _ := result.GetStrings("usersmd5")
+		param.UsersMd5 = getUsers(arrUsersMd5)
+		arrUsersSha1, _ := result.GetStrings("userssha1")
+		param.UsersSha1 = getUsers(arrUsersSha1)
+		arrUsersSha256, _ := result.GetStrings("userssha256")
+		param.UsersSha256 = getUsers(arrUsersSha256)
+		arrUsersSha512, _ := result.GetStrings("userssha512")
+		param.UsersSha512 = getUsers(arrUsersSha512)
 
-			colonIndex := strings.IndexByte(userEntry, ':')
-			if colonIndex >= 0 {
-				username = userEntry[:colonIndex]
-				password = userEntry[colonIndex+1:]
-			}
-
-			if _, ok := param.Users[username]; ok {
-				serverErrHandler.CheckError(errors.New("Duplicated username: " + username))
-			} else {
-				param.Users[username] = password
-			}
+		dupUsers := getDupUserNames(
+			param.UsersPlain,
+			param.UsersBase64,
+			param.UsersMd5,
+			param.UsersSha1,
+			param.UsersSha256,
+			param.UsersSha512,
+		)
+		if len(dupUsers) > 0 {
+			serverErrHandler.CheckFatal(fmt.Errorf("duplicated usernames: %q", dupUsers))
 		}
 
 		// shows

@@ -9,6 +9,11 @@ import (
 	"unicode/utf8"
 )
 
+type user struct {
+	Username string
+	Password string
+}
+
 type Param struct {
 	Root    string
 	Aliases map[string]string
@@ -25,10 +30,15 @@ type Param struct {
 	CorsUrls   []string
 	CorsDirs   []string
 
-	GlobalAuth bool
-	AuthUrls   []string
-	AuthDirs   []string
-	Users      map[string]string
+	GlobalAuth  bool
+	AuthUrls    []string
+	AuthDirs    []string
+	UsersPlain  []*user
+	UsersBase64 []*user
+	UsersMd5    []*user
+	UsersSha1   []*user
+	UsersSha256 []*user
+	UsersSha512 []*user
 
 	Key         string
 	Cert        string
