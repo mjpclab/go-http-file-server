@@ -7,6 +7,7 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 )
 
 // common interface for user
@@ -51,11 +52,17 @@ func (u *md5User) auth(input string) bool {
 	return u.token == inputToken
 }
 
-func newMd5User(encoded string) *md5User {
-	tokenSlice, _ := hex.DecodeString(encoded)
+func newMd5User(encPass string) (*md5User, error) {
+	tokenSlice, err := hex.DecodeString(encPass)
+	if err != nil {
+		return nil, err
+	}
+	if len(tokenSlice) != md5.Size {
+		return nil, errors.New("unrecognized hash")
+	}
 	token := [md5.Size]byte{}
 	copy(token[:], tokenSlice)
-	return &md5User{token}
+	return &md5User{token}, nil
 }
 
 // sha1 hashed password
@@ -68,11 +75,17 @@ func (u *sha1User) auth(input string) bool {
 	return u.token == inputToken
 }
 
-func newSha1User(encPass string) *sha1User {
-	tokenSlice, _ := hex.DecodeString(encPass)
+func newSha1User(encPass string) (*sha1User, error) {
+	tokenSlice, err := hex.DecodeString(encPass)
+	if err != nil {
+		return nil, err
+	}
+	if len(tokenSlice) != sha1.Size {
+		return nil, errors.New("unrecognized hash")
+	}
 	token := [sha1.Size]byte{}
 	copy(token[:], tokenSlice)
-	return &sha1User{token}
+	return &sha1User{token}, nil
 }
 
 // sha256 hashed password
@@ -85,11 +98,17 @@ func (u *sha256User) auth(input string) bool {
 	return u.token == inputToken
 }
 
-func newSha256User(encPass string) *sha256User {
-	tokenSlice, _ := hex.DecodeString(encPass)
+func newSha256User(encPass string) (*sha256User, error) {
+	tokenSlice, err := hex.DecodeString(encPass)
+	if err != nil {
+		return nil, err
+	}
+	if len(tokenSlice) != sha256.Size {
+		return nil, errors.New("unrecognized hash")
+	}
 	token := [sha256.Size]byte{}
 	copy(token[:], tokenSlice)
-	return &sha256User{token}
+	return &sha256User{token}, nil
 }
 
 // sha512 hashed password
@@ -102,9 +121,15 @@ func (u *sha512User) auth(input string) bool {
 	return u.token == inputToken
 }
 
-func newSha512User(encPass string) *sha512User {
-	tokenSlice, _ := hex.DecodeString(encPass)
+func newSha512User(encPass string) (*sha512User, error) {
+	tokenSlice, err := hex.DecodeString(encPass)
+	if err != nil {
+		return nil, err
+	}
+	if len(tokenSlice) != sha512.Size {
+		return nil, errors.New("unrecognized hash")
+	}
 	token := [sha512.Size]byte{}
 	copy(token[:], tokenSlice)
-	return &sha512User{token}
+	return &sha512User{token}, nil
 }
