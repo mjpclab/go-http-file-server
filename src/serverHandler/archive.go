@@ -25,6 +25,9 @@ func (h *handler) visitFs(
 	}
 
 	f, err := os.Open(fsPath)
+	if f != nil {
+		defer f.Close()
+	}
 	h.errHandler.LogError(err)
 
 	var fInfo os.FileInfo
