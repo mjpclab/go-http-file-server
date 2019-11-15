@@ -85,7 +85,7 @@ server [options]
 --auth-dir <fs-path> ...
     Use Basic Auth for specific file system path.
 --user [<username>]:[<password>] ...
-    Specify users for Basic Auth, empty username and/or password is allowed.
+    Specify users for current virtual host for Basic Auth, empty username and/or password is allowed.
 --user-base64 [<username>]:[<base64-password>] ...
 --user-md5 [<username>]:<md5-password> ...
 --user-sha1 [<username>]:<sha1-password> ...
@@ -173,6 +173,14 @@ server -H '.*'
 Show access log on console:
 ```sh
 server -L -
+```
+
+Http Basic Auth:
+- requires authentication for url /files
+- username: user1, password: pass1
+- username: user2, password: pass2
+```sh
+server --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
 ```
 
 Start 2 virtual hosts:
