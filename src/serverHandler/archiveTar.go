@@ -60,6 +60,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 		pageData,
 		".tar",
 		"application/octet-stream",
+		h.FilterItems,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			return writeTar(tw, f, fInfo, relPath)
 		},
@@ -88,6 +89,7 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *response
 		pageData,
 		".tar.gz",
 		"application/octet-stream",
+		h.FilterItems,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			return writeTar(tw, f, fInfo, relPath)
 		},
