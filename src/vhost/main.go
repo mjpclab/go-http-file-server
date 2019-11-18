@@ -60,12 +60,9 @@ func NewVHost(p *param.Param) *VHost {
 	mux := serveMux.NewServeMux(p, logger, errHandler)
 
 	// hostnames
-	hostnames := p.Hostnames
-	for i, length := 0, len(hostnames); i < length; i++ {
-		hostnames[i] = strings.ToLower(hostnames[i])
-	}
-	if len(hostnames) == 0 {
-		hostnames = append(hostnames, "")
+	hostnames := make([]string, 0, len(p.Hostnames))
+	for _, hostname := range p.Hostnames {
+		hostnames = append(hostnames, strings.ToLower(hostname))
 	}
 
 	// determine can use TLS

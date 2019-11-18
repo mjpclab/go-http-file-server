@@ -136,6 +136,12 @@ server [options]
 ,,
     To specify multiple virtual hosts with options, split these hosts' options by this sign.
     Options above can be specified for each virtual host.
+
+    If multiple virtual hosts share same IP and ports,
+    use --hostname to identify them according to the request.
+    If request host name does not match any virtual host,
+    server will try to use first virtual host that has no hostname,
+    otherwise use the first virtual host.
 ```
 
 ## Examples

@@ -186,16 +186,28 @@ func NewApp(params []*param.Param) *App {
 		}
 	}
 
+	// init default vhost for each listen item
+	for _, l := range app.listens {
+		for _, vh := range l.vhosts {
+			if len(vh.Hostnames) == 0 {
+				l.defaultVHost = vh
+				break
+			}
+		}
+
+		if l.defaultVHost == nil {
+			l.defaultVHost = l.vhosts[0]
+		}
+	}
+
 	// handler for each listen item
 	for _, l := range app.listens {
-		item := l
-
-		if len(item.vhosts) == 1 {
-			item.handler = item.vhosts[0].Mux
+		if len(l.vhosts) == 1 {
+			l.handler = l.defaultVHost.Mux
 			continue
 		}
 
-		item.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		l.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var serveVHost *vhost.VHost
 
 			hostname := r.Host
@@ -204,14 +216,15 @@ func NewApp(params []*param.Param) *App {
 				hostname = hostname[:colonIndex]
 			}
 
-			for _, vh := range item.vhosts {
+			for _, vh := range l.vhosts {
 				if vh.MatchHostname(hostname) {
 					serveVHost = vh
 					break
 				}
 			}
+
 			if serveVHost == nil {
-				serveVHost = item.vhosts[0]
+				serveVHost = l.defaultVHost
 			}
 
 			serveVHost.Mux.ServeHTTP(w, r)
