@@ -63,6 +63,7 @@ func (app *App) Open() {
 
 			server.TLSConfig = tlsConfig
 		}
+		item.server = server
 
 		wgStart.Add(1)
 		wgStop.Add(1)
