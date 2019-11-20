@@ -59,36 +59,37 @@ type Param struct {
 	ErrorLog  string
 }
 
+func splitMapping(input string) (k, v string, ok bool) {
+	sep, sepLen := utf8.DecodeRuneInString(input)
+	if sepLen == 0 {
+		return
+	}
+	entry := input[sepLen:]
+	if len(entry) == 0 {
+		return
+	}
+
+	sepIndex := strings.IndexRune(entry, sep)
+	if sepIndex <= 0 || sepIndex+sepLen == len(entry) {
+		return
+	}
+
+	k = entry[:sepIndex]
+	v = entry[sepIndex+sepLen:]
+	return k, v, true
+}
+
 func normalizePathMaps(inputs []string) map[string]string {
 	maps := map[string]string{}
 
 	for _, input := range inputs {
-		sep, sepLen := utf8.DecodeRuneInString(input)
-		if sepLen == 0 {
-			continue
-		}
-		input = input[sepLen:]
-		if len(input) == 0 {
+		urlPath, fsPath, ok := splitMapping(input)
+		if !ok {
 			continue
 		}
 
-		sepIndex := strings.Index(input, string(sep))
-		if sepIndex == -1 {
-			continue
-		}
-
-		urlPath := input[:sepIndex]
-		if len(urlPath) == 0 {
-			continue
-		}
 		urlPath = util.CleanUrlPath(urlPath)
-
-		fsPath := input[sepIndex+sepLen:]
-		if len(fsPath) == 0 {
-			continue
-		}
 		fsPath = path.Clean(fsPath)
-
 		maps[urlPath] = fsPath
 	}
 
