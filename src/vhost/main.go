@@ -5,12 +5,13 @@ import (
 	"../serveMux"
 	"../serverErrHandler"
 	"../serverLog"
+	"net/http"
 	"strings"
 )
 
 type VHost struct {
 	Listens   []*listenItem
-	Mux       *serveMux.ServeMux
+	Mux       *http.ServeMux
 	Hostnames []string
 
 	logger     *serverLog.Logger

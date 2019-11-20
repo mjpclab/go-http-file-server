@@ -10,17 +10,11 @@ import (
 	"net/http"
 )
 
-type ServeMux struct {
-	http.ServeMux
-	logger     *serverLog.Logger
-	errHandler *serverErrHandler.ErrHandler
-}
-
 func NewServeMux(
 	p *param.Param,
 	logger *serverLog.Logger,
 	errorHandler *serverErrHandler.ErrHandler,
-) *ServeMux {
+) *http.ServeMux {
 	users := user.NewUsers()
 	for _, u := range p.UsersPlain {
 		errorHandler.LogError(users.AddPlain(u.Username, u.Password))
@@ -56,10 +50,7 @@ func NewServeMux(
 	}
 
 	// create ServeMux
-	serveMux := &ServeMux{
-		logger:     logger,
-		errHandler: errorHandler,
-	}
+	serveMux := &http.ServeMux{}
 	for urlPath, handler := range handlers {
 		serveMux.Handle(urlPath, handler)
 		if len(urlPath) > 1 {
