@@ -74,7 +74,11 @@ func getPathEntries(path string, tailSlash bool) []*pathEntry {
 	return pathEntries
 }
 
-func stat(reqFsPath string) (file *os.File, item os.FileInfo, err error) {
+func stat(reqFsPath string, visitFs bool) (file *os.File, item os.FileInfo, err error) {
+	if !visitFs {
+		return
+	}
+
 	file, err = os.Open(reqFsPath)
 	if err != nil {
 		return
@@ -207,7 +211,7 @@ func getItemName(item os.FileInfo, r *http.Request) (itemName string) {
 	return
 }
 
-func (h *handler) getResponseData(r *http.Request) (data *responseData) {
+func (h *handler) getResponseData(r *http.Request, visitFs bool) (data *responseData) {
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
 
@@ -232,7 +236,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		reqFsPath = path.Clean(h.root + reqPath)
 	}
 
-	file, item, _statErr := stat(reqFsPath)
+	file, item, _statErr := stat(reqFsPath, visitFs)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		notFound = os.IsNotExist(_statErr)

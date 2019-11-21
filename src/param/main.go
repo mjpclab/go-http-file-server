@@ -8,7 +8,12 @@ type user struct {
 }
 
 type Param struct {
-	Root    string
+	Root string
+
+	FallbackProxies          map[string]string
+	AlwaysProxies            map[string]string
+	IgnoreProxyTargetBadCert bool
+
 	Aliases map[string]string
 
 	GlobalUpload bool

@@ -48,6 +48,15 @@ server [options]
     Root directory of the server.
     Defaults to current working directory.
 
+-x|--fallback-proxy <separator><url-path><separator><proxy-target> ...
+    If local resource under <url-path> not found, reverse proxy to <proxy-target>.
+    <proxy-target> must be the format of schema://host/path.
+-X|--always-proxy <separator><url-path><separator><proxy-target> ...
+    Always reverse proxy from <url-path> to <proxy-target>.
+    <proxy-target> must be the format of schema://host/path.
+--ignore-proxy-target-bad-cert
+    Ignore proxy target server's certificate validation issue.
+
 -a|--alias <separator><url-path><separator><fs-path> ...
     Set path alias. e.g. ":/doc:/usr/share/doc"
 

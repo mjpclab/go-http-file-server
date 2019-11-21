@@ -46,6 +46,25 @@ func normalizePathMaps(inputs []string) map[string]string {
 	return maps
 }
 
+func normalizeProxyMaps(inputs []string) map[string]string {
+	maps := map[string]string{}
+
+	for _, input := range inputs {
+		urlPath, target, ok := splitMapping(input)
+		if !ok {
+			continue
+		}
+
+		cleanUrlPath := util.CleanUrlPath(urlPath)
+		if len(cleanUrlPath) > 1 && urlPath[len(urlPath)-1] == '/' {
+			cleanUrlPath += "/"
+		}
+		maps[cleanUrlPath] = target
+	}
+
+	return maps
+}
+
 func normalizeUrlPaths(inputs []string) []string {
 	outputs := make([]string, 0, len(inputs))
 

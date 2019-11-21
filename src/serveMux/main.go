@@ -2,12 +2,15 @@ package serveMux
 
 import (
 	"../param"
+	"../reverseProxy"
 	"../serverErrHandler"
 	"../serverHandler"
 	"../serverLog"
 	"../tpl"
 	"../user"
+	"crypto/tls"
 	"net/http"
+	"net/url"
 )
 
 func NewServeMux(
@@ -35,6 +38,12 @@ func NewServeMux(
 		errorHandler.LogError(users.AddSha512(u.Username, u.Password))
 	}
 
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: p.IgnoreProxyTargetBadCert},
+	}
+	fallbackProxies := mapToReverseProxy(p.FallbackProxies, tr)
+	alwaysProxies := mapToReverseProxy(p.AlwaysProxies, tr)
+
 	tplObj, err := tpl.LoadPage(p.Template)
 	errorHandler.LogError(err)
 
@@ -45,7 +54,7 @@ func NewServeMux(
 
 	handlers := map[string]http.Handler{}
 	for urlPath, fsPath := range aliases {
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, users, tplObj, logger, errorHandler)
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, users, fallbackProxies, alwaysProxies, tplObj, logger, errorHandler)
 	}
 
 	// create ServeMux
@@ -58,4 +67,20 @@ func NewServeMux(
 	}
 
 	return serveMux
+}
+
+func mapToReverseProxy(input map[string]string, tr http.RoundTripper) map[string]http.Handler {
+	maps := map[string]http.Handler{}
+
+	for inUrl, target := range input {
+		targetUrl, err := url.Parse(target)
+		if err != nil || len(targetUrl.Scheme) == 0 || len(targetUrl.Host) == 0 {
+			continue
+		}
+		var proxyHandler http.Handler = reverseProxy.NewReverseProxy(targetUrl, tr)
+		proxyHandler = http.StripPrefix(inUrl, proxyHandler)
+		maps[inUrl] = proxyHandler
+	}
+
+	return maps
 }

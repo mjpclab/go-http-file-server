@@ -13,7 +13,10 @@ import (
 type handler struct {
 	root      string
 	urlPrefix string
-	aliases   map[string]string
+
+	fallbackProxies map[string]http.Handler
+	alwaysProxies   map[string]http.Handler
+	aliases         map[string]string
 
 	globalUpload bool
 	uploadUrls   []string
@@ -47,6 +50,7 @@ type handler struct {
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	go h.logRequest(r)
 
+	// assert
 	if len(r.URL.RawQuery) > 0 {
 		queryValues := r.URL.Query()
 		assertPath := queryValues.Get("assert")
@@ -56,7 +60,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := h.getResponseData(r)
+	alwaysProxyHandler := getProxyHandler(r, h.alwaysProxies)
+
+	// data
+	data := h.getResponseData(r, alwaysProxyHandler == nil)
 	if len(data.Errors) > 0 {
 		go func() {
 			for _, err := range data.Errors {
@@ -66,14 +73,30 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	file := data.File
 	if file != nil {
-		defer func() {
-			err := file.Close()
-			h.errHandler.LogError(err)
-		}()
+		defer file.Close()
 	}
 
 	if data.NeedAuth && !h.auth(w, r) {
 		return
+	}
+
+	if data.CanCors {
+		h.cors(w, r)
+	}
+
+	// always proxy
+	if alwaysProxyHandler != nil {
+		proxy(w, r, alwaysProxyHandler)
+		return
+	}
+
+	// fallback proxy
+	if data.hasNotFoundError {
+		fallbackProxyHandler := getProxyHandler(r, h.fallbackProxies)
+		if fallbackProxyHandler != nil {
+			proxy(w, r, fallbackProxyHandler)
+			return
+		}
 	}
 
 	if data.CanUpload && r.Method == "POST" {
@@ -82,9 +105,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if data.CanCors {
-		h.cors(w, r)
-	}
+	// regular flows
 
 	if data.CanArchive && len(r.URL.RawQuery) > 0 {
 		switch r.URL.RawQuery {
@@ -113,6 +134,8 @@ func NewHandler(
 	urlPrefix string,
 	p *param.Param,
 	users user.Users,
+	fallbackProxies map[string]http.Handler,
+	alwaysProxies map[string]http.Handler,
 	template *template.Template,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
@@ -120,7 +143,10 @@ func NewHandler(
 	h := &handler{
 		root:      root,
 		urlPrefix: urlPrefix,
-		aliases:   p.Aliases,
+
+		fallbackProxies: fallbackProxies,
+		alwaysProxies:   alwaysProxies,
+		aliases:         p.Aliases,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
