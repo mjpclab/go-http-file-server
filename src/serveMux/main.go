@@ -39,13 +39,12 @@ func NewServeMux(
 	errorHandler.LogError(err)
 
 	aliases := p.Aliases
-	handlers := map[string]http.Handler{}
-
 	if _, hasRootAlias := aliases["/"]; !hasRootAlias {
-		handlers["/"] = serverHandler.NewHandler(p.Root, "/", p, users, tplObj, logger, errorHandler)
+		aliases["/"] = p.Root
 	}
 
-	for urlPath, fsPath := range p.Aliases {
+	handlers := map[string]http.Handler{}
+	for urlPath, fsPath := range aliases {
 		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, users, tplObj, logger, errorHandler)
 	}
 
