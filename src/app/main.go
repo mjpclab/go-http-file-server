@@ -3,13 +3,13 @@ package app
 import (
 	"../param"
 	"../serverErrHandler"
+	"../util"
 	"../vhost"
 	"crypto/tls"
 	"errors"
 	"net"
 	"net/http"
 	"os"
-	"strings"
 	"sync"
 )
 
@@ -211,11 +211,7 @@ func NewApp(params []*param.Param) *App {
 		l.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var serveVHost *vhost.VHost
 
-			hostname := r.Host
-			colonIndex := strings.LastIndexByte(hostname, ':')
-			if colonIndex >= 0 {
-				hostname = hostname[:colonIndex]
-			}
+			hostname := util.ExtractHostname(r.Host)
 
 			for _, vh := range l.vhosts {
 				if vh.MatchHostname(hostname) {
