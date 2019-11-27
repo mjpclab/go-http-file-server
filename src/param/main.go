@@ -38,13 +38,13 @@ type Param struct {
 	UsersSha256 []*user
 	UsersSha512 []*user
 
-	Key         string
-	Cert        string
-	Listen      []string
-	ListenPlain []string
-	ListenTLS   []string
-	Hostnames   []string
-	Template    string
+	Key          string
+	Cert         string
+	Listens      []string
+	ListensPlain []string
+	ListensTLS   []string
+	HostNames    []string
+	Template     string
 
 	Shows     *regexp.Regexp
 	ShowDirs  *regexp.Regexp

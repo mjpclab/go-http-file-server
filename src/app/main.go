@@ -1,232 +1,88 @@
 package app
 
 import (
+	"../goVirtualHost"
 	"../param"
 	"../serverErrHandler"
-	"../util"
-	"../vhost"
+	"../serverLog"
+	"../vhostMux"
 	"crypto/tls"
-	"errors"
-	"net"
-	"net/http"
 	"os"
-	"sync"
 )
 
 type App struct {
-	vhosts  []*vhost.VHost
-	listens Listens
+	vhostSvc   *goVirtualHost.Service
+	vhostMuxes []*vhostMux.VhostMux
 }
 
 func (app *App) Open() {
-	var err error
-	hasError := false
-
-	// create listener
-	for _, l := range app.listens {
-		if l.proto == "unix" {
-			sockInfo, _ := os.Lstat(l.addr)
-			if sockInfo != nil && (sockInfo.Mode()&os.ModeSocket != 0) {
-				os.Remove(l.addr)
-			}
-		}
-
-		l.listener, err = net.Listen(l.proto, l.addr)
-		if err != nil {
-			hasError = true
-			serverErrHandler.CheckError(err)
-		}
-
-		if err == nil && l.proto == "unix" {
-			os.Chmod(l.addr, 0777)
-		}
+	errors := app.vhostSvc.Open()
+	for _, err := range errors {
+		serverErrHandler.CheckError(err)
 	}
-
-	if hasError {
-		return
-	}
-
-	// create server
-	wgStart := sync.WaitGroup{}
-	wgStop := sync.WaitGroup{}
-	for _, l := range app.listens {
-		item := l
-
-		server := &http.Server{
-			Handler: item.handler,
-		}
-		if item.useTLS {
-			tlsConfig := &tls.Config{
-				Certificates: item.certs,
-			}
-			tlsConfig.BuildNameToCertificate()
-
-			server.TLSConfig = tlsConfig
-		}
-		item.server = server
-
-		wgStart.Add(1)
-		wgStop.Add(1)
-		go func() {
-			wgStart.Done()
-			if item.useTLS {
-				err = server.ServeTLS(item.listener, "", "")
-			} else {
-				err = server.Serve(item.listener)
-			}
-			if err != nil {
-				hasError = true
-				serverErrHandler.CheckError(err)
-			}
-			wgStop.Done()
-		}()
-	}
-
-	wgStart.Wait()
-	if hasError {
-		app.Close()
-		return
-	}
-	wgStop.Wait()
 }
 
 func (app *App) Close() {
-	for _, vh := range app.vhosts {
-		vh.Close()
+	for _, vhMux := range app.vhostMuxes {
+		vhMux.Close()
 	}
 
-	for _, l := range app.listens {
-		if l.server != nil {
-			l.server.Close()
-			l.server = nil
-		}
-
-		if l.listener != nil {
-			l.listener.Close()
-			l.listener = nil
-		}
-	}
+	app.vhostSvc.Close()
 }
 
 func (app *App) ReOpenLog() {
-	for _, vh := range app.vhosts {
-		vh.ReOpenLog()
+	for _, vhMux := range app.vhostMuxes {
+		vhMux.ReOpenLog()
 	}
 }
 
 func NewApp(params []*param.Param) *App {
-	app := &App{
-		listens: Listens{},
-	}
+	vhSvc := goVirtualHost.NewService()
+	vhMuxes := make([]*vhostMux.VhostMux, 0, len(params))
 
-	// vhosts
-	vhosts := []*vhost.VHost{}
 	for _, p := range params {
-		vh := vhost.NewVHost(p)
-		vhosts = append(vhosts, vh)
-	}
-	app.vhosts = vhosts
+		// logger
+		logger := serverLog.NewLogger(p.AccessLog, p.ErrorLog)
+		errors := logger.Open()
+		serverErrHandler.CheckFatal(errors...)
 
-	// listens
-	for _, vh := range vhosts {
-		hasErr := false
+		// ErrHandler
+		errHandler := serverErrHandler.NewErrHandler(logger)
 
-		// verify
-		for _, vhListen := range vh.Listens {
-			vhAddr := vhListen.Addr
+		// ServeMux
+		vhMux := vhostMux.NewServeMux(p, logger, errHandler)
+		vhMuxes = append(vhMuxes, vhMux)
 
-			// listen -> useTLS conflicts
-			item := app.listens.findItemByAddr(vhAddr)
-			if item != nil && item.useTLS != vhListen.UseTLS {
-				hasErr = true
-				serverErrHandler.CheckError(errors.New(vhAddr + " cannot served for both PLAIN and TLS mode"))
-			}
-
-			// listen, hostname duplicated
-			for _, vhHostname := range vh.Hostnames {
-				item := app.listens.findItemByAddrHostname(vhAddr, vhHostname)
-				if item != nil {
-					hasErr = true
-					serverErrHandler.CheckError(errors.New(vhAddr + " " + vhHostname + " duplicated Listen and Hostname"))
-				}
+		// cert
+		var cert *tls.Certificate
+		if len(p.Cert) > 0 && len(p.Key) > 0 {
+			c, err := tls.LoadX509KeyPair(p.Cert, p.Key)
+			if err != nil {
+				serverErrHandler.CheckFatal(err)
+				logger.LogErrors(err)
+			} else {
+				cert = &c
 			}
 		}
 
-		// create or update ListenItem
-		for _, vhListen := range vh.Listens {
-			// construct ListenItem if not exists
-			item := app.listens.findItemByAddr(vhListen.Addr)
-			if item == nil {
-				item = &ListenItem{
-					proto:     vhListen.Proto,
-					addr:      vhListen.Addr,
-					useTLS:    vhListen.UseTLS,
-					hostnames: []string{},
-					certs:     []tls.Certificate{},
-					server:    nil,
-					vhosts:    []*vhost.VHost{},
-				}
-				app.listens = append(app.listens, item)
-			}
-
-			// update
-			item.hostnames = append(item.hostnames, vh.Hostnames...)
-			if item.useTLS {
-				cert, err := tls.LoadX509KeyPair(vhListen.Cert, vhListen.Key)
-				if err != nil {
-					hasErr = true
-					serverErrHandler.CheckError(err)
-				}
-				item.certs = append(item.certs, cert)
-			}
-			item.vhosts = append(item.vhosts, vh)
-		}
-
-		if hasErr {
+		// init vhost
+		errors = vhSvc.Add(&goVirtualHost.HostInfo{
+			Listens:      p.Listens,
+			ListensPlain: p.ListensPlain,
+			ListensTLS:   p.ListensTLS,
+			Cert:         cert,
+			HostNames:    p.HostNames,
+			Handler:      vhMux.ServeMux,
+		})
+		if len(errors) > 0 {
+			serverErrHandler.CheckFatal(errors...)
+			logger.LogErrors(errors...)
 			os.Exit(1)
 		}
 	}
 
-	// init default vhost for each listen item
-	for _, l := range app.listens {
-		for _, vh := range l.vhosts {
-			if len(vh.Hostnames) == 0 {
-				l.defaultVHost = vh
-				break
-			}
-		}
-
-		if l.defaultVHost == nil {
-			l.defaultVHost = l.vhosts[0]
-		}
+	return &App{
+		vhostSvc:   vhSvc,
+		vhostMuxes: vhMuxes,
 	}
-
-	// handler for each listen item
-	for _, l := range app.listens {
-		if len(l.vhosts) == 1 {
-			l.handler = l.defaultVHost.Mux
-			continue
-		}
-
-		l.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			var serveVHost *vhost.VHost
-
-			hostname := util.ExtractHostname(r.Host)
-
-			for _, vh := range l.vhosts {
-				if vh.MatchHostname(hostname) {
-					serveVHost = vh
-					break
-				}
-			}
-
-			if serveVHost == nil {
-				serveVHost = l.defaultVHost
-			}
-
-			serveVHost.Mux.ServeHTTP(w, r)
-		})
-	}
-
-	return app
 }

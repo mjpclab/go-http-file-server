@@ -1,4 +1,4 @@
-package serveMux
+package vhostMux
 
 import (
 	"../param"
@@ -13,11 +13,18 @@ import (
 	"net/url"
 )
 
+type VhostMux struct {
+	ServeMux     *http.ServeMux
+	p            *param.Param
+	logger       *serverLog.Logger
+	errorHandler *serverErrHandler.ErrHandler
+}
+
 func NewServeMux(
 	p *param.Param,
 	logger *serverLog.Logger,
 	errorHandler *serverErrHandler.ErrHandler,
-) *http.ServeMux {
+) *VhostMux {
 	users := user.NewUsers()
 	for _, u := range p.UsersPlain {
 		errorHandler.LogError(users.AddPlain(u.Username, u.Password))
@@ -38,15 +45,18 @@ func NewServeMux(
 		errorHandler.LogError(users.AddSha512(u.Username, u.Password))
 	}
 
+	// proxy
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: p.IgnoreProxyTargetBadCert},
 	}
 	fallbackProxies := mapToReverseProxy(p.FallbackProxies, tr)
 	alwaysProxies := mapToReverseProxy(p.AlwaysProxies, tr)
 
+	// template
 	tplObj, err := tpl.LoadPage(p.Template)
 	errorHandler.LogError(err)
 
+	// register handlers
 	aliases := p.Aliases
 	if _, hasRootAlias := aliases["/"]; !hasRootAlias {
 		aliases["/"] = p.Root
@@ -59,6 +69,14 @@ func NewServeMux(
 
 	// create ServeMux
 	serveMux := &http.ServeMux{}
+
+	vhostMux := &VhostMux{
+		p:            p,
+		logger:       logger,
+		errorHandler: errorHandler,
+		ServeMux:     serveMux,
+	}
+
 	for urlPath, handler := range handlers {
 		serveMux.Handle(urlPath, handler)
 		if len(urlPath) > 1 {
@@ -66,7 +84,7 @@ func NewServeMux(
 		}
 	}
 
-	return serveMux
+	return vhostMux
 }
 
 func mapToReverseProxy(input map[string]string, tr http.RoundTripper) map[string]http.Handler {
@@ -83,4 +101,13 @@ func mapToReverseProxy(input map[string]string, tr http.RoundTripper) map[string
 	}
 
 	return maps
+}
+
+func (m *VhostMux) ReOpenLog() {
+	errors := m.logger.ReOpen()
+	serverErrHandler.CheckError(errors...)
+}
+
+func (m *VhostMux) Close() {
+	m.logger.Close()
 }

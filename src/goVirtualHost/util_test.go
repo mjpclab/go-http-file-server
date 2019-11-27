@@ -1,6 +1,42 @@
-package vhost
+package goVirtualHost
 
 import "testing"
+
+func TestExtractHostname(t *testing.T) {
+	var host, hostname string
+
+	host = "example.com"
+	hostname = extractHostName(host)
+	if hostname != "example.com" {
+		t.Error(hostname)
+	}
+
+	host = "example.com:8080"
+	hostname = extractHostName(host)
+	if hostname != "example.com" {
+		t.Error(hostname)
+	}
+
+	host = "[fe80::1]"
+	hostname = extractHostName(host)
+	if hostname != "[fe80::1]" {
+		t.Error(hostname)
+	}
+
+	host = "[fe80::1]:8080"
+	hostname = extractHostName(host)
+	if hostname != "[fe80::1]" {
+		t.Error(hostname)
+	}
+}
+
+func TestNormalizeHostNames(t *testing.T) {
+	inputs := []string{"aA", "", "Bb"}
+	results := normalizeHostNames(inputs)
+	if len(results) != 2 || results[0] != "aa" || results[1] != "bb" {
+		t.Error(results)
+	}
+}
 
 func TestSplitListen(t *testing.T) {
 	var proto string

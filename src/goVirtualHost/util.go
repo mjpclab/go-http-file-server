@@ -1,9 +1,45 @@
-package vhost
+package goVirtualHost
 
 import (
-	"../util"
 	"strings"
 )
+
+func extractHostName(host string) string {
+	hostLen := len(host)
+	if hostLen == 0 {
+		return host
+	}
+
+	if hostLen >= 5 && host[0] == '[' { // [IPV6]:port, "[" "ip" "]" ":" "port", 5 parts
+		maxIndex := hostLen - 1
+		closeIndex := strings.IndexByte(host, ']')
+		if closeIndex == maxIndex {
+			return host
+		}
+		if closeIndex > 1 && closeIndex < maxIndex && host[closeIndex+1] == ':' {
+			return host[:closeIndex+1]
+		}
+	}
+
+	colonIndex := strings.LastIndexByte(host, ':')
+	if colonIndex >= 0 {
+		return host[:colonIndex]
+	}
+	return host
+}
+
+func normalizeHostNames(inputs []string) []string {
+	output := make([]string, 0, len(inputs))
+
+	for _, str := range inputs {
+		if len(str) > 0 {
+			name := strings.ToLower(str)
+			output = append(output, name)
+		}
+	}
+
+	return output
+}
 
 func getDefaultPort(useTLS bool) string {
 	if useTLS {
@@ -11,6 +47,17 @@ func getDefaultPort(useTLS bool) string {
 	} else {
 		return ":80"
 	}
+}
+
+func isDigits(input string) bool {
+	for i, length := 0, len(input); i < length; i++ {
+		b := input[i]
+		if b < '0' || b > '9' {
+			return false
+		}
+	}
+
+	return true
 }
 
 func splitListen(listen string, useTLS bool) (proto, addr string) {
@@ -25,12 +72,12 @@ func splitListen(listen string, useTLS bool) (proto, addr string) {
 	}
 
 	// port
-	if util.IsDigits(listen) {
+	if isDigits(listen) {
 		return "tcp", ":" + listen
 	}
 
 	// unix socket path
-	if strings.IndexAny(listen, "/\\") >= 0 {
+	if strings.IndexByte(listen, '/') >= 0 {
 		return "unix", listen
 	}
 

@@ -26,7 +26,7 @@ func extractPrefixDigits(input string) (output string) {
 	buf := bytes.Buffer{}
 	for i, length := 0, len(input); i < length; i++ {
 		b := input[i]
-		if !IsDigit(b) {
+		if b < '0' || b > '9' {
 			break
 		}
 		buf.WriteByte(b)

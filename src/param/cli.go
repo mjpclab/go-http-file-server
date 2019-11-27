@@ -93,13 +93,13 @@ func init() {
 	err = options.AddFlagsValue("cert", []string{"-c", "--cert"}, "GHFS_CERT", "", "TLS certificate path")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagsValues("listen", []string{"-l", "--listen"}, "GHFS_LISTEN", nil, "address and port to listen")
+	err = options.AddFlagsValues("listens", []string{"-l", "--listen"}, "GHFS_LISTEN", nil, "address and port to listen")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagValues("listenplain", "--listen-plain", "GHFS_LISTEN_PLAIN", nil, "address and port to listen, force plain http protocol")
+	err = options.AddFlagValues("listensplain", "--listen-plain", "GHFS_LISTEN_PLAIN", nil, "address and port to listen, force plain http protocol")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagValues("listentls", "--listen-tls", "GHFS_LISTEN_TLS", nil, "address and port to listen, force https protocol")
+	err = options.AddFlagValues("listenstls", "--listen-tls", "GHFS_LISTEN_TLS", nil, "address and port to listen, force https protocol")
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlagValues("hostnames", "--hostname", "", nil, "hostname for the virtual host")
@@ -193,21 +193,21 @@ func doParseCli() []*Param {
 		param.GlobalAuth = result.HasKey("globalauth")
 		param.Key, _ = result.GetString("key")
 		param.Cert, _ = result.GetString("cert")
-		param.Hostnames, _ = result.GetStrings("hostnames")
+		param.HostNames, _ = result.GetStrings("hostnames")
 		param.Template, _ = result.GetString("template")
 		param.AccessLog, _ = result.GetString("accesslog")
 		param.ErrorLog, _ = result.GetString("errorlog")
 
 		// normalize listen
-		listen, _ := result.GetStrings("listen")
-		param.Listen = append(param.Listen, listen...)
+		listens, _ := result.GetStrings("listens")
+		param.Listens = append(param.Listens, listens...)
 
 		listenRests := result.GetRests()
-		param.Listen = append(param.Listen, listenRests...)
+		param.Listens = append(param.Listens, listenRests...)
 
-		param.ListenPlain, _ = result.GetStrings("listenplain")
+		param.ListensPlain, _ = result.GetStrings("listensplain")
 
-		param.ListenTLS, _ = result.GetStrings("listentls")
+		param.ListensTLS, _ = result.GetStrings("listenstls")
 
 		// normalize proxies
 		arrFallbackProxies, _ := result.GetStrings("fallbackproxies")

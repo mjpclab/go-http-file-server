@@ -30,6 +30,12 @@ func (l *Logger) LogError(payload []byte) {
 	l.errLogMan.Log(payload)
 }
 
+func (l *Logger) LogErrors(errors ...error) {
+	for _, err := range errors {
+		l.errLogMan.LogString(err.Error())
+	}
+}
+
 func (l *Logger) LogErrorString(payload string) {
 	l.errLogMan.LogString(payload)
 }
