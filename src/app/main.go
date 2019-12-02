@@ -65,9 +65,18 @@ func NewApp(params []*param.Param) *App {
 			}
 		}
 
+		listens := p.Listens
+		if len(listens) == 0 && len(p.ListensPlain) == 0 && len(p.ListensTLS) == 0 {
+			if cert == nil {
+				listens = []string{":80"}
+			} else {
+				listens = []string{":443"}
+			}
+		}
+
 		// init vhost
 		errors = vhSvc.Add(&goVirtualHost.HostInfo{
-			Listens:      p.Listens,
+			Listens:      listens,
 			ListensPlain: p.ListensPlain,
 			ListensTLS:   p.ListensTLS,
 			Cert:         cert,
