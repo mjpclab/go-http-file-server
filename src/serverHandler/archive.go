@@ -54,7 +54,7 @@ func (h *handler) visitFs(
 	if fInfo.IsDir() {
 		childAliases := map[string]string{}
 		for aliasUrlPath, aliasFsPath := range h.aliases {
-			if path.Dir(aliasUrlPath) == rawRequestPath {
+			if aliasUrlPath != rawRequestPath && path.Dir(aliasUrlPath) == rawRequestPath {
 				childAliases[aliasUrlPath] = aliasFsPath
 				continue
 			}
