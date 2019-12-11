@@ -26,29 +26,46 @@ func (h *handler) visitFs(
 		fsPath = initFsPath
 	}
 
-	f, err := os.Open(fsPath)
-	if f != nil {
-		defer f.Close()
-	}
-	h.errHandler.LogError(err)
-
 	var fInfo os.FileInfo
-	if err != nil {
-		if os.IsExist(err) {
-			return
-		}
-		fInfo = newFakeFileInfo(path.Base(fsPath), true)
-	} else {
-		fInfo, err = f.Stat()
-		if h.errHandler.LogError(err) {
-			return
-		}
-	}
+	var childInfos []os.FileInfo
 
-	if len(relPath) > 0 {
-		if archiveCallback(f, fInfo, relPath) != nil {
-			return
+	err := func() error {
+		f, err := os.Open(fsPath)
+		if f != nil {
+			defer f.Close()
 		}
+		h.errHandler.LogError(err)
+
+		if err != nil {
+			if os.IsExist(err) {
+				return err
+			}
+			fInfo = newFakeFileInfo(path.Base(fsPath), true) // prefix path for alias
+		} else {
+			fInfo, err = f.Stat()
+			if h.errHandler.LogError(err) {
+				return err
+			}
+		}
+
+		if len(relPath) > 0 {
+			if err := archiveCallback(f, fInfo, relPath); err != nil {
+				return err
+			}
+		}
+
+		if f != nil && fInfo.IsDir() {
+			childInfos, err = f.Readdir(0)
+			if h.errHandler.LogError(err) {
+				return err
+			}
+			childInfos = filterCallback(childInfos)
+		}
+
+		return nil
+	}()
+	if err != nil {
+		return
 	}
 
 	if fInfo.IsDir() {
@@ -72,15 +89,6 @@ func (h *handler) visitFs(
 			}
 		}
 
-		var childInfos []os.FileInfo
-		if f != nil {
-			childInfos, err = f.Readdir(0)
-			if h.errHandler.LogError(err) {
-				return
-			}
-			childInfos = filterCallback(childInfos)
-		}
-
 		for _, childInfo := range childInfos {
 			childPath := "/" + childInfo.Name()
 			childFsPath := fsPath + childPath
@@ -99,7 +107,6 @@ func (h *handler) visitFs(
 			childRelPath := relPath + "/" + path.Base(childRawRequestPath)
 			h.visitFs(childAliasedFsPath, childRawRequestPath, childRelPath, filterCallback, archiveCallback)
 		}
-
 	}
 }
 
