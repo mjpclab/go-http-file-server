@@ -17,11 +17,11 @@ func (h *handler) visitFs(
 	filterCallback filterCallback,
 	archiveCallback archiveCallback,
 ) {
-	aliasedFsPath, hasAlias := h.aliases[rawRequestPath]
+	alias, hasAlias := h.aliases.byUrlPath(rawRequestPath)
 
 	var fsPath string
 	if hasAlias {
-		fsPath = aliasedFsPath
+		fsPath = alias.fsPath
 	} else {
 		fsPath = initFsPath
 	}
@@ -70,7 +70,10 @@ func (h *handler) visitFs(
 
 	if fInfo.IsDir() {
 		childAliases := map[string]string{}
-		for aliasUrlPath, aliasFsPath := range h.aliases {
+		for _, alias := range h.aliases {
+			aliasUrlPath := alias.urlPath
+			aliasFsPath := alias.fsPath
+
 			if aliasUrlPath != rawRequestPath && path.Dir(aliasUrlPath) == rawRequestPath {
 				childAliases[aliasUrlPath] = aliasFsPath
 				continue

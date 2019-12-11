@@ -7,7 +7,7 @@ func (h *handler) auth(w http.ResponseWriter, r *http.Request) (success bool) {
 	header.Set("WWW-Authenticate", "Basic realm=\""+r.URL.Path+"\"")
 
 	username, password, hasAuthReq := r.BasicAuth()
-	if (hasAuthReq) {
+	if hasAuthReq {
 		success = h.users.Auth(username, password)
 	}
 

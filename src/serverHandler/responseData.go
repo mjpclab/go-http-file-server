@@ -110,7 +110,10 @@ func readdir(file *os.File, item os.FileInfo) (subItems []os.FileInfo, errs []er
 func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo) []error {
 	errs := []error{}
 
-	for aliasUrlPath, aliasFsPath := range h.aliases {
+	for _, alias := range h.aliases {
+		aliasUrlPath := alias.urlPath
+		aliasFsPath := alias.fsPath
+
 		if len(aliasUrlPath) <= len(rawRequestPath) {
 			continue
 		}

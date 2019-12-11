@@ -16,7 +16,7 @@ type handler struct {
 
 	fallbackProxies map[string]http.Handler
 	alwaysProxies   map[string]http.Handler
-	aliases         map[string]string
+	aliases         aliases
 
 	globalUpload bool
 	uploadUrls   []string
@@ -140,13 +140,18 @@ func NewHandler(
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
 ) *handler {
+	aliases := aliases{}
+	for urlPath, fsPath := range p.Aliases {
+		aliases = append(aliases, &alias{urlPath, fsPath})
+	}
+
 	h := &handler{
 		root:      root,
 		urlPrefix: urlPrefix,
 
 		fallbackProxies: fallbackProxies,
 		alwaysProxies:   alwaysProxies,
-		aliases:         p.Aliases,
+		aliases:         aliases,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
