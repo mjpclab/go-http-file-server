@@ -14,7 +14,7 @@ func (users Users) checkExist(username string) error {
 }
 
 func (users Users) AddPlain(username, password string) (err error) {
-	err = users.checkExist(username);
+	err = users.checkExist(username)
 	if err != nil {
 		return
 	}
@@ -24,7 +24,7 @@ func (users Users) AddPlain(username, password string) (err error) {
 }
 
 func (users Users) AddBase64(username, password string) (err error) {
-	err = users.checkExist(username);
+	err = users.checkExist(username)
 	if err != nil {
 		return
 	}
@@ -34,7 +34,7 @@ func (users Users) AddBase64(username, password string) (err error) {
 }
 
 func (users Users) AddMd5(username, password string) (err error) {
-	err = users.checkExist(username);
+	err = users.checkExist(username)
 	if err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func (users Users) AddMd5(username, password string) (err error) {
 }
 
 func (users Users) AddSha1(username, password string) (err error) {
-	err = users.checkExist(username);
+	err = users.checkExist(username)
 	if err != nil {
 		return
 	}
@@ -64,7 +64,7 @@ func (users Users) AddSha1(username, password string) (err error) {
 }
 
 func (users Users) AddSha256(username, password string) (err error) {
-	err = users.checkExist(username);
+	err = users.checkExist(username)
 	if err != nil {
 		return
 	}
@@ -79,7 +79,7 @@ func (users Users) AddSha256(username, password string) (err error) {
 }
 
 func (users Users) AddSha512(username, password string) (err error) {
-	err = users.checkExist(username);
+	err = users.checkExist(username)
 	if err != nil {
 		return
 	}
