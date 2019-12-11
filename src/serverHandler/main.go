@@ -14,8 +14,8 @@ type handler struct {
 	root      string
 	urlPrefix string
 
-	fallbackProxies map[string]http.Handler
-	alwaysProxies   map[string]http.Handler
+	fallbackProxies proxyHandlers
+	alwaysProxies   proxyHandlers
 	aliases         aliases
 
 	globalUpload bool
@@ -134,8 +134,8 @@ func NewHandler(
 	urlPrefix string,
 	p *param.Param,
 	users user.Users,
-	fallbackProxies map[string]http.Handler,
-	alwaysProxies map[string]http.Handler,
+	fallbackProxiesMap map[string]http.Handler,
+	alwaysProxiesMap map[string]http.Handler,
 	template *template.Template,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
@@ -143,6 +143,16 @@ func NewHandler(
 	aliases := aliases{}
 	for urlPath, fsPath := range p.Aliases {
 		aliases = append(aliases, &alias{urlPath, fsPath})
+	}
+
+	fallbackProxies := proxyHandlers{}
+	for urlPath, handler := range fallbackProxiesMap {
+		fallbackProxies = append(fallbackProxies, &proxyHandler{urlPath, handler})
+	}
+
+	alwaysProxies := proxyHandlers{}
+	for urlPath, handler := range alwaysProxiesMap {
+		alwaysProxies = append(alwaysProxies, &proxyHandler{urlPath, handler})
 	}
 
 	h := &handler{
