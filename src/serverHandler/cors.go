@@ -17,7 +17,7 @@ func (h *handler) cors(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Access-Control-Allow-Methods
-	acAllowMethods := []string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"}
+	acAllowMethods := []string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"}
 	acReqMethods := r.Header["Access-Control-Request-Method"]
 	if len(acReqMethods) > 0 {
 		acReqMethod := acReqMethods[0]
