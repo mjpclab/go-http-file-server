@@ -70,27 +70,11 @@ func (svc *Service) Add(info *HostInfo) (errs []error) {
 }
 
 func (svc *Service) openListeners() (errs []error) {
-	chListenErr := make(chan error)
-
-	go func() {
-		wg := sync.WaitGroup{}
-		for _, listener := range svc.listeners {
-			wg.Add(1)
-			l := listener
-			go func() {
-				err := l.open()
-				if err != nil {
-					chListenErr <- err
-				}
-				wg.Done()
-			}()
+	for _, listener := range svc.listeners {
+		err := listener.open()
+		if err != nil {
+			errs = append(errs, err)
 		}
-		wg.Wait()
-		close(chListenErr)
-	}()
-
-	for err := range chListenErr {
-		errs = append(errs, err)
 	}
 
 	return
@@ -159,17 +143,10 @@ func (svc *Service) Close() {
 	svc.state = stateClosed
 	svc.mu.Unlock()
 
-	wg := sync.WaitGroup{}
 	for _, listener := range svc.listeners {
-		wg.Add(1)
-		l := listener
-		go func() {
-			if l.server != nil {
-				l.server.close()
-			}
-			l.close()
-			wg.Done()
-		}()
+		if listener.server != nil {
+			listener.server.close()
+		}
+		listener.close()
 	}
-	wg.Wait()
 }
