@@ -19,9 +19,12 @@ display: block;
 padding: 0.4em 0.5em;
 color: #000;
 text-decoration: none;
+outline: 0;
+}
+a:focus {
+background: #fffaee;
 }
 a:hover {
-color: #000;
 background: #f5f5f5;
 }
 input, button {
