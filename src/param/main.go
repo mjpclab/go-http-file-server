@@ -8,7 +8,8 @@ type user struct {
 }
 
 type Param struct {
-	Root string
+	Root      string
+	EmptyRoot bool
 
 	FallbackProxies          map[string]string
 	AlwaysProxies            map[string]string

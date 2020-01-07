@@ -239,7 +239,7 @@ func (h *handler) getResponseData(r *http.Request, visitFs bool) (data *response
 		reqFsPath = path.Clean(h.root + reqPath)
 	}
 
-	file, item, _statErr := stat(reqFsPath, visitFs)
+	file, item, _statErr := stat(reqFsPath, visitFs && !h.emptyRoot)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		notFound = os.IsNotExist(_statErr)

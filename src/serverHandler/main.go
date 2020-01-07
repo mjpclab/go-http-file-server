@@ -12,6 +12,7 @@ import (
 
 type handler struct {
 	root      string
+	emptyRoot bool
 	urlPrefix string
 
 	fallbackProxies proxyHandlers
@@ -131,6 +132,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func NewHandler(
 	root string,
+	emptyRoot bool,
 	urlPrefix string,
 	p *param.Param,
 	users user.Users,
@@ -157,6 +159,7 @@ func NewHandler(
 
 	h := &handler{
 		root:      root,
+		emptyRoot: emptyRoot,
 		urlPrefix: urlPrefix,
 
 		fallbackProxies: fallbackProxies,

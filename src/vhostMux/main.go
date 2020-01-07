@@ -58,13 +58,17 @@ func NewServeMux(
 
 	// register handlers
 	aliases := p.Aliases
-	if _, hasRootAlias := aliases["/"]; !hasRootAlias {
+	_, hasRootAlias := aliases["/"]
+	emptyRoot := false
+	if !hasRootAlias {
 		aliases["/"] = p.Root
+		emptyRoot = p.EmptyRoot
 	}
 
 	handlers := map[string]http.Handler{}
 	for urlPath, fsPath := range aliases {
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, urlPath, p, users, fallbackProxies, alwaysProxies, tplObj, logger, errorHandler)
+		emptyHandlerRoot := emptyRoot && urlPath == "/"
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, p, users, fallbackProxies, alwaysProxies, tplObj, logger, errorHandler)
 	}
 
 	// create ServeMux

@@ -21,6 +21,9 @@ func init() {
 	err = options.AddFlagsValue("root", []string{"-r", "--root"}, "GHFS_ROOT", ".", "root directory of server")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlags("emptyroot", []string{"-R", "--empty-root"}, "GHFS_EMPTY_ROOT", "use virtual empty root directory")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlagsValues("fallbackproxies", []string{"-x", "--fallback-proxy"}, "", nil, "reverse proxy to target if local resource not found, <sep><url><sep><target>, e.g. :/doc:http://remote/doc")
 	serverErrHandler.CheckFatal(err)
 
@@ -186,6 +189,7 @@ func doParseCli() []*Param {
 
 		// normalize option
 		param.Root, _ = result.GetString("root")
+		param.EmptyRoot = result.HasKey("emptyroot")
 		param.IgnoreProxyTargetBadCert = result.HasKey("ignorebadproxycert")
 		param.GlobalUpload = result.HasKey("globalupload")
 		param.GlobalArchive = result.HasKey("globalarchive")

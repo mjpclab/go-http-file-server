@@ -65,6 +65,7 @@ func NewApp(params []*param.Param) *App {
 			}
 		}
 
+		// init vhost
 		listens := p.Listens
 		if len(listens) == 0 && len(p.ListensPlain) == 0 && len(p.ListensTLS) == 0 {
 			if cert == nil {
@@ -74,7 +75,6 @@ func NewApp(params []*param.Param) *App {
 			}
 		}
 
-		// init vhost
 		errors = vhSvc.Add(&goVirtualHost.HostInfo{
 			Listens:      listens,
 			ListensPlain: p.ListensPlain,

@@ -48,6 +48,10 @@ server [options]
     Root directory of the server.
     Defaults to current working directory.
 
+-R|--empty-root
+    Use virtual empty directory as root directory.
+    Useful to share alias directories only.
+
 -x|--fallback-proxy <separator><url-path><separator><proxy-target> ...
     If local resource under <url-path> not found, reverse proxy to <proxy-target>.
     <proxy-target> must be the format of schema://host/path.
