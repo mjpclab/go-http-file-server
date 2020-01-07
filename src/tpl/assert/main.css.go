@@ -14,6 +14,11 @@ color: #333;
 font-size: 0.625em;
 font-family: Consolas, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
 }
+ul, ol, li {
+display: block;
+margin: 0;
+padding: 0;
+}
 a {
 display: block;
 padding: 0.4em 0.5em;
@@ -37,19 +42,22 @@ overflow: hidden;
 border-bottom: 1px #999 solid;
 zoom: 1;
 }
-.path-list a {
+.path-list li {
 position: relative;
 float: left;
-padding-right: 1.2em;
 text-align: center;
 white-space: nowrap;
+}
+.path-list a {
+display: block;
+padding-right: 1.2em;
 min-width: 1em;
 }
 .path-list a:after {
 content: '';
 position: absolute;
 top: 50%;
-right: 0.4em;
+right: 0.5em;
 width: 0.4em;
 height: 0.4em;
 border: 1px solid;
@@ -57,10 +65,10 @@ border-color: #ccc #ccc transparent transparent;
 -webkit-transform: rotate(45deg) translateY(-50%);
 transform: rotate(45deg) translateY(-50%);
 }
-.path-list a:last-child {
+.path-list li:last-child a {
 padding-right: 0.5em;
 }
-.path-list a:last-child:after {
+.path-list li:last-child a:after {
 display: none;
 }
 .upload {

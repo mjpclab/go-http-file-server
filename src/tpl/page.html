@@ -14,11 +14,11 @@
 </head>
 <body>
 
-<div class="path-list">
-    {{range .Paths}}
-		<a href="{{.Path}}">{{html .Name}}</a>
-    {{end}}
-</div>
+<ol class="path-list">
+	{{range .Paths}}
+		<li><a href="{{.Path}}">{{html .Name}}</a></li>
+	{{end}}
+</ol>
 
 {{if .CanUpload}}
 	<div class="upload">
@@ -37,22 +37,25 @@
 	</div>
 {{end}}
 
-<div class="item-list">
-	<a href="{{if .IsRoot}}./{{else}}../{{end}}">
-		<span class="name">../</span>
-		<span class="size"></span>
-		<span class="time"></span>
-	</a>
-    {{range .SubItems}}
-        {{$isDir := .IsDir}}
-		<a href="{{$subItemPrefix}}{{.Name}}{{if $isDir}}/{{end}}"
-		   class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
-			<span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
-			<span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
-			<span class="time">{{fmtTime .ModTime}}</span>
+<ul class="item-list">
+	<li>
+		<a href="{{if .IsRoot}}./{{else}}../{{end}}">
+			<span class="name">../</span>
+			<span class="size"></span>
+			<span class="time"></span>
 		</a>
-    {{end}}
-</div>
+	</li>
+	{{range .SubItems}}
+		{{$isDir := .IsDir}}
+		<li>
+			<a href="{{$subItemPrefix}}{{.Name}}{{if $isDir}}/{{end}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
+				<span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
+				<span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
+				<span class="time">{{fmtTime .ModTime}}</span>
+			</a>
+		</li>
+	{{end}}
+</ul>
 
 {{range .Errors}}
 	<div class="error">{{.}}</div>

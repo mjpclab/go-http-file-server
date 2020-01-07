@@ -22,11 +22,11 @@ const pageTplStr = `
 <link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?assert=main.css"/>
 </head>
 <body>
-<div class="path-list">
+<ol class="path-list">
 {{range .Paths}}
-<a href="{{.Path}}">{{html .Name}}</a>
+<li><a href="{{.Path}}">{{html .Name}}</a></li>
 {{end}}
-</div>
+</ol>
 {{if .CanUpload}}
 <div class="upload">
 <form method="POST" enctype="multipart/form-data">
@@ -42,22 +42,25 @@ const pageTplStr = `
 <a href="{{$subItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
 </div>
 {{end}}
-<div class="item-list">
+<ul class="item-list">
+<li>
 <a href="{{if .IsRoot}}./{{else}}../{{end}}">
 <span class="name">../</span>
 <span class="size"></span>
 <span class="time"></span>
 </a>
+</li>
 {{range .SubItems}}
 {{$isDir := .IsDir}}
-<a href="{{$subItemPrefix}}{{.Name}}{{if $isDir}}/{{end}}"
-class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
+<li>
+<a href="{{$subItemPrefix}}{{.Name}}{{if $isDir}}/{{end}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
 <span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
 <span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
 <span class="time">{{fmtTime .ModTime}}</span>
 </a>
+</li>
 {{end}}
-</div>
+</ul>
 {{range .Errors}}
 <div class="error">{{.}}</div>
 {{end}}
