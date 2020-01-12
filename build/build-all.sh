@@ -3,5 +3,9 @@
 cd $(dirname "$0")
 rm -rf ../output/
 
-builds=('linux 386' 'linux amd64' 'linux arm' 'linux arm64' 'windows 386 .exe' 'windows amd64 .exe' 'darwin 386' 'darwin amd64')
+builds=('linux 386' 'linux amd64' 'linux arm' 'linux arm64' 'windows 386' 'windows amd64' 'windows arm' 'darwin 386' 'darwin amd64')
+#builds=("${builds[@]}" 'freebsd 386' 'freebsd amd64' 'freebsd arm')
+#builds=("${builds[@]}" 'openbsd 386' 'openbsd amd64' 'openbsd arm' 'openbsd arm64')
+#builds=("${builds[@]}" 'netbsd 386' 'netbsd amd64' 'netbsd arm' 'netbsd arm64')
+#builds=("${builds[@]}" 'plan9 386' 'plan9 amd64' 'plan9 arm')
 bash ./build.sh "${builds[@]}"
