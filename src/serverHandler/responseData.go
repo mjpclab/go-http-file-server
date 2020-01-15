@@ -214,7 +214,7 @@ func getItemName(item os.FileInfo, r *http.Request) (itemName string) {
 	return
 }
 
-func (h *handler) getResponseData(r *http.Request, visitFs bool) (data *responseData) {
+func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
 
@@ -239,7 +239,7 @@ func (h *handler) getResponseData(r *http.Request, visitFs bool) (data *response
 		reqFsPath = path.Clean(h.root + reqPath)
 	}
 
-	file, item, _statErr := stat(reqFsPath, visitFs && !h.emptyRoot)
+	file, item, _statErr := stat(reqFsPath, !h.emptyRoot)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		notFound = os.IsNotExist(_statErr)

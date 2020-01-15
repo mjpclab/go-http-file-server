@@ -11,10 +11,6 @@ type Param struct {
 	Root      string
 	EmptyRoot bool
 
-	FallbackProxies          map[string]string
-	AlwaysProxies            map[string]string
-	IgnoreProxyTargetBadCert bool
-
 	Aliases map[string]string
 
 	GlobalUpload bool

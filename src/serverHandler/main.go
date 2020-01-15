@@ -15,9 +15,7 @@ type handler struct {
 	emptyRoot bool
 	urlPrefix string
 
-	fallbackProxies proxyHandlers
-	alwaysProxies   proxyHandlers
-	aliases         aliases
+	aliases aliases
 
 	globalUpload bool
 	uploadUrls   []string
@@ -61,10 +59,8 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	alwaysProxyHandler := getProxyHandler(r, h.alwaysProxies)
-
 	// data
-	data := h.getResponseData(r, alwaysProxyHandler == nil)
+	data := h.getResponseData(r)
 	if len(data.Errors) > 0 {
 		go func() {
 			for _, err := range data.Errors {
@@ -83,21 +79,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if data.CanCors {
 		h.cors(w, r)
-	}
-
-	// always proxy
-	if alwaysProxyHandler != nil {
-		proxy(w, r, alwaysProxyHandler)
-		return
-	}
-
-	// fallback proxy
-	if data.hasNotFoundError {
-		fallbackProxyHandler := getProxyHandler(r, h.fallbackProxies)
-		if fallbackProxyHandler != nil {
-			proxy(w, r, fallbackProxyHandler)
-			return
-		}
 	}
 
 	if data.CanUpload && r.Method == "POST" {
@@ -136,8 +117,6 @@ func NewHandler(
 	urlPrefix string,
 	p *param.Param,
 	users user.Users,
-	fallbackProxiesMap map[string]http.Handler,
-	alwaysProxiesMap map[string]http.Handler,
 	template *template.Template,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
@@ -147,24 +126,12 @@ func NewHandler(
 		aliases = append(aliases, &alias{urlPath, fsPath})
 	}
 
-	fallbackProxies := proxyHandlers{}
-	for urlPath, handler := range fallbackProxiesMap {
-		fallbackProxies = append(fallbackProxies, &proxyHandler{urlPath, handler})
-	}
-
-	alwaysProxies := proxyHandlers{}
-	for urlPath, handler := range alwaysProxiesMap {
-		alwaysProxies = append(alwaysProxies, &proxyHandler{urlPath, handler})
-	}
-
 	h := &handler{
 		root:      root,
 		emptyRoot: emptyRoot,
 		urlPrefix: urlPrefix,
 
-		fallbackProxies: fallbackProxies,
-		alwaysProxies:   alwaysProxies,
-		aliases:         aliases,
+		aliases: aliases,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,

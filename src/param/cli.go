@@ -24,15 +24,6 @@ func init() {
 	err = options.AddFlags("emptyroot", []string{"-R", "--empty-root"}, "GHFS_EMPTY_ROOT", "use virtual empty root directory")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagsValues("fallbackproxies", []string{"-x", "--fallback-proxy"}, "", nil, "reverse proxy to target if local resource not found, <sep><url><sep><target>, e.g. :/doc:http://remote/doc")
-	serverErrHandler.CheckFatal(err)
-
-	err = options.AddFlagsValues("alwaysproxies", []string{"-X", "--always-proxy"}, "", nil, "reverse proxy to target shadows local resource, <sep><url><sep><target>, e.g. :/doc:http://remote/doc")
-	serverErrHandler.CheckFatal(err)
-
-	err = options.AddFlag("ignorebadproxycert", "--ignore-proxy-target-bad-cert", "", "ignore proxy target bad certificate")
-	serverErrHandler.CheckFatal(err)
-
 	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverErrHandler.CheckFatal(err)
 
@@ -190,7 +181,6 @@ func doParseCli() []*Param {
 		// normalize option
 		param.Root, _ = result.GetString("root")
 		param.EmptyRoot = result.HasKey("emptyroot")
-		param.IgnoreProxyTargetBadCert = result.HasKey("ignorebadproxycert")
 		param.GlobalUpload = result.HasKey("globalupload")
 		param.GlobalArchive = result.HasKey("globalarchive")
 		param.GlobalCors = result.HasKey("globalcors")
@@ -212,12 +202,6 @@ func doParseCli() []*Param {
 		param.ListensPlain, _ = result.GetStrings("listensplain")
 
 		param.ListensTLS, _ = result.GetStrings("listenstls")
-
-		// normalize proxies
-		arrFallbackProxies, _ := result.GetStrings("fallbackproxies")
-		param.FallbackProxies = normalizeProxyMaps(arrFallbackProxies)
-		arrAlwaysProxies, _ := result.GetStrings("alwaysproxies")
-		param.AlwaysProxies = normalizeProxyMaps(arrAlwaysProxies)
 
 		// normalize aliases
 		arrAlias, _ := result.GetStrings("aliases")
