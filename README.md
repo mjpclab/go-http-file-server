@@ -25,7 +25,7 @@ make tpls
 ```
 Then compile the project again.
 
-## Usage
+## Usage for compiled application
 ```
 server [options]
 
@@ -53,11 +53,11 @@ server [options]
     Useful to share alias directories only.
 
 -x|--fallback-proxy <separator><url-path><separator><proxy-target> ...
-    If local resource under <url-path> not found, reverse proxy to <proxy-target>.
-    <proxy-target> must be the format of schema://host/path.
+    If local resource under url-path not found, reverse proxy to proxy-target.
+    proxy-target must be the format of schema://host/path.
 -X|--always-proxy <separator><url-path><separator><proxy-target> ...
-    Always reverse proxy from <url-path> to <proxy-target>.
-    <proxy-target> must be the format of schema://host/path.
+    Always reverse proxy from url-path to proxy-target.
+    proxy-target must be the format of schema://host/path.
 --ignore-proxy-target-bad-cert
     Ignore proxy target server's certificate validation issue.
 
@@ -69,7 +69,7 @@ server [options]
     If filename exists, will try to add or increase numeric suffix.
     Use it with care.
 -u|--upload <url-path> ...
-    Set url paths that allows to upload files.
+    Set url paths(and sub paths) that allows to upload files.
     Use it with care.
 --upload-dir <fs-path> ...
     Similar to --upload, but use file system path instead of url path.
@@ -80,23 +80,23 @@ server [options]
     A download link will appear on top part of the page.
     Make sure there is no circular symbol links.
 --archive <url-path> ...
-    Allow user to download the whole contents of current directory for specific url paths.
+    Allow user to download the whole contents of current directory for specific url paths(and sub paths).
 --archive-dir <fs-path> ...
     Similar to --archive, but use file system path instead of url path.
 
 --global-cors
     Allow CORS requests for all url path.
 --cors <url-path> ...
-    Allow CORS requests for specific url path.
+    Allow CORS requests for specific url paths(and sub paths).
 --cors-dir <fs-path> ...
-    Allow CORS requests for specific file system path.
+    Allow CORS requests for specific file system paths(and sub paths).
 
 --global-auth
     Use Basic Auth for all url path.
 --auth <url-path> ...
-    Use Basic Auth for specific url path.
+    Use Basic Auth for specific url paths(and sub paths).
 --auth-dir <fs-path> ...
-    Use Basic Auth for specific file system path.
+    Use Basic Auth for specific file system paths(and sub paths).
 --user [<username>]:[<password>] ...
     Specify users for current virtual host for Basic Auth, empty username and/or password is allowed.
 --user-base64 [<username>]:[<base64-password>] ...
