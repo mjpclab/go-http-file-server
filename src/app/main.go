@@ -6,7 +6,6 @@ import (
 	"../serverErrHandler"
 	"../serverLog"
 	"../vhostMux"
-	"crypto/tls"
 	"os"
 )
 
@@ -53,22 +52,10 @@ func NewApp(params []*param.Param) *App {
 		vhMux := vhostMux.NewServeMux(p, logger, errHandler)
 		vhMuxes = append(vhMuxes, vhMux)
 
-		// cert
-		var cert *tls.Certificate
-		if len(p.Cert) > 0 && len(p.Key) > 0 {
-			c, err := tls.LoadX509KeyPair(p.Cert, p.Key)
-			if err != nil {
-				serverErrHandler.CheckFatal(err)
-				logger.LogErrors(err)
-			} else {
-				cert = &c
-			}
-		}
-
 		// init vhost
 		listens := p.Listens
 		if len(listens) == 0 && len(p.ListensPlain) == 0 && len(p.ListensTLS) == 0 {
-			if cert == nil {
+			if p.Certificate == nil {
 				listens = []string{":80"}
 			} else {
 				listens = []string{":443"}
@@ -79,7 +66,7 @@ func NewApp(params []*param.Param) *App {
 			Listens:      listens,
 			ListensPlain: p.ListensPlain,
 			ListensTLS:   p.ListensTLS,
-			Cert:         cert,
+			Cert:         p.Certificate,
 			HostNames:    p.HostNames,
 			Handler:      vhMux.ServeMux,
 		})

@@ -4,7 +4,6 @@ import (
 	"../util"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"unicode/utf8"
 )
@@ -76,62 +75,4 @@ func normalizeFsPaths(inputs []string) []string {
 	}
 
 	return outputs
-}
-
-func getUsers(userEntries []string) []*user {
-	users := make([]*user, 0, len(userEntries))
-	for _, userEntry := range userEntries {
-		username := userEntry
-		password := ""
-
-		colonIndex := strings.IndexByte(userEntry, ':')
-		if colonIndex >= 0 {
-			username = userEntry[:colonIndex]
-			password = userEntry[colonIndex+1:]
-		}
-
-		users = append(users, &user{username, password})
-	}
-	return users
-}
-
-func getDupUserNames(usersGroups ...[]*user) []string {
-	userMap := map[string]bool{}
-	dupUserMap := map[string]bool{}
-
-	for _, users := range usersGroups {
-		for _, user := range users {
-			if userMap[user.Username] {
-				dupUserMap[user.Username] = true
-			}
-			userMap[user.Username] = true
-		}
-	}
-
-	dupUsers := make([]string, 0, len(dupUserMap))
-	for username, _ := range dupUserMap {
-		dupUsers = append(dupUsers, username)
-	}
-	return dupUsers
-}
-
-func getWildcardRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
-	if !found || len(wildcards) == 0 {
-		return nil, nil
-	}
-
-	normalizedWildcards := make([]string, 0, len(wildcards))
-	for _, wildcard := range wildcards {
-		if len(wildcard) == 0 {
-			continue
-		}
-		normalizedWildcards = append(normalizedWildcards, util.WildcardToRegexp(wildcard))
-	}
-
-	if len(normalizedWildcards) == 0 {
-		return nil, nil
-	}
-
-	exp := strings.Join(normalizedWildcards, "|")
-	return regexp.Compile(exp)
 }

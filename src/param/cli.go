@@ -3,6 +3,7 @@ package param
 import (
 	"../goNixArgParser"
 	"../serverErrHandler"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -185,12 +186,25 @@ func doParseCli() []*Param {
 		param.GlobalArchive = result.HasKey("globalarchive")
 		param.GlobalCors = result.HasKey("globalcors")
 		param.GlobalAuth = result.HasKey("globalauth")
-		param.Key, _ = result.GetString("key")
-		param.Cert, _ = result.GetString("cert")
 		param.HostNames, _ = result.GetStrings("hostnames")
 		param.Template, _ = result.GetString("template")
 		param.AccessLog, _ = result.GetString("accesslog")
 		param.ErrorLog, _ = result.GetString("errorlog")
+
+		// certificate
+		key, _ := result.GetString("key")
+		cert, _ := result.GetString("cert")
+		if len(key) > 0 && len(cert) > 0 {
+			var err error
+			param.Certificate, err = LoadCertificate(cert, key)
+			if err != nil {
+				serverErrHandler.CheckFatal(err)
+			}
+		} else if len(key) > 0 && len(cert) == 0 {
+			serverErrHandler.CheckFatal(errors.New("missing certificate file"))
+		} else if len(key) == 0 && len(cert) > 0 {
+			serverErrHandler.CheckFatal(errors.New("missing certificate key file"))
+		}
 
 		// normalize listen
 		listens, _ := result.GetStrings("listens")
@@ -241,53 +255,46 @@ func doParseCli() []*Param {
 
 		// normalize users
 		arrUsersPlain, _ := result.GetStrings("users")
-		param.UsersPlain = getUsers(arrUsersPlain)
+		param.UsersPlain = EntriesToUsers(arrUsersPlain)
 		arrUsersBase64, _ := result.GetStrings("usersbase64")
-		param.UsersBase64 = getUsers(arrUsersBase64)
+		param.UsersBase64 = EntriesToUsers(arrUsersBase64)
 		arrUsersMd5, _ := result.GetStrings("usersmd5")
-		param.UsersMd5 = getUsers(arrUsersMd5)
+		param.UsersMd5 = EntriesToUsers(arrUsersMd5)
 		arrUsersSha1, _ := result.GetStrings("userssha1")
-		param.UsersSha1 = getUsers(arrUsersSha1)
+		param.UsersSha1 = EntriesToUsers(arrUsersSha1)
 		arrUsersSha256, _ := result.GetStrings("userssha256")
-		param.UsersSha256 = getUsers(arrUsersSha256)
+		param.UsersSha256 = EntriesToUsers(arrUsersSha256)
 		arrUsersSha512, _ := result.GetStrings("userssha512")
-		param.UsersSha512 = getUsers(arrUsersSha512)
+		param.UsersSha512 = EntriesToUsers(arrUsersSha512)
 
-		dupUsers := getDupUserNames(
-			param.UsersPlain,
-			param.UsersBase64,
-			param.UsersMd5,
-			param.UsersSha1,
-			param.UsersSha256,
-			param.UsersSha512,
-		)
-		if len(dupUsers) > 0 {
-			serverErrHandler.CheckFatal(fmt.Errorf("duplicated usernames: %q", dupUsers))
+		dupUserNames := param.GetDupUserNames()
+		if len(dupUserNames) > 0 {
+			serverErrHandler.CheckFatal(fmt.Errorf("duplicated usernames: %q", dupUserNames))
 		}
 
 		// shows
-		shows, err := getWildcardRegexp(result.GetStrings("shows"))
+		shows, err := WildcardToRegexp(result.GetStrings("shows"))
 		serverErrHandler.CheckFatal(err)
 		param.Shows = shows
 
-		showDirs, err := getWildcardRegexp(result.GetStrings("showdirs"))
+		showDirs, err := WildcardToRegexp(result.GetStrings("showdirs"))
 		serverErrHandler.CheckFatal(err)
 		param.ShowDirs = showDirs
 
-		showFiles, err := getWildcardRegexp(result.GetStrings("showfiles"))
+		showFiles, err := WildcardToRegexp(result.GetStrings("showfiles"))
 		serverErrHandler.CheckFatal(err)
 		param.ShowFiles = showFiles
 
 		// hides
-		hides, err := getWildcardRegexp(result.GetStrings("hides"))
+		hides, err := WildcardToRegexp(result.GetStrings("hides"))
 		serverErrHandler.CheckFatal(err)
 		param.Hides = hides
 
-		hideDirs, err := getWildcardRegexp(result.GetStrings("hidedirs"))
+		hideDirs, err := WildcardToRegexp(result.GetStrings("hidedirs"))
 		serverErrHandler.CheckFatal(err)
 		param.HideDirs = hideDirs
 
-		hideFiles, err := getWildcardRegexp(result.GetStrings("hidefiles"))
+		hideFiles, err := WildcardToRegexp(result.GetStrings("hidefiles"))
 		serverErrHandler.CheckFatal(err)
 		param.HideFiles = hideFiles
 
