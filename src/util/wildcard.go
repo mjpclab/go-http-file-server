@@ -4,27 +4,26 @@ import (
 	"strings"
 )
 
+var regexpEscapeReplacer = strings.NewReplacer(
+	"(", "\\(",
+	")", "\\)",
+	"[", "\\[",
+	"]", "\\]",
+	"{", "\\{",
+	"}", "\\}",
+	"<", "\\<",
+	">", "\\>",
+	"^", "\\^",
+	"$", "\\$",
+	"|", "\\|",
+	"+", "\\+",
+	"\\", "\\\\",
+	".", "\\.",
+	"?", ".",
+	"*", ".*?",
+)
+
 func WildcardToRegexp(wildcard string) string {
-	replacer := strings.NewReplacer(
-		"(", "\\(",
-		")", "\\)",
-		"[", "\\[",
-		"]", "\\]",
-		"{", "\\{",
-		"}", "\\}",
-		"<", "\\<",
-		">", "\\>",
-		"^", "\\^",
-		"$", "\\$",
-		"|", "\\|",
-		"+", "\\+",
-		"\\", "\\\\",
-		".", "\\.",
-		"?", ".",
-		"*", ".*?",
-	)
-
-	exp := "^" + replacer.Replace(wildcard) + "$"
-
+	exp := "^" + regexpEscapeReplacer.Replace(wildcard) + "$"
 	return exp
 }
