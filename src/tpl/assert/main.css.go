@@ -52,6 +52,7 @@ white-space: nowrap;
 display: block;
 padding-right: 1.2em;
 min-width: 1em;
+white-space: pre-wrap;
 }
 .path-list a:after {
 content: '';
@@ -161,6 +162,7 @@ flex-shrink: 1;
 flex-basis: 0;
 margin-left: 0;
 font-size: 1.5em;
+white-space: pre-wrap;
 word-break: break-all;
 }
 .item-list .size {
