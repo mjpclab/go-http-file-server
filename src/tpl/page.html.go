@@ -24,7 +24,7 @@ const pageTplStr = `
 <body>
 <ol class="path-list">
 {{range .Paths}}
-<li><a href="{{.Path}}">{{html .Name}}</a></li>
+<li><a href="{{.Path}}">{{.Name}}</a></li>
 {{end}}
 </ol>
 {{if .CanUpload}}
@@ -54,7 +54,7 @@ const pageTplStr = `
 {{$isDir := .IsDir}}
 <li>
 <a href="{{$subItemPrefix}}{{.Name}}{{if $isDir}}/{{end}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
-<span class="name">{{html .Name}}{{if $isDir}}/{{end}}</span>
+<span class="name">{{.Name}}{{if $isDir}}/{{end}}</span>
 <span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
 <span class="time">{{fmtTime .ModTime}}</span>
 </a>
