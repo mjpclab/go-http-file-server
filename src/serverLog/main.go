@@ -41,17 +41,13 @@ func (l *Logger) LogErrorString(payload string) {
 }
 
 func (l *Logger) Open() (errors []error) {
-	var err error
-
-	err = l.accLogMan.Open()
-	if err != nil {
+	if err := l.accLogMan.Open(); err != nil {
 		errors = append(errors, err)
 	} else {
 		l.accLogMan.Enable()
 	}
 
-	err = l.errLogMan.Open()
-	if err != nil {
+	if err := l.errLogMan.Open(); err != nil {
 		errors = append(errors, err)
 	} else {
 		l.errLogMan.Enable()
@@ -66,15 +62,11 @@ func (l *Logger) Close() {
 }
 
 func (l *Logger) ReOpen() (errors []error) {
-	var err error
-
-	err = l.accLogMan.ReOpen()
-	if err != nil {
+	if err := l.accLogMan.ReOpen(); err != nil {
 		errors = append(errors, err)
 	}
 
-	err = l.errLogMan.ReOpen()
-	if err != nil {
+	if err := l.errLogMan.ReOpen(); err != nil {
 		errors = append(errors, err)
 	}
 
