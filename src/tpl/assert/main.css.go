@@ -165,6 +165,13 @@ font-size: 1.5em;
 white-space: pre-wrap;
 word-break: break-all;
 }
+.item-list .name em {
+font-style: normal;
+font-weight: normal;
+padding: 0 0.2em;
+border: 1px #ddd solid;
+border-radius: 3px;
+}
 .item-list .size {
 white-space: nowrap;
 text-align: right;
