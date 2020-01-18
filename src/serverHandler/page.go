@@ -16,6 +16,7 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 	}
 
 	if needResponseBody(r.Method) {
+		updateSubsItemHtml(data.SubItems)
 		err := h.template.Execute(w, data)
 		h.errHandler.LogError(err)
 	}

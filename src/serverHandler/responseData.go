@@ -17,6 +17,10 @@ type pathEntry struct {
 	Path string
 }
 
+type subItemSort struct {
+	Name []byte
+}
+
 type subItemHtml struct {
 	IsDir   bool
 	Name    template.HTML
@@ -25,8 +29,10 @@ type subItemHtml struct {
 }
 
 type subItem struct {
+	sort subItemSort
+
 	Info os.FileInfo
-	Html subItemHtml
+	Html *subItemHtml
 }
 
 type responseData struct {
@@ -200,25 +206,6 @@ func getSubItemPrefix(requestPath string, tailSlash bool) (subItemPrefix string)
 	return
 }
 
-func sortSubInfos(subInfos []os.FileInfo) {
-	sort.Slice(
-		subInfos,
-		func(prevIndex, nextIndex int) bool {
-			prevItem := subInfos[prevIndex]
-			nextItem := subInfos[nextIndex]
-
-			prevIsDir := prevItem.IsDir()
-			nextIsDir := nextItem.IsDir()
-
-			if prevIsDir != nextIsDir {
-				return prevIsDir
-			}
-
-			return util.CompareNumInStr([]byte(prevItem.Name()), []byte(nextItem.Name()))
-		},
-	)
-}
-
 func getItemName(info os.FileInfo, r *http.Request) (itemName string) {
 	if info != nil {
 		itemName = info.Name()
@@ -235,17 +222,45 @@ func getSubItems(subInfos []os.FileInfo) []*subItem {
 	for i := 0; i < len(subInfos); i++ {
 		info := subInfos[i]
 		subItems[i] = &subItem{
-			Info: info,
-			Html: subItemHtml{
-				IsDir:   info.IsDir(),
-				Name:    tplutil.FormatFilename(info.Name()),
-				Size:    tplutil.FormatSize(info.Size()),
-				ModTime: tplutil.FormatTime(info.ModTime()),
+			sort: subItemSort{
+				Name: []byte(info.Name()),
 			},
+			Info: info,
 		}
 	}
 
 	return subItems
+}
+
+func updateSubsItemHtml(subItems []*subItem) {
+	for _, item := range subItems {
+		info := item.Info
+		item.Html = &subItemHtml{
+			IsDir:   info.IsDir(),
+			Name:    tplutil.FormatFilename(info.Name()),
+			Size:    tplutil.FormatSize(info.Size()),
+			ModTime: tplutil.FormatTime(info.ModTime()),
+		}
+	}
+}
+
+func sortSubItems(subItems []*subItem) {
+	sort.Slice(
+		subItems,
+		func(prevIndex, nextIndex int) bool {
+			prevItem := subItems[prevIndex]
+			nextItem := subItems[nextIndex]
+
+			prevIsDir := prevItem.Info.IsDir()
+			nextIsDir := nextItem.Info.IsDir()
+
+			if prevIsDir != nextIsDir {
+				return prevIsDir
+			}
+
+			return util.CompareNumInStr(prevItem.sort.Name, nextItem.sort.Name)
+		},
+	)
 }
 
 func (h *handler) getResponseData(r *http.Request) (data *responseData) {
@@ -291,9 +306,9 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	internalError = internalError || len(_mergeErrs) > 0
 
 	subInfos = h.FilterItems(subInfos)
-	sortSubInfos(subInfos)
 
 	subItems := getSubItems(subInfos)
+	sortSubItems(subItems)
 
 	subItemPrefix := getSubItemPrefix(reqPath, tailSlash)
 
