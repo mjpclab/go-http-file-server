@@ -21,7 +21,7 @@ const pageTplStr = `
 <title>{{.Path}}</title>
 <link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?assert=main.css"/>
 </head>
-<body>
+<body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 <ol class="path-list">
 {{range .Paths}}
 <li><a href="{{.Path}}">{{.Name}}</a></li>
@@ -43,7 +43,7 @@ const pageTplStr = `
 </div>
 {{end}}
 <ul class="item-list">
-<li>
+<li class="dir parent">
 <a href="{{if .IsRoot}}./{{else}}../{{end}}">
 <span class="name">../</span>
 <span class="size"></span>
@@ -51,10 +51,10 @@ const pageTplStr = `
 </a>
 </li>
 {{range .SubItems}}
-{{$isDir := .IsDir}}
-<li>
-<a href="{{$subItemPrefix}}{{.Name}}{{if $isDir}}/{{end}}" class="item {{if $isDir}}item-dir{{else}}item-file{{end}}">
-<span class="name">{{fmtFilename .Name}}{{if $isDir}}/{{end}}</span>
+{{$isDir := .IsDir}}{{$subItemName := .Name}}
+<li class="{{if $isDir}}dir{{else}}file{{end}}">
+<a href="{{$subItemPrefix}}{{$subItemName}}{{if $isDir}}/{{end}}">
+<span class="name">{{fmtFilename $subItemName}}{{if $isDir}}/{{end}}</span>
 <span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
 <span class="time">{{fmtTime .ModTime}}</span>
 </a>
