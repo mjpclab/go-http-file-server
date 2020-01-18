@@ -23,15 +23,15 @@ func findCommonPrefix(prev, next string) int {
 }
 
 func extractPrefixDigits(input string) (output string) {
-	buf := bytes.Buffer{}
+	buffer := bytes.NewBuffer(make([]byte, 0, 8))
 	for i, length := 0, len(input); i < length; i++ {
 		b := input[i]
 		if b < '0' || b > '9' {
 			break
 		}
-		buf.WriteByte(b)
+		buffer.WriteByte(b)
 	}
-	return buf.String()
+	return buffer.String()
 }
 
 func CompareNumInStr(prev, next string) bool {

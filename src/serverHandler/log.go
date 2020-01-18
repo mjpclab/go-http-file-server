@@ -5,20 +5,16 @@ import (
 	"net/http"
 )
 
+const LOG_BUF_SIZE = 80
+
 func (h *handler) logRequest(r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
 
-	buffer := &bytes.Buffer{}
+	payload := []byte(r.RemoteAddr + " " + r.Method + " " + r.RequestURI)
 
-	buffer.WriteString(r.RemoteAddr)
-	buffer.WriteByte(' ')
-	buffer.WriteString(r.Method)
-	buffer.WriteByte(' ')
-	buffer.WriteString(r.RequestURI)
-
-	h.logger.LogAccess(buffer.Bytes())
+	h.logger.LogAccess(payload)
 }
 
 func (h *handler) logUpload(filename, fsPath string, r *http.Request) {
@@ -26,7 +22,7 @@ func (h *handler) logUpload(filename, fsPath string, r *http.Request) {
 		return
 	}
 
-	buffer := &bytes.Buffer{}
+	buffer := bytes.NewBuffer(make([]byte, 0, LOG_BUF_SIZE))
 
 	buffer.WriteString(r.RemoteAddr)
 	buffer.WriteByte(' ')
@@ -43,7 +39,7 @@ func (h *handler) logArchive(filename, relPath string, r *http.Request) {
 		return
 	}
 
-	buffer := &bytes.Buffer{}
+	buffer := bytes.NewBuffer(make([]byte, 0, LOG_BUF_SIZE))
 
 	buffer.WriteString(r.RemoteAddr)
 	buffer.WriteByte(' ')

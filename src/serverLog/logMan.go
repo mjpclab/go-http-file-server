@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const LOG_BUF_SIZE = 80
+
 type logMan struct {
 	filename string
 	file     *os.File
@@ -19,7 +21,7 @@ type logMan struct {
 }
 
 func getLogEntry(payload []byte) []byte {
-	buffer := &bytes.Buffer{}
+	buffer := bytes.NewBuffer(make([]byte, 0, LOG_BUF_SIZE))
 	buffer.WriteString(util.FormatTimeSecond(time.Now()))
 	buffer.WriteByte(' ')
 	buffer.Write(payload)
