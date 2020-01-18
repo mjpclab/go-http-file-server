@@ -21,8 +21,8 @@ func hasUrlOrDirPrefix(urls []string, reqUrl string, dirs []string, reqDir strin
 	return false
 }
 
-func (h *handler) getCanUpload(item os.FileInfo, rawReqPath, reqFsPath string) bool {
-	if item == nil || !item.IsDir() {
+func (h *handler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string) bool {
+	if info == nil || !info.IsDir() {
 		return false
 	}
 
@@ -33,8 +33,8 @@ func (h *handler) getCanUpload(item os.FileInfo, rawReqPath, reqFsPath string) b
 	return hasUrlOrDirPrefix(h.uploadUrls, rawReqPath, h.uploadDirs, reqFsPath)
 }
 
-func (h *handler) getCanArchive(subItems []os.FileInfo, rawReqPath, reqFsPath string) bool {
-	if len(subItems) == 0 {
+func (h *handler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath string) bool {
+	if len(subInfos) == 0 {
 		return false
 	}
 

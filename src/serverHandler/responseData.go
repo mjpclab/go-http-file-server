@@ -1,7 +1,9 @@
 package serverHandler
 
 import (
+	tplutil "../tpl/util"
 	"../util"
+	"html/template"
 	"net/http"
 	"os"
 	"path"
@@ -13,6 +15,18 @@ import (
 type pathEntry struct {
 	Name string
 	Path string
+}
+
+type subItemHtml struct {
+	IsDir   bool
+	Name    template.HTML
+	Size    template.HTML
+	ModTime template.HTML
+}
+
+type subItem struct {
+	Info os.FileInfo
+	Html subItemHtml
 }
 
 type responseData struct {
@@ -29,13 +43,14 @@ type responseData struct {
 	File          *os.File
 	Item          os.FileInfo
 	ItemName      string
-	SubItems      []os.FileInfo
+	SubItems      []*subItem
 	SubItemPrefix string
-	CanUpload     bool
-	CanArchive    bool
-	CanCors       bool
-	NeedAuth      bool
-	Errors        []error
+
+	CanUpload  bool
+	CanArchive bool
+	CanCors    bool
+	NeedAuth   bool
+	Errors     []error
 }
 
 func isSlash(c rune) bool {
@@ -185,12 +200,12 @@ func getSubItemPrefix(requestPath string, tailSlash bool) (subItemPrefix string)
 	return
 }
 
-func sortSubItems(subItems []os.FileInfo) {
+func sortSubInfos(subInfos []os.FileInfo) {
 	sort.Slice(
-		subItems,
+		subInfos,
 		func(prevIndex, nextIndex int) bool {
-			prevItem := subItems[prevIndex]
-			nextItem := subItems[nextIndex]
+			prevItem := subInfos[prevIndex]
+			nextItem := subInfos[nextIndex]
 
 			prevIsDir := prevItem.IsDir()
 			nextIsDir := nextItem.IsDir()
@@ -204,14 +219,33 @@ func sortSubItems(subItems []os.FileInfo) {
 	)
 }
 
-func getItemName(item os.FileInfo, r *http.Request) (itemName string) {
-	if item != nil {
-		itemName = item.Name()
+func getItemName(info os.FileInfo, r *http.Request) (itemName string) {
+	if info != nil {
+		itemName = info.Name()
 	}
 	if len(itemName) == 0 || itemName == "." {
 		itemName = strings.Replace(r.Host, ":", "_", -1)
 	}
 	return
+}
+
+func getSubItems(subInfos []os.FileInfo) []*subItem {
+	subItems := make([]*subItem, len(subInfos))
+
+	for i := 0; i < len(subInfos); i++ {
+		info := subInfos[i]
+		subItems[i] = &subItem{
+			Info: info,
+			Html: subItemHtml{
+				IsDir:   info.IsDir(),
+				Name:    tplutil.FormatFilename(info.Name()),
+				Size:    tplutil.FormatSize(info.Size()),
+				ModTime: tplutil.FormatTime(info.ModTime()),
+			},
+		}
+	}
+
+	return subItems
 }
 
 func (h *handler) getResponseData(r *http.Request) (data *responseData) {
@@ -248,21 +282,23 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErrs := readdir(file, item)
+	subInfos, _readdirErrs := readdir(file, item)
 	errs = append(errs, _readdirErrs...)
 	internalError = internalError || len(_readdirErrs) > 0
 
-	_mergeErrs := h.mergeAlias(rawReqPath, &subItems)
+	_mergeErrs := h.mergeAlias(rawReqPath, &subInfos)
 	errs = append(errs, _mergeErrs...)
 	internalError = internalError || len(_mergeErrs) > 0
 
-	subItems = h.FilterItems(subItems)
-	sortSubItems(subItems)
+	subInfos = h.FilterItems(subInfos)
+	sortSubInfos(subInfos)
+
+	subItems := getSubItems(subInfos)
 
 	subItemPrefix := getSubItemPrefix(reqPath, tailSlash)
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
-	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
+	canArchive := h.getCanArchive(subInfos, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 

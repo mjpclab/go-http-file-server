@@ -2,7 +2,7 @@ package tpl
 
 import (
 	"../serverErrHandler"
-	"../util"
+	"./util"
 	"html/template"
 	"path"
 )
@@ -50,16 +50,15 @@ const pageTplStr = `
 <span class="time"></span>
 </a>
 </li>
-{{range .SubItems}}
-{{$isDir := .IsDir}}{{$subItemName := .Name}}
-<li class="{{if $isDir}}dir{{else}}file{{end}}">
-<a href="{{$subItemPrefix}}{{$subItemName}}{{if $isDir}}/{{end}}">
-<span class="name">{{fmtFilename $subItemName}}{{if $isDir}}/{{end}}</span>
-<span class="size">{{if not $isDir}}{{fmtSize .Size}}{{end}}</span>
-<span class="time">{{fmtTime .ModTime}}</span>
+{{range .SubItems}}{{with .Html}}
+<li class="{{if .IsDir}}dir{{else}}file{{end}}">
+<a href="{{$subItemPrefix}}{{.Name}}{{if .IsDir}}/{{end}}">
+<span class="name">{{.Name}}{{if .IsDir}}/{{end}}</span>
+<span class="size">{{if not .IsDir}}{{.Size}}{{end}}</span>
+<span class="time">{{.ModTime}}</span>
 </a>
 </li>
-{{end}}
+{{end}}{{end}}
 </ul>
 {{range .Errors}}
 <div class="error">{{.}}</div>
@@ -102,6 +101,6 @@ func addFuncMap(tpl *template.Template) *template.Template {
 	return tpl.Funcs(template.FuncMap{
 		"fmtFilename": util.FormatFilename,
 		"fmtSize":     util.FormatSize,
-		"fmtTime":     util.FormatTimeMinute,
+		"fmtTime":     util.FormatTime,
 	})
 }

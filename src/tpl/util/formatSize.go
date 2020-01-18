@@ -1,6 +1,7 @@
 package util
 
 import (
+	"html/template"
 	"strconv"
 )
 
@@ -13,7 +14,7 @@ const (
 	PB
 )
 
-func fmtUnit(unitName string, unitValue int64, srcValue int64) string {
+func fmtUnit(unitName string, unitValue int64, srcValue int64) template.HTML {
 	prefix := int(srcValue / unitValue)
 	suffix := int(srcValue % unitValue * 100 / unitValue)
 
@@ -21,10 +22,10 @@ func fmtUnit(unitName string, unitValue int64, srcValue int64) string {
 		prefix++
 	}
 
-	return strconv.Itoa(prefix) + unitName
+	return template.HTML(strconv.Itoa(prefix) + unitName)
 }
 
-func FormatSize(size int64) string {
+func FormatSize(size int64) template.HTML {
 	switch {
 	case size > PB:
 		return fmtUnit("P", PB, size)
