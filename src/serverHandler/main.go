@@ -104,7 +104,9 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := data.Item
-	if file != nil && item != nil && !item.IsDir() {
+	if r.URL.RawQuery == "json" {
+		h.json(w, r, data)
+	} else if file != nil && item != nil && !item.IsDir() {
 		h.content(w, r, data)
 	} else {
 		h.page(w, r, data)
