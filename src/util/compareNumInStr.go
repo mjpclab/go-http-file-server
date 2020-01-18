@@ -2,7 +2,7 @@ package util
 
 import "bytes"
 
-func findCommonPrefix(prev, next string) int {
+func findCommonPrefix(prev, next []byte) int {
 	prevLen := len(prev)
 	nextLen := len(next)
 
@@ -22,19 +22,20 @@ func findCommonPrefix(prev, next string) int {
 	return maxLen
 }
 
-func extractPrefixDigits(input string) (output string) {
-	buffer := bytes.NewBuffer(make([]byte, 0, 8))
-	for i, length := 0, len(input); i < length; i++ {
-		b := input[i]
+func extractPrefixDigits(input []byte) []byte {
+	buf := input[0:0]
+
+	var prefixLen, length int
+	for prefixLen, length = 0, len(input); prefixLen < length; prefixLen++ {
+		b := input[prefixLen]
 		if b < '0' || b > '9' {
 			break
 		}
-		buffer.WriteByte(b)
 	}
-	return buffer.String()
+	return buf[:prefixLen]
 }
 
-func CompareNumInStr(prev, next string) bool {
+func CompareNumInStr(prev, next []byte) bool {
 	if len(prev) == 0 {
 		return true
 	} else if len(next) == 0 {
@@ -62,13 +63,14 @@ func CompareNumInStr(prev, next string) bool {
 		return prevDigitsLen < nextDigitsLen
 	}
 
-	if prevDigitsLen == 0 {
-		return prev < next
+	if prevDigitsLen == 0 { // prevDigitsLen and nextDigitsLen is 0
+		return bytes.Compare(prev, next) < 0
 	}
 
-	if prevDigits == nextDigits {
-		return CompareNumInStr(prev[prevDigitsLen:], next[nextDigitsLen:])
+	compareResult := bytes.Compare(prevDigits, nextDigits)
+	if compareResult != 0 {
+		return compareResult < 0
 	} else {
-		return prevDigits < nextDigits
+		return CompareNumInStr(prev[prevDigitsLen:], next[nextDigitsLen:])
 	}
 }

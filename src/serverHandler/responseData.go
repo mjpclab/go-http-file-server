@@ -199,7 +199,7 @@ func sortSubItems(subItems []os.FileInfo) {
 				return prevIsDir
 			}
 
-			return util.CompareNumInStr(prevItem.Name(), nextItem.Name())
+			return util.CompareNumInStr([]byte(prevItem.Name()), []byte(nextItem.Name()))
 		},
 	)
 }
