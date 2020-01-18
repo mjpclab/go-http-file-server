@@ -113,8 +113,8 @@ func stat(reqFsPath string, visitFs bool) (file *os.File, item os.FileInfo, err 
 	return
 }
 
-func readdir(file *os.File, item os.FileInfo) (subItems []os.FileInfo, errs []error) {
-	if file == nil || item == nil || !item.IsDir() {
+func readdir(file *os.File, item os.FileInfo, visitFs bool) (subItems []os.FileInfo, errs []error) {
+	if !visitFs || file == nil || item == nil || !item.IsDir() {
 		return
 	}
 
@@ -297,7 +297,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 
 	itemName := getItemName(item, r)
 
-	subInfos, _readdirErrs := readdir(file, item)
+	subInfos, _readdirErrs := readdir(file, item, needResponseBody(r.Method))
 	errs = append(errs, _readdirErrs...)
 	internalError = internalError || len(_readdirErrs) > 0
 
