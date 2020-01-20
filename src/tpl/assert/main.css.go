@@ -36,6 +36,13 @@ input, button {
 margin: 0;
 padding: 0.25em 0;
 }
+em {
+font-style: normal;
+font-weight: normal;
+padding: 0 0.2em;
+border: 1px #ddd solid;
+border-radius: 3px;
+}
 .path-list {
 font-size: 1.5em;
 overflow: hidden;
@@ -164,13 +171,6 @@ margin-left: 0;
 font-size: 1.5em;
 white-space: pre-wrap;
 word-break: break-all;
-}
-.item-list .name em {
-font-style: normal;
-font-weight: normal;
-padding: 0 0.2em;
-border: 1px #ddd solid;
-border-radius: 3px;
 }
 .item-list .size {
 white-space: nowrap;

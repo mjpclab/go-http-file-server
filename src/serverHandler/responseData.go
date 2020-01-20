@@ -17,22 +17,23 @@ type pathEntry struct {
 	Path string `json:"path"`
 }
 
-type subItemSort struct {
+type itemSort struct {
 	Name []byte
 }
 
-type subItemHtml struct {
+type itemHtml struct {
 	IsDir   bool
+	Link    string
 	Name    template.HTML
 	Size    template.HTML
 	ModTime template.HTML
 }
 
 type subItem struct {
-	sort subItemSort
+	sort itemSort
 
 	Info os.FileInfo
-	Html *subItemHtml
+	Html *itemHtml
 }
 
 type responseData struct {
@@ -222,7 +223,7 @@ func getSubItems(subInfos []os.FileInfo) []*subItem {
 	for i := 0; i < len(subInfos); i++ {
 		info := subInfos[i]
 		subItems[i] = &subItem{
-			sort: subItemSort{
+			sort: itemSort{
 				Name: []byte(info.Name()),
 			},
 			Info: info,
@@ -235,9 +236,11 @@ func getSubItems(subInfos []os.FileInfo) []*subItem {
 func updateSubsItemHtml(subItems []*subItem) {
 	for _, item := range subItems {
 		info := item.Info
-		item.Html = &subItemHtml{
+		name := info.Name()
+		item.Html = &itemHtml{
 			IsDir:   info.IsDir(),
-			Name:    tplutil.FormatFilename(info.Name()),
+			Link:    name,
+			Name:    tplutil.FormatFilename(name),
 			Size:    tplutil.FormatSize(info.Size()),
 			ModTime: tplutil.FormatTime(info.ModTime()),
 		}

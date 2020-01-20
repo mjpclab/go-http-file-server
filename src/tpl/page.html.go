@@ -24,7 +24,7 @@ const pageTplStr = `
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 <ol class="path-list">
 {{range .Paths}}
-<li><a href="{{.Path}}">{{.Name}}</a></li>
+<li><a href="{{.Path}}">{{fmtFilename .Name}}</a></li>
 {{end}}
 </ol>
 {{if .CanUpload}}
@@ -52,7 +52,7 @@ const pageTplStr = `
 </li>
 {{range .SubItems}}{{with .Html}}
 <li class="{{if .IsDir}}dir{{else}}file{{end}}">
-<a href="{{$subItemPrefix}}{{.Name}}{{if .IsDir}}/{{end}}">
+<a href="{{$subItemPrefix}}{{.Link}}{{if .IsDir}}/{{end}}">
 <span class="name">{{.Name}}{{if .IsDir}}/{{end}}</span>
 <span class="size">{{if not .IsDir}}{{.Size}}{{end}}</span>
 <span class="time">{{.ModTime}}</span>
