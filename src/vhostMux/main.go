@@ -43,7 +43,7 @@ func NewServeMux(
 	}
 
 	// template
-	tplObj, err := tpl.LoadPage(p.Template)
+	pageTpl, err := tpl.LoadPage(p.Template)
 	errorHandler.LogError(err)
 
 	// register handlers
@@ -58,7 +58,7 @@ func NewServeMux(
 	handlers := map[string]http.Handler{}
 	for urlPath, fsPath := range aliases {
 		emptyHandlerRoot := emptyRoot && urlPath == "/"
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, p, users, tplObj, logger, errorHandler)
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, p, users, pageTpl, logger, errorHandler)
 	}
 
 	// create ServeMux

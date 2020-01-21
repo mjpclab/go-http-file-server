@@ -68,33 +68,33 @@ const pageTplStr = `
 </html>
 `
 
-var defaultPage *template.Template
+var defaultPageTpl *template.Template
 
 func init() {
-	tplObj := template.New("page")
-	tplObj = addFuncMap(tplObj)
+	pageTpl := template.New("page")
+	pageTpl = addFuncMap(pageTpl)
 
 	var err error
-	defaultPage, err = tplObj.Parse(pageTplStr)
+	defaultPageTpl, err = pageTpl.Parse(pageTplStr)
 	if serverErrHandler.CheckError(err) {
-		defaultPage = template.Must(tplObj.Parse("Builtin Template Error"))
+		defaultPageTpl = template.Must(pageTpl.Parse("Builtin Template Error"))
 	}
 }
 
 func LoadPage(tplPath string) (*template.Template, error) {
-	var tplObj *template.Template
+	if len(tplPath) == 0 {
+		return defaultPageTpl, nil
+	}
+
 	var err error
-
-	if len(tplPath) > 0 {
-		tplObj = template.New(path.Base(tplPath))
-		tplObj = addFuncMap(tplObj)
-		tplObj, err = tplObj.ParseFiles(tplPath)
-	}
-	if err != nil || len(tplPath) == 0 {
-		tplObj = defaultPage
+	pageTpl := template.New(path.Base(tplPath))
+	pageTpl = addFuncMap(pageTpl)
+	pageTpl, err = pageTpl.ParseFiles(tplPath)
+	if err != nil {
+		pageTpl = defaultPageTpl
 	}
 
-	return tplObj, err
+	return pageTpl, err
 }
 
 func addFuncMap(tpl *template.Template) *template.Template {
