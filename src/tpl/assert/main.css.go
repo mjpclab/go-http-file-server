@@ -178,7 +178,6 @@ text-align: right;
 color: #666;
 }
 .item-list .time {
-width: 10em;
 color: #999;
 text-align: right;
 white-space: nowrap;
