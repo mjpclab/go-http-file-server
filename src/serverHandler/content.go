@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
+	"time"
 )
 
 func getContentType(item os.FileInfo, file *os.File) (string, error) {
@@ -35,7 +37,11 @@ func (h *handler) content(w http.ResponseWriter, r *http.Request, data *response
 
 	ctype, err := getContentType(item, file)
 	if err == nil {
-		w.Header().Set("Content-Type", ctype)
+		header := w.Header()
+		header.Set("Content-Type", ctype)
+		header.Set("Content-Length", strconv.FormatInt(item.Size(), 10))
+		header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
+		header.Set("Last-Modified", item.ModTime().UTC().Format(http.TimeFormat))
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
