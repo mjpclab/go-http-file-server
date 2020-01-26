@@ -42,6 +42,7 @@ type responseData struct {
 
 	hasNotFoundError bool
 	hasInternalError bool
+	errors           []error
 
 	IsRoot        bool
 	Path          string
@@ -57,7 +58,6 @@ type responseData struct {
 	CanArchive bool
 	CanCors    bool
 	NeedAuth   bool
-	Errors     []error
 }
 
 func isSlash(c rune) bool {
@@ -265,9 +265,9 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 
 	rawReqPath := util.CleanUrlPath(requestUri)
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
-	errs := []error{}
 	notFound := false
 	internalError := false
+	errs := []error{}
 
 	isRoot := rawReqPath == "/"
 
@@ -323,6 +323,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 
 		hasNotFoundError: notFound,
 		hasInternalError: internalError,
+		errors:           errs,
 
 		IsRoot:        isRoot,
 		Path:          rawReqPath,
@@ -338,8 +339,6 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		CanArchive: canArchive,
 		CanCors:    canCors,
 		NeedAuth:   needAuth,
-
-		Errors: errs,
 	}
 
 	return

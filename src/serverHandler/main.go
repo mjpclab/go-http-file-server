@@ -61,9 +61,9 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// data
 	data := h.getResponseData(r)
-	if len(data.Errors) > 0 {
+	if len(data.errors) > 0 {
 		go func() {
-			for _, err := range data.Errors {
+			for _, err := range data.errors {
 				h.errHandler.LogError(err)
 			}
 		}()

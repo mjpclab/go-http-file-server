@@ -60,9 +60,6 @@ const pageTplStr = `
 </li>
 {{end}}{{end}}
 </ul>
-{{range .Errors}}
-<div class="error">{{.}}</div>
-{{end}}
 <script type="text/javascript" src="{{.RootRelPath}}?assert=main.js"></script>
 </body>
 </html>
