@@ -211,7 +211,7 @@ func getItemName(info os.FileInfo, r *http.Request) (itemName string) {
 	if info != nil {
 		itemName = info.Name()
 	}
-	if len(itemName) == 0 || itemName == "." {
+	if len(itemName) == 0 || itemName == "." || itemName == "/" {
 		itemName = strings.Replace(r.Host, ":", "_", -1)
 	}
 	return

@@ -122,7 +122,16 @@ func (h *handler) archive(
 	filterCallback filterCallback,
 	cbWriteFile archiveCallback,
 ) {
-	targetFilename := pageData.ItemName + fileSuffix
+	var itemName string
+	_, hasAlias := h.aliases.byUrlPath(pageData.rawReqPath)
+	if hasAlias {
+		itemName = path.Base(pageData.rawReqPath)
+	}
+	if len(itemName) == 0 || itemName == "/" {
+		itemName = pageData.ItemName
+	}
+
+	targetFilename := itemName + fileSuffix
 	writeArchiveHeader(w, contentType, targetFilename)
 
 	if !needResponseBody(r.Method) {
