@@ -114,19 +114,12 @@ func stat(reqFsPath string, visitFs bool) (file *os.File, item os.FileInfo, err 
 	return
 }
 
-func readdir(file *os.File, item os.FileInfo, visitFs bool) (subItems []os.FileInfo, errs []error) {
+func readdir(file *os.File, item os.FileInfo, visitFs bool) (subItems []os.FileInfo, err error) {
 	if !visitFs || file == nil || item == nil || !item.IsDir() {
 		return
 	}
 
-	var err error
-	subItems, err = file.Readdir(0)
-	if err != nil {
-		errs = append(errs, err)
-		return
-	}
-
-	return
+	return file.Readdir(0)
 }
 
 func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo) []error {
@@ -295,18 +288,22 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		notFound = os.IsNotExist(_statErr)
-		internalError = internalError || !notFound
+		internalError = !notFound
 	}
 
 	itemName := getItemName(item, r)
 
-	subInfos, _readdirErrs := readdir(file, item, needResponseBody(r.Method))
-	errs = append(errs, _readdirErrs...)
-	internalError = internalError || len(_readdirErrs) > 0
+	subInfos, _readdirErr := readdir(file, item, needResponseBody(r.Method))
+	if _readdirErr != nil {
+		errs = append(errs, _readdirErr)
+		internalError = true
+	}
 
 	_mergeErrs := h.mergeAlias(rawReqPath, &subInfos)
-	errs = append(errs, _mergeErrs...)
-	internalError = internalError || len(_mergeErrs) > 0
+	if len(_mergeErrs) > 0 {
+		errs = append(errs, _mergeErrs...)
+		internalError = true
+	}
 
 	subInfos = h.FilterItems(subInfos)
 
