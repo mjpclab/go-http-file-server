@@ -19,59 +19,70 @@
 ghfs="/usr/local/bin/ghfs"
 prog=$(basename $ghfs)
 
+sysconfig="/etc/sysconfig/$prog"
+[ -f "$sysconfig" ] && . "$sysconfig"
+
+pidfile="/var/run/${prog}.pid"
+
 start() {
-    echo -n $"Starting $prog: "
-    "$ghfs" --config=/etc/ghfs.conf &
-    retval=$?
-    [ $retval -eq 0 ] && success || failure
-    echo
-    return $retval
+	echo -n $"Starting $prog: "
+	"$ghfs" --config=/etc/ghfs.conf &
+	retval=$?
+	echo
+	if [ $retval -eq 0 ]; then
+		echo -n "$!" >"$pidfile"
+		success
+	else
+		failure
+	fi
+	return $retval
 }
 
 stop() {
-    echo -n $"Stopping $prog: "
-    killproc "$prog"
-    retval=$?
-    echo
-    return $retval
+	echo -n $"Stopping $prog: "
+	killproc -p "$pidfile" "$prog"
+	retval=$?
+	echo
+	return $retval
 }
 
 restart() {
-    stop
-    start
+	stop
+	start
 }
 
 _status() {
-    status $prog
+	status $prog
 }
 
 _status_q() {
-    _status > /dev/null 2>&1
+	_status >/dev/null 2>&1
 }
 
 case "$1" in
-    start)
-        _status_q && exit 0
-        $1
-        ;;
-    stop)
-        _status_q || exit 0
-        $1
-        ;;
-    restart|reload)
-        restart
-        ;;
-    status)
-        _status
-        ;;
-    status_q)
-        _status_q
-        ;;
-    condrestart|try-restart)
-        _status_q || exit 7
-        restart
-	    ;;
-    *)
-        echo $"Usage: $0 {start|stop|reload|status|restart}"
-        exit 2
+start)
+	_status_q && exit 0
+	$1
+	;;
+stop)
+	_status_q || exit 0
+	$1
+	;;
+restart | reload)
+	restart
+	;;
+status)
+	_status
+	;;
+status_q)
+	_status_q
+	;;
+condrestart | try-restart)
+	_status_q || exit 7
+	restart
+	;;
+*)
+	echo $"Usage: $0 {start|stop|reload|status|restart}"
+	exit 2
+	;;
 esac
