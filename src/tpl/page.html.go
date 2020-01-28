@@ -60,6 +60,8 @@ const pageTplStr = `
 </li>
 {{end}}{{end}}
 </ul>
+{{if .HasNotFoundError}}<div class="error">resource not found</div>{{end}}
+{{if .HasInternalError}}<div class="error">potential issue occurred</div>{{end}}
 <script type="text/javascript" src="{{.RootRelPath}}?assert=main.js"></script>
 </body>
 </html>

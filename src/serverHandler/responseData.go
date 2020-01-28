@@ -40,9 +40,9 @@ type responseData struct {
 	rawReqPath     string
 	handlerReqPath string
 
-	hasNotFoundError bool
-	hasInternalError bool
 	errors           []error
+	HasNotFoundError bool
+	HasInternalError bool
 
 	IsRoot        bool
 	Path          string
@@ -265,9 +265,9 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 
 	rawReqPath := util.CleanUrlPath(requestUri)
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
+	errs := []error{}
 	notFound := false
 	internalError := false
-	errs := []error{}
 
 	isRoot := rawReqPath == "/"
 
@@ -321,9 +321,9 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 
-		hasNotFoundError: notFound,
-		hasInternalError: internalError,
 		errors:           errs,
+		HasNotFoundError: notFound,
+		HasInternalError: internalError,
 
 		IsRoot:        isRoot,
 		Path:          rawReqPath,

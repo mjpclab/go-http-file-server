@@ -184,6 +184,11 @@ white-space: nowrap;
 overflow: hidden;
 float: right;
 }
+.error {
+margin: 1em;
+padding: 1em;
+background: #ffc;
+}
 @media only screen and (max-width: 350px) {
 .item-list .time {
 display: none;

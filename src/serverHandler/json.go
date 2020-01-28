@@ -54,9 +54,9 @@ func (h *handler) json(w http.ResponseWriter, r *http.Request, data *responseDat
 	header.Set("Content-Type", "application/json; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
-	if data.hasInternalError {
+	if data.HasInternalError {
 		w.WriteHeader(http.StatusInternalServerError)
-	} else if data.hasNotFoundError {
+	} else if data.HasNotFoundError {
 		w.WriteHeader(http.StatusNotFound)
 	} else {
 		w.WriteHeader(http.StatusOK)
