@@ -12,7 +12,10 @@ font-family: "roboto_condensedbold", "Helvetica Neue", Helvetica, Arial, sans-se
 body {
 color: #333;
 font-size: 0.625em;
-font-family: Consolas, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
+font-family: Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
+font-variant-ligatures: none;
+font-kerning: none;
+hyphens: none;
 }
 ul, ol, li {
 display: block;
@@ -157,6 +160,7 @@ display: flex;
 flex-flow: row nowrap;
 align-items: center;
 border-bottom: 1px #f5f5f5 solid;
+overflow: hidden;
 zoom: 1;
 }
 .item-list span {
