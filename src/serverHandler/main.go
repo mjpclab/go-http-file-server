@@ -81,7 +81,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.cors(w, r)
 	}
 
-	if data.CanUpload && r.Method == "POST" {
+	if data.CanUpload && r.Method == http.MethodPost {
 		h.saveUploadFiles(data.handlerReqPath, r)
 		http.Redirect(w, r, r.RequestURI, http.StatusFound)
 		return

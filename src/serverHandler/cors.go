@@ -12,12 +12,20 @@ func (h *handler) cors(w http.ResponseWriter, r *http.Request) {
 	header.Set("Access-Control-Allow-Origin", "*")
 	header.Set("Access-Control-Allow-Credentials", "true")
 
-	if r.Method != "OPTIONS" {
+	if r.Method != http.MethodOptions {
 		return
 	}
 
 	// Access-Control-Allow-Methods
-	acAllowMethods := []string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"}
+	acAllowMethods := []string{
+		http.MethodGet,
+		http.MethodHead,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodDelete,
+		http.MethodOptions,
+		http.MethodTrace,
+	}
 	acReqMethods := r.Header["Access-Control-Request-Method"]
 	if len(acReqMethods) > 0 {
 		acReqMethod := acReqMethods[0]
