@@ -6,9 +6,12 @@ import (
 )
 
 var filenameReplacer = strings.NewReplacer(
-	"\r", "<em>\\r</em>",
-	"\n", "<em>\\n</em>",
 	"\a", "<em>\\a</em>",
+	"\b", "<em>\\b</em>",
+	"\f", "<em>\\f</em>",
+	"\n", "<em>\\n</em>",
+	"\r", "<em>\\r</em>",
+	"\t", "<em>\\t</em>",
 	"\v", "<em>\\v</em>",
 )
 
