@@ -121,8 +121,12 @@ func readdir(file *os.File, item os.FileInfo, visitFs bool) (subItems []os.FileI
 	return file.Readdir(0)
 }
 
-func (h *handler) mergeAlias(rawRequestPath string, subItems *[]os.FileInfo) []error {
+func (h *handler) mergeAlias(item os.FileInfo, rawRequestPath string, subItems *[]os.FileInfo) []error {
 	errs := []error{}
+
+	if item == nil || !item.IsDir() {
+		return errs
+	}
 
 	for _, alias := range h.aliases {
 		aliasUrlPath := alias.urlPath
@@ -307,7 +311,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		status = http.StatusInternalServerError
 	}
 
-	_mergeErrs := h.mergeAlias(rawReqPath, &subInfos)
+	_mergeErrs := h.mergeAlias(item, rawReqPath, &subInfos)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
