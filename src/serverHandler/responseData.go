@@ -290,7 +290,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 
 	reqFsPath, _absErr := filepath.Abs(h.root + reqPath)
 	if _absErr != nil {
-		reqFsPath = path.Clean(h.root + reqPath)
+		reqFsPath = filepath.Clean(h.root + reqPath)
 	}
 
 	file, item, _statErr := stat(reqFsPath, !h.emptyRoot)

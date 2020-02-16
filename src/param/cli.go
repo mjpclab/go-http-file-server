@@ -191,6 +191,11 @@ func doParseCli() []*Param {
 		param.AccessLog, _ = result.GetString("accesslog")
 		param.ErrorLog, _ = result.GetString("errorlog")
 
+		// root
+		root, _ := result.GetString("root")
+		root, _ = normalizeFsPath(root)
+		param.Root = root
+
 		// certificate
 		key, _ := result.GetString("key")
 		cert, _ := result.GetString("cert")
