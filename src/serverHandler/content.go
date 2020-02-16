@@ -43,6 +43,9 @@ func (h *handler) content(w http.ResponseWriter, r *http.Request, data *response
 		header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
 		header.Set("Last-Modified", item.ModTime().UTC().Format(http.TimeFormat))
 	} else {
-		w.WriteHeader(http.StatusInternalServerError)
+		// take effect only if (!HasForbiddenError && !HasNotFoundError)
+		data.HasInternalError = true
 	}
+
+	writeHeader(w, r, data)
 }

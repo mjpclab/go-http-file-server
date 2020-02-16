@@ -40,9 +40,10 @@ type responseData struct {
 	rawReqPath     string
 	handlerReqPath string
 
-	errors           []error
-	HasNotFoundError bool
-	HasInternalError bool
+	errors            []error
+	HasForbiddenError bool
+	HasNotFoundError  bool
+	HasInternalError  bool
 
 	IsRoot        bool
 	Path          string
@@ -266,6 +267,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	rawReqPath := util.CleanUrlPath(requestUri)
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
 	errs := []error{}
+	forbidden := false
 	notFound := false
 	internalError := false
 
@@ -287,8 +289,14 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	file, item, _statErr := stat(reqFsPath, !h.emptyRoot)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
-		notFound = os.IsNotExist(_statErr)
-		internalError = !notFound
+		switch {
+		case os.IsPermission(_statErr):
+			forbidden = true
+		case os.IsNotExist(_statErr):
+			notFound = true
+		default:
+			internalError = true
+		}
 	}
 
 	itemName := getItemName(item, r)
@@ -321,9 +329,10 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 
-		errors:           errs,
-		HasNotFoundError: notFound,
-		HasInternalError: internalError,
+		errors:            errs,
+		HasForbiddenError: forbidden,
+		HasNotFoundError:  notFound,
+		HasInternalError:  internalError,
 
 		IsRoot:        isRoot,
 		Path:          rawReqPath,

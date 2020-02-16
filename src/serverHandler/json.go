@@ -15,6 +15,10 @@ type jsonItem struct {
 }
 
 type jsonResponseData struct {
+	ForbiddenError bool `json:"forbiddenError"`
+	NotFoundError  bool `json:"notFoundError"`
+	InternalError  bool `json:"internalError"`
+
 	Item     *jsonItem   `json:"item"`
 	SubItems []*jsonItem `json:"subItems"`
 }
@@ -44,8 +48,11 @@ func getJsonData(data *responseData) *jsonResponseData {
 	}
 
 	return &jsonResponseData{
-		Item:     item,
-		SubItems: subItems,
+		ForbiddenError: data.HasForbiddenError,
+		NotFoundError:  data.HasNotFoundError,
+		InternalError:  data.HasInternalError,
+		Item:           item,
+		SubItems:       subItems,
 	}
 }
 
@@ -54,13 +61,7 @@ func (h *handler) json(w http.ResponseWriter, r *http.Request, data *responseDat
 	header.Set("Content-Type", "application/json; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
-	if data.HasInternalError {
-		w.WriteHeader(http.StatusInternalServerError)
-	} else if data.HasNotFoundError {
-		w.WriteHeader(http.StatusNotFound)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
+	writeHeader(w, r, data)
 
 	if needResponseBody(r.Method) {
 		jsonData := getJsonData(data)
