@@ -40,10 +40,8 @@ type responseData struct {
 	rawReqPath     string
 	handlerReqPath string
 
-	errors            []error
-	HasForbiddenError bool
-	HasNotFoundError  bool
-	HasInternalError  bool
+	errors []error
+	Status int
 
 	IsRoot        bool
 	Path          string
@@ -259,6 +257,18 @@ func sortSubItems(subItems []*subItem) {
 		},
 	)
 }
+func getStatusByErr(err error) int {
+	switch {
+	case os.IsPermission(err):
+		return http.StatusForbidden
+	case os.IsNotExist(err):
+		return http.StatusNotFound
+	case err != nil:
+		return http.StatusInternalServerError
+	default:
+		return http.StatusOK
+	}
+}
 
 func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	requestUri := r.URL.Path
@@ -267,10 +277,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	rawReqPath := util.CleanUrlPath(requestUri)
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
 	errs := []error{}
-	forbidden := false
-	notFound := false
-	internalError := false
-
+	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
 	pathEntries := getPathEntries(rawReqPath, tailSlash)
@@ -289,14 +296,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	file, item, _statErr := stat(reqFsPath, !h.emptyRoot)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
-		switch {
-		case os.IsPermission(_statErr):
-			forbidden = true
-		case os.IsNotExist(_statErr):
-			notFound = true
-		default:
-			internalError = true
-		}
+		status = getStatusByErr(_statErr)
 	}
 
 	itemName := getItemName(item, r)
@@ -304,13 +304,13 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	subInfos, _readdirErr := readdir(file, item, needResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
-		internalError = true
+		status = http.StatusInternalServerError
 	}
 
 	_mergeErrs := h.mergeAlias(rawReqPath, &subInfos)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
-		internalError = true
+		status = http.StatusInternalServerError
 	}
 
 	subInfos = h.FilterItems(subInfos)
@@ -329,10 +329,8 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 
-		errors:            errs,
-		HasForbiddenError: forbidden,
-		HasNotFoundError:  notFound,
-		HasInternalError:  internalError,
+		errors: errs,
+		Status: status,
 
 		IsRoot:        isRoot,
 		Path:          rawReqPath,

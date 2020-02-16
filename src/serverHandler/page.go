@@ -7,7 +7,7 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
-	writeHeader(w, r, data)
+	w.WriteHeader(data.Status)
 
 	if needResponseBody(r.Method) {
 		updateSubsItemHtml(data.SubItems)

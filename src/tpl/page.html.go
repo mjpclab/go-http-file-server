@@ -60,11 +60,11 @@ const pageTplStr = `
 </li>
 {{end}}{{end}}
 </ul>
-{{if .HasForbiddenError}}
+{{if eq .Status 403}}
 <div class="error">403 resource is forbidden</div>
-{{else if .HasNotFoundError}}
+{{else if eq .Status 404}}
 <div class="error">404 resource not found</div>
-{{else if .HasInternalError}}
+{{else if eq .Status 500}}
 <div class="error">500 potential issue occurred</div>
 {{end}}
 <script type="text/javascript" src="{{.RootRelPath}}?assert=main.js"></script>
