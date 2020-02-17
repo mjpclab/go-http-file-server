@@ -42,3 +42,18 @@ func HasFsPrefixDir(fsPath, prefix string) bool {
 
 	return strings.HasPrefix(fsPath, prefix)
 }
+
+func NormalizeFsPath(input string) (string, error) {
+	abs, err := filepath.Abs(input)
+	if err != nil {
+		return abs, err
+	}
+
+	volume := filepath.VolumeName(abs)
+	if len(volume) > 0 {
+		// suppose on windows platform, ignore ascii case in path name
+		abs = AsciiToLowerCase(abs)
+	}
+
+	return abs, err
+}

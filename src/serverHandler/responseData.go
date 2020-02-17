@@ -292,7 +292,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		rootRelPath = "./"
 	}
 
-	reqFsPath, _absErr := filepath.Abs(h.root + reqPath)
+	reqFsPath, _absErr := util.NormalizeFsPath(h.root + reqPath)
 	if _absErr != nil {
 		reqFsPath = filepath.Clean(h.root + reqPath)
 	}

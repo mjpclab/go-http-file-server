@@ -3,7 +3,6 @@ package param
 import (
 	"../util"
 	"path"
-	"path/filepath"
 	"strings"
 	"unicode/utf8"
 )
@@ -58,37 +57,6 @@ func normalizeUrlPaths(inputs []string) []string {
 	return outputs
 }
 
-func asciiToLowerCase(input string) string {
-	buffer := []byte(input)
-	length := len(buffer)
-
-	for i := 0; i < length; {
-		r, w := utf8.DecodeRune(buffer[i:])
-		if w == 1 && r >= 'A' && r <= 'Z' {
-			buffer[i] += 'a' - 'A'
-		}
-
-		i += w
-	}
-
-	return string(buffer)
-}
-
-func normalizeFsPath(input string) (string, error) {
-	abs, err := filepath.Abs(input)
-	if err != nil {
-		return abs, err
-	}
-
-	volume := filepath.VolumeName(abs)
-	if len(volume) > 0 {
-		// suppose on windows platform, ignore ascii case in path name
-		abs = asciiToLowerCase(abs)
-	}
-
-	return abs, err
-}
-
 func normalizeFsPaths(inputs []string) []string {
 	outputs := make([]string, 0, len(inputs))
 
@@ -97,7 +65,7 @@ func normalizeFsPaths(inputs []string) []string {
 			continue
 		}
 
-		abs, err := normalizeFsPath(input)
+		abs, err := util.NormalizeFsPath(input)
 		if err != nil {
 			continue
 		}

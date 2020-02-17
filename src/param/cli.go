@@ -3,6 +3,7 @@ package param
 import (
 	"../goNixArgParser"
 	"../serverErrHandler"
+	"../util"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -193,7 +194,7 @@ func doParseCli() []*Param {
 
 		// root
 		root, _ := result.GetString("root")
-		root, _ = normalizeFsPath(root)
+		root, _ = util.NormalizeFsPath(root)
 		param.Root = root
 
 		// certificate
