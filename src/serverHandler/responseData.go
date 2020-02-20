@@ -124,7 +124,7 @@ func readdir(file *os.File, item os.FileInfo, visitFs bool) (subItems []os.FileI
 func (h *handler) mergeAlias(rawRequestPath string, item os.FileInfo, subItems []os.FileInfo) ([]os.FileInfo, []error) {
 	errs := []error{}
 
-	if item == nil || !item.IsDir() || len(h.aliases) == 0 {
+	if len(h.aliases) == 0 {
 		return subItems, errs
 	}
 
