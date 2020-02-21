@@ -3,6 +3,7 @@ package param
 import (
 	"../util"
 	"path"
+	"path/filepath"
 	"strings"
 	"unicode/utf8"
 )
@@ -71,6 +72,28 @@ func normalizeFsPaths(inputs []string) []string {
 		}
 
 		outputs = append(outputs, abs)
+	}
+
+	return outputs
+}
+
+func normalizeFilenames(inputs []string) []string {
+	outputs := make([]string, 0, len(inputs))
+
+	for _, input := range inputs {
+		if len(input) == 0 {
+			continue
+		}
+
+		if strings.IndexByte(input, '/') >= 0 {
+			continue
+		}
+
+		if filepath.Separator != '/' && strings.IndexByte(input, filepath.Separator) >= 0 {
+			continue
+		}
+
+		outputs = append(outputs, input)
 	}
 
 	return outputs

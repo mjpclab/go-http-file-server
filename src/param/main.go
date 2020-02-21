@@ -14,7 +14,8 @@ type Param struct {
 	Root      string
 	EmptyRoot bool
 
-	Aliases map[string]string
+	DirIndexes []string
+	Aliases    map[string]string
 
 	GlobalUpload bool
 	UploadUrls   []string

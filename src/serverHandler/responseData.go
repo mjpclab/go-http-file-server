@@ -274,6 +274,23 @@ func getStatusByErr(err error) int {
 	}
 }
 
+func (h *handler) stateIndexFile(baseItem os.FileInfo, baseDir string) (file *os.File, item os.FileInfo, err error) {
+	if baseItem == nil || !baseItem.IsDir() || h.emptyRoot || len(h.dirIndexes) == 0 {
+		return
+	}
+
+	for _, index := range h.dirIndexes {
+		file, item, err = stat(baseDir+"/"+index, true)
+		if err != nil && os.IsNotExist(err) {
+			continue
+		} else {
+			return
+		}
+	}
+
+	return nil, nil, nil
+}
+
 func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
@@ -301,6 +318,20 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		status = getStatusByErr(_statErr)
+	}
+
+	indexFile, indexItem, _statIdxErr := h.stateIndexFile(item, reqFsPath)
+	if _statIdxErr != nil {
+		errs = append(errs, _statIdxErr)
+		status = getStatusByErr(_statIdxErr)
+	} else if indexFile != nil {
+		if indexItem != nil {
+			file.Close()
+			file = indexFile
+			item = indexItem
+		} else {
+			indexFile.Close()
+		}
 	}
 
 	itemName := getItemName(item, r)

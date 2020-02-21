@@ -26,6 +26,9 @@ func init() {
 	err = options.AddFlags("emptyroot", []string{"-R", "--empty-root"}, "GHFS_EMPTY_ROOT", "use virtual empty root directory")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlagsValues("dirindexes", []string{"-I", "--dir-index"}, "GHFS_DIR_INDEX", nil, "default index page for directory")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverErrHandler.CheckFatal(err)
 
@@ -196,6 +199,10 @@ func doParseCli() []*Param {
 		root, _ := result.GetString("root")
 		root, _ = util.NormalizeFsPath(root)
 		param.Root = root
+
+		// dir indexes
+		dirIndexes, _ := result.GetStrings("dirindexes")
+		param.DirIndexes = normalizeFilenames(dirIndexes)
 
 		// certificate
 		key, _ := result.GetString("key")

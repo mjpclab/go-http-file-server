@@ -15,7 +15,8 @@ type handler struct {
 	emptyRoot bool
 	urlPrefix string
 
-	aliases aliases
+	dirIndexes []string
+	aliases    aliases
 
 	globalUpload bool
 	uploadUrls   []string
@@ -133,7 +134,8 @@ func NewHandler(
 		emptyRoot: emptyRoot,
 		urlPrefix: urlPrefix,
 
-		aliases: aliases,
+		dirIndexes: p.DirIndexes,
+		aliases:    aliases,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
