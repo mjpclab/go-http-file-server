@@ -348,6 +348,10 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		status = http.StatusInternalServerError
 	}
 
+	if h.emptyRoot && status == http.StatusOK && r.RequestURI != "/" {
+		status = http.StatusNotFound
+	}
+
 	subInfos = h.FilterItems(subInfos)
 
 	subItems := getSubItems(subInfos)
