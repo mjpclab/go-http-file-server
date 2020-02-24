@@ -54,7 +54,6 @@ server [options]
 
 -I|--dir-index <file> ...
     Specify default index file for directory.
-    Directly mounted files by alias are not considered.
 
 -a|--alias <separator><url-path><separator><fs-path> ...
     Set path alias. e.g. ":/doc:/usr/share/doc"

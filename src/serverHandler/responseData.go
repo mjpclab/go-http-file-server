@@ -274,13 +274,33 @@ func getStatusByErr(err error) int {
 	}
 }
 
-func (h *handler) stateIndexFile(baseItem os.FileInfo, baseDir string) (file *os.File, item os.FileInfo, err error) {
+func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo) (file *os.File, item os.FileInfo, err error) {
 	if baseItem == nil || !baseItem.IsDir() || h.emptyRoot || len(h.dirIndexes) == 0 {
 		return
 	}
 
 	for _, index := range h.dirIndexes {
+		for _, alias := range h.aliases {
+			if rawReqPath+"/"+index != alias.urlPath {
+				continue
+			}
+			file, item, err = stat(alias.fsPath, true)
+			if err != nil && file != nil {
+				file.Close()
+			}
+			if err != nil && os.IsNotExist(err) {
+				continue
+			} else {
+				return
+			}
+		}
+	}
+
+	for _, index := range h.dirIndexes {
 		file, item, err = stat(baseDir+"/"+index, true)
+		if err != nil && file != nil {
+			file.Close()
+		}
 		if err != nil && os.IsNotExist(err) {
 			continue
 		} else {
@@ -320,7 +340,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		status = getStatusByErr(_statErr)
 	}
 
-	indexFile, indexItem, _statIdxErr := h.stateIndexFile(item, reqFsPath)
+	indexFile, indexItem, _statIdxErr := h.stateIndexFile(rawReqPath, reqFsPath, item)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
