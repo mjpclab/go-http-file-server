@@ -3,10 +3,11 @@
 cd $(dirname "$0")
 
 TMP='/tmp'
-LDFLAGS='-s -w'
 OUTDIR='../output'
 MAINNAME='ghfs'
-VERSION="$(git describe --abbrev=0 --tags 2> /dev/null || git rev-parse --abbrev-ref HEAD 2> /dev/null)"
+MOD=$(go list ../src/)
+VERSION=$(git describe --abbrev=0 --tags 2> /dev/null || git rev-parse --abbrev-ref HEAD 2> /dev/null)
+LDFLAGS="-s -w -X  $MOD/version.appVer=$VERSION"
 LICENSE='../LICENSE'
 
 mkdir -p "$OUTDIR"

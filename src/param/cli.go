@@ -4,6 +4,7 @@ import (
 	"../goNixArgParser"
 	"../serverErrHandler"
 	"../util"
+	"../version"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -130,6 +131,9 @@ func init() {
 	err = options.AddFlagValue("config", "--config", "", "", "print this help")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlag("version", "--version", "", "print version")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
 	serverErrHandler.CheckFatal(err)
 }
@@ -146,6 +150,12 @@ func doParseCli() []*Param {
 	foundConfig := false
 	for i, length := 0, len(results); i < length; i++ {
 		result := results[i]
+
+		// version
+		if result.HasFlagKey("version") {
+			version.PrintVersion()
+			os.Exit(0)
+		}
 
 		// help
 		if result.HasFlagKey("help") {
