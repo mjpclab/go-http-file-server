@@ -22,7 +22,7 @@ for build in "$@"; do
 	  BIN="${BIN}.exe"
 	fi;
 	rm -f "$BIN"
-	echo "Building: $GOOS $GOARCH"
+	echo "Building: $GOOS$OS_SUFFIX $GOARCH"
 	go build -ldflags "$LDFLAGS" -o "$BIN" ../src/main.go
 
 	OUT="$OUTDIR"/"$MAINNAME"-"$VERSION"-"$GOOS""$OS_SUFFIX"-"$GOARCH".zip
