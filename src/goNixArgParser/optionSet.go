@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"os"
+	"strings"
 )
 
 var defaultOptionDelimiters = []rune{',', ' ', '\t', '\v', '\r', '\n'}
@@ -20,11 +21,13 @@ func NewOptionSet(
 	mergeFlagPrefix string,
 	restsSigns []string,
 	groupSeps []string,
+	undefFlagPrefixes []string,
 ) *OptionSet {
 	s := &OptionSet{
-		mergeFlagPrefix: mergeFlagPrefix,
-		restsSigns:      restsSigns,
-		groupSeps:       groupSeps,
+		mergeFlagPrefix:   mergeFlagPrefix,
+		restsSigns:        restsSigns,
+		groupSeps:         groupSeps,
+		undefFlagPrefixes: undefFlagPrefixes,
 
 		options: []*Option{},
 
@@ -49,8 +52,12 @@ func (s *OptionSet) GroupSeps() []string {
 	return s.groupSeps
 }
 
+func (s *OptionSet) UndefFlagPrefixes() []string {
+	return s.undefFlagPrefixes
+}
+
 func NewSimpleOptionSet() *OptionSet {
-	return NewOptionSet("-", []string{"--"}, []string{",,"})
+	return NewOptionSet("-", []string{"--"}, []string{",,"}, []string{"-"})
 }
 
 func (s *OptionSet) isRestSign(input string) bool {
@@ -63,9 +70,19 @@ func (s *OptionSet) isRestSign(input string) bool {
 	return false
 }
 
-func (s *OptionSet) isGroupSeps(input string) bool {
+func (s *OptionSet) isGroupSep(input string) bool {
 	for _, sep := range s.groupSeps {
 		if input == sep {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *OptionSet) isUdefFlag(input string) bool {
+	for _, prefix := range s.undefFlagPrefixes {
+		if strings.HasPrefix(input, prefix) {
 			return true
 		}
 	}

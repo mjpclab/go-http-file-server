@@ -7,7 +7,7 @@ import (
 func TestParse3(t *testing.T) {
 	var err error
 
-	s := NewOptionSet("-", nil, []string{",,"})
+	s := NewOptionSet("-", nil, []string{",,"}, []string{"-"})
 
 	err = s.Append(&Option{
 		Key:         "bool",

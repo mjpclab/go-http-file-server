@@ -145,11 +145,15 @@ func doParseCli() []*Param {
 
 	// parse option
 	results := cliCmd.ParseGroups(args, nil)
-	configs := []string{}
-	groupSeps := cliCmd.Options().GroupSeps()[0]
-	foundConfig := false
-	for i, length := 0, len(results); i < length; i++ {
-		result := results[i]
+
+	// pre-check
+	for _, result := range results {
+		// undefined flags
+		undefs := result.GetUndefs()
+		if len(undefs) > 0 {
+			fmt.Println("unknown options:", strings.Join(undefs, " "))
+			os.Exit(0)
+		}
 
 		// version
 		if result.HasFlagKey("version") {
@@ -162,7 +166,13 @@ func doParseCli() []*Param {
 			cliCmd.PrintHelp()
 			os.Exit(0)
 		}
+	}
 
+	// append config and re-parse
+	configs := []string{}
+	groupSeps := cliCmd.Options().GroupSeps()[0]
+	foundConfig := false
+	for _, result := range results {
 		configs = append(configs, groupSeps)
 
 		// config file
@@ -190,6 +200,7 @@ func doParseCli() []*Param {
 		results = cliCmd.ParseGroups(args, configs)
 	}
 
+	// init param data
 	for _, result := range results {
 		param := &Param{}
 

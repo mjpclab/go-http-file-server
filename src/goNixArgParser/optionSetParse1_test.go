@@ -8,7 +8,7 @@ import (
 func TestParse1(t *testing.T) {
 	var err error
 
-	s := NewOptionSet("-", []string{"--"}, []string{",,"})
+	s := NewOptionSet("-", []string{"--"}, []string{",,"}, []string{"-"})
 	err = s.Append(&Option{
 		Key:         "tag",
 		Summary:     "tag summary",
@@ -197,10 +197,14 @@ func TestParse1(t *testing.T) {
 		t.Error("withConcat:", withConcat)
 	}
 
-	fmt.Println("rests:", r.GetRests())
+	if undefs := r.GetUndefs(); len(undefs) != 3 {
+		t.Error("undefs:", undefs)
+	}
 
 	fmt.Print("fromenv: ")
 	fmt.Println(r.GetStrings("fromenv"))
 
-	fmt.Print(string(s.GetHelp()))
+	fmt.Println("rests:", r.GetRests())
+
+	fmt.Println("undefs:", r.GetUndefs())
 }

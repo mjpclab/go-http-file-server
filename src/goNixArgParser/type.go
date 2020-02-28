@@ -8,9 +8,10 @@ type Command struct {
 }
 
 type OptionSet struct {
-	mergeFlagPrefix string
-	restsSigns      []string
-	groupSeps       []string
+	mergeFlagPrefix   string
+	restsSigns        []string
+	groupSeps         []string
+	undefFlagPrefixes []string
 
 	options []*Option
 
@@ -50,10 +51,12 @@ type Flag struct {
 type ArgType int
 
 const (
-	UnknownArg ArgType = iota
+	UndetermArg ArgType = iota
 	CommandArg
 	FlagArg
 	ValueArg
+	UndefFlagArg
+	UndefFlagValueArg
 	RestSignArg
 	RestArg
 	GroupSepArg
@@ -75,4 +78,7 @@ type ParseResult struct {
 
 	argRests    []string
 	configRests []string
+
+	argUndefs    []string
+	configUndefs []string
 }

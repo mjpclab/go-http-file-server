@@ -9,7 +9,7 @@ func (s *OptionSet) splitMergedArg(arg *Arg) (args []*Arg, success bool) {
 	optionMap := s.flagOptionMap
 	argText := arg.Text
 
-	if arg.Type != UnknownArg ||
+	if arg.Type != UndetermArg ||
 		len(argText) <= len(s.mergeFlagPrefix) ||
 		!strings.HasPrefix(argText, s.mergeFlagPrefix) {
 		return
@@ -49,7 +49,7 @@ func (s *OptionSet) splitMergedArg(arg *Arg) (args []*Arg, success bool) {
 		}
 
 		// re-generate standalone flag with values
-		splittedArgs[len(splittedArgs)-1] = NewArg(prevFlag.Name+mergedArgs[i:], UnknownArg)
+		splittedArgs[len(splittedArgs)-1] = NewArg(prevFlag.Name+mergedArgs[i:], UndetermArg)
 		break
 	}
 
@@ -72,7 +72,7 @@ func (s *OptionSet) splitMergedArgs(initArgs []*Arg) []*Arg {
 func (s *OptionSet) splitAssignSignArg(arg *Arg) (args []*Arg) {
 	args = make([]*Arg, 0, 2)
 
-	if arg.Type != UnknownArg {
+	if arg.Type != UndetermArg {
 		args = append(args, arg)
 		return
 	}
@@ -115,7 +115,7 @@ func (s *OptionSet) splitAssignSignArgs(initArgs []*Arg) []*Arg {
 func (s *OptionSet) splitConcatAssignArg(arg *Arg) (args []*Arg) {
 	args = make([]*Arg, 0, 2)
 
-	if arg.Type != UnknownArg {
+	if arg.Type != UndetermArg {
 		args = append(args, arg)
 		return
 	}
@@ -149,20 +149,37 @@ func (s *OptionSet) splitConcatAssignArgs(initArgs []*Arg) []*Arg {
 	return args
 }
 
+func (s *OptionSet) markUndefArgsValues(args []*Arg) {
+	foundUndefFlag := false
+	for _, arg := range args {
+		if arg.Type != UndetermArg {
+			foundUndefFlag = false
+			continue
+		}
+		if s.isUdefFlag(arg.Text) {
+			arg.Type = UndefFlagArg
+			foundUndefFlag = true
+		} else if foundUndefFlag {
+			arg.Type = UndefFlagValueArg
+		}
+	}
+}
+
 func isValueArg(flag *Flag, arg *Arg) bool {
 	switch arg.Type {
 	case ValueArg:
 		return true
-	case UnknownArg:
+	case UndetermArg:
 		return flag.canFollowAssign
 	default:
 		return false
 	}
 }
 
-func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, rests []string) {
+func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, rests, undefs []string) {
 	args = map[string][]string{}
 	rests = []string{}
+	undefs = []string{}
 
 	flagOptionMap := s.flagOptionMap
 	flagMap := s.flagMap
@@ -177,15 +194,18 @@ func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, 
 		argObjs = s.splitConcatAssignArgs(argObjs)
 	}
 
+	s.markUndefArgsValues(argObjs)
+
 	// walk
 	for i, argCount, peeked := 0, len(argObjs), 0; i < argCount; i, peeked = i+1+peeked, 0 {
 		arg := argObjs[i]
 
+		// rests
 		if arg.Type == RestSignArg {
 			continue
 		}
 
-		if arg.Type == UnknownArg {
+		if arg.Type == UndetermArg {
 			arg.Type = RestArg
 		}
 		if arg.Type == RestArg {
@@ -193,6 +213,17 @@ func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, 
 			continue
 		}
 
+		// undefs
+		if arg.Type == UndefFlagValueArg {
+			continue
+		}
+
+		if arg.Type == UndefFlagArg {
+			undefs = append(undefs, arg.Text)
+			continue
+		}
+
+		// normal
 		opt := flagOptionMap[arg.Text]
 		flag := flagMap[arg.Text]
 
@@ -253,15 +284,15 @@ func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, 
 		}
 	}
 
-	return args, rests
+	return args, rests, undefs
 }
 
 func (s *OptionSet) parseInGroup(argObjs, configObjs []*Arg) *ParseResult {
 	keyOptionMap := s.keyOptionMap
 
-	args, argRests := s.parseArgsInGroup(argObjs)
+	args, argRests, argUndefs := s.parseArgsInGroup(argObjs)
 	envs := s.keyEnvMap
-	configs, configRests := s.parseArgsInGroup(configObjs)
+	configs, configRests, configUndefs := s.parseArgsInGroup(configObjs)
 	defaults := s.keyDefaultMap
 
 	return &ParseResult{
@@ -274,6 +305,9 @@ func (s *OptionSet) parseInGroup(argObjs, configObjs []*Arg) *ParseResult {
 
 		argRests:    argRests,
 		configRests: configRests,
+
+		argUndefs:    argUndefs,
+		configUndefs: configUndefs,
 	}
 }
 
@@ -283,7 +317,7 @@ func (s *OptionSet) getNormalizedArgs(initArgs []string) []*Arg {
 	foundRestSign := false
 	for _, arg := range initArgs {
 		switch {
-		case s.isGroupSeps(arg):
+		case s.isGroupSep(arg):
 			foundRestSign = false
 			args = append(args, NewArg(arg, GroupSepArg))
 		case foundRestSign:
@@ -294,7 +328,7 @@ func (s *OptionSet) getNormalizedArgs(initArgs []string) []*Arg {
 		case s.flagMap[arg] != nil:
 			args = append(args, NewArg(arg, FlagArg))
 		default:
-			args = append(args, NewArg(arg, UnknownArg))
+			args = append(args, NewArg(arg, UndetermArg))
 		}
 	}
 

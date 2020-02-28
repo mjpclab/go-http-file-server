@@ -248,3 +248,28 @@ func (r *ParseResult) GetRests() (rests []string) {
 func (r *ParseResult) GetCommands() []string {
 	return copys(r.commands)
 }
+
+///////////////////////////////
+// undefs
+//////////////////////////////
+func (r *ParseResult) HasUndef() bool {
+	return len(r.argUndefs) > 0 || len(r.configUndefs) > 0
+}
+
+func (r *ParseResult) GetUndefs() []string {
+	flags := make([]string, 0, len(r.argUndefs)+len(r.configUndefs))
+
+	for _, flag := range r.argUndefs {
+		if !contains(flags, flag) {
+			flags = append(flags, flag)
+		}
+	}
+
+	for _, flag := range r.configUndefs {
+		if !contains(flags, flag) {
+			flags = append(flags, flag)
+		}
+	}
+
+	return flags
+}
