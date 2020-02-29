@@ -10,9 +10,13 @@ export ghfs=$(realpath bin)/ghfs
 
 go build -o "$ghfs" "$src/main.go"
 
+pattern="$1"
+if [ -z "$pattern" ]; then
+	pattern='*'
+fi
 
-for file in case/*.bash; do
+for file in case/$pattern.bash; do
 	bash "$file"
-done;
+done
 
 killall "$ghfs" 2> /dev/null

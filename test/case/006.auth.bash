@@ -3,17 +3,18 @@
 source "$root"/lib.bash
 
 "$ghfs" -l 3003 -r "$fs"/vhost1 --auth /hello --user alice:AliceSecret &
+sleep 0.05 # wait server ready
 
-yesstatus=$(http_get_status 127.0.0.1:3003/yes/)
+yesstatus=$(curl_get_status http://127.0.0.1:3003/yes/)
 assert "$yesstatus" '200'
 
-hellostatus=$(http_get_status 127.0.0.1:3003/hello/)
+hellostatus=$(curl_get_status http://127.0.0.1:3003/hello/)
 assert "$hellostatus" '401'
 
-userhellostatus=$(http_get_status alice:AliceSecret@127.0.0.1:3003/hello/)
+userhellostatus=$(curl_get_status http://alice:AliceSecret@127.0.0.1:3003/hello/)
 assert "$userhellostatus" '200'
 
-userhelloheadstatus=$(http_head_status alice:AliceSecret@127.0.0.1:3003/hello/)
+userhelloheadstatus=$(curl_head_status http://alice:AliceSecret@127.0.0.1:3003/hello/)
 assert "$userhelloheadstatus" '200'
 
 kill %1
