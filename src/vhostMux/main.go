@@ -11,10 +11,10 @@ import (
 )
 
 type VhostMux struct {
-	ServeMux     *http.ServeMux
 	p            *param.Param
 	logger       *serverLog.Logger
 	errorHandler *serverErrHandler.ErrHandler
+	ServeMux     *http.ServeMux
 }
 
 func NewServeMux(
@@ -63,19 +63,18 @@ func NewServeMux(
 
 	// create ServeMux
 	serveMux := &http.ServeMux{}
+	for urlPath, handler := range handlers {
+		serveMux.Handle(urlPath, handler)
+		if len(urlPath) > 1 {
+			serveMux.Handle(urlPath+"/", handler)
+		}
+	}
 
 	vhostMux := &VhostMux{
 		p:            p,
 		logger:       logger,
 		errorHandler: errorHandler,
 		ServeMux:     serveMux,
-	}
-
-	for urlPath, handler := range handlers {
-		serveMux.Handle(urlPath, handler)
-		if len(urlPath) > 1 {
-			serveMux.Handle(urlPath+"/", handler)
-		}
 	}
 
 	return vhostMux
