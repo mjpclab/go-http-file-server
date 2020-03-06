@@ -29,7 +29,7 @@ func splitMapping(input string) (k, v string, ok bool) {
 }
 
 func normalizePathMaps(inputs []string) map[string]string {
-	maps := map[string]string{}
+	maps := make(map[string]string, len(inputs))
 
 	for _, input := range inputs {
 		urlPath, fsPath, ok := splitMapping(input)
