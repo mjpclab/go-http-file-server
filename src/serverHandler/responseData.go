@@ -16,23 +16,12 @@ type pathEntry struct {
 	Path string `json:"path"`
 }
 
-type itemSort struct {
-	Name []byte
-}
-
 type itemHtml struct {
 	IsDir   bool
 	Link    string
 	Name    template.HTML
 	Size    template.HTML
 	ModTime template.HTML
-}
-
-type subItem struct {
-	sort itemSort
-
-	Info os.FileInfo
-	Html *itemHtml
 }
 
 type responseData struct {
@@ -49,7 +38,8 @@ type responseData struct {
 	File          *os.File
 	Item          os.FileInfo
 	ItemName      string
-	SubItems      []*subItem
+	SubItems      []os.FileInfo
+	SubItemsHtml  []*itemHtml
 	SubItemPrefix string
 
 	CanUpload  bool
@@ -212,37 +202,26 @@ func getItemName(info os.FileInfo, r *http.Request) (itemName string) {
 	return
 }
 
-func getSubItems(subInfos []os.FileInfo) []*subItem {
-	subItems := make([]*subItem, len(subInfos))
-
-	for i := 0; i < len(subInfos); i++ {
-		info := subInfos[i]
-		subItems[i] = &subItem{
-			sort: itemSort{
-				Name: []byte(info.Name()),
-			},
-			Info: info,
-		}
+func sortSubItems(subInfos []os.FileInfo) {
+	names := make([][]byte, len(subInfos))
+	for i := range subInfos {
+		names[i] = []byte(subInfos[i].Name())
 	}
 
-	return subItems
-}
-
-func sortSubItems(subItems []*subItem) {
 	sort.Slice(
-		subItems,
+		subInfos,
 		func(prevIndex, nextIndex int) bool {
-			prevItem := subItems[prevIndex]
-			nextItem := subItems[nextIndex]
+			prevInfo := subInfos[prevIndex]
+			nextInfo := subInfos[nextIndex]
 
-			prevIsDir := prevItem.Info.IsDir()
-			nextIsDir := nextItem.Info.IsDir()
+			prevIsDir := prevInfo.IsDir()
+			nextIsDir := nextInfo.IsDir()
 
 			if prevIsDir != nextIsDir {
 				return prevIsDir
 			}
 
-			return util.CompareNumInStr(prevItem.sort.Name, nextItem.sort.Name)
+			return util.CompareNumInStr(names[prevIndex], names[nextIndex])
 		},
 	)
 }
@@ -342,13 +321,13 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 
 	itemName := getItemName(item, r)
 
-	subInfos, _readdirErr := readdir(file, item, needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, needResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subInfos, _mergeErrs := h.mergeAlias(rawReqPath, item, subInfos)
+	subItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -358,15 +337,13 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		status = http.StatusNotFound
 	}
 
-	subInfos = h.FilterItems(subInfos)
-
-	subItems := getSubItems(subInfos)
+	subItems = h.FilterItems(subItems)
 	sortSubItems(subItems)
 
 	subItemPrefix := getSubItemPrefix(reqPath, tailSlash)
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
-	canArchive := h.getCanArchive(subInfos, rawReqPath, reqFsPath)
+	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 
@@ -385,6 +362,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		Item:          item,
 		ItemName:      itemName,
 		SubItems:      subItems,
+		SubItemsHtml:  nil,
 		SubItemPrefix: subItemPrefix,
 
 		CanUpload:  canUpload,

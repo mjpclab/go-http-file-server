@@ -5,11 +5,16 @@ import (
 	"net/http"
 )
 
-func updateSubItemsForPage(subItems []*subItem) {
-	for _, item := range subItems {
-		info := item.Info
+func updateSubItemsHtml(data *responseData) {
+	length := len(data.SubItems)
+
+	data.SubItemsHtml = make([]*itemHtml, length)
+
+	for i := 0; i < length; i++ {
+		info := data.SubItems[i]
 		name := info.Name()
-		item.Html = &itemHtml{
+
+		data.SubItemsHtml[i] = &itemHtml{
 			IsDir:   info.IsDir(),
 			Link:    name,
 			Name:    tplutil.FormatFilename(name),
@@ -27,7 +32,7 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 	w.WriteHeader(data.Status)
 
 	if needResponseBody(r.Method) {
-		updateSubItemsForPage(data.SubItems)
+		updateSubItemsHtml(data)
 		err := h.template.Execute(w, data)
 		h.errHandler.LogError(err)
 	}

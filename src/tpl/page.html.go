@@ -50,7 +50,7 @@ const pageTplStr = `
 <span class="time"></span>
 </a>
 </li>
-{{range .SubItems}}{{with .Html}}
+{{range .SubItemsHtml}}
 <li class="{{if .IsDir}}dir{{else}}file{{end}}">
 <a href="{{$subItemPrefix}}{{.Link}}{{if .IsDir}}/{{end}}">
 <span class="name">{{.Name}}{{if .IsDir}}/{{end}}</span>
@@ -58,7 +58,7 @@ const pageTplStr = `
 <span class="time">{{.ModTime}}</span>
 </a>
 </li>
-{{end}}{{end}}
+{{end}}
 </ul>
 {{if eq .Status 403}}
 <div class="error">403 resource is forbidden</div>
