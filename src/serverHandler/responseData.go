@@ -1,7 +1,6 @@
 package serverHandler
 
 import (
-	tplutil "../tpl/util"
 	"../util"
 	"html/template"
 	"net/http"
@@ -229,20 +228,6 @@ func getSubItems(subInfos []os.FileInfo) []*subItem {
 	return subItems
 }
 
-func updateSubsItemHtml(subItems []*subItem) {
-	for _, item := range subItems {
-		info := item.Info
-		name := info.Name()
-		item.Html = &itemHtml{
-			IsDir:   info.IsDir(),
-			Link:    name,
-			Name:    tplutil.FormatFilename(name),
-			Size:    tplutil.FormatSize(info.Size()),
-			ModTime: tplutil.FormatTime(info.ModTime()),
-		}
-	}
-}
-
 func sortSubItems(subItems []*subItem) {
 	sort.Slice(
 		subItems,
@@ -261,6 +246,7 @@ func sortSubItems(subItems []*subItem) {
 		},
 	)
 }
+
 func getStatusByErr(err error) int {
 	switch {
 	case os.IsPermission(err):
