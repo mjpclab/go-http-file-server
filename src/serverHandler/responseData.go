@@ -183,13 +183,12 @@ func (h *handler) mergeAlias(rawRequestPath string, item os.FileInfo, subItems [
 	return subItems, errs
 }
 
-func getSubItemPrefix(requestPath string, tailSlash bool) (subItemPrefix string) {
+func getSubItemPrefix(requestPath string, tailSlash bool) string {
 	if tailSlash {
-		subItemPrefix = "./"
+		return "./"
 	} else {
-		subItemPrefix = "./" + path.Base(requestPath) + "/"
+		return "./" + path.Base(requestPath) + "/"
 	}
-	return
 }
 
 func getItemName(info os.FileInfo, r *http.Request) (itemName string) {
