@@ -43,7 +43,7 @@ func NewServeMux(
 	}
 
 	// template
-	pageTpl, err := tpl.LoadPage(p.Template)
+	pageTpl, err := tpl.LoadPageTpl(p.Template)
 	errorHandler.LogError(err)
 
 	// register handlers

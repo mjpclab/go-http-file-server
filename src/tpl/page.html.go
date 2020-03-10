@@ -85,7 +85,7 @@ func init() {
 	}
 }
 
-func LoadPage(tplPath string) (*template.Template, error) {
+func LoadPageTpl(tplPath string) (*template.Template, error) {
 	if len(tplPath) == 0 {
 		return defaultPageTpl, nil
 	}
