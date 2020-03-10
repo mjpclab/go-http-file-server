@@ -17,11 +17,11 @@ type pathEntry struct {
 }
 
 type itemHtml struct {
-	IsDir   bool
-	Link    string
-	Name    template.HTML
-	Size    template.HTML
-	ModTime template.HTML
+	Type        template.HTML
+	Url         string
+	DisplayName template.HTML
+	DisplaySize template.HTML
+	DisplayTime template.HTML
 }
 
 type responseData struct {

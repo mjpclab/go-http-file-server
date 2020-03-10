@@ -2,24 +2,42 @@ package serverHandler
 
 import (
 	tplutil "../tpl/util"
+	"html/template"
 	"net/http"
 )
+
+const TypeDir = template.HTML("dir")
+const TypeFile = template.HTML("file")
 
 func updateSubItemsHtml(data *responseData) {
 	length := len(data.SubItems)
 
 	data.SubItemsHtml = make([]*itemHtml, length)
 
-	for i := 0; i < length; i++ {
-		info := data.SubItems[i]
+	for i, info := range data.SubItems {
 		name := info.Name()
+		displayName := tplutil.FormatFilename(name)
+
+		var typ template.HTML
+		var url string
+		var readableSize template.HTML
+
+		if info.IsDir() {
+			typ = TypeDir
+			url = data.SubItemPrefix + name + "/"
+			displayName += "/"
+		} else {
+			typ = TypeFile
+			url = data.SubItemPrefix + name
+			readableSize = tplutil.FormatSize(info.Size())
+		}
 
 		data.SubItemsHtml[i] = &itemHtml{
-			IsDir:   info.IsDir(),
-			Link:    name,
-			Name:    tplutil.FormatFilename(name),
-			Size:    tplutil.FormatSize(info.Size()),
-			ModTime: tplutil.FormatTime(info.ModTime()),
+			Type:        typ,
+			Url:         url,
+			DisplayName: displayName,
+			DisplaySize: readableSize,
+			DisplayTime: tplutil.FormatTime(info.ModTime()),
 		}
 	}
 }

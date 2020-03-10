@@ -46,11 +46,11 @@
 		</a>
 	</li>
 	{{range .SubItemsHtml}}
-		<li class="{{if .IsDir}}dir{{else}}file{{end}}">
-			<a href="{{$subItemPrefix}}{{.Link}}{{if .IsDir}}/{{end}}">
-				<span class="name">{{.Name}}{{if .IsDir}}/{{end}}</span>
-				<span class="size">{{if not .IsDir}}{{.Size}}{{end}}</span>
-				<span class="time">{{.ModTime}}</span>
+		<li class="{{.Type}}">
+			<a href="{{.Url}}">
+				<span class="name">{{.DisplayName}}</span>
+				<span class="size">{{.DisplaySize}}</span>
+				<span class="time">{{.DisplayTime}}</span>
 			</a>
 		</li>
 	{{end}}
