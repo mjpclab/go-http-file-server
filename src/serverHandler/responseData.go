@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
 	"strings"
 )
 
@@ -199,30 +198,6 @@ func getItemName(info os.FileInfo, r *http.Request) (itemName string) {
 		itemName = strings.Replace(r.Host, ":", "_", -1)
 	}
 	return
-}
-
-func sortSubItems(subInfos []os.FileInfo) {
-	names := make([][]byte, len(subInfos))
-	for i := range subInfos {
-		names[i] = []byte(subInfos[i].Name())
-	}
-
-	sort.Slice(
-		subInfos,
-		func(prevIndex, nextIndex int) bool {
-			prevInfo := subInfos[prevIndex]
-			nextInfo := subInfos[nextIndex]
-
-			prevIsDir := prevInfo.IsDir()
-			nextIsDir := nextInfo.IsDir()
-
-			if prevIsDir != nextIsDir {
-				return prevIsDir
-			}
-
-			return util.CompareNumInStr(names[prevIndex], names[nextIndex])
-		},
-	)
 }
 
 func getStatusByErr(err error) int {

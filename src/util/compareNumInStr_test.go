@@ -34,6 +34,12 @@ func TestCompareNumInStr(t *testing.T) {
 	if CompareNumInStr([]byte(prev), []byte(next)) != true {
 		t.Error(prev, next)
 	}
+
+	prev = "name"
+	next = "name-suffix"
+	if CompareNumInStr([]byte(prev), []byte(next)) != true {
+		t.Error(prev, next)
+	}
 }
 
 func TestExtractPrefixDigits(t *testing.T) {
