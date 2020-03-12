@@ -8,4 +8,10 @@ sleep 0.05 # wait server ready
 file1=$(curl_get_body http://127.0.0.1:3003/file1.txt)
 assert "$file1" 'vhost1/file1.txt'
 
+(curl_get_body http://127.0.0.1:3003/hello | grep -q './hello/index.txt') ||
+	fail "resource /hello does not contains './hello/index.txt'"
+
+(curl_get_body http://127.0.0.1:3003/hello/ | grep -q './index.txt') ||
+	fail "resource /hello/ does not contains './index.txt'"
+
 kill %1

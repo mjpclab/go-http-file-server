@@ -4,13 +4,13 @@ assert() {
 	expect="$2"
 	actual="$1"
 	if [ "$expect" != "$actual" ]; then
-		echo -e "$(basename $0): expect \"\e[0;32m$expect\e[0m\", got \"\e[1;31m$actual\e[0m\"" >&2
+		echo -e "$(basename $0):${BASH_LINENO[0]} expect \"\e[0;32m$expect\e[0m\", got \"\e[1;31m$actual\e[0m\"" >&2
 	fi
 }
 
 fail() {
 	msg="$1"
-	echo -e "$(basename $0): \e[1;31m$msg\e[0m" >&2
+	echo -e "$(basename $0):${BASH_LINENO[0]} \e[1;31m$msg\e[0m" >&2
 }
 
 curl_head_status() {
