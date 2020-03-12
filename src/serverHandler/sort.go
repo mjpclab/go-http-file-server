@@ -31,7 +31,7 @@ func (sInfos sortableFileInfos) Less(i, j int) bool {
 		return prevIsDir
 	}
 
-	return util.CompareNumInStr(sInfos.names[i], sInfos.names[j])
+	return util.CompareNumInFilename(sInfos.names[i], sInfos.names[j])
 }
 
 func (sInfos sortableFileInfos) Swap(i, j int) {

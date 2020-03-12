@@ -35,7 +35,7 @@ func extractPrefixDigits(input []byte) []byte {
 	return buf[:prefixLen]
 }
 
-func CompareNumInStr(prev, next []byte) bool {
+func CompareNumInFilename(prev, next []byte) bool {
 	if len(prev) == 0 {
 		return true
 	} else if len(next) == 0 {
@@ -64,13 +64,20 @@ func CompareNumInStr(prev, next []byte) bool {
 	}
 
 	if prevDigitsLen == 0 { // prevDigitsLen and nextDigitsLen is 0
-		return bytes.Compare(prev, next) < 0
+		switch {
+		case prev[0] == '.':
+			return true
+		case next[0] == '.':
+			return false
+		default:
+			return bytes.Compare(prev, next) < 0
+		}
 	}
 
 	compareResult := bytes.Compare(prevDigits, nextDigits)
 	if compareResult != 0 {
 		return compareResult < 0
 	} else {
-		return CompareNumInStr(prev[prevDigitsLen:], next[nextDigitsLen:])
+		return CompareNumInFilename(prev[prevDigitsLen:], next[nextDigitsLen:])
 	}
 }
