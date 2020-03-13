@@ -23,7 +23,7 @@ If default html template files under `src/tpl` changed, need to re-embed templat
 cd src
 make tpls
 ```
-Then compile the project again.
+Then compile the project like above.
 
 ## Usage for compiled application
 ```
@@ -202,15 +202,15 @@ Start 2 virtual hosts:
     - listen on port 443 for https
         - cert file: /cert/server1.pem
         - key file: /cert/server1.key
-    - hostname server1.example.com
-    - root directory /var/www/server1
+    - hostname: server1.example.com
+    - root directory: /var/www/server1
 - server 2
     - listen on port 80 for http
     - listen on port 443 for https
         - cert file: /cert/server2.pem
         - key file: /cert/server2.key
-    - hostname server2.example.com
-    - root directory /var/www/server2
+    - hostname: server2.example.com
+    - root directory: /var/www/server2
 ```sh
 server --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.key --hostname server1.example.com -r /var/www/server1 ,, --listen-plain 80 --listen-tls 443 -c /cert/server2.pem -k /cert/server2.key --hostname server2.example.com -r /var/www/server2
 ```
