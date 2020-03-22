@@ -2,7 +2,6 @@ package serverErrHandler
 
 import (
 	"../serverLog"
-	"errors"
 	"fmt"
 	"os"
 )
@@ -19,24 +18,9 @@ func (h *ErrHandler) LogError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if h.logger == nil {
-		CheckError(errors.New("logger not initialized"))
-		CheckError(err)
-		return true
-	}
 
 	h.logger.LogErrorString(err.Error())
 	return true
-}
-
-func (h *ErrHandler) LogFatal(err error) bool {
-	hasError := h.LogError(err)
-
-	if hasError {
-		os.Exit(1)
-	}
-
-	return hasError
 }
 
 func CheckError(errs ...error) bool {
