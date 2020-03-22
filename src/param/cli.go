@@ -42,6 +42,15 @@ func init() {
 	err = options.AddFlagsValues("uploaddirs", []string{"-p", "--upload-dir"}, "", nil, "file system path that allow upload files")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlag("globaldelete", "--global-delete", "", "allow delete files for all url paths")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("deleteurls", "--delete", "", nil, "url path that allow delete files")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("deletedirs", "--delete-dir", "", nil, "file system path that allow delete files")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlags("globalarchive", []string{"-A", "--global-archive"}, "GHFS_GLOBAL_ARCHIVE", "enable download archive for all directories")
 	serverErrHandler.CheckFatal(err)
 
@@ -208,6 +217,7 @@ func doParseCli() []*Param {
 		param.Root, _ = result.GetString("root")
 		param.EmptyRoot = result.HasKey("emptyroot")
 		param.GlobalUpload = result.HasKey("globalupload")
+		param.GlobalDelete = result.HasKey("globaldelete")
 		param.GlobalArchive = result.HasKey("globalarchive")
 		param.GlobalCors = result.HasKey("globalcors")
 		param.GlobalAuth = result.HasKey("globalauth")
@@ -262,6 +272,14 @@ func doParseCli() []*Param {
 		// normalize upload dirs
 		arrUploadDirs, _ := result.GetStrings("uploaddirs")
 		param.UploadDirs = normalizeFsPaths(arrUploadDirs)
+
+		// normalize delete urls
+		arrDeleteUrls, _ := result.GetStrings("deleteurls")
+		param.DeleteUrls = normalizeUrlPaths(arrDeleteUrls)
+
+		// normalize delete dirs
+		arrDeleteDirs, _ := result.GetStrings("deletedirs")
+		param.DeleteDirs = normalizeFsPaths(arrDeleteDirs)
 
 		// normalize archive urls
 		arrArchiveUrls, _ := result.GetStrings("archiveurls")

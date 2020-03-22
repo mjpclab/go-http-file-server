@@ -33,8 +33,8 @@ func getAvailableFilename(fsPrefix, filename string) string {
 	return ""
 }
 
-func (h *handler) saveUploadFiles(requestPath string, r *http.Request) (errs []error) {
-	errs = []error{}
+func (h *handler) saveUploadFiles(fsPrefix string, r *http.Request) {
+	errs := []error{}
 
 	reader, err := r.MultipartReader()
 	if err != nil {
@@ -56,14 +56,14 @@ func (h *handler) saveUploadFiles(requestPath string, r *http.Request) (errs []e
 		if len(filename) == 0 {
 			continue
 		}
-		fsFilename := getAvailableFilename(h.root+requestPath, filename)
+		fsFilename := getAvailableFilename(fsPrefix, filename)
 		if len(fsFilename) == 0 {
 			err := errors.New("no available filename for " + filename)
 			errs = append(errs, err)
 			continue
 		}
 
-		fsPath := path.Clean(h.root + requestPath + "/" + fsFilename)
+		fsPath := path.Clean(fsPrefix + "/" + fsFilename)
 		go h.logUpload(filename, fsPath, r)
 		file, err := os.Create(fsPath)
 		if err != nil {
@@ -84,5 +84,7 @@ func (h *handler) saveUploadFiles(requestPath string, r *http.Request) (errs []e
 		}
 	}
 
-	return
+	if len(errs) > 0 {
+		go h.logger.LogErrors(errs...)
+	}
 }

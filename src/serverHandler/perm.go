@@ -33,6 +33,18 @@ func (h *handler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string) b
 	return hasUrlOrDirPrefix(h.uploadUrls, rawReqPath, h.uploadDirs, reqFsPath)
 }
 
+func (h *handler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath string) bool {
+	if info == nil || !info.IsDir() {
+		return false
+	}
+
+	if h.globalDelete {
+		return true
+	}
+
+	return hasUrlOrDirPrefix(h.deleteUrls, rawReqPath, h.deleteDirs, reqFsPath)
+}
+
 func (h *handler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if len(subInfos) == 0 {
 		return false

@@ -23,6 +23,10 @@ type handler struct {
 	uploadUrls   []string
 	uploadDirs   []string
 
+	globalDelete bool
+	deleteUrls   []string
+	deleteDirs   []string
+
 	globalArchive bool
 	archiveUrls   []string
 	archiveDirs   []string
@@ -81,9 +85,15 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.cors(w, r)
 	}
 
-	if data.CanUpload && r.Method == http.MethodPost {
-		h.saveUploadFiles(data.handlerReqPath, r)
-		http.Redirect(w, r, r.RequestURI, http.StatusFound)
+	if data.CanDelete && strings.HasPrefix(r.URL.RawQuery, "delete") {
+		h.errHandler.LogError(r.ParseForm())
+		files := r.Form["name"]
+		h.deleteItems(h.root+data.handlerReqPath, files)
+		http.Redirect(w, r, r.URL.Path, http.StatusFound)
+		return
+	} else if data.CanUpload && r.Method == http.MethodPost {
+		h.saveUploadFiles(h.root+data.handlerReqPath, r)
+		http.Redirect(w, r, r.URL.Path, http.StatusFound)
 		return
 	}
 
@@ -139,6 +149,10 @@ func NewHandler(
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
 		uploadDirs:   p.UploadDirs,
+
+		globalDelete: p.GlobalDelete,
+		deleteUrls:   p.DeleteUrls,
+		deleteDirs:   p.DeleteDirs,
 
 		globalArchive: p.GlobalArchive,
 		archiveUrls:   p.ArchiveUrls,
