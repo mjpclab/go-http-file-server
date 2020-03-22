@@ -20,6 +20,7 @@ type jsonResponseData struct {
 	Paths         []*pathEntry `json:"paths"`
 	SubItemPrefix string       `json:"subItemPrefix"`
 	CanUpload     bool         `json:"canUpload"`
+	CanMkdir      bool         `json:"canMkdir"`
 	CanDelete     bool         `json:"canDelete"`
 	CanArchive    bool         `json:"canArchive"`
 	CanCors       bool         `json:"canCors"`
@@ -59,6 +60,7 @@ func getJsonData(data *responseData) *jsonResponseData {
 		Paths:         data.Paths,
 		SubItemPrefix: data.SubItemPrefix,
 		CanUpload:     data.CanUpload,
+		CanMkdir:      data.CanMkdir,
 		CanDelete:     data.CanDelete,
 		CanArchive:    data.CanArchive,
 		CanCors:       data.CanCors,

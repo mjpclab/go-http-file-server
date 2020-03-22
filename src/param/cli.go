@@ -42,6 +42,15 @@ func init() {
 	err = options.AddFlagsValues("uploaddirs", []string{"-p", "--upload-dir"}, "", nil, "file system path that allow upload files")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlag("globalmkdir", "--global-mkdir", "", "allow mkdir files for all url paths")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("mkdirurls", "--mkdir", "", nil, "url path that allow mkdir files")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("mkdirdirs", "--mkdir-dir", "", nil, "file system path that allow mkdir files")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlag("globaldelete", "--global-delete", "", "allow delete files for all url paths")
 	serverErrHandler.CheckFatal(err)
 
@@ -217,6 +226,7 @@ func doParseCli() []*Param {
 		param.Root, _ = result.GetString("root")
 		param.EmptyRoot = result.HasKey("emptyroot")
 		param.GlobalUpload = result.HasKey("globalupload")
+		param.GlobalMkdir = result.HasKey("globalmkdir")
 		param.GlobalDelete = result.HasKey("globaldelete")
 		param.GlobalArchive = result.HasKey("globalarchive")
 		param.GlobalCors = result.HasKey("globalcors")
@@ -272,6 +282,14 @@ func doParseCli() []*Param {
 		// normalize upload dirs
 		arrUploadDirs, _ := result.GetStrings("uploaddirs")
 		param.UploadDirs = normalizeFsPaths(arrUploadDirs)
+
+		// normalize mkdir urls
+		arrMkdirUrls, _ := result.GetStrings("mkdirurls")
+		param.MkdirUrls = normalizeUrlPaths(arrMkdirUrls)
+
+		// normalize mkdir dirs
+		arrMkdirDirs, _ := result.GetStrings("mkdirdirs")
+		param.MkdirDirs = normalizeFsPaths(arrMkdirDirs)
 
 		// normalize delete urls
 		arrDeleteUrls, _ := result.GetStrings("deleteurls")

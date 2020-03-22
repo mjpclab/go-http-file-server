@@ -21,6 +21,10 @@ type Param struct {
 	UploadUrls   []string
 	UploadDirs   []string
 
+	GlobalMkdir bool
+	MkdirUrls   []string
+	MkdirDirs   []string
+
 	GlobalDelete bool
 	DeleteUrls   []string
 	DeleteDirs   []string

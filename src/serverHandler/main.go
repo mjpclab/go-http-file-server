@@ -23,6 +23,10 @@ type handler struct {
 	uploadUrls   []string
 	uploadDirs   []string
 
+	globalMkdir bool
+	mkdirUrls   []string
+	mkdirDirs   []string
+
 	globalDelete bool
 	deleteUrls   []string
 	deleteDirs   []string
@@ -85,7 +89,13 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.cors(w, r)
 	}
 
-	if data.CanDelete && strings.HasPrefix(r.URL.RawQuery, "delete") {
+	if data.CanMkdir && strings.HasPrefix(r.URL.RawQuery, "mkdir") {
+		h.errHandler.LogError(r.ParseForm())
+		dirs := r.Form["name"]
+		h.mkdirs(h.root+data.handlerReqPath, dirs)
+		http.Redirect(w, r, r.URL.Path, http.StatusFound)
+		return
+	} else if data.CanDelete && strings.HasPrefix(r.URL.RawQuery, "delete") {
 		h.errHandler.LogError(r.ParseForm())
 		files := r.Form["name"]
 		h.deleteItems(h.root+data.handlerReqPath, files)
@@ -149,6 +159,10 @@ func NewHandler(
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
 		uploadDirs:   p.UploadDirs,
+
+		globalMkdir: p.GlobalMkdir,
+		mkdirUrls:   p.MkdirUrls,
+		mkdirDirs:   p.MkdirDirs,
 
 		globalDelete: p.GlobalDelete,
 		deleteUrls:   p.DeleteUrls,

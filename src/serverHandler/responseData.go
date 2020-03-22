@@ -42,6 +42,7 @@ type responseData struct {
 	SubItemPrefix string
 
 	CanUpload  bool
+	CanMkdir   bool
 	CanDelete  bool
 	CanArchive bool
 	CanCors    bool
@@ -322,6 +323,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
+	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
 	canDelete := h.getCanDelete(item, rawReqPath, reqFsPath)
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
@@ -346,6 +348,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		SubItemPrefix: subItemPrefix,
 
 		CanUpload:  canUpload,
+		CanMkdir:   canMkdir,
 		CanDelete:  canDelete,
 		CanArchive: canArchive,
 		CanCors:    canCors,
