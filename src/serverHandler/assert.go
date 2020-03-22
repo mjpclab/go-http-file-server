@@ -9,7 +9,10 @@ import (
 var initTime = time.Now()
 
 func (h *handler) assert(w http.ResponseWriter, r *http.Request, assertPath string) {
-	content := assert.Get(assertPath)
+	content, ok := assert.Get(assertPath)
+	if !ok {
+		return
+	}
 
 	header := w.Header()
 	header.Set("Content-Type", content.ContentType)

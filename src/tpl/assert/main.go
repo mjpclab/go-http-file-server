@@ -15,6 +15,7 @@ var asserts = map[string]content{
 	"main.js":  {"application/javascript", strings.NewReader(mainJs)},
 }
 
-func Get(path string) content {
-	return asserts[path]
+func Get(path string) (content, bool) {
+	c, ok := asserts[path]
+	return c, ok
 }

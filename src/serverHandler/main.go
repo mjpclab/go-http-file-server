@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 type handler struct {
@@ -51,13 +52,11 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	go h.logRequest(r)
 
 	// assert
-	if len(r.URL.RawQuery) > 0 {
-		queryValues := r.URL.Query()
-		assertPath := queryValues.Get("assert")
-		if len(assertPath) > 0 {
-			h.assert(w, r, assertPath)
-			return
-		}
+	const assertPrefix = "assert="
+	if strings.HasPrefix(r.URL.RawQuery, assertPrefix) {
+		assertPath := r.URL.RawQuery[len(assertPrefix):]
+		h.assert(w, r, assertPath)
+		return
 	}
 
 	// data
