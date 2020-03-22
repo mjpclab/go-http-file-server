@@ -182,11 +182,11 @@ func (h *handler) mergeAlias(rawRequestPath string, item os.FileInfo, subItems [
 	return subItems, errs
 }
 
-func getSubItemPrefix(requestPath string, tailSlash bool) string {
+func getSubItemPrefix(rawRequestPath string, tailSlash bool) string {
 	if tailSlash {
 		return "./"
 	} else {
-		return "./" + path.Base(requestPath) + "/"
+		return "./" + path.Base(rawRequestPath) + "/"
 	}
 }
 
@@ -314,7 +314,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	subItems = h.FilterItems(subItems)
 	sortSubItems(subItems)
 
-	subItemPrefix := getSubItemPrefix(reqPath, tailSlash)
+	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
