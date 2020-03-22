@@ -90,6 +90,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
+	case data.CanUpload && r.URL.RawQuery == "upload" && r.Method == http.MethodPost:
+		h.saveUploadFiles(h.root+data.handlerReqPath, r)
+		http.Redirect(w, r, r.URL.Path, http.StatusFound)
+		return
 	case data.CanMkdir && strings.HasPrefix(r.URL.RawQuery, "mkdir"):
 		h.errHandler.LogError(r.ParseForm())
 		h.mkdirs(h.root+data.handlerReqPath, r.Form["name"])
@@ -103,12 +107,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case data.CanDelete && strings.HasPrefix(r.URL.RawQuery, "remove"):
 		h.errHandler.LogError(r.ParseForm())
 		h.deleteItemsRecurse(h.root+data.handlerReqPath, r.Form["name"])
-		http.Redirect(w, r, r.URL.Path, http.StatusFound)
-		return
-	}
-
-	if data.CanUpload && r.Method == http.MethodPost {
-		h.saveUploadFiles(h.root+data.handlerReqPath, r)
 		http.Redirect(w, r, r.URL.Path, http.StatusFound)
 		return
 	}

@@ -22,7 +22,7 @@
 
 {{if .CanUpload}}
 	<div class="upload">
-		<form method="POST" enctype="multipart/form-data">
+		<form method="POST" action="{{$subItemPrefix}}?upload" enctype="multipart/form-data">
 			<input type="file" name="files" class="files" multiple="multiple"/>
 			<input type="submit" value="Upload"/>
 		</form>
