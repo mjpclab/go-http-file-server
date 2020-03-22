@@ -9,7 +9,7 @@ func TestParse1(t *testing.T) {
 	var err error
 
 	s := NewOptionSet("-", []string{"--"}, []string{",,"}, []string{"-"})
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "tag",
 		Summary:     "tag summary",
 		Description: "tag description",
@@ -20,7 +20,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "single",
 		Summary:     "single summary",
 		Description: "single description",
@@ -31,7 +31,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "multi",
 		Flags:       NewSimpleFlags([]string{"-m", "--multi"}),
 		AcceptValue: true,
@@ -42,7 +42,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:           "deft",
 		Flags:         NewSimpleFlags([]string{"-df", "--default"}),
 		AcceptValue:   true,
@@ -52,7 +52,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "singleMissingValue",
 		Flags:       NewSimpleFlags([]string{"-sm", "--single-missing"}),
 		AcceptValue: true,
@@ -61,7 +61,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "flagX",
 		Flags:       NewSimpleFlags([]string{"-x"}),
 		AcceptValue: true,
@@ -70,7 +70,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "flagY",
 		Flags:       NewSimpleFlags([]string{"-y"}),
 		AcceptValue: true,
@@ -79,7 +79,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key: "withEqual",
 		Flags: []*Flag{
 			{Name: "--with-equal", assignSigns: []string{"="}},
@@ -90,7 +90,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key: "withConcat",
 		Flags: []*Flag{
 			{Name: "-w", canConcatAssign: true},
@@ -101,7 +101,7 @@ func TestParse1(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key: "fromenv",
 		Flags: []*Flag{
 			{Name: "--from-env", assignSigns: []string{"="}},

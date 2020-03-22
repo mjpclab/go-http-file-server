@@ -8,9 +8,9 @@ import (
 func TestParse2(t *testing.T) {
 	var err error
 
-	s := NewOptionSet("", nil, nil,nil)
+	s := NewOptionSet("", nil, nil, nil)
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:           "deft",
 		Flags:         []*Flag{{Name: "-df"}, {Name: "--default"}},
 		AcceptValue:   true,
@@ -55,7 +55,7 @@ func TestParse2(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "props",
 		Summary:     "properties",
 		Description: "single description",

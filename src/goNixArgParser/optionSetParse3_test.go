@@ -9,7 +9,7 @@ func TestParse3(t *testing.T) {
 
 	s := NewOptionSet("-", nil, []string{",,"}, []string{"-"})
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "bool",
 		Flags:       []*Flag{{Name: "-b", canMerge: true}, {Name: "--bool"}},
 		AcceptValue: false,
@@ -18,7 +18,7 @@ func TestParse3(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "port",
 		Flags:       []*Flag{{Name: "-p", canMerge: true, canFollowAssign: true, assignSigns: []string{"="}}, {Name: "--port", canFollowAssign: true}},
 		AcceptValue: true,
@@ -27,7 +27,7 @@ func TestParse3(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(&Option{
+	err = s.Append(Option{
 		Key:         "root",
 		Flags:       []*Flag{{Name: "-r"}, {Name: "--root", canFollowAssign: true}},
 		AcceptValue: true,
