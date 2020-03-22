@@ -108,11 +108,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.deleteItems(h.root+data.handlerReqPath, r.Form["name"])
 		http.Redirect(w, r, r.URL.Path, http.StatusFound)
 		return
-	case data.CanDelete && strings.HasPrefix(r.URL.RawQuery, "remove"):
-		h.errHandler.LogError(r.ParseForm())
-		h.deleteItemsRecurse(h.root+data.handlerReqPath, r.Form["name"])
-		http.Redirect(w, r, r.URL.Path, http.StatusFound)
-		return
 	}
 
 	// regular flows
