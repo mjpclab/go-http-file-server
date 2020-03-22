@@ -42,7 +42,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, r *http.Request) {
 		return
 	}
 
-	for i := 1; ; i++ {
+	for {
 		part, err := reader.NextPart()
 		if err == io.EOF {
 			break
@@ -65,7 +65,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, r *http.Request) {
 
 		fsPath := path.Clean(fsPrefix + "/" + fsFilename)
 		go h.logUpload(filename, fsPath, r)
-		file, err := os.Create(fsPath)
+		file, err := os.OpenFile(fsPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
 			errs = append(errs, err)
 			continue
