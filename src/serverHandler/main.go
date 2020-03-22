@@ -89,19 +89,25 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.cors(w, r)
 	}
 
-	if data.CanMkdir && strings.HasPrefix(r.URL.RawQuery, "mkdir") {
+	switch {
+	case data.CanMkdir && strings.HasPrefix(r.URL.RawQuery, "mkdir"):
 		h.errHandler.LogError(r.ParseForm())
-		dirs := r.Form["name"]
-		h.mkdirs(h.root+data.handlerReqPath, dirs)
+		h.mkdirs(h.root+data.handlerReqPath, r.Form["name"])
 		http.Redirect(w, r, r.URL.Path, http.StatusFound)
 		return
-	} else if data.CanDelete && strings.HasPrefix(r.URL.RawQuery, "delete") {
+	case data.CanDelete && strings.HasPrefix(r.URL.RawQuery, "delete"):
 		h.errHandler.LogError(r.ParseForm())
-		files := r.Form["name"]
-		h.deleteItems(h.root+data.handlerReqPath, files)
+		h.deleteItems(h.root+data.handlerReqPath, r.Form["name"])
 		http.Redirect(w, r, r.URL.Path, http.StatusFound)
 		return
-	} else if data.CanUpload && r.Method == http.MethodPost {
+	case data.CanDelete && strings.HasPrefix(r.URL.RawQuery, "remove"):
+		h.errHandler.LogError(r.ParseForm())
+		h.deleteItemsRecurse(h.root+data.handlerReqPath, r.Form["name"])
+		http.Redirect(w, r, r.URL.Path, http.StatusFound)
+		return
+	}
+
+	if data.CanUpload && r.Method == http.MethodPost {
 		h.saveUploadFiles(h.root+data.handlerReqPath, r)
 		http.Redirect(w, r, r.URL.Path, http.StatusFound)
 		return
