@@ -90,8 +90,12 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
+	case data.CanUpload && r.URL.RawQuery == "sync" && r.Method == http.MethodPost:
+		h.saveUploadFiles(h.root+data.handlerReqPath, data.CanDelete, r)
+		http.Redirect(w, r, r.URL.Path, http.StatusFound)
+		return
 	case data.CanUpload && r.URL.RawQuery == "upload" && r.Method == http.MethodPost:
-		h.saveUploadFiles(h.root+data.handlerReqPath, r)
+		h.saveUploadFiles(h.root+data.handlerReqPath, false, r)
 		http.Redirect(w, r, r.URL.Path, http.StatusFound)
 		return
 	case data.CanMkdir && strings.HasPrefix(r.URL.RawQuery, "mkdir"):

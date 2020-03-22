@@ -33,7 +33,7 @@ func getAvailableFilename(fsPrefix, filename string) string {
 	return ""
 }
 
-func (h *handler) saveUploadFiles(fsPrefix string, r *http.Request) {
+func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, r *http.Request) {
 	errs := []error{}
 
 	reader, err := r.MultipartReader()
@@ -56,11 +56,22 @@ func (h *handler) saveUploadFiles(fsPrefix string, r *http.Request) {
 		if len(filename) == 0 {
 			continue
 		}
-		fsFilename := getAvailableFilename(fsPrefix, filename)
-		if len(fsFilename) == 0 {
-			err := errors.New("no available filename for " + filename)
-			errs = append(errs, err)
-			continue
+		var fsFilename string
+		if overwriteExists {
+			err := os.Remove(fsPrefix + "/" + filename)
+			if err != nil && !os.IsNotExist(err) {
+				errs = append(errs, err)
+				// continue
+				// even remove failed, still try to write content to file by TRUNCATE mode
+			}
+			fsFilename = filename
+		} else {
+			fsFilename = getAvailableFilename(fsPrefix, filename)
+			if len(fsFilename) == 0 {
+				err := errors.New("no available filename for " + filename)
+				errs = append(errs, err)
+				continue
+			}
 		}
 
 		fsPath := path.Clean(fsPrefix + "/" + fsFilename)
