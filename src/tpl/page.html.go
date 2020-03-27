@@ -30,7 +30,7 @@ const pageTplStr = `
 {{if .CanUpload}}
 <div class="upload">
 <form method="POST" enctype="multipart/form-data">
-<input type="file" name="files" class="files" multiple="multiple" accept="*/*"/>
+<input type="file" name="files" class="files" multiple="multiple"/>
 <input type="submit" value="Upload"/>
 </form>
 </div>
