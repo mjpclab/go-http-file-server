@@ -50,12 +50,14 @@ const pageTplStr = `
 <span class="time"></span>
 </a>
 </li>
+{{$canDelete := .CanDelete}}
 {{range .SubItemsHtml}}
 <li class="{{.Type}}">
 <a href="{{.Url}}">
 <span class="name">{{.DisplayName}}</span>
 <span class="size">{{.DisplaySize}}</span>
 <span class="time">{{.DisplayTime}}</span>
+{{if $canDelete}}<button class="delete">x</button>{{end}}
 </a>
 </li>
 {{end}}
@@ -67,7 +69,11 @@ const pageTplStr = `
 {{else if eq .Status 500}}
 <div class="error">500 potential issue occurred</div>
 {{end}}
-<script type="text/javascript" src="{{.RootRelPath}}?assert=main.js"></script>
+<script type="text/javascript">
+var canDelete = {{.CanDelete}};
+var canMkdir = {{.CanMkdir}};
+</script>
+<script type="text/javascript" src="{{.RootRelPath}}?assert=main.js" defer="defer" async="async"></script>
 </body>
 </html>
 `

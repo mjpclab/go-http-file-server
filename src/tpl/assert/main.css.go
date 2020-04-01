@@ -163,10 +163,6 @@ border-bottom: 1px #f5f5f5 solid;
 overflow: hidden;
 zoom: 1;
 }
-.item-list span {
-margin-left: 1em;
-flex-shrink: 0;
-}
 .item-list .name {
 flex-grow: 1;
 flex-shrink: 1;
@@ -186,7 +182,25 @@ color: #999;
 text-align: right;
 white-space: nowrap;
 overflow: hidden;
-float: right;
+}
+.item-list .delete {
+display: none;
+border: 0;
+padding: 0.1em 0.5em;
+color: #800000;
+background: none;
+font-weight: bold;
+}
+.item-list .delete:hover {
+background: #fee;
+}
+.can-delete .delete {
+display: inline-block;
+}
+.item-list span,
+.item-list button {
+margin: 0 0 0 1em;
+flex-shrink: 0;
 }
 .error {
 margin: 1em;
