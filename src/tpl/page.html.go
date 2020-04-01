@@ -42,6 +42,14 @@ const pageTplStr = `
 <a href="{{$subItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
 </div>
 {{end}}
+{{if .CanMkdir}}
+<div class="mkdir">
+<form method="POST" action="{{$subItemPrefix}}?mkdir">
+<input type="text" name="name" autocomplete="off"/>
+<button type="submit">mkdir</button>
+</form>
+</div>
+{{end}}
 <ul class="item-list">
 <li class="dir parent">
 <a href="{{if .IsRoot}}./{{else}}../{{end}}">

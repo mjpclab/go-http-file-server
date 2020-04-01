@@ -17,6 +17,10 @@ font-variant-ligatures: none;
 font-kerning: none;
 hyphens: none;
 }
+form {
+margin: 0;
+padding: 0;
+}
 ul, ol, li {
 display: block;
 margin: 0;
@@ -102,10 +106,6 @@ background: #c9c;
 .upload.dragging::before {
 display: block;
 }
-.upload form {
-margin: 0;
-padding: 0;
-}
 .upload input {
 display: block;
 width: 100%;
@@ -151,6 +151,21 @@ border-top-color: transparent;
 border-left-color: transparent;
 -webkit-transform: rotate(45deg);
 transform: rotate(45deg);
+}
+.mkdir {
+margin: 1em;
+padding: 1em;
+background: #f7f7f7;
+}
+.mkdir form {
+display: flex;
+}
+.mkdir input {
+flex: 1 1 auto;
+}
+.mkdir button {
+padding-left: 0.5em;
+padding-right: 0.5em;
 }
 .item-list {
 margin: 1em;
