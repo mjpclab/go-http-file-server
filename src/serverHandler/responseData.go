@@ -21,6 +21,7 @@ type itemHtml struct {
 	DisplayName template.HTML
 	DisplaySize template.HTML
 	DisplayTime template.HTML
+	DeleteUrl   string
 }
 
 type responseData struct {

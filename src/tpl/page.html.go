@@ -8,7 +8,6 @@ import (
 )
 
 const pageTplStr = `
-{{$subItemPrefix := .SubItemPrefix}}
 <!DOCTYPE html>
 <html lang="">
 <head>
@@ -29,44 +28,53 @@ const pageTplStr = `
 </ol>
 {{if .CanUpload}}
 <div class="upload">
-<form method="POST" action="{{$subItemPrefix}}?upload" enctype="multipart/form-data">
+<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
 <input type="file" name="files" class="files" multiple="multiple"/>
 <input type="submit" value="Upload"/>
 </form>
 </div>
 {{end}}
-{{if .CanArchive}}
-<div class="archive">
-<a href="{{$subItemPrefix}}?tar" download="{{.ItemName}}.tar">.tar</a>
-<a href="{{$subItemPrefix}}?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
-<a href="{{$subItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
-</div>
-{{end}}
 {{if .CanMkdir}}
 <div class="mkdir">
-<form method="POST" action="{{$subItemPrefix}}?mkdir">
+<form method="POST" action="{{.SubItemPrefix}}?mkdir">
 <input type="text" name="name" autocomplete="off"/>
 <button type="submit">mkdir</button>
 </form>
 </div>
 {{end}}
-<ul class="item-list">
+{{if .CanArchive}}
+<div class="archive">
+<a href="{{.SubItemPrefix}}?tar" download="{{.ItemName}}.tar">.tar</a>
+<a href="{{.SubItemPrefix}}?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
+<a href="{{.SubItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
+</div>
+{{end}}
+{{$canDelete := .CanDelete}}
+{{if $canDelete}}
+<script type="text/javascript">
+function confirmDelete(el) {
+var href = el.href;
+var name = decodeURIComponent(href.substr(href.lastIndexOf('=') + 1));
+return confirm('Delete?\n' + name);
+}
+</script>
+{{end}}
+<ul class="item-list{{if $canDelete}} can-delete{{end}}">
 <li class="dir parent">
-<a href="{{if .IsRoot}}./{{else}}../{{end}}">
+<a href="{{if .IsRoot}}./{{else}}../{{end}}" class="link">
 <span class="name">../</span>
 <span class="size"></span>
 <span class="time"></span>
 </a>
 </li>
-{{$canDelete := .CanDelete}}
 {{range .SubItemsHtml}}
 <li class="{{.Type}}">
-<a href="{{.Url}}">
+<a href="{{.Url}}" class="link">
 <span class="name">{{.DisplayName}}</span>
 <span class="size">{{.DisplaySize}}</span>
 <span class="time">{{.DisplayTime}}</span>
-{{if $canDelete}}<button class="delete">x</button>{{end}}
 </a>
+{{if $canDelete}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)"><span>x</span></a>{{end}}
 </li>
 {{end}}
 </ul>
@@ -77,10 +85,6 @@ const pageTplStr = `
 {{else if eq .Status 500}}
 <div class="error">500 potential issue occurred</div>
 {{end}}
-<script type="text/javascript">
-var canDelete = {{.CanDelete}};
-var canMkdir = {{.CanMkdir}};
-</script>
 <script type="text/javascript" src="{{.RootRelPath}}?assert=main.js" defer="defer" async="async"></script>
 </body>
 </html>

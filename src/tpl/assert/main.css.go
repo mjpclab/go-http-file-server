@@ -40,6 +40,7 @@ a:hover {
 background: #f5f5f5;
 }
 input, button {
+min-width: 0;
 margin: 0;
 padding: 0.25em 0;
 }
@@ -170,13 +171,19 @@ padding-right: 0.5em;
 .item-list {
 margin: 1em;
 }
-.item-list a {
+.item-list li {
+position: relative;
+}
+.item-list .link {
 display: flex;
 flex-flow: row nowrap;
 align-items: center;
 border-bottom: 1px #f5f5f5 solid;
 overflow: hidden;
 zoom: 1;
+}
+.can-delete .link {
+padding-right: 2.2em;
 }
 .item-list .name {
 flex-grow: 1;
@@ -199,18 +206,19 @@ white-space: nowrap;
 overflow: hidden;
 }
 .item-list .delete {
-display: none;
-border: 0;
-padding: 0.1em 0.5em;
+position: absolute;
+top: 0;
+right: 0;
+border-bottom: 1px #f5f5f5 solid;
 color: #800000;
-background: none;
 font-weight: bold;
 }
 .item-list .delete:hover {
 background: #fee;
 }
-.can-delete .delete {
-display: inline-block;
+.item-list .delete span {
+margin-left: 0;
+font-size: 1.5em;
 }
 .item-list span,
 .item-list button {

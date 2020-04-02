@@ -32,12 +32,18 @@ func updateSubItemsHtml(data *responseData) {
 			readableSize = tplutil.FormatSize(info.Size())
 		}
 
+		var deleteUrl string
+		if data.CanDelete {
+			deleteUrl = data.SubItemPrefix + "?delete&name=" + name
+		}
+
 		data.SubItemsHtml[i] = &itemHtml{
 			Type:        typ,
 			Url:         url,
 			DisplayName: displayName,
 			DisplaySize: readableSize,
 			DisplayTime: tplutil.FormatTime(info.ModTime()),
+			DeleteUrl:   deleteUrl,
 		}
 	}
 }
