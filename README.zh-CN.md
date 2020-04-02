@@ -59,13 +59,28 @@ server [选项]
 
 -U|--global-upload
     对所有URL路径开启上传权限。
-    如果文件已存在，则尝试添加或递增数字后缀。
+    如果文件已存在，若已启用删除（例如--delete选项），则尝试先删除文件，
+    否则尝试添加或递增数字后缀。
     请谨慎使用。
 -u|--upload <URL路径> ...
     设置允许上传的URL路径（及子路径）。
     请谨慎使用。
 --upload-dir <文件系统路径> ...
     与--upload类似，但指定的是文件系统路径，而不是URL路径。
+
+--global-mkdir
+    对所有URL路径开启创建子目录权限。
+--mkdir <url-path> ...
+    设置允许创建子目录的URL路径（及子路径）。
+--mkdir-dir <fs-path> ...
+    与--mkdir类似，但指定的是文件系统路径，而不是URL路径。
+
+--global-delete
+    对所有URL路径开启删除子项权限。
+--delete <url-path> ...
+    设置允许删除子项的URL路径（及子路径）。
+--delete-dir <fs-path> ...
+    与--delete类似，但指定的是文件系统路径，而不是URL路径。
 
 -A|--global-archive
     对所有URL路径开启打包下载当前目录内容的功能。

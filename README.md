@@ -60,7 +60,8 @@ server [options]
 
 -U|--global-upload
     Allow upload files for all url paths.
-    If filename exists, will try to add or increase numeric suffix.
+    If filename exists, will try to remove it first if deleting is enabled(e.g. by --delete),
+    otherwise will try to add or increase numeric suffix.
     Use it with care.
 -u|--upload <url-path> ...
     Set url paths(and sub paths) that allows to upload files.
@@ -68,6 +69,20 @@ server [options]
 --upload-dir <fs-path> ...
     Similar to --upload, but use file system path instead of url path.
     Use it with care.
+
+--global-mkdir
+    Allow create sub directory under all url paths.
+--mkdir <url-path> ...
+    Allow create sub directory under specific url paths(and sub paths).
+--mkdir-dir <fs-path> ...
+    Similar to --mkdir, but use file system path instead of url path.
+
+--global-delete
+    Allow delete items under all url paths.
+--delete <url-path> ...
+    Allow delete items under specific url paths(and sub paths).
+--delete-dir <fs-path> ...
+    Similar to --delete, but use file system path instead of url path.
 
 -A|--global-archive
     Allow user to download the whole contents of current directory for all url paths.
