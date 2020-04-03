@@ -44,12 +44,11 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, r *http
 
 	for {
 		part, err := reader.NextPart()
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
-			errs = append(errs, err)
-			continue
+			if err != io.EOF {
+				errs = append(errs, err)
+			}
+			break
 		}
 
 		filename := part.FileName()
