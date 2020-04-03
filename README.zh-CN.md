@@ -25,7 +25,70 @@ make tpls
 ```
 然后再像上面那样编译。
 
-## 编译后程序的使用方法
+## 举例
+在8080端口启动服务器，根目录为当前工作目录：
+```sh
+server -l 8080
+``` 
+
+在8080端口启动服务器，根目录为 /usr/share/doc：
+```sh
+server -l 8080 -r /usr/share/doc
+```
+
+在默认端口启动服务器，根目录为/tmp，并允许上传文件到/tmp/data：
+```sh
+server -r /tmp -u /data
+```
+
+共享/etc下的文件，同时把/usr/share/doc挂载到URL路径/doc下：
+```sh
+server -r /etc -a :/doc:/usr/share/doc
+```
+
+在8080端口启动服务器，使用HTTPS协议：
+```sh
+server -k /path/to/certificate/key -c /path/to/certificate/file -l 8080
+```
+
+不显示`.`开头的unix隐藏目录和文件。提示：用引号括起通配符以避免shell展开：
+```sh
+server -H '.*'
+```
+
+在命令行显示访问日志：
+```sh
+server -L -
+```
+
+http基本验证：
+- 对URL /files 启用验证
+- 用户名：user1，密码：pass1
+- 用户名：user2，密码：pass2
+```sh
+server --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
+```
+
+启动2台虚拟主机：
+- 服务器1
+    - 在80端口提供http服务
+    - 在443端口提供https服务
+        - 证书文件：/cert/server1.pem
+        - 私钥文件：/cert/server1.key
+    - 主机名：server1.example.com
+    - 根目录：/var/www/server1
+- 服务器2
+    - 在80端口提供http服务
+    - 在443端口提供https服务
+        - 证书文件：/cert/server2.pem
+        - 私钥文件：/cert/server2.key
+    - 主机名：server2.example.com
+    - 根目录：/var/www/server2
+```sh
+server --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.key --hostname server1.example.com -r /var/www/server1 ,, --listen-plain 80 --listen-tls 443 -c /cert/server2.pem -k /cert/server2.key --hostname server2.example.com -r /var/www/server2
+```
+
+## 使用方法
 ```
 server [选项]
 
@@ -162,67 +225,4 @@ server [选项]
     如果请求的主机名不匹配任何虚拟主机，
     服务器尝试使用第一个没有指定主机名的虚拟主机，
     如果失败则使用第一个虚拟主机。
-```
-
-## 举例
-在8080端口启动服务器，根目录为当前工作目录：
-```sh
-server -l 8080
-``` 
-
-在8080端口启动服务器，根目录为 /usr/share/doc：
-```sh
-server -l 8080 -r /usr/share/doc
-```
-
-在默认端口启动服务器，根目录为/tmp，并允许上传文件到/tmp/data：
-```sh
-server -r /tmp -u /data
-```
-
-共享/etc下的文件，同时把/usr/share/doc挂载到URL路径/doc下：
-```sh
-server -r /etc -a :/doc:/usr/share/doc
-```
-
-在8080端口启动服务器，使用HTTPS协议：
-```sh
-server -k /path/to/certificate/key -c /path/to/certificate/file -l 8080
-```
-
-不显示`.`开头的unix隐藏目录和文件。提示：用引号括起通配符以避免shell展开：
-```sh
-server -H '.*'
-```
-
-在命令行显示访问日志：
-```sh
-server -L -
-```
-
-http基本验证：
-- 对URL /files 启用验证
-- 用户名：user1，密码：pass1
-- 用户名：user2，密码：pass2
-```sh
-server --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
-```
-
-启动2台虚拟主机：
-- 服务器1
-    - 在80端口提供http服务
-    - 在443端口提供https服务
-        - 证书文件：/cert/server1.pem
-        - 私钥文件：/cert/server1.key
-    - 主机名：server1.example.com
-    - 根目录：/var/www/server1
-- 服务器2
-    - 在80端口提供http服务
-    - 在443端口提供https服务
-        - 证书文件：/cert/server2.pem
-        - 私钥文件：/cert/server2.key
-    - 主机名：server2.example.com
-    - 根目录：/var/www/server2
-```sh
-server --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.key --hostname server1.example.com -r /var/www/server1 ,, --listen-plain 80 --listen-tls 443 -c /cert/server2.pem -k /cert/server2.key --hostname server2.example.com -r /var/www/server2
 ```
