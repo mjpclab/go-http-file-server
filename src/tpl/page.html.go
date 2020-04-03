@@ -13,7 +13,7 @@ const pageTplStr = `
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<meta name="viewport" content="initial-scale=1"/>
+<meta name="viewport" content="initial-scale=1, user-scalable=no"/>
 <meta name="format-detection" content="telephone=no"/>
 <meta name="renderer" content="webkit"/>
 <meta name="wap-font-scale" content="no"/>
@@ -29,16 +29,16 @@ const pageTplStr = `
 {{if .CanUpload}}
 <div class="upload">
 <form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
-<input type="file" name="files" class="files" multiple="multiple"/>
-<input type="submit" value="Upload"/>
+<input type="file" name="files" multiple="multiple" class="files"/>
+<input type="submit" value="Upload" class="submit"/>
 </form>
 </div>
 {{end}}
 {{if .CanMkdir}}
 <div class="mkdir">
 <form method="POST" action="{{.SubItemPrefix}}?mkdir">
-<input type="text" name="name" autocomplete="off"/>
-<button type="submit">mkdir</button>
+<input type="text" name="name" autocomplete="off" class="name"/>
+<input type="submit" value="mkdir" class="submit"/>
 </form>
 </div>
 {{end}}

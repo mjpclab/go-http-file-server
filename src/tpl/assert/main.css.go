@@ -161,10 +161,10 @@ background: #f7f7f7;
 .mkdir form {
 display: flex;
 }
-.mkdir input {
+.mkdir .name {
 flex: 1 1 auto;
 }
-.mkdir button {
+.mkdir .submit {
 padding-left: 0.5em;
 padding-right: 0.5em;
 }
