@@ -214,13 +214,13 @@ func getStatusByErr(err error) int {
 }
 
 func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo) (file *os.File, item os.FileInfo, err error) {
-	if baseItem == nil || !baseItem.IsDir() || h.emptyRoot || len(h.dirIndexes) == 0 {
+	if len(h.dirIndexes) == 0 {
 		return
 	}
 
 	for _, index := range h.dirIndexes {
 		for _, alias := range h.aliases {
-			if rawReqPath+"/"+index != alias.urlPath {
+			if path.Clean(rawReqPath+"/"+index) != alias.urlPath {
 				continue
 			}
 			file, item, err = stat(alias.fsPath, true)
@@ -235,8 +235,12 @@ func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInf
 		}
 	}
 
+	if baseItem == nil || !baseItem.IsDir() || h.emptyRoot {
+		return
+	}
+
 	for _, index := range h.dirIndexes {
-		file, item, err = stat(baseDir+"/"+index, true)
+		file, item, err = stat(path.Clean(baseDir+"/"+index), true)
 		if err != nil && file != nil {
 			file.Close()
 		}
