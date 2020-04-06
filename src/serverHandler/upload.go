@@ -10,15 +10,17 @@ import (
 	"strconv"
 )
 
-func getAvailableFilename(fsPrefix, filename string) string {
+func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) string {
 	if len(fsPrefix) == 0 {
 		fsPrefix = "/"
 	} else if fsPrefix[len(fsPrefix)-1] != '/' {
 		fsPrefix = fsPrefix + "/"
 	}
 
-	if _, err := os.Lstat(fsPrefix + filename); os.IsNotExist(err) {
-		return filename
+	if !mustAppendSuffix {
+		if _, err := os.Lstat(fsPrefix + filename); os.IsNotExist(err) {
+			return filename
+		}
 	}
 
 	filenamePrefix, filenameSuffix := util.SplitFilename(filename)
@@ -33,7 +35,7 @@ func getAvailableFilename(fsPrefix, filename string) string {
 	return ""
 }
 
-func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, r *http.Request) {
+func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) {
 	errs := []error{}
 
 	reader, err := r.MultipartReader()
@@ -55,22 +57,29 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, r *http
 		if len(filename) == 0 {
 			continue
 		}
+
+		isFilenameAliased := containsItem(aliasSubItems, filename)
 		var fsFilename string
-		if overwriteExists {
-			err := os.Remove(fsPrefix + "/" + filename)
-			if err != nil && !os.IsNotExist(err) {
-				errs = append(errs, err)
-				// continue
+		if overwriteExists && !isFilenameAliased {
+			tryPath := fsPrefix + "/" + filename
+			var info os.FileInfo
+			info, err = os.Lstat(tryPath)
+			if info != nil && !info.IsDir() {
+				err = os.Remove(tryPath)
+				if err != nil && !os.IsNotExist(err) {
+					errs = append(errs, err)
+				}
 				// even remove failed, still try to write content to file by TRUNCATE mode
+				fsFilename = filename
 			}
-			fsFilename = filename
-		} else {
-			fsFilename = getAvailableFilename(fsPrefix, filename)
-			if len(fsFilename) == 0 {
-				err := errors.New("no available filename for " + filename)
-				errs = append(errs, err)
-				continue
-			}
+		}
+		if len(fsFilename) == 0 {
+			fsFilename = getAvailableFilename(fsPrefix, filename, isFilenameAliased)
+		}
+		if len(fsFilename) == 0 {
+			err := errors.New("no available filename for " + filename)
+			errs = append(errs, err)
+			continue
 		}
 
 		fsPath := path.Clean(fsPrefix + "/" + fsFilename)

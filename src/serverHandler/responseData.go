@@ -39,6 +39,7 @@ type responseData struct {
 	Item          os.FileInfo
 	ItemName      string
 	SubItems      []os.FileInfo
+	AliasSubItems []os.FileInfo
 	SubItemsHtml  []*itemHtml
 	SubItemPrefix string
 
@@ -112,11 +113,15 @@ func readdir(file *os.File, item os.FileInfo, visitFs bool) (subItems []os.FileI
 	return file.Readdir(0)
 }
 
-func (h *handler) mergeAlias(rawRequestPath string, item os.FileInfo, subItems []os.FileInfo) ([]os.FileInfo, []error) {
-	errs := []error{}
+func (h *handler) mergeAlias(
+	rawRequestPath string,
+	item os.FileInfo,
+	subItems []os.FileInfo,
+) (mergedSubItems, aliasSubItems []os.FileInfo, errs []error) {
+	errs = []error{}
 
 	if (item != nil && !item.IsDir()) || len(h.aliases) == 0 {
-		return subItems, errs
+		return subItems, nil, errs
 	}
 
 	for _, alias := range h.aliases {
@@ -167,6 +172,7 @@ func (h *handler) mergeAlias(rawRequestPath string, item os.FileInfo, subItems [
 		} else {
 			aliasSubItem = newFakeFileInfo(nextName, true)
 		}
+		aliasSubItems = append(aliasSubItems, aliasSubItem)
 
 		replaced := false
 		for i, subItem := range subItems {
@@ -182,7 +188,7 @@ func (h *handler) mergeAlias(rawRequestPath string, item os.FileInfo, subItems [
 		}
 	}
 
-	return subItems, errs
+	return subItems, aliasSubItems, errs
 }
 
 func getSubItemPrefix(rawRequestPath string, tailSlash bool) string {
@@ -308,7 +314,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		status = http.StatusInternalServerError
 	}
 
-	subItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -345,6 +351,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		Item:          item,
 		ItemName:      itemName,
 		SubItems:      subItems,
+		AliasSubItems: aliasSubItems,
 		SubItemsHtml:  nil,
 		SubItemPrefix: subItemPrefix,
 

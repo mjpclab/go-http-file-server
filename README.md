@@ -120,12 +120,12 @@ server [options]
     Specify default index file for directory.
 
 -a|--alias <separator><url-path><separator><fs-path> ...
-    Set path alias. e.g. ":/doc:/usr/share/doc"
+    Set path alias.
+    Mount a file system path to URL path.
+    e.g. ":/doc:/usr/share/doc"
 
 -U|--global-upload
     Allow upload files for all url paths.
-    If filename exists, will try to remove it first if deleting is enabled(e.g. by --delete),
-    otherwise will try to add or increase numeric suffix.
     Use it with care.
 -u|--upload <url-path> ...
     Set url paths(and sub paths) that allows to upload files.
@@ -134,6 +134,11 @@ server [options]
     Similar to --upload, but use file system path instead of url path.
     Use it with care.
 
+    Notes for upload options:
+        If filename exists and is a regular file,
+        will try to remove it first if deleting is enabled(e.g. by --delete),
+        otherwise will try to add or increase numeric suffix.
+
 --global-mkdir
     Allow create sub directory under all url paths.
 --mkdir <url-path> ...
@@ -141,12 +146,20 @@ server [options]
 --mkdir-dir <fs-path> ...
     Similar to --mkdir, but use file system path instead of url path.
 
+    Notes for mkdir options:
+        To avoid ambiguity, names shadowed by aliased items cannot be created.
+
 --global-delete
     Allow delete items under all url paths.
 --delete <url-path> ...
     Allow delete items under specific url paths(and sub paths).
 --delete-dir <fs-path> ...
     Similar to --delete, but use file system path instead of url path.
+
+    Notes for delete options:
+        To avoid ambiguity, aliased items under a path cannot be deleted.
+        Non-aliased files/directories inside aliased items still can be deleted.
+        To avoid ambiguity, files/directories shadowed by aliased items cannot be deleted.
 
 -A|--global-archive
     Allow user to download the whole contents of current directory for all url paths.
