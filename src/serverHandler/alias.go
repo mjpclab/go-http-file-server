@@ -1,5 +1,10 @@
 package serverHandler
 
+import (
+	"../util"
+	"path"
+)
+
 type alias struct {
 	urlPath string
 	fsPath  string
@@ -14,4 +19,12 @@ func (aliases aliases) byUrlPath(urlPath string) (alias *alias, ok bool) {
 		}
 	}
 	return nil, false
+}
+
+func (alias alias) isChildOf(rawReqPath string) bool {
+	return len(alias.urlPath) > len(rawReqPath) && path.Dir(alias.urlPath) == rawReqPath
+}
+
+func (alias alias) isSuccessorOf(rawReqPath string) bool {
+	return len(alias.urlPath) > len(rawReqPath) && util.HasUrlPrefixDir(alias.urlPath, rawReqPath)
 }

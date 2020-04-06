@@ -71,16 +71,13 @@ func (h *handler) visitFs(
 	if fInfo.IsDir() {
 		childAliases := map[string]string{}
 		for _, alias := range h.aliases {
-			aliasUrlPath := alias.urlPath
-			aliasFsPath := alias.fsPath
-
-			if aliasUrlPath != rawRequestPath && path.Dir(aliasUrlPath) == rawRequestPath {
-				childAliases[aliasUrlPath] = aliasFsPath
+			if alias.isChildOf(rawRequestPath) {
+				childAliases[alias.urlPath] = alias.fsPath
 				continue
 			}
 
-			if len(aliasUrlPath) > len(rawRequestPath) && util.HasUrlPrefixDir(aliasUrlPath, rawRequestPath) {
-				succPath := aliasUrlPath[len(rawRequestPath):]
+			if alias.isSuccessorOf(rawRequestPath) {
+				succPath := alias.urlPath[len(rawRequestPath):]
 				if succPath[0] == '/' {
 					succPath = succPath[1:]
 				}
