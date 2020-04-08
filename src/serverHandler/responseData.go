@@ -43,12 +43,13 @@ type responseData struct {
 	SubItemsHtml  []*itemHtml
 	SubItemPrefix string
 
-	CanUpload  bool
-	CanMkdir   bool
-	CanDelete  bool
-	CanArchive bool
-	CanCors    bool
-	NeedAuth   bool
+	CanUpload    bool
+	CanMkdir     bool
+	CanDelete    bool
+	HasDeletable bool
+	CanArchive   bool
+	CanCors      bool
+	NeedAuth     bool
 }
 
 func isSlash(c rune) bool {
@@ -332,6 +333,7 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
 	canDelete := h.getCanDelete(item, rawReqPath, reqFsPath)
+	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
@@ -355,12 +357,13 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		SubItemsHtml:  nil,
 		SubItemPrefix: subItemPrefix,
 
-		CanUpload:  canUpload,
-		CanMkdir:   canMkdir,
-		CanDelete:  canDelete,
-		CanArchive: canArchive,
-		CanCors:    canCors,
-		NeedAuth:   needAuth,
+		CanUpload:    canUpload,
+		CanMkdir:     canMkdir,
+		CanDelete:    canDelete,
+		HasDeletable: hasDeletable,
+		CanArchive:   canArchive,
+		CanCors:      canCors,
+		NeedAuth:     needAuth,
 	}
 
 	return

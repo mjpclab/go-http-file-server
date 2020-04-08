@@ -212,7 +212,7 @@ em {
 	zoom: 1;
 }
 
-.can-delete .link {
+.has-deletable .link {
 	padding-right: 2.2em;
 }
 

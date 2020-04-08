@@ -49,8 +49,7 @@ const pageTplStr = `
 <a href="{{.SubItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
 </div>
 {{end}}
-{{$canDelete := .CanDelete}}
-{{if $canDelete}}
+{{if .CanDelete}}
 <script type="text/javascript">
 function confirmDelete(el) {
 var href = el.href;
@@ -59,7 +58,7 @@ return confirm('Delete?\n' + name);
 }
 </script>
 {{end}}
-<ul class="item-list{{if $canDelete}} can-delete{{end}}">
+<ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
 <li class="dir parent">
 <a href="{{if .IsRoot}}./{{else}}../{{end}}" class="link">
 <span class="name">../</span>
@@ -74,7 +73,7 @@ return confirm('Delete?\n' + name);
 <span class="size">{{.DisplaySize}}</span>
 <span class="time">{{.DisplayTime}}</span>
 </a>
-{{if $canDelete}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)"><span>x</span></a>{{end}}
+{{if .DeleteUrl}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)"><span>x</span></a>{{end}}
 </li>
 {{end}}
 </ul>

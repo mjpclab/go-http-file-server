@@ -182,7 +182,7 @@ border-bottom: 1px #f5f5f5 solid;
 overflow: hidden;
 zoom: 1;
 }
-.can-delete .link {
+.has-deletable .link {
 padding-right: 2.2em;
 }
 .item-list .name {
