@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 )
 
 func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) string {
@@ -54,6 +55,10 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSu
 		}
 
 		filename := part.FileName()
+		slashIndex := strings.LastIndexAny(filename, "/\\")
+		if slashIndex >= 0 {
+			filename = filename[slashIndex+1:]
+		}
 		if len(filename) == 0 {
 			continue
 		}
