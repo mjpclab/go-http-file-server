@@ -321,12 +321,12 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		status = http.StatusInternalServerError
 	}
 
+	subItems = h.FilterItems(subItems)
+	sortSubItems(subItems)
+
 	if h.emptyRoot && status == http.StatusOK && r.RequestURI != "/" {
 		status = http.StatusNotFound
 	}
-
-	subItems = h.FilterItems(subItems)
-	sortSubItems(subItems)
 
 	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
 
