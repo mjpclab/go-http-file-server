@@ -173,8 +173,9 @@ margin: 1em;
 }
 .item-list li {
 position: relative;
+zoom: 1;
 }
-.item-list .link {
+.item-list a {
 display: flex;
 flex-flow: row nowrap;
 align-items: center;
@@ -209,6 +210,7 @@ overflow: hidden;
 position: absolute;
 top: 0;
 right: 0;
+bottom: 0;
 border-bottom: 1px #f5f5f5 solid;
 color: #800000;
 font-weight: bold;
