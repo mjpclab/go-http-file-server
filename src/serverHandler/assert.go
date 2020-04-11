@@ -16,6 +16,7 @@ func (h *handler) assert(w http.ResponseWriter, r *http.Request, assertPath stri
 
 	header := w.Header()
 	header.Set("Content-Type", content.ContentType)
+	header.Set("Cache-Control", "public, max-age=3600")
 	if needResponseBody(r.Method) {
 		http.ServeContent(w, r, assertPath, initTime, content.ReadSeeker)
 	}
