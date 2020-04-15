@@ -89,24 +89,22 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.cors(w, r)
 	}
 
-	switch {
-	case r.URL.RawQuery == "upload":
-		if data.CanUpload && r.Method == http.MethodPost {
-			h.saveUploadFiles(h.root+data.handlerReqPath, data.CanDelete, data.AliasSubItems, r)
-		}
-		http.Redirect(w, r, r.URL.Path, http.StatusFound)
-		return
-	case strings.HasPrefix(r.URL.RawQuery, "mkdir"):
-		if data.CanMkdir {
-			h.errHandler.LogError(r.ParseForm())
-			h.mkdirs(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
-		}
-		http.Redirect(w, r, r.URL.Path, http.StatusFound)
-		return
-	case strings.HasPrefix(r.URL.RawQuery, "delete"):
-		if data.CanDelete {
-			h.errHandler.LogError(r.ParseForm())
-			h.deleteItems(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
+	if data.IsMutate {
+		switch {
+		case data.IsUpload:
+			if data.CanUpload && r.Method == http.MethodPost {
+				h.saveUploadFiles(h.root+data.handlerReqPath, data.CanDelete, data.AliasSubItems, r)
+			}
+		case data.IsMkdir:
+			if data.CanMkdir {
+				h.errHandler.LogError(r.ParseForm())
+				h.mkdirs(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
+			}
+		case data.IsDelete:
+			if data.CanDelete {
+				h.errHandler.LogError(r.ParseForm())
+				h.deleteItems(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
+			}
 		}
 		http.Redirect(w, r, r.URL.Path, http.StatusFound)
 		return

@@ -50,6 +50,12 @@ type responseData struct {
 	CanArchive   bool
 	CanCors      bool
 	NeedAuth     bool
+
+	IsUpload bool
+	IsMkdir  bool
+	IsDelete bool
+	IsMutate bool
+	WantJson bool
 }
 
 func isSlash(c rune) bool {
@@ -264,7 +270,7 @@ func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInf
 	return nil, nil, nil
 }
 
-func (h *handler) getResponseData(r *http.Request) (data *responseData) {
+func (h *handler) getResponseData(r *http.Request) *responseData {
 	requestUri := r.URL.Path
 	tailSlash := requestUri[len(requestUri)-1] == '/'
 
@@ -338,7 +344,25 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 
-	data = &responseData{
+	rawQuery := r.URL.RawQuery
+	isUpload := false
+	isMkdir := false
+	isDelete := false
+	isMutate := false
+	switch {
+	case strings.HasPrefix(rawQuery, "upload") && r.Method == http.MethodPost:
+		isUpload = true
+		isMutate = true
+	case strings.HasPrefix(rawQuery, "mkdir"):
+		isMkdir = true
+		isMutate = true
+	case strings.HasPrefix(r.URL.RawQuery, "delete"):
+		isDelete = true
+		isMutate = true
+	}
+	wantJson := strings.Contains(rawQuery, "json")
+
+	return &responseData{
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 
@@ -364,7 +388,11 @@ func (h *handler) getResponseData(r *http.Request) (data *responseData) {
 		CanArchive:   canArchive,
 		CanCors:      canCors,
 		NeedAuth:     needAuth,
-	}
 
-	return
+		IsUpload: isUpload,
+		IsMkdir:  isMkdir,
+		IsDelete: isDelete,
+		IsMutate: isMutate,
+		WantJson: wantJson,
+	}
 }
