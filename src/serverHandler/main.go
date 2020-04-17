@@ -96,16 +96,22 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// regular flows
 
-	if data.CanArchive && len(r.URL.RawQuery) > 0 {
+	if len(r.URL.RawQuery) > 0 {
 		switch r.URL.RawQuery {
 		case "tar":
-			h.tar(w, r, data)
+			if data.CanArchive {
+				h.tar(w, r, data)
+			}
 			return
 		case "tgz":
-			h.tgz(w, r, data)
+			if data.CanArchive {
+				h.tgz(w, r, data)
+			}
 			return
 		case "zip":
-			h.zip(w, r, data)
+			if data.CanArchive {
+				h.zip(w, r, data)
+			}
 			return
 		}
 	}
