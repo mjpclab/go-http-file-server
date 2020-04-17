@@ -90,23 +90,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if data.IsMutate {
-		switch {
-		case data.IsUpload:
-			if data.CanUpload && r.Method == http.MethodPost {
-				h.saveUploadFiles(h.root+data.handlerReqPath, data.CanDelete, data.AliasSubItems, r)
-			}
-		case data.IsMkdir:
-			if data.CanMkdir {
-				h.errHandler.LogError(r.ParseForm())
-				h.mkdirs(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
-			}
-		case data.IsDelete:
-			if data.CanDelete {
-				h.errHandler.LogError(r.ParseForm())
-				h.deleteItems(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
-			}
-		}
-		http.Redirect(w, r, r.URL.Path, http.StatusFound)
+		h.mutate(w, r, data)
 		return
 	}
 
@@ -127,7 +111,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := data.Item
-	if r.URL.RawQuery == "json" {
+	if data.WantJson {
 		h.json(w, r, data)
 	} else if file != nil && item != nil && !item.IsDir() {
 		h.content(w, r, data)

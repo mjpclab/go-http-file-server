@@ -36,13 +36,13 @@ func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) stri
 	return ""
 }
 
-func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) {
+func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	errs := []error{}
 
 	reader, err := r.MultipartReader()
 	if err != nil {
 		errs = append(errs, err)
-		return
+		return false
 	}
 
 	for {
@@ -110,5 +110,8 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSu
 
 	if len(errs) > 0 {
 		go h.logger.LogErrors(errs...)
+		return false
 	}
+
+	return true
 }

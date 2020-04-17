@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-func (h *handler) deleteItems(fsPrefix string, files []string, aliasSubItems []os.FileInfo) {
+func (h *handler) deleteItems(fsPrefix string, files []string, aliasSubItems []os.FileInfo) bool {
 	errs := []error{}
 
 	for _, filename := range files {
@@ -19,5 +19,8 @@ func (h *handler) deleteItems(fsPrefix string, files []string, aliasSubItems []o
 
 	if len(errs) > 0 {
 		go h.logger.LogErrors(errs...)
+		return false
 	}
+
+	return true
 }

@@ -360,7 +360,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		isDelete = true
 		isMutate = true
 	}
-	wantJson := strings.Contains(rawQuery, "json")
+	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
 
 	return &responseData{
 		rawReqPath:     rawReqPath,
