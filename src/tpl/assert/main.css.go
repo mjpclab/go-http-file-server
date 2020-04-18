@@ -175,6 +175,9 @@ margin: 1em;
 position: relative;
 zoom: 1;
 }
+.item-list li:hover {
+background: #f5f5f5;
+}
 .item-list a {
 display: flex;
 flex-flow: row nowrap;
