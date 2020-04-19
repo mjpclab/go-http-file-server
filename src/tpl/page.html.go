@@ -73,7 +73,7 @@ return confirm('Delete?\n' + name);
 <span class="size">{{.DisplaySize}}</span>
 <span class="time">{{.DisplayTime}}</span>
 </a>
-{{if .DeleteUrl}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)"><span>x</span></a>{{end}}
+{{if .DeleteUrl}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)">x</a>{{end}}
 </li>
 {{end}}
 </ul>

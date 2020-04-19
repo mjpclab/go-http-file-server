@@ -221,6 +221,11 @@ em {
 	padding-right: 2.2em;
 }
 
+.item-list span {
+	margin: 0 0 0 1em;
+	flex-shrink: 0;
+}
+
 .item-list .name {
 	flex-grow: 1;
 	flex-shrink: 1;
@@ -249,24 +254,14 @@ em {
 	top: 0;
 	right: 0;
 	bottom: 0;
-	border-bottom: 1px #f5f5f5 solid;
 	color: #800000;
 	font-weight: bold;
+	font-size: 1.6em;
+	padding: 0.25em 0.3125em;
 }
 
 .item-list .delete:hover {
 	background: #fee;
-}
-
-.item-list .delete span {
-	margin-left: 0;
-	font-size: 1.5em;
-}
-
-.item-list span,
-.item-list button {
-	margin: 0 0 0 1em;
-	flex-shrink: 0;
 }
 
 .error {
