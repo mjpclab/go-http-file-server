@@ -7,7 +7,7 @@ var upload = document.querySelector('.upload');
 if (!upload || !upload.addEventListener) {
 return;
 }
-var fileInput = upload.querySelector('.files');
+var fileInput = upload.querySelector('.file');
 var addClass = function (ele, className) {
 ele && ele.classList && ele.classList.add(className);
 };

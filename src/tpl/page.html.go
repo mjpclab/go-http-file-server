@@ -29,7 +29,7 @@ const pageTplStr = `
 {{if .CanUpload}}
 <div class="upload">
 <form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
-<input type="file" name="files" multiple="multiple" class="files"/>
+<input type="file" name="file" multiple="multiple" class="file"/>
 <input type="submit" value="Upload" class="submit"/>
 </form>
 </div>
