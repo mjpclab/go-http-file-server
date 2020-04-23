@@ -1,8 +1,9 @@
 package goNixArgParser
 
-func NewFlag(name string, canMerge, canFollowAssign, canConcatAssign bool, assignSigns []string) *Flag {
+func NewFlag(name string, prefixMatchLen int, canMerge, canFollowAssign, canConcatAssign bool, assignSigns []string) *Flag {
 	return &Flag{
 		Name:            name,
+		prefixMatchLen:  prefixMatchLen,
 		canMerge:        canMerge,
 		canFollowAssign: canFollowAssign,
 		canConcatAssign: canConcatAssign,
@@ -21,7 +22,7 @@ func NewSimpleFlag(name string) *Flag {
 		assignSigns = append(assignSigns, "=")
 	}
 
-	return NewFlag(name, canMerge, true, canConcatAssign, assignSigns)
+	return NewFlag(name, 0, canMerge, true, canConcatAssign, assignSigns)
 }
 
 func NewSimpleFlags(names []string) []*Flag {

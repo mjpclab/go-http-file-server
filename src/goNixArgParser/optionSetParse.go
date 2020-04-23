@@ -79,22 +79,32 @@ func (s *OptionSet) splitAssignSignArg(arg *Arg) (args []*Arg) {
 
 	argText := arg.Text
 	for _, flag := range s.flagMap {
+		flagName := flag.Name
+		if !s.flagOptionMap[flagName].AcceptValue {
+			continue
+		}
 		for _, assignSign := range flag.assignSigns {
-			flagName := flag.Name
-
-			if len(assignSign) == 0 || !s.flagOptionMap[flagName].AcceptValue {
+			if len(assignSign) == 0 {
 				continue
 			}
 
 			prefix := flagName + assignSign
-			if !strings.HasPrefix(argText, prefix) {
+			if strings.HasPrefix(argText, prefix) {
+				args = append(args, NewArg(flagName, FlagArg))
+				args = append(args, NewArg(argText[len(prefix):], ValueArg))
+				return
+			}
+
+			assignIndex := strings.Index(argText, assignSign)
+			if assignIndex <= 0 {
 				continue
 			}
-			flagValue := argText[len(prefix):]
-
-			args = append(args, NewArg(flagName, FlagArg))
-			args = append(args, NewArg(flagValue, ValueArg))
-			return
+			prefix = argText[0:assignIndex]
+			if foundFlag, _ := s.findFlagByPrefix(prefix); foundFlag == flag {
+				args = append(args, NewArg(flagName, FlagArg))
+				args = append(args, NewArg(argText[assignIndex+len(assignSign):], ValueArg))
+				return
+			}
 		}
 	}
 
@@ -149,6 +159,27 @@ func (s *OptionSet) splitConcatAssignArgs(initArgs []*Arg) []*Arg {
 	return args
 }
 
+func (s *OptionSet) markAmbiguPrefixArgsValues(args []*Arg) {
+	foundAmbiguFlag := false
+	for _, arg := range args {
+		if arg.Type != UndetermArg {
+			foundAmbiguFlag = false
+			continue
+		}
+		actualFlag, ambiguous := s.findFlagByPrefix(arg.Text)
+		if ambiguous {
+			arg.Type = AmbiguousFlagArg
+			foundAmbiguFlag = true
+		} else if actualFlag != nil {
+			arg.Type = FlagArg
+			arg.Text = actualFlag.Name
+			foundAmbiguFlag = false
+		} else if foundAmbiguFlag {
+			arg.Type = AmbiguousFlagValueArg
+		}
+	}
+}
+
 func (s *OptionSet) markUndefArgsValues(args []*Arg) {
 	foundUndefFlag := false
 	for _, arg := range args {
@@ -176,9 +207,10 @@ func isValueArg(flag *Flag, arg *Arg) bool {
 	}
 }
 
-func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, rests, undefs []string) {
+func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, rests, ambigus, undefs []string) {
 	args = map[string][]string{}
 	rests = []string{}
+	ambigus = []string{}
 	undefs = []string{}
 
 	flagOptionMap := s.flagOptionMap
@@ -194,6 +226,7 @@ func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, 
 		argObjs = s.splitConcatAssignArgs(argObjs)
 	}
 
+	s.markAmbiguPrefixArgsValues(argObjs)
 	s.markUndefArgsValues(argObjs)
 
 	// walk
@@ -210,6 +243,16 @@ func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, 
 		}
 		if arg.Type == RestArg {
 			rests = append(rests, arg.Text)
+			continue
+		}
+
+		// ambigus
+		if arg.Type == AmbiguousFlagValueArg {
+			continue
+		}
+
+		if arg.Type == AmbiguousFlagArg {
+			ambigus = append(ambigus, arg.Text)
 			continue
 		}
 
@@ -284,15 +327,15 @@ func (s *OptionSet) parseArgsInGroup(argObjs []*Arg) (args map[string][]string, 
 		}
 	}
 
-	return args, rests, undefs
+	return args, rests, ambigus, undefs
 }
 
 func (s *OptionSet) parseInGroup(argObjs, configObjs []*Arg) *ParseResult {
 	keyOptionMap := s.keyOptionMap
 
-	args, argRests, argUndefs := s.parseArgsInGroup(argObjs)
+	args, argRests, argAmbigus, argUndefs := s.parseArgsInGroup(argObjs)
 	envs := s.keyEnvMap
-	configs, configRests, configUndefs := s.parseArgsInGroup(configObjs)
+	configs, configRests, configAmbigus, configUndefs := s.parseArgsInGroup(configObjs)
 	defaults := s.keyDefaultMap
 
 	return &ParseResult{
@@ -305,6 +348,9 @@ func (s *OptionSet) parseInGroup(argObjs, configObjs []*Arg) *ParseResult {
 
 		argRests:    argRests,
 		configRests: configRests,
+
+		argAmbigus:    argAmbigus,
+		configAmbigus: configAmbigus,
 
 		argUndefs:    argUndefs,
 		configUndefs: configUndefs,

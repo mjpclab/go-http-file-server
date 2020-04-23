@@ -10,7 +10,7 @@ func TestParse2(t *testing.T) {
 
 	s := NewOptionSet("", nil, nil, nil)
 
-	err = s.Append(Option{
+	err = s.Add(Option{
 		Key:           "deft",
 		Flags:         []*Flag{{Name: "-df"}, {Name: "--default"}},
 		AcceptValue:   true,
@@ -55,11 +55,11 @@ func TestParse2(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = s.Append(Option{
+	err = s.Add(Option{
 		Key:         "props",
 		Summary:     "properties",
 		Description: "single description",
-		Flags:       []*Flag{NewSimpleFlag("-p"), NewFlag("--props", false, true, true, []string{"="})},
+		Flags:       []*Flag{NewSimpleFlag("-p"), NewFlag("--props", 0, false, true, true, []string{"="})},
 		AcceptValue: true,
 		MultiValues: true,
 	})

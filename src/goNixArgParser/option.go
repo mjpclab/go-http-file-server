@@ -88,3 +88,71 @@ func (opt *Option) GetHelp() []byte {
 
 	return buffer.Bytes()
 }
+
+func NewFlagOption(key, flag, envVar, summary string) Option {
+	return Option{
+		Key:     key,
+		Flags:   []*Flag{NewSimpleFlag(flag)},
+		EnvVars: StringToSlice(envVar),
+		Summary: summary,
+	}
+}
+
+func NewFlagsOption(key string, flags []string, envVar, summary string) Option {
+	return Option{
+		Key:     key,
+		Flags:   NewSimpleFlags(flags),
+		EnvVars: StringToSlice(envVar),
+		Summary: summary,
+	}
+}
+
+func NewFlagValueOption(key, flag, envVar, defaultValue, summary string) Option {
+	return Option{
+		Key:           key,
+		Flags:         []*Flag{NewSimpleFlag(flag)},
+		AcceptValue:   true,
+		OverridePrev:  true,
+		EnvVars:       StringToSlice(envVar),
+		DefaultValues: StringToSlice(defaultValue),
+		Summary:       summary,
+	}
+}
+
+func NewFlagValuesOption(key, flag, envVar string, defaultValues []string, summary string) Option {
+	return Option{
+		Key:           key,
+		Flags:         []*Flag{NewSimpleFlag(flag)},
+		AcceptValue:   true,
+		MultiValues:   true,
+		UniqueValues:  true,
+		EnvVars:       StringToSlice(envVar),
+		DefaultValues: defaultValues,
+		Summary:       summary,
+	}
+}
+
+func NewFlagsValueOption(key string, flags []string, envVar, defaultValue, summary string) Option {
+	return Option{
+		Key:           key,
+		Flags:         NewSimpleFlags(flags),
+		AcceptValue:   true,
+		OverridePrev:  true,
+		EnvVars:       StringToSlice(envVar),
+		DefaultValues: StringToSlice(defaultValue),
+		Summary:       summary,
+	}
+}
+
+func NewFlagsValuesOption(key string, flags []string, envVar string, defaultValues []string, summary string) Option {
+	return Option{
+		Key:           key,
+		Flags:         NewSimpleFlags(flags),
+		AcceptValue:   true,
+		MultiValues:   true,
+		UniqueValues:  true,
+		EnvVars:       StringToSlice(envVar),
+		DefaultValues: defaultValues,
+		Summary:       summary,
+	}
+}

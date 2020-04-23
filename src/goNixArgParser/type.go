@@ -18,6 +18,7 @@ type OptionSet struct {
 	hasCanMerge        bool
 	hasCanConcatAssign bool
 	hasAssignSigns     bool
+	hasPrefixMatch     bool
 
 	keyOptionMap  map[string]*Option
 	flagOptionMap map[string]*Option
@@ -42,6 +43,7 @@ type Option struct {
 
 type Flag struct {
 	Name            string
+	prefixMatchLen  int
 	canMerge        bool
 	canFollowAssign bool
 	canConcatAssign bool
@@ -57,6 +59,8 @@ const (
 	ValueArg
 	UndefFlagArg
 	UndefFlagValueArg
+	AmbiguousFlagArg
+	AmbiguousFlagValueArg
 	RestSignArg
 	RestArg
 	GroupSepArg
@@ -78,6 +82,9 @@ type ParseResult struct {
 
 	argRests    []string
 	configRests []string
+
+	argAmbigus    []string
+	configAmbigus []string
 
 	argUndefs    []string
 	configUndefs []string

@@ -250,6 +250,31 @@ func (r *ParseResult) GetCommands() []string {
 }
 
 ///////////////////////////////
+// ambigus
+//////////////////////////////
+func (r *ParseResult) HasAmbigu() bool {
+	return len(r.argAmbigus) > 0 || len(r.configAmbigus) > 0
+}
+
+func (r *ParseResult) GetAmbigus() []string {
+	flags := make([]string, 0, len(r.argAmbigus)+len(r.configAmbigus))
+
+	for _, flag := range r.argAmbigus {
+		if !contains(flags, flag) {
+			flags = append(flags, flag)
+		}
+	}
+
+	for _, flag := range r.configAmbigus {
+		if !contains(flags, flag) {
+			flags = append(flags, flag)
+		}
+	}
+
+	return flags
+}
+
+///////////////////////////////
 // undefs
 //////////////////////////////
 func (r *ParseResult) HasUndef() bool {
