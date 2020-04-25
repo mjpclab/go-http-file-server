@@ -75,6 +75,10 @@ func (info SortState) NextTimeSort() template.HTML {
 	return info.mergeDirWithKey(nextKey)
 }
 
+func (info SortState) DirSort() dirSort {
+	return info.dirSort
+}
+
 func (info SortState) Key() template.HTML {
 	return template.HTML(info.key)
 }

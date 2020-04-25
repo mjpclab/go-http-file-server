@@ -178,7 +178,8 @@ zoom: 1;
 .item-list li:hover {
 background: #f5f5f5;
 }
-.item-list a {
+.item-list .detail,
+.item-list .delete {
 display: flex;
 flex-flow: row nowrap;
 align-items: center;
@@ -186,10 +187,10 @@ border-bottom: 1px #f5f5f5 solid;
 overflow: hidden;
 zoom: 1;
 }
-.has-deletable .link {
+.has-deletable .detail {
 padding-right: 2.2em;
 }
-.item-list span {
+.item-list .field {
 margin: 0 0 0 1em;
 flex-shrink: 0;
 }
@@ -226,13 +227,30 @@ padding: 0.25em 0.3125em;
 .item-list .delete:hover {
 background: #fee;
 }
+.item-list .header:hover {
+background: none;
+}
+.item-list .header .detail {
+background: #fcfcfc;
+}
+.item-list .header .field {
+display: inline-block;
+margin: 0;
+font-size: 1.5em;
+color: #808080;
+overflow: hidden;
+}
+.item-list .header .time {
+width: 6.5em;
+text-align: center;
+}
 .error {
 margin: 1em;
 padding: 1em;
 background: #ffc;
 }
 @media only screen and (max-width: 350px) {
-.item-list .time {
+.item-list .detail .time {
 display: none;
 }
 }

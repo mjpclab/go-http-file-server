@@ -54,19 +54,27 @@
 	</script>
 {{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
+	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
+		<span class="detail">
+		<a class="field dir" href="{{.SubItemPrefix}}{{"?sort="}}{{.SortState.NextDirSort}}">Dir{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
+		<a class="field name" href="{{.SubItemPrefix}}{{"?sort="}}{{.SortState.NextNameSort}}">Name{{if eq $sortKey "n"}}&uarr;{{else if eq $sortKey "N"}}&darr;{{end}}</a>
+		<a class="field size" href="{{.SubItemPrefix}}{{"?sort="}}{{.SortState.NextSizeSort}}">Size{{if eq $sortKey "s"}}&uarr;{{else if eq $sortKey "S"}}&darr;{{end}}</a>
+		<a class="field time" href="{{.SubItemPrefix}}{{"?sort="}}{{.SortState.NextTimeSort}}">Time{{if eq $sortKey "t"}}&uarr;{{else if eq $sortKey "T"}}&darr;{{end}}</a>
+		</span>
+	</li>
 	<li class="dir parent">
-		<a href="{{if .IsRoot}}./{{else}}../{{end}}{{.ContextQueryString}}" class="link">
-			<span class="name">../</span>
-			<span class="size"></span>
-			<span class="time"></span>
+		<a href="{{if .IsRoot}}./{{else}}../{{end}}{{.ContextQueryString}}" class="detail">
+			<span class="field name">../</span>
+			<span class="field size"></span>
+			<span class="field time"></span>
 		</a>
 	</li>
 	{{range .SubItemsHtml}}
 		<li class="{{.Type}}">
-			<a href="{{.Url}}" class="link">
-				<span class="name">{{.DisplayName}}</span>
-				<span class="size">{{.DisplaySize}}</span>
-				<span class="time">{{.DisplayTime}}</span>
+			<a href="{{.Url}}" class="detail">
+				<span class="field name">{{.DisplayName}}</span>
+				<span class="field size">{{.DisplaySize}}</span>
+				<span class="field time">{{.DisplayTime}}</span>
 			</a>
 			{{if .DeleteUrl}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)">x</a>{{end}}
 		</li>
