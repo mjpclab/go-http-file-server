@@ -31,17 +31,19 @@ type responseData struct {
 	errors []error
 	Status int
 
-	IsRoot        bool
-	Path          string
-	Paths         []*pathEntry
-	RootRelPath   string
-	File          *os.File
-	Item          os.FileInfo
-	ItemName      string
-	SubItems      []os.FileInfo
-	AliasSubItems []os.FileInfo
-	SubItemsHtml  []*itemHtml
-	SubItemPrefix string
+	IsRoot             bool
+	Path               string
+	Paths              []*pathEntry
+	RootRelPath        string
+	File               *os.File
+	Item               os.FileInfo
+	ItemName           string
+	SubItems           []os.FileInfo
+	AliasSubItems      []os.FileInfo
+	SubItemsHtml       []*itemHtml
+	SubItemPrefix      string
+	SortState          SortState
+	ContextQueryString template.HTML
 
 	CanUpload    bool
 	CanMkdir     bool
@@ -280,6 +282,8 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
+	rawQuery := r.URL.RawQuery
+
 	pathEntries := getPathEntries(rawReqPath, tailSlash)
 	var rootRelPath string
 	if len(pathEntries) > 0 {
@@ -328,13 +332,18 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	}
 
 	subItems = h.FilterItems(subItems)
-	sortSubItems(subItems)
+	rawSortBy, sortState := sortSubItems(subItems, rawQuery, h.defaultSort)
 
 	if h.emptyRoot && status == http.StatusOK && r.RequestURI != "/" {
 		status = http.StatusNotFound
 	}
 
 	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
+
+	var contextQueryString template.HTML
+	if len(rawSortBy) > 0 {
+		contextQueryString = "?sort=" + template.HTML(rawSortBy)
+	}
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
@@ -344,7 +353,6 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 
-	rawQuery := r.URL.RawQuery
 	isUpload := false
 	isMkdir := false
 	isDelete := false
@@ -369,17 +377,19 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		errors: errs,
 		Status: status,
 
-		IsRoot:        isRoot,
-		Path:          rawReqPath,
-		Paths:         pathEntries,
-		RootRelPath:   rootRelPath,
-		File:          file,
-		Item:          item,
-		ItemName:      itemName,
-		SubItems:      subItems,
-		AliasSubItems: aliasSubItems,
-		SubItemsHtml:  nil,
-		SubItemPrefix: subItemPrefix,
+		IsRoot:             isRoot,
+		Path:               rawReqPath,
+		Paths:              pathEntries,
+		RootRelPath:        rootRelPath,
+		File:               file,
+		Item:               item,
+		ItemName:           itemName,
+		SubItems:           subItems,
+		AliasSubItems:      aliasSubItems,
+		SubItemsHtml:       nil,
+		SubItemPrefix:      subItemPrefix,
+		SortState:          sortState,
+		ContextQueryString: contextQueryString,
 
 		CanUpload:    canUpload,
 		CanMkdir:     canMkdir,

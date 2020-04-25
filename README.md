@@ -116,6 +116,21 @@ server [options]
     Use virtual empty directory as root directory.
     Useful to share alias directories only.
 
+--default-sort <sortBy>
+    Default sort rule for files and directories.
+    Available sort key:
+    - `n` sort by name ascending
+    - `N` sort by name descending
+    - `s` sort by size ascending
+    - `S` sort by size descending
+    - `t` sort by modify time ascending
+    - `T` sort by modify time descending
+    - `_` no sort
+    Directory sort:
+    - `/<key>` directories before files
+    - `<key>/` directories after files
+    - `<key>` directories mixed with files
+
 -I|--dir-index <file> ...
     Specify default index file for directory.
 

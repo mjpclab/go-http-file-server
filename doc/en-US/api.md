@@ -1,17 +1,32 @@
 # Render page of specified path
 ```
-GET <path>
+GET <path>[?sort=<sortBy>]
 ```
 Should work no matter tailing “/” is present or not in path.
+
+Available sort key:
+- `n` sort by name ascending
+- `N` sort by name descending
+- `s` sort by size ascending
+- `S` sort by size descending
+- `t` sort by modify time ascending
+- `T` sort by modify time descending
+- `_` no sort
+
+Directory sort:
+- `/<key>` directories before files
+- `<key>/` directories after files
+- `<key>` directories mixed with files
 
 Example:
 ```sh
 curl http://localhost/ghfs/
+curl http://localhost/ghfs/?sort=/T
 ```
 
 # Get JSON data of specified path
 ```
-GET <path>?json
+GET <path>?json[&sort=key]
 ```
 
 Example:

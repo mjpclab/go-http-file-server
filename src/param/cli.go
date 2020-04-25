@@ -18,6 +18,7 @@ var cliCmd *goNixArgParser.Command
 func init() {
 	cliCmd = goNixArgParser.NewSimpleCommand(os.Args[0], "Simple command line based HTTP file server to share local file system")
 	options := cliCmd.Options()
+	var opt goNixArgParser.Option
 
 	// define option
 	var err error
@@ -25,6 +26,11 @@ func init() {
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlags("emptyroot", []string{"-R", "--empty-root"}, "GHFS_EMPTY_ROOT", "use virtual empty root directory")
+	serverErrHandler.CheckFatal(err)
+
+	opt = goNixArgParser.NewFlagValueOption("defaultsort", "--default-sort", "GHFS_DEFAULT_SORT", "/n", "default sort for files and directories")
+	opt.Description = "Available sort key:\n- `n` sort by name ascending\n- `N` sort by name descending\n- `s` sort by size ascending\n- `S` sort by size descending\n- `t` sort by modify time ascending\n- `T` sort by modify time descending\n- `_` no sort\nDirectory sort:\n- `/<key>` directories before files\n- `<key>/` directories after files\n- `<key>` directories mixed with files\n"
+	err = options.Add(opt)
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlagsValues("dirindexes", []string{"-I", "--dir-index"}, "GHFS_DIR_INDEX", nil, "default index page for directory")
@@ -225,6 +231,7 @@ func doParseCli() []*Param {
 		// normalize option
 		param.Root, _ = result.GetString("root")
 		param.EmptyRoot = result.HasKey("emptyroot")
+		param.DefaultSort, _ = result.GetString("defaultsort")
 		param.GlobalUpload = result.HasKey("globalupload")
 		param.GlobalMkdir = result.HasKey("globalmkdir")
 		param.GlobalDelete = result.HasKey("globaldelete")

@@ -16,17 +16,22 @@ func updateSubItemsHtml(data *responseData) {
 
 	for i, info := range data.SubItems {
 		name := info.Name()
-		displayName := tplutil.FormatFilename(name)
 
+		var displayName template.HTML
 		var typ template.HTML
 		var url string
 		var readableSize template.HTML
 
 		if info.IsDir() {
+			displayName = tplutil.FormatFilename(name) + "/"
 			typ = TypeDir
-			url = data.SubItemPrefix + name + "/"
-			displayName += "/"
+			if len(data.ContextQueryString) > 0 {
+				url = data.SubItemPrefix + name + "/" + string(data.ContextQueryString)
+			} else {
+				url = data.SubItemPrefix + name + "/"
+			}
 		} else {
+			displayName = tplutil.FormatFilename(name)
 			typ = TypeFile
 			url = data.SubItemPrefix + name
 			readableSize = tplutil.FormatSize(info.Size())

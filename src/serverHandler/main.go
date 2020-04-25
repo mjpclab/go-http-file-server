@@ -12,9 +12,10 @@ import (
 )
 
 type handler struct {
-	root      string
-	emptyRoot bool
-	urlPrefix string
+	root        string
+	emptyRoot   bool
+	defaultSort string
+	urlPrefix   string
 
 	dirIndexes []string
 	aliases    aliases
@@ -142,9 +143,10 @@ func NewHandler(
 	}
 
 	h := &handler{
-		root:      root,
-		emptyRoot: emptyRoot,
-		urlPrefix: urlPrefix,
+		root:        root,
+		emptyRoot:   emptyRoot,
+		defaultSort: p.DefaultSort,
+		urlPrefix:   urlPrefix,
 
 		dirIndexes: p.DirIndexes,
 		aliases:    aliases,

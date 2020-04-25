@@ -15,16 +15,17 @@ type jsonItem struct {
 }
 
 type jsonResponseData struct {
-	IsRoot        bool         `json:"isRoot"`
-	Path          string       `json:"path"`
-	Paths         []*pathEntry `json:"paths"`
-	SubItemPrefix string       `json:"subItemPrefix"`
-	CanUpload     bool         `json:"canUpload"`
-	CanMkdir      bool         `json:"canMkdir"`
-	CanDelete     bool         `json:"canDelete"`
-	CanArchive    bool         `json:"canArchive"`
-	CanCors       bool         `json:"canCors"`
-	NeedAuth      bool         `json:"needAuth"`
+	IsRoot             bool         `json:"isRoot"`
+	Path               string       `json:"path"`
+	Paths              []*pathEntry `json:"paths"`
+	SubItemPrefix      string       `json:"subItemPrefix"`
+	ContextQueryString string       `json:"contextQueryString"`
+	CanUpload          bool         `json:"canUpload"`
+	CanMkdir           bool         `json:"canMkdir"`
+	CanDelete          bool         `json:"canDelete"`
+	CanArchive         bool         `json:"canArchive"`
+	CanCors            bool         `json:"canCors"`
+	NeedAuth           bool         `json:"needAuth"`
 
 	Item     *jsonItem   `json:"item"`
 	SubItems []*jsonItem `json:"subItems"`
@@ -55,16 +56,17 @@ func getJsonData(data *responseData) *jsonResponseData {
 	}
 
 	return &jsonResponseData{
-		IsRoot:        data.IsRoot,
-		Path:          data.Path,
-		Paths:         data.Paths,
-		SubItemPrefix: data.SubItemPrefix,
-		CanUpload:     data.CanUpload,
-		CanMkdir:      data.CanMkdir,
-		CanDelete:     data.CanDelete,
-		CanArchive:    data.CanArchive,
-		CanCors:       data.CanCors,
-		NeedAuth:      data.NeedAuth,
+		IsRoot:             data.IsRoot,
+		Path:               data.Path,
+		Paths:              data.Paths,
+		SubItemPrefix:      data.SubItemPrefix,
+		ContextQueryString: string(data.ContextQueryString),
+		CanUpload:          data.CanUpload,
+		CanMkdir:           data.CanMkdir,
+		CanDelete:          data.CanDelete,
+		CanArchive:         data.CanArchive,
+		CanCors:            data.CanCors,
+		NeedAuth:           data.NeedAuth,
 
 		Item:     item,
 		SubItems: subItems,

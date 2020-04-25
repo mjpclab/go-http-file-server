@@ -1,17 +1,32 @@
 # 为指定路径显示页面
 ```
-GET <path>
+GET <path>[?sort=sortBy]
 ```
 无论路径是否以“/”结尾，都应正常工作。
+
+可用的排序key：
+- `n` 按名称递增排序
+- `N` 按名称递减排序
+- `s` 按大小递增排序
+- `S` 按大小递减排序
+- `t` 按修改时间递增排序
+- `T` 按修改时间递减排序
+- `_` 不排序
+
+目录顺序：
+- `/<key>` 目录在文件之前
+- `<key>/` 目录在文件之后
+- `<key>` 目录与文件混合
 
 举例：
 ```sh
 curl http://localhost/ghfs/
+curl http://localhost/ghfs/?sort=/T
 ```
 
 # 获取指定路径JSON形式的数据
 ```
-GET <path>?json
+GET <path>?json[&sort=key]
 ```
 
 举例：

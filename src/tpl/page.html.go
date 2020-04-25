@@ -21,9 +21,10 @@ const pageTplStr = `
 <link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?assert=main.css"/>
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
+{{$contextQueryString := .ContextQueryString}}
 <ol class="path-list">
 {{range .Paths}}
-<li><a href="{{.Path}}">{{fmtFilename .Name}}</a></li>
+<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 {{end}}
 </ol>
 {{if .CanUpload}}
@@ -60,7 +61,7 @@ return confirm('Delete?\n' + name);
 {{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
 <li class="dir parent">
-<a href="{{if .IsRoot}}./{{else}}../{{end}}" class="link">
+<a href="{{if .IsRoot}}./{{else}}../{{end}}{{.ContextQueryString}}" class="link">
 <span class="name">../</span>
 <span class="size"></span>
 <span class="time"></span>

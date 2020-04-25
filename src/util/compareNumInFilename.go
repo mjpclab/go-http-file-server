@@ -35,11 +35,13 @@ func extractPrefixDigits(input []byte) []byte {
 	return buf[:prefixLen]
 }
 
-func CompareNumInFilename(prev, next []byte) bool {
-	if len(prev) == 0 {
-		return true
+func CompareNumInFilename(prev, next []byte) (less, ok bool) {
+	if len(prev) == 0 && len(next) == 0 {
+		return false, false
+	} else if len(prev) == 0 {
+		return true, true
 	} else if len(next) == 0 {
-		return false
+		return false, true
 	}
 
 	common := findCommonPrefix(prev, next)
@@ -48,9 +50,9 @@ func CompareNumInFilename(prev, next []byte) bool {
 		next = next[common:]
 
 		if len(prev) == 0 {
-			return true
+			return true, true
 		} else if len(next) == 0 {
-			return false
+			return false, true
 		}
 	}
 
@@ -60,23 +62,28 @@ func CompareNumInFilename(prev, next []byte) bool {
 	nextDigitsLen := len(nextDigits)
 
 	if prevDigitsLen != nextDigitsLen {
-		return prevDigitsLen < nextDigitsLen
+		return prevDigitsLen < nextDigitsLen, true
 	}
 
 	if prevDigitsLen == 0 { // prevDigitsLen and nextDigitsLen is 0
 		switch {
-		case prev[0] == '.':
-			return true
-		case next[0] == '.':
-			return false
+		case prev[0] == '.' && next[0] != '.':
+			return true, true
+		case next[0] == '.' && prev[0] != '.':
+			return false, true
 		default:
-			return bytes.Compare(prev, next) < 0
+			byteCmpResult := bytes.Compare(prev, next)
+			if byteCmpResult != 0 {
+				return byteCmpResult < 0, true
+			} else {
+				return false, false
+			}
 		}
 	}
 
 	compareResult := bytes.Compare(prevDigits, nextDigits)
 	if compareResult != 0 {
-		return compareResult < 0
+		return compareResult < 0, true
 	} else {
 		return CompareNumInFilename(prev[prevDigitsLen:], next[nextDigitsLen:])
 	}
