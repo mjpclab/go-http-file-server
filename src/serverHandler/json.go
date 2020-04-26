@@ -60,7 +60,7 @@ func getJsonData(data *responseData) *jsonResponseData {
 		Path:               data.Path,
 		Paths:              data.Paths,
 		SubItemPrefix:      data.SubItemPrefix,
-		ContextQueryString: string(data.ContextQueryString),
+		ContextQueryString: data.Context.QueryString(),
 		CanUpload:          data.CanUpload,
 		CanMkdir:           data.CanMkdir,
 		CanDelete:          data.CanDelete,

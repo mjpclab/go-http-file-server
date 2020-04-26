@@ -31,19 +31,19 @@ type responseData struct {
 	errors []error
 	Status int
 
-	IsRoot             bool
-	Path               string
-	Paths              []*pathEntry
-	RootRelPath        string
-	File               *os.File
-	Item               os.FileInfo
-	ItemName           string
-	SubItems           []os.FileInfo
-	AliasSubItems      []os.FileInfo
-	SubItemsHtml       []*itemHtml
-	SubItemPrefix      string
-	SortState          SortState
-	ContextQueryString template.HTML
+	IsRoot        bool
+	Path          string
+	Paths         []*pathEntry
+	RootRelPath   string
+	File          *os.File
+	Item          os.FileInfo
+	ItemName      string
+	SubItems      []os.FileInfo
+	AliasSubItems []os.FileInfo
+	SubItemsHtml  []*itemHtml
+	SubItemPrefix string
+	SortState     SortState
+	Context       *pathContext
 
 	CanUpload    bool
 	CanMkdir     bool
@@ -340,10 +340,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 
 	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
 
-	var contextQueryString template.HTML
-	if len(rawSortBy) > 0 {
-		contextQueryString = "?sort=" + template.HTML(rawSortBy)
-	}
+	context := &pathContext{sort: rawSortBy}
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
@@ -377,19 +374,19 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		errors: errs,
 		Status: status,
 
-		IsRoot:             isRoot,
-		Path:               rawReqPath,
-		Paths:              pathEntries,
-		RootRelPath:        rootRelPath,
-		File:               file,
-		Item:               item,
-		ItemName:           itemName,
-		SubItems:           subItems,
-		AliasSubItems:      aliasSubItems,
-		SubItemsHtml:       nil,
-		SubItemPrefix:      subItemPrefix,
-		SortState:          sortState,
-		ContextQueryString: contextQueryString,
+		IsRoot:        isRoot,
+		Path:          rawReqPath,
+		Paths:         pathEntries,
+		RootRelPath:   rootRelPath,
+		File:          file,
+		Item:          item,
+		ItemName:      itemName,
+		SubItems:      subItems,
+		AliasSubItems: aliasSubItems,
+		SubItemsHtml:  nil,
+		SubItemPrefix: subItemPrefix,
+		SortState:     sortState,
+		Context:       context,
 
 		CanUpload:    canUpload,
 		CanMkdir:     canMkdir,

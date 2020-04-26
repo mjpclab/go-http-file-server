@@ -1,7 +1,5 @@
 package serverHandler
 
-import "html/template"
-
 type dirSort int
 
 const (
@@ -15,34 +13,42 @@ type SortState struct {
 	key     byte
 }
 
-func (info SortState) mergeDirWithKey(key byte) template.HTML {
+func (info SortState) DirSort() dirSort {
+	return info.dirSort
+}
+
+func (info SortState) Key() string {
+	return string(info.key)
+}
+
+func (info SortState) mergeDirWithKey(key byte) string {
 	switch info.dirSort {
 	case dirSortFirst:
-		return "/" + template.HTML(key)
+		return "/" + string(key)
 	case dirSortLast:
-		return template.HTML(key) + "/"
+		return string(key) + "/"
 	default:
-		return template.HTML(key)
+		return string(key)
 	}
 }
 
-func (info SortState) CurrentSort() template.HTML {
+func (info SortState) CurrentSort() string {
 	return info.mergeDirWithKey(info.key)
 }
 
-func (info SortState) NextDirSort() template.HTML {
+func (info SortState) NextDirSort() string {
 	switch info.dirSort {
 	case dirSortFirst: // next is dirSortLast
-		return template.HTML(info.key) + "/"
+		return string(info.key) + "/"
 	case dirSortLast: // next is dirSortMixed
-		return template.HTML(info.key)
+		return string(info.key)
 	case dirSortMixed: // next is dirSortFirst
-		return "/" + template.HTML(info.key)
+		return "/" + string(info.key)
 	}
-	return "/" + template.HTML(info.key)
+	return "/" + string(info.key)
 }
 
-func (info SortState) NextNameSort() template.HTML {
+func (info SortState) NextNameSort() string {
 	var nextKey byte
 	switch info.key {
 	case 'n':
@@ -53,7 +59,7 @@ func (info SortState) NextNameSort() template.HTML {
 	return info.mergeDirWithKey(nextKey)
 }
 
-func (info SortState) NextSizeSort() template.HTML {
+func (info SortState) NextSizeSort() string {
 	var nextKey byte
 	switch info.key {
 	case 's':
@@ -64,7 +70,7 @@ func (info SortState) NextSizeSort() template.HTML {
 	return info.mergeDirWithKey(nextKey)
 }
 
-func (info SortState) NextTimeSort() template.HTML {
+func (info SortState) NextTimeSort() string {
 	var nextKey byte
 	switch info.key {
 	case 't':
@@ -73,12 +79,4 @@ func (info SortState) NextTimeSort() template.HTML {
 		nextKey = 't'
 	}
 	return info.mergeDirWithKey(nextKey)
-}
-
-func (info SortState) DirSort() dirSort {
-	return info.dirSort
-}
-
-func (info SortState) Key() template.HTML {
-	return template.HTML(info.key)
 }

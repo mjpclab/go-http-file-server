@@ -1,12 +1,11 @@
 package serverHandler
 
 import (
-	"html/template"
 	"testing"
 )
 
 func TestSortState_DirState(t *testing.T) {
-	var sortBy template.HTML
+	var sortBy string
 	state := SortState{dirSortFirst, 'n'}
 
 	sortBy = state.CurrentSort()
@@ -33,7 +32,7 @@ func TestSortState_DirState(t *testing.T) {
 }
 
 func TestSortState_KeyState(t *testing.T) {
-	var sortBy template.HTML
+	var sortBy string
 	state := SortState{dirSortFirst, 'n'}
 
 	sortBy = state.NextNameSort()
