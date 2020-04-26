@@ -22,7 +22,7 @@ func findCommonPrefix(prev, next []byte) int {
 	return maxLen
 }
 
-func extractPrefixDigits(input []byte) []byte {
+func extractPrefixDigits(input []byte) ([]byte, int) {
 	buf := input[0:0]
 
 	var prefixLen, length int
@@ -32,7 +32,7 @@ func extractPrefixDigits(input []byte) []byte {
 			break
 		}
 	}
-	return buf[:prefixLen]
+	return buf[:prefixLen], prefixLen
 }
 
 func compareIgnoreAsciiCase(prev, next []byte) (less, ok bool) {
@@ -92,10 +92,8 @@ func CompareNumInFilename(prev, next []byte) (less, ok bool) {
 		}
 	}
 
-	prevDigits := extractPrefixDigits(prev)
-	nextDigits := extractPrefixDigits(next)
-	prevDigitsLen := len(prevDigits)
-	nextDigitsLen := len(nextDigits)
+	prevDigits, prevDigitsLen := extractPrefixDigits(prev)
+	nextDigits, nextDigitsLen := extractPrefixDigits(next)
 
 	if prevDigitsLen != nextDigitsLen {
 		return prevDigitsLen < nextDigitsLen, true

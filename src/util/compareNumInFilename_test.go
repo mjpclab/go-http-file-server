@@ -64,8 +64,9 @@ func TestCompareNumInFilename(t *testing.T) {
 }
 
 func TestExtractPrefixDigits(t *testing.T) {
-	result := string(extractPrefixDigits([]byte("123.haha")))
-	if result != "123" {
+	result, _ := extractPrefixDigits([]byte("123.haha"))
+	strResult := string(result)
+	if strResult != "123" {
 		t.Error(result)
 	}
 }
