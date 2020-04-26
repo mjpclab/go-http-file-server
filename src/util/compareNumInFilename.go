@@ -35,6 +35,42 @@ func extractPrefixDigits(input []byte) []byte {
 	return buf[:prefixLen]
 }
 
+func compareIgnoreAsciiCase(prev, next []byte) (less, ok bool) {
+	prevLen := len(prev)
+	nextLen := len(next)
+
+	maxLen := prevLen
+	if nextLen < maxLen {
+		maxLen = nextLen
+	}
+
+	for i := 0; i < maxLen; i++ {
+		prevByte := prev[i]
+		prevChar := prevByte
+		if prevChar >= 'A' && prevChar <= 'Z' {
+			prevChar += 'a' - 'A'
+		}
+
+		nextByte := next[i]
+		nextChar := nextByte
+		if nextChar >= 'A' && nextChar <= 'Z' {
+			nextChar += 'a' - 'A'
+		}
+
+		if prevChar != nextChar {
+			return prevChar < nextChar, true
+		} else if prevByte != nextByte {
+			return prevByte < nextByte, true
+		}
+	}
+
+	if prevLen != nextLen {
+		return prevLen < nextLen, true
+	}
+
+	return
+}
+
 func CompareNumInFilename(prev, next []byte) (less, ok bool) {
 	if len(prev) == 0 && len(next) == 0 {
 		return false, false
@@ -72,12 +108,7 @@ func CompareNumInFilename(prev, next []byte) (less, ok bool) {
 		case next[0] == '.' && prev[0] != '.':
 			return false, true
 		default:
-			byteCmpResult := bytes.Compare(prev, next)
-			if byteCmpResult != 0 {
-				return byteCmpResult < 0, true
-			} else {
-				return false, false
-			}
+			return compareIgnoreAsciiCase(prev, next)
 		}
 	}
 

@@ -54,6 +54,13 @@ func TestCompareNumInFilename(t *testing.T) {
 	if !less {
 		t.Error(prev, next)
 	}
+
+	prev = "a1.txt"
+	next = "B1.txt"
+	less, _ = CompareNumInFilename([]byte(prev), []byte(next))
+	if !less {
+		t.Error(prev, next)
+	}
 }
 
 func TestExtractPrefixDigits(t *testing.T) {
