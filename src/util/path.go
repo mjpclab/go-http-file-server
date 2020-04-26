@@ -51,7 +51,7 @@ func NormalizeFsPath(input string) (string, error) {
 
 	volume := filepath.VolumeName(abs)
 	if len(volume) > 0 {
-		// suppose on windows platform, ignore ascii case in path name
+		// assume on windows platform, ignore ascii case in path name
 		abs = AsciiToLowerCase(abs)
 	}
 
