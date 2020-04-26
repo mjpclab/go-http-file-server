@@ -340,7 +340,10 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 
 	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
 
-	context := &pathContext{sort: rawSortBy}
+	context := &pathContext{
+		defaultSort: h.defaultSort,
+		sort:        rawSortBy,
+	}
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)

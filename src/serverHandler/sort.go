@@ -191,7 +191,7 @@ func sortSubItemOriginal(subInfos []os.FileInfo, compareDir fnCompareDir) {
 		return i < j
 	})
 }
-func sortSubItems(subInfos []os.FileInfo, rawQuery string, defaultSortBy string) (rawSortBy string, sortInfo SortState) {
+func sortSubItems(subInfos []os.FileInfo, rawQuery string, defaultSortBy string) (rawSortBy *string, sortInfo SortState) {
 	const sortPrefix = "sort="
 	var sortBy string
 
@@ -199,13 +199,15 @@ func sortSubItems(subInfos []os.FileInfo, rawQuery string, defaultSortBy string)
 	iSortBy := strings.Index(rawQuery, sortPrefix)
 	if iSortBy < 0 {
 		sortBy = defaultSortBy
-	} else if len(rawQuery) > iSortBy+len(sortPrefix) {
-		sortBy = rawQuery[iSortBy+len(sortPrefix):]
-		iAmp := strings.IndexByte(sortBy, '&')
-		if iAmp >= 0 {
-			sortBy = sortBy[:iAmp]
+	} else {
+		if len(rawQuery) > iSortBy+len(sortPrefix) {
+			sortBy = rawQuery[iSortBy+len(sortPrefix):]
+			iAmp := strings.IndexByte(sortBy, '&')
+			if iAmp >= 0 {
+				sortBy = sortBy[:iAmp]
+			}
 		}
-		rawSortBy = sortBy
+		rawSortBy = &sortBy
 	}
 
 	if len(sortBy) == 0 {
