@@ -1,1 +1,0 @@
-vhost1/special-char/first\nsecond/index.txt
