@@ -8,6 +8,15 @@ const (
 	dirSortLast  dirSort = 1
 )
 
+const (
+	nameAsc  byte = 'n'
+	nameDesc byte = 'N'
+	sizeAsc  byte = 's'
+	sizeDesc byte = 'S'
+	timeAsc  byte = 't'
+	timeDesc byte = 'T'
+)
+
 type SortState struct {
 	dirSort dirSort
 	key     byte
@@ -51,10 +60,10 @@ func (info SortState) NextDirSort() string {
 func (info SortState) NextNameSort() string {
 	var nextKey byte
 	switch info.key {
-	case 'n':
-		nextKey = 'N'
+	case nameAsc:
+		nextKey = nameDesc
 	default:
-		nextKey = 'n'
+		nextKey = nameAsc
 	}
 	return info.mergeDirWithKey(nextKey)
 }
@@ -62,10 +71,10 @@ func (info SortState) NextNameSort() string {
 func (info SortState) NextSizeSort() string {
 	var nextKey byte
 	switch info.key {
-	case 's':
-		nextKey = 'S'
+	case sizeAsc:
+		nextKey = sizeDesc
 	default:
-		nextKey = 's'
+		nextKey = sizeAsc
 	}
 	return info.mergeDirWithKey(nextKey)
 }
@@ -73,10 +82,10 @@ func (info SortState) NextSizeSort() string {
 func (info SortState) NextTimeSort() string {
 	var nextKey byte
 	switch info.key {
-	case 't':
-		nextKey = 'T'
+	case timeAsc:
+		nextKey = timeDesc
 	default:
-		nextKey = 't'
+		nextKey = timeAsc
 	}
 	return info.mergeDirWithKey(nextKey)
 }
