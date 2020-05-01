@@ -80,7 +80,7 @@ func (s *OptionSet) isGroupSep(input string) bool {
 
 func (s *OptionSet) isUdefFlag(input string) bool {
 	for _, prefix := range s.undefFlagPrefixes {
-		if strings.HasPrefix(input, prefix) {
+		if len(input) > len(prefix) && strings.HasPrefix(input, prefix) {
 			return true
 		}
 	}
