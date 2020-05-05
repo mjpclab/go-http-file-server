@@ -39,8 +39,15 @@ upload.addEventListener('dragleave', onDragLeave);
 upload.addEventListener('drop', onDrop);
 }
 function enableNonRefreshDelete() {
-var itemList = document.querySelector('.item-list.has-deletable');
+var itemList = document.querySelector('.item-list');
 if (!itemList || !itemList.addEventListener) {
+return;
+}
+if (itemList.classList) {
+if (!itemList.classList.contains('has-deletable')) {
+return;
+}
+} else if (itemList.className.indexOf('has-deletable') < 0) {
 return;
 }
 itemList.addEventListener('click', function (e) {
