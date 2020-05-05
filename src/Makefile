@@ -1,16 +1,13 @@
-build:
-	go build main.go
+define embed
+	sed -i -e '/= `/,/`/ { /`/!d }' $(1).go
+	sed -i -e '/= `/r$(1)' $(1).go
+	sed -i -e '/= `/,/`/ { /`/! { /^\s*$$/d; s/^\s\s*// } }' $(1).go
+endef
+
 tpls:
-	sed -i -e '/= `/,/`/ { /`/!d }' tpl/page.html.go
-	sed -i -e '/= `/rtpl/page.html' tpl/page.html.go
-	sed -i -e '/= `/,/`/ { /`/! { /^\s*$$/d; s/^\s\s*// } }' tpl/page.html.go
+	$(call embed, tpl/page.html)
 	sed -i -e 's;/../assert/;?assert=;g' tpl/page.html.go
 
-	sed -i -e '/= `/,/`/ { /`/!d }' tpl/assert/main.css.go
-	sed -i -e '/= `/rtpl/assert/main.css' tpl/assert/main.css.go
-	sed -i -e '/= `/,/`/ { /`/! { /^\s*$$/d; s/^\s\s*// } }' tpl/assert/main.css.go
+	$(call embed, tpl/assert/main.css)
 
-	sed -i -e '/= `/,/`/ { /`/!d }' tpl/assert/main.js.go
-	sed -i -e '/= `/rtpl/assert/main.js' tpl/assert/main.js.go
-	sed -i -e '/= `/,/`/ { /`/! { /^\s*$$/d; s/^\s\s*// } }' tpl/assert/main.js.go
-rebuild: tpls build
+	$(call embed, tpl/assert/main.js)
