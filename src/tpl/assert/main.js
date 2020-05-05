@@ -1,6 +1,6 @@
 (function () {
 	function enableDragUpload() {
-		var upload = document.querySelector('.upload');
+		var upload = document.body.querySelector('.upload');
 		if (!upload || !upload.addEventListener) {
 			return;
 		}
@@ -44,7 +44,7 @@
 	}
 
 	function enableNonRefreshDelete() {
-		var itemList = document.querySelector('.item-list');
+		var itemList = document.body.querySelector('.item-list');
 		if (!itemList || !itemList.addEventListener) {
 			return;
 		}
