@@ -8,7 +8,9 @@ func (h *handler) mkdirs(fsPrefix string, files []string, aliasSubItems []os.Fil
 	errs := []error{}
 
 	for _, filename := range files {
-		if containsItem(aliasSubItems, filename) {
+		if len(filename) == 0 {
+			continue
+		} else if containsItem(aliasSubItems, filename) {
 			continue
 		}
 		err := os.Mkdir(fsPrefix+"/"+filename, 0755)
