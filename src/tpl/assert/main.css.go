@@ -180,12 +180,14 @@ background: #f5f5f5;
 }
 .item-list .detail,
 .item-list .delete {
-display: flex;
-flex-flow: row nowrap;
-align-items: center;
 border-bottom: 1px #f5f5f5 solid;
 overflow: hidden;
 zoom: 1;
+}
+.item-list .detail {
+display: flex;
+flex-flow: row nowrap;
+align-items: center;
 }
 .has-deletable .detail {
 padding-right: 2.2em;
@@ -222,6 +224,7 @@ bottom: 0;
 color: #800000;
 font-weight: bold;
 font-size: 1.6em;
+line-height: 1em;
 padding: 0.25em 0.3125em;
 }
 .item-list .delete:hover {
