@@ -181,6 +181,8 @@ display: flex;
 }
 .filter .filter-text {
 flex: 1 1 auto;
+width: 100%;
+box-sizing: border-box;
 }
 .item-list {
 margin: 1em;

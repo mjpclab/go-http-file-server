@@ -3,19 +3,19 @@ package assert
 const mainJs = `
 (function () {
 function enableDragUpload() {
-if (!document.querySelector) {
+if (!document.querySelector || !document.addEventListener || !document.body.classList) {
 return;
 }
 var upload = document.body.querySelector('.upload');
-if (!upload || !upload.addEventListener) {
+if (!upload) {
 return;
 }
 var fileInput = upload.querySelector('.file');
 var addClass = function (ele, className) {
-ele && ele.classList && ele.classList.add(className);
+ele && ele.classList.add(className);
 };
 var removeClass = function (ele, className) {
-ele && ele.classList && ele.classList.remove(className);
+ele && ele.classList.remove(className);
 };
 var onDragEnterOver = function (e) {
 e.stopPropagation();
@@ -36,10 +36,10 @@ return;
 }
 fileInput.files = e.dataTransfer.files;
 };
-upload.addEventListener('dragenter', onDragEnterOver);
-upload.addEventListener('dragover', onDragEnterOver);
-upload.addEventListener('dragleave', onDragLeave);
-upload.addEventListener('drop', onDrop);
+upload.addEventListener('dragenter', onDragEnterOver, false);
+upload.addEventListener('dragover', onDragEnterOver, false);
+upload.addEventListener('dragleave', onDragLeave, false);
+upload.addEventListener('drop', onDrop, false);
 }
 function enableFilter() {
 if (!document.querySelector) {
@@ -101,23 +101,25 @@ var onValueMayChange = function () {
 clearTimeout(timeoutId);
 timeoutId = setTimeout(doFilter, 350);
 };
-input.addEventListener('input', onValueMayChange);
-input.addEventListener('change', onValueMayChange);
+input.addEventListener('input', onValueMayChange, false);
+input.addEventListener('change', onValueMayChange, false);
 input.addEventListener('keydown', function (e) {
 switch (e.key) {
 case 'Enter':
 clearTimeout(timeoutId);
 input.blur();
 doFilter();
+e.preventDefault();
 break;
 case 'Escape':
 case 'Esc':
 clearTimeout(timeoutId);
 input.value = '';
 doFilter();
+e.preventDefault();
 break;
 }
-});
+}, false);
 // init
 if (sessionStorage) {
 var prevSessionFilter = sessionStorage.getItem(location.pathname);
@@ -126,7 +128,7 @@ window.addEventListener('beforeunload', function () {
 if (input.value) {
 sessionStorage.setItem(location.pathname, input.value);
 }
-});
+}, false);
 if (prevSessionFilter) {
 input.value = prevSessionFilter;
 }
@@ -180,7 +182,7 @@ target = null;
 xhr.send();
 e.preventDefault();
 return false;
-});
+}, false);
 }
 enableDragUpload();
 enableFilter();
