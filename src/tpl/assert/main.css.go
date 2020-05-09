@@ -9,10 +9,12 @@ background: #fff;
 html {
 font-family: "roboto_condensedbold", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+body, input, textarea {
+font-family: Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
+}
 body {
 color: #333;
 font-size: 0.625em;
-font-family: Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
 font-variant-ligatures: none;
 font-kerning: none;
 hyphens: none;
@@ -51,6 +53,9 @@ padding: 0 0.2em;
 border: 1px #ddd solid;
 border-radius: 3px;
 }
+.none, :root body .none {
+display: none;
+}
 .path-list {
 font-size: 1.5em;
 overflow: hidden;
@@ -87,11 +92,13 @@ padding-right: 0.5em;
 .path-list li:last-child a:after {
 display: none;
 }
-.upload {
-position: relative;
+.panel {
 margin: 1em;
 padding: 1em;
 background: #f7f7f7;
+}
+.upload {
+position: relative;
 }
 .upload::before {
 display: none;
@@ -116,14 +123,14 @@ box-sizing: border-box;
 margin-top: 0.5em;
 }
 .archive {
-margin: 0 1em;
+margin: 1em;
 overflow: hidden;
 zoom: 1;
 }
 .archive a {
 position: relative;
 float: left;
-margin: 1em 0.5em 0 0.5em;
+margin: 0 0.5em;
 padding: 1em 1em 1em 3em;
 border: 2px #f5f5f5 solid;
 }
@@ -153,11 +160,6 @@ border-left-color: transparent;
 -webkit-transform: rotate(45deg);
 transform: rotate(45deg);
 }
-.mkdir {
-margin: 1em;
-padding: 1em;
-background: #f7f7f7;
-}
 .mkdir form {
 display: flex;
 }
@@ -167,6 +169,18 @@ flex: 1 1 auto;
 .mkdir .submit {
 padding-left: 0.5em;
 padding-right: 0.5em;
+}
+.filter {
+display: none;
+}
+:root .filter {
+display: block;
+}
+.filter .form {
+display: flex;
+}
+.filter .filter-text {
+flex: 1 1 auto;
 }
 .item-list {
 margin: 1em;

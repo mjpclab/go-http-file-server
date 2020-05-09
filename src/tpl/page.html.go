@@ -27,19 +27,19 @@ const pageTplStr = `
 <li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 {{end}}
 </ol>
-{{if .CanUpload}}
-<div class="upload">
-<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
-<input type="file" name="file" multiple="multiple" class="file"/>
-<input type="submit" value="Upload" class="submit"/>
+{{if .CanMkdir}}
+<div class="panel mkdir">
+<form method="POST" action="{{.SubItemPrefix}}?mkdir">
+<input type="text" autocomplete="off" name="name" class="name"/>
+<input type="submit" value="mkdir" class="submit"/>
 </form>
 </div>
 {{end}}
-{{if .CanMkdir}}
-<div class="mkdir">
-<form method="POST" action="{{.SubItemPrefix}}?mkdir">
-<input type="text" name="name" autocomplete="off" class="name"/>
-<input type="submit" value="mkdir" class="submit"/>
+{{if .CanUpload}}
+<div class="panel upload">
+<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
+<input type="file" name="file" multiple="multiple" class="file"/>
+<input type="submit" value="Upload" class="submit"/>
 </form>
 </div>
 {{end}}
@@ -48,6 +48,13 @@ const pageTplStr = `
 <a href="{{.SubItemPrefix}}?tar" download="{{.ItemName}}.tar">.tar</a>
 <a href="{{.SubItemPrefix}}?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
 <a href="{{.SubItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
+</div>
+{{end}}
+{{if .SubItemsHtml}}
+<div class="panel filter" id="panel-filter">
+<div class="form">
+<input type="text" accesskey="r" placeholder="filter..." name="filter-text" class="filter-text"/>
+</div>
 </div>
 {{end}}
 {{if .CanDelete}}
