@@ -14,10 +14,10 @@ func extractHostName(host string) string {
 		maxIndex := hostLen - 1
 		closeIndex := strings.IndexByte(host, ']')
 		if closeIndex == maxIndex {
-			return host
+			return host[1:closeIndex]
 		}
 		if closeIndex > 1 && closeIndex < maxIndex && host[closeIndex+1] == ':' {
-			return host[:closeIndex+1]
+			return host[1:closeIndex]
 		}
 	}
 

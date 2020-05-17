@@ -22,8 +22,12 @@ func (v *vhost) matchHostName(name string) bool {
 		if hostname == reqHostName {
 			return true
 		}
-		if len(hostname) > 0 && hostname[0] == '.' && strings.HasSuffix(reqHostName, hostname) {
-			return true
+		if len(hostname) > 1 {
+			if hostname[0] == '.' && strings.HasSuffix(reqHostName, hostname) {
+				return true
+			} else if hostname[len(hostname)-1] == '.' && strings.HasPrefix(reqHostName, hostname) {
+				return true
+			}
 		}
 	}
 	return false
