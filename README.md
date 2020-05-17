@@ -106,7 +106,8 @@ server [options]
 
 --hostname <hostname> ...
     Specify hostname associated with current virtual host.
-    If hostname starts with ".", treat it as a suffix, to match all levels of sub domains.
+    If value starts with ".", treat it as a suffix, to match all levels of sub domains. e.g. ".example.com"
+    If value ends with ".", treat it as a prefix, to match all levels of suffix domains.
 
 -r|--root <directory>
     Root directory of the server.
@@ -256,13 +257,4 @@ server [options]
     If request host name does not match any virtual host,
     server will try to use first virtual host that has no hostname,
     otherwise use the first virtual host.
-
-    If hostname option starts with ".",
-    treat it as a suffix,
-    to match all levels of sub domains,
-    e.g. ".example.com".
-
-    If hostname option ends with ".",
-    treat it as a prefix,
-    to match all levels of suffix domains.
 ```
