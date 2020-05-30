@@ -332,7 +332,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	}
 
 	subItems = h.FilterItems(subItems)
-	rawSortBy, sortState := sortSubItems(subItems, rawQuery, h.defaultSort)
+	rawSortBy, sortState := sortInfos(subItems, rawQuery, h.defaultSort)
 
 	if h.emptyRoot && status == http.StatusOK && r.RequestURI != "/" {
 		status = http.StatusNotFound
