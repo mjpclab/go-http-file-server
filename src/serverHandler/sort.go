@@ -33,25 +33,53 @@ var cmpDirMixed fnCompareDir = func(prev, next os.FileInfo) (less, ok bool) {
 	return true, false
 }
 
-// sort name asc
+// infosNames
 
-type sortNameAscInfos struct {
+type infosNames struct {
 	infos      []os.FileInfo
 	names      [][]byte
 	compareDir fnCompareDir
 }
 
-func (sInfos sortNameAscInfos) Len() int {
-	return len(sInfos.names)
+func (xInfos infosNames) Len() int {
+	return len(xInfos.names)
 }
 
-func (sInfos sortNameAscInfos) Less(i, j int) bool {
-	less, ok := sInfos.compareDir(sInfos.infos[i], sInfos.infos[j])
+func (xInfos infosNames) Swap(i, j int) {
+	xInfos.infos[i], xInfos.infos[j] = xInfos.infos[j], xInfos.infos[i]
+	xInfos.names[i], xInfos.names[j] = xInfos.names[j], xInfos.names[i]
+}
+
+func (xInfos infosNames) LessDir(i, j int) (less, ok bool) {
+	return xInfos.compareDir(xInfos.infos[i], xInfos.infos[j])
+}
+
+func (xInfos infosNames) LessFilename(i, j int) (less, ok bool) {
+	return util.CompareNumInFilename(xInfos.names[i], xInfos.names[j])
+}
+
+func newInfosNames(infos []os.FileInfo, compareDir fnCompareDir) infosNames {
+	names := make([][]byte, len(infos))
+	for i := range infos {
+		names[i] = []byte(infos[i].Name())
+	}
+
+	return infosNames{infos, names, compareDir}
+}
+
+// sort name asc
+
+type infosNamesAsc struct {
+	infosNames
+}
+
+func (xInfos infosNamesAsc) Less(i, j int) bool {
+	less, ok := xInfos.LessDir(i, j)
 	if ok {
 		return less
 	}
 
-	less, ok = util.CompareNumInFilename(sInfos.names[i], sInfos.names[j])
+	less, ok = xInfos.LessFilename(i, j)
 	if ok {
 		return less
 	}
@@ -59,38 +87,24 @@ func (sInfos sortNameAscInfos) Less(i, j int) bool {
 	return i < j
 }
 
-func (sInfos sortNameAscInfos) Swap(i, j int) {
-	sInfos.infos[i], sInfos.infos[j] = sInfos.infos[j], sInfos.infos[i]
-	sInfos.names[i], sInfos.names[j] = sInfos.names[j], sInfos.names[i]
-}
-
-func newSortNameAscInfos(infos []os.FileInfo, compareDir fnCompareDir) sortNameAscInfos {
-	names := make([][]byte, len(infos))
-	for i := range infos {
-		names[i] = []byte(infos[i].Name())
-	}
-
-	return sortNameAscInfos{infos, names, compareDir}
-}
-
 func sortInfoNamesAsc(infos []os.FileInfo, compareDir fnCompareDir) {
-	nameCachedInfos := newSortNameAscInfos(infos, compareDir)
+	nameCachedInfos := infosNamesAsc{newInfosNames(infos, compareDir)}
 	sort.Sort(nameCachedInfos)
 }
 
 // sort name desc
 
-type sortNameDescInfos struct {
-	sortNameAscInfos
+type infosNamesDesc struct {
+	infosNames
 }
 
-func (sInfos sortNameDescInfos) Less(i, j int) bool {
-	less, ok := sInfos.compareDir(sInfos.infos[i], sInfos.infos[j])
+func (xInfos infosNamesDesc) Less(i, j int) bool {
+	less, ok := xInfos.LessDir(i, j)
 	if ok {
 		return less
 	}
 
-	less, ok = util.CompareNumInFilename(sInfos.names[j], sInfos.names[i])
+	less, ok = xInfos.LessFilename(j, i)
 	if ok {
 		return less
 	}
@@ -98,12 +112,8 @@ func (sInfos sortNameDescInfos) Less(i, j int) bool {
 	return j < i
 }
 
-func newSortNameDescInfos(infos []os.FileInfo, compareDir fnCompareDir) sortNameDescInfos {
-	return sortNameDescInfos{newSortNameAscInfos(infos, compareDir)}
-}
-
 func sortInfoNamesDesc(infos []os.FileInfo, compareDir fnCompareDir) {
-	nameCachedInfos := newSortNameDescInfos(infos, compareDir)
+	nameCachedInfos := infosNamesDesc{newInfosNames(infos, compareDir)}
 	sort.Sort(nameCachedInfos)
 }
 
