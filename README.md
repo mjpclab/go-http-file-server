@@ -122,6 +122,8 @@ server [options]
     Available sort key:
     - `n` sort by name ascending
     - `N` sort by name descending
+    - `e` sort by type(suffix) ascending
+    - `E` sort by type(suffix) descending
     - `s` sort by size ascending
     - `S` sort by size descending
     - `t` sort by modify time ascending

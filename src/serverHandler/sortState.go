@@ -11,6 +11,8 @@ const (
 const (
 	nameAsc  byte = 'n'
 	nameDesc byte = 'N'
+	typeAsc  byte = 'e'
+	typeDesc byte = 'E'
 	sizeAsc  byte = 's'
 	sizeDesc byte = 'S'
 	timeAsc  byte = 't'
@@ -64,6 +66,17 @@ func (info SortState) NextNameSort() string {
 		nextKey = nameDesc
 	default:
 		nextKey = nameAsc
+	}
+	return info.mergeDirWithKey(nextKey)
+}
+
+func (info SortState) NextTypeSort() string {
+	var nextKey byte
+	switch info.key {
+	case typeAsc:
+		nextKey = typeDesc
+	default:
+		nextKey = typeAsc
 	}
 	return info.mergeDirWithKey(nextKey)
 }

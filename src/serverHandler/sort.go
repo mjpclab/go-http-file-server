@@ -2,6 +2,7 @@ package serverHandler
 
 import (
 	"../util"
+	"bytes"
 	"os"
 	"sort"
 	"strings"
@@ -56,6 +57,35 @@ func (xInfos infosNames) LessDir(i, j int) (less, ok bool) {
 
 func (xInfos infosNames) LessFilename(i, j int) (less, ok bool) {
 	return util.CompareNumInFilename(xInfos.names[i], xInfos.names[j])
+}
+
+func (xInfos infosNames) LessFileType(i, j int) (less, ok bool) {
+	bufferI := xInfos.names[i]
+	bufferJ := xInfos.names[j]
+	for {
+		dotIndexI := bytes.LastIndexByte(bufferI, '.')
+		dotIndexJ := bytes.LastIndexByte(bufferJ, '.')
+		if dotIndexI < 0 && dotIndexJ < 0 {
+			break
+		}
+		if dotIndexI < 0 {
+			return true, true
+		}
+		if dotIndexJ < 0 {
+			return false, true
+		}
+
+		typeI := bufferI[dotIndexI+1:]
+		typeJ := bufferJ[dotIndexJ+1:]
+		less, ok = util.CompareNumInFilename(typeI, typeJ)
+		if ok {
+			return less, ok
+		}
+		bufferI = bufferI[:dotIndexI]
+		bufferJ = bufferJ[:dotIndexJ]
+	}
+
+	return util.CompareNumInFilename(bufferI, bufferJ)
 }
 
 func newInfosNames(infos []os.FileInfo, compareDir fnCompareDir) infosNames {
@@ -114,6 +144,56 @@ func (xInfos infosNamesDesc) Less(i, j int) bool {
 
 func sortInfoNamesDesc(infos []os.FileInfo, compareDir fnCompareDir) {
 	nameCachedInfos := infosNamesDesc{newInfosNames(infos, compareDir)}
+	sort.Sort(nameCachedInfos)
+}
+
+// sort type asc
+
+type infosTypesAsc struct {
+	infosNames
+}
+
+func (xInfos infosTypesAsc) Less(i, j int) bool {
+	less, ok := xInfos.LessDir(i, j)
+	if ok {
+		return less
+	}
+
+	less, ok = xInfos.LessFileType(i, j)
+	if ok {
+		return less
+	}
+
+	return i < j
+}
+
+func sortInfoTypesAsc(infos []os.FileInfo, compareDir fnCompareDir) {
+	nameCachedInfos := infosTypesAsc{newInfosNames(infos, compareDir)}
+	sort.Sort(nameCachedInfos)
+}
+
+// sort type desc
+
+type infosTypesDesc struct {
+	infosNames
+}
+
+func (xInfos infosTypesDesc) Less(i, j int) bool {
+	less, ok := xInfos.LessDir(i, j)
+	if ok {
+		return less
+	}
+
+	less, ok = xInfos.LessFileType(j, i)
+	if ok {
+		return less
+	}
+
+	return j < i
+}
+
+func sortInfoTypesDesc(infos []os.FileInfo, compareDir fnCompareDir) {
+	nameCachedInfos := infosTypesDesc{newInfosNames(infos, compareDir)}
 	sort.Sort(nameCachedInfos)
 }
 
@@ -270,6 +350,10 @@ func sortInfos(infos []os.FileInfo, rawQuery string, defaultSortBy string) (rawS
 		sortInfoNamesAsc(infos, compareDir)
 	case 'N':
 		sortInfoNamesDesc(infos, compareDir)
+	case 'e':
+		sortInfoTypesAsc(infos, compareDir)
+	case 'E':
+		sortInfoTypesDesc(infos, compareDir)
 	case 's':
 		sortInfoSizesAsc(infos, compareDir)
 	case 'S':

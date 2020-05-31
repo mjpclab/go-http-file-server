@@ -71,6 +71,7 @@ return confirm('Delete?\n' + name);
 <span class="detail">
 <a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">Dir{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
 <a class="field name" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextNameSort}}">Name{{if eq $sortKey "n"}}&uarr;{{else if eq $sortKey "N"}}&darr;{{end}}</a>
+<a class="field type" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTypeSort}}">Type{{if eq $sortKey "e"}}&uarr;{{else if eq $sortKey "E"}}&darr;{{end}}</a>
 <a class="field size" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextSizeSort}}">Size{{if eq $sortKey "s"}}&uarr;{{else if eq $sortKey "S"}}&darr;{{end}}</a>
 <a class="field time" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTimeSort}}">Time{{if eq $sortKey "t"}}&uarr;{{else if eq $sortKey "T"}}&darr;{{end}}</a>
 </span>

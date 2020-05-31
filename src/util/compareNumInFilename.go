@@ -85,7 +85,9 @@ func CompareNumInFilename(prev, next []byte) (less, ok bool) {
 		prev = prev[common:]
 		next = next[common:]
 
-		if len(prev) == 0 {
+		if len(prev) == 0 && len(next) == 0 {
+			return false, false
+		} else if len(prev) == 0 {
 			return true, true
 		} else if len(next) == 0 {
 			return false, true

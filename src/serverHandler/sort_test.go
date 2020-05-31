@@ -28,9 +28,9 @@ func TestSort(t *testing.T) {
 	dir2 := dummyFileInfo{"item3", 300, now.Add(time.Minute), true}
 	dir3 := dummyFileInfo{"item5", 200, now.Add(time.Minute * 10), true}
 
-	file1 := dummyFileInfo{"item2", 50, now.Add(time.Second), false}
-	file2 := dummyFileInfo{"item4", 150, now.Add(time.Minute * 20), false}
-	file3 := dummyFileInfo{"item6", 250, now.Add(time.Hour), false}
+	file1 := dummyFileInfo{"item2.zip", 50, now.Add(time.Second), false}
+	file2 := dummyFileInfo{"item4.tar", 150, now.Add(time.Minute * 20), false}
+	file3 := dummyFileInfo{"item6.zip", 250, now.Add(time.Hour), false}
 
 	originInfos := []os.FileInfo{dir3, file2, dir1, file3, dir2, file1}
 	infos := make([]os.FileInfo, len(originInfos))
@@ -80,6 +80,20 @@ func TestSort(t *testing.T) {
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=N", "")
 	ok = expectInfos(infos, file3, dir3, file2, dir2, file1, dir1)
+	if !ok {
+		t.Errorf("%+v\n", infos)
+	}
+
+	copy(infos, originInfos)
+	sortInfos(infos, "?sort=e", "")
+	ok = expectInfos(infos, dir1, dir2, dir3, file2, file1, file3)
+	if !ok {
+		t.Errorf("%+v\n", infos)
+	}
+
+	copy(infos, originInfos)
+	sortInfos(infos, "?sort=E", "")
+	ok = expectInfos(infos, file3, file1, file2, dir3, dir2, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}

@@ -46,6 +46,11 @@ func TestSortState_KeyState(t *testing.T) {
 		t.Error(sortBy)
 	}
 
+	sortBy = state.NextTypeSort()
+	if sortBy != "/e" {
+		t.Error(sortBy)
+	}
+
 	sortBy = state.NextSizeSort()
 	if sortBy != "/s" {
 		t.Error(sortBy)
