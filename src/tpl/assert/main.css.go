@@ -271,4 +271,18 @@ background: #ffc;
 display: none;
 }
 }
+@media print {
+.panel, .archive {
+display: none;
+}
+:root .panel {
+display: none;
+}
+.has-deletable .detail {
+padding-right: 0;
+}
+.has-deletable .delete {
+display: none;
+}
+}
 `
