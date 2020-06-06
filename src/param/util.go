@@ -2,7 +2,6 @@ package param
 
 import (
 	"../util"
-	"path"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
@@ -38,7 +37,7 @@ func normalizePathMaps(inputs []string) map[string]string {
 		}
 
 		urlPath = util.CleanUrlPath(urlPath)
-		fsPath = path.Clean(fsPath)
+		fsPath = filepath.Clean(fsPath)
 		maps[urlPath] = fsPath
 	}
 
