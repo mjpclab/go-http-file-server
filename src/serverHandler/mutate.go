@@ -1,6 +1,9 @@
 package serverHandler
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
 	success := false
@@ -34,6 +37,11 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 		}
 		w.Write([]byte{'}'})
 	} else {
-		http.Redirect(w, r, r.URL.Path, http.StatusFound)
+		reqPath := r.RequestURI
+		qsIndex := strings.IndexByte(reqPath, '?')
+		if qsIndex >= 0 {
+			reqPath = reqPath[:qsIndex]
+		}
+		http.Redirect(w, r, reqPath, http.StatusFound)
 	}
 }
