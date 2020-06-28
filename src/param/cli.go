@@ -146,7 +146,7 @@ func init() {
 	err = options.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagValue("config", "--config", "", "", "print this help")
+	err = options.AddFlagValue("config", "--config", "GHFS_CONFIG", "", "external config file")
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlag("version", "--version", "", "print version")
