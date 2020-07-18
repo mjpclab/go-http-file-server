@@ -6,6 +6,7 @@ Simple command line based HTTP file server to share local file system.
 ## Features
 - More friendly UI than Apache/Nginx directory index page
 - Adapt for mobile display
+- Single executable file
 - Can download the whole contents of current directory as archive file if enabled
 - Can upload files to current directory if enabled
 - Can specify a custom template for page rendering
