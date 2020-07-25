@@ -1,4 +1,4 @@
-package assert
+package asset
 
 const mainJs = `
 (function () {

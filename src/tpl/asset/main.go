@@ -1,4 +1,4 @@
-package assert
+package asset
 
 import (
 	"io"
@@ -10,12 +10,12 @@ type content struct {
 	ReadSeeker  io.ReadSeeker
 }
 
-var asserts = map[string]content{
+var assets = map[string]content{
 	"main.css": {"text/css", strings.NewReader(mainCss)},
 	"main.js":  {"application/javascript", strings.NewReader(mainJs)},
 }
 
 func Get(path string) (content, bool) {
-	c, ok := asserts[path]
+	c, ok := assets[path]
 	return c, ok
 }

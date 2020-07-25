@@ -18,7 +18,7 @@ const pageTplStr = `
 <meta name="renderer" content="webkit"/>
 <meta name="wap-font-scale" content="no"/>
 <title>{{.Path}}</title>
-<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?assert=main.css"/>
+<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=main.css"/>
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 {{$contextQueryString := .Context.QueryString}}
@@ -101,7 +101,7 @@ return confirm('Delete?\n' + name);
 {{else if eq .Status 500}}
 <div class="error">500 potential issue occurred</div>
 {{end}}
-<script type="text/javascript" src="{{.RootRelPath}}?assert=main.js" defer="defer" async="async"></script>
+<script type="text/javascript" src="{{.RootRelPath}}?asset=main.js" defer="defer" async="async"></script>
 </body>
 </html>
 `

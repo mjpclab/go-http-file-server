@@ -60,11 +60,11 @@ type handler struct {
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	go h.logRequest(r)
 
-	// assert
-	const assertPrefix = "assert="
-	if strings.HasPrefix(r.URL.RawQuery, assertPrefix) {
-		assertPath := r.URL.RawQuery[len(assertPrefix):]
-		h.assert(w, r, assertPath)
+	// asset
+	const assetPrefix = "asset="
+	if strings.HasPrefix(r.URL.RawQuery, assetPrefix) {
+		assetPath := r.URL.RawQuery[len(assetPrefix):]
+		h.asset(w, r, assetPath)
 		return
 	}
 
