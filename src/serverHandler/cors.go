@@ -10,7 +10,6 @@ func (h *handler) cors(w http.ResponseWriter, r *http.Request) {
 	header := w.Header()
 
 	header.Set("Access-Control-Allow-Origin", "*")
-	header.Set("Access-Control-Allow-Credentials", "true")
 
 	if r.Method != http.MethodOptions {
 		return
