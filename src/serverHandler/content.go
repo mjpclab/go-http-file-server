@@ -27,6 +27,11 @@ func getContentType(item os.FileInfo, file *os.File) (string, error) {
 }
 
 func (h *handler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
+	header := w.Header()
+	if data.IsDownload {
+		header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+data.ItemName)
+	}
+
 	item := data.Item
 	file := data.File
 
@@ -37,7 +42,6 @@ func (h *handler) content(w http.ResponseWriter, r *http.Request, data *response
 
 	ctype, err := getContentType(item, file)
 	if err == nil {
-		header := w.Header()
 		header.Set("Content-Type", ctype)
 		header.Set("Content-Length", strconv.FormatInt(item.Size(), 10))
 		header.Set("Date", time.Now().UTC().Format(http.TimeFormat))

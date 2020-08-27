@@ -36,6 +36,17 @@ GET <path>?json[&sort=key]
 curl http://localhost/ghfs/?json
 ```
 
+# 下载文件
+通知用户代理下载文件而不是显示其内容。
+```
+GET <path/to/file>?download
+```
+
+举例：
+```sh
+curl http://localhost/ghfs/file?download
+```
+
 # 以打包文件形式获取指定路径下的内容
 仅在“archive”选项启用时有效。
 ```

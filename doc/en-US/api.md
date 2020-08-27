@@ -36,6 +36,17 @@ Example:
 curl http://localhost/ghfs/?json
 ```
 
+# Download a file
+Notify user agent download a file rather than display its content.
+```
+GET <path/to/file>?download
+```
+
+Example:
+```sh
+curl http://localhost/ghfs/file?download
+```
+
 # Get contents of specified path as archive file
 Only work when "archive" is enabled.
 ```

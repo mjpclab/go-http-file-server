@@ -53,11 +53,12 @@ type responseData struct {
 	CanCors      bool
 	NeedAuth     bool
 
-	IsUpload bool
-	IsMkdir  bool
-	IsDelete bool
-	IsMutate bool
-	WantJson bool
+	IsDownload bool
+	IsUpload   bool
+	IsMkdir    bool
+	IsDelete   bool
+	IsMutate   bool
+	WantJson   bool
 }
 
 func isSlash(c rune) bool {
@@ -353,11 +354,14 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 
+	isDownload := false
 	isUpload := false
 	isMkdir := false
 	isDelete := false
 	isMutate := false
 	switch {
+	case strings.HasPrefix(rawQuery, "download"):
+		isDownload = true
 	case strings.HasPrefix(rawQuery, "upload") && r.Method == http.MethodPost:
 		isUpload = true
 		isMutate = true
@@ -399,10 +403,11 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		CanCors:      canCors,
 		NeedAuth:     needAuth,
 
-		IsUpload: isUpload,
-		IsMkdir:  isMkdir,
-		IsDelete: isDelete,
-		IsMutate: isMutate,
-		WantJson: wantJson,
+		IsDownload: isDownload,
+		IsUpload:   isUpload,
+		IsMkdir:    isMkdir,
+		IsDelete:   isDelete,
+		IsMutate:   isMutate,
+		WantJson:   wantJson,
 	}
 }
