@@ -20,13 +20,16 @@ curl_head_status() {
 
 curl_get_status() {
 	url="$1"
-	opts="$2"
 	curl -s -k -i "$url" | head -n 1 | cut -d ' ' -f 2
+}
+
+curl_get_header() {
+	url="$1"
+	curl -s -k -i "$url" | sed -e '/^$/q'
 }
 
 curl_get_body() {
 	url="$1"
-	opts="$2"
 	curl -s -k "$url"
 }
 
