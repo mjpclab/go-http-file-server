@@ -10,7 +10,7 @@ source "$root"/lib.bash
 sleep 0.05 # wait server ready
 cleanup
 
-curl_get_body 'http://127.0.0.1:3003/' | grep -q -F 'go/"'
+curl_get_body 'http://127.0.0.1:3003/?sort=/N' | grep -q -F 'go/?sort=/N"'
 if [ $? -ne 0 ]; then
 	fail "unexpected url param for sort"
 fi
