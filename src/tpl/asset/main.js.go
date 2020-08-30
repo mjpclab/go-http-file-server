@@ -2,6 +2,128 @@ package asset
 
 const mainJs = `
 (function () {
+var classNone = 'none';
+var classHeader = 'header';
+function enableKeyboardNavigate() {
+if (
+!document.querySelector ||
+!document.addEventListener ||
+!document.body.classList ||
+!document.body.parentElement
+) {
+return;
+}
+var pathList = document.body.querySelector('.path-list');
+var itemList = document.body.querySelector('.item-list');
+if (!pathList && !itemList) {
+return;
+}
+function getFocusableSibling(container, isPrev) {
+if (!container) {
+return
+}
+var focusA = container.querySelector(':focus');
+var focusLI = focusA;
+while (focusLI && focusLI.tagName !== 'LI') {
+focusLI = focusLI.parentElement;
+}
+if (!focusLI) {
+if (isPrev) {
+focusLI = container.firstElementChild;
+} else {
+focusLI = container.lastElementChild;
+}
+}
+if (!focusLI) {
+return;
+}
+var siblingLI = focusLI;
+do {
+if (isPrev) {
+siblingLI = siblingLI.previousElementSibling;
+if (!siblingLI) {
+siblingLI = container.lastElementChild;
+}
+} else {
+siblingLI = siblingLI.nextElementSibling;
+if (!siblingLI) {
+siblingLI = container.firstElementChild;
+}
+}
+} while (siblingLI !== focusLI && (
+siblingLI.classList.contains(classNone) ||
+siblingLI.classList.contains(classHeader)
+));
+if (siblingLI) {
+var newFocusA = siblingLI.querySelector('a');
+return newFocusA;
+}
+}
+var UP = 'Up';
+var DOWN = 'Down';
+var LEFT = 'Left';
+var RIGHT = 'Right';
+var ARROW_UP = 'ArrowUp';
+var ARROW_DOWN = 'ArrowDown';
+var ARROW_LEFT = 'ArrowLeft';
+var ARROW_RIGHT = 'ArrowRight';
+var ARROW_UP_CODE = 38;
+var ARROW_DOWN_CODE = 40;
+var ARROW_LEFT_CODE = 37;
+var ARROW_RIGHT_CODE = 39;
+var skipTags = ['INPUT', 'BUTTON', 'TEXTAREA'];
+document.addEventListener('keydown', function (e) {
+if (
+e.ctrlKey ||
+e.altKey ||
+e.shiftKey ||
+e.metaKey ||
+skipTags.indexOf(e.target.tagName) >= 0
+) {
+return;
+}
+var newFocusEl;
+if (e.key) {
+switch (e.key) {
+case LEFT:
+case ARROW_LEFT:
+newFocusEl = getFocusableSibling(pathList, true);
+break;
+case RIGHT:
+case ARROW_RIGHT:
+newFocusEl = getFocusableSibling(pathList, false);
+break;
+case UP:
+case ARROW_UP:
+newFocusEl = getFocusableSibling(itemList, true);
+break;
+case DOWN:
+case ARROW_DOWN:
+newFocusEl = getFocusableSibling(itemList, false);
+break;
+}
+} else if (e.keyCode) {
+switch (e.keyCode) {
+case ARROW_LEFT_CODE:
+newFocusEl = getFocusableSibling(pathList, true);
+break;
+case ARROW_RIGHT_CODE:
+newFocusEl = getFocusableSibling(pathList, false);
+break;
+case ARROW_UP_CODE:
+newFocusEl = getFocusableSibling(itemList, true);
+break;
+case ARROW_DOWN_CODE:
+newFocusEl = getFocusableSibling(itemList, false);
+break;
+}
+}
+if (newFocusEl) {
+e.preventDefault();
+newFocusEl.focus();
+}
+});
+}
 function enableDragUpload() {
 if (!document.querySelector || !document.addEventListener || !document.body.classList) {
 return;
@@ -62,6 +184,8 @@ var input = filter.querySelector('input.filter-text');
 if (!input) {
 return;
 }
+var selectorNone = '.' + classNone;
+var selectorNotNone = ':not(' + selectorNone + ')';
 // event handler
 var timeoutId;
 var lastFilterText = '';
@@ -70,28 +194,28 @@ var filterText = input.value.trim().toLowerCase();
 if (filterText === lastFilterText) {
 return;
 }
-var itemsSelector = '.item-list > li:not(.header):not(.parent)';
+var itemsSelector = '.item-list > li:not(.' + classHeader + '):not(.parent)';
 var items, i;
 if (!filterText) {	// filter cleared, show all items
-itemsSelector += '.none';
+itemsSelector += selectorNone;
 items = document.body.querySelectorAll(itemsSelector);
 for (i = items.length - 1; i >= 0; i--) {
-items[i].classList.remove('none');
+items[i].classList.remove(classNone);
 }
 } else {
 if (filterText.indexOf(lastFilterText) >= 0) {	// increment search, find in visible items
-itemsSelector += ':not(.none)';
+itemsSelector += selectorNotNone;
 } else if (lastFilterText.indexOf(filterText) >= 0) {	// decrement search, find in hidden items
-itemsSelector += '.none';
+itemsSelector += selectorNone;
 }
 items = document.body.querySelectorAll(itemsSelector);
 for (i = items.length - 1; i >= 0; i--) {
 var item = items[i];
 var name = item.querySelector('.name');
 if (name && name.textContent.toLowerCase().indexOf(filterText) < 0) {
-item.classList.add('none');
+item.classList.add(classNone);
 } else {
-item.classList.remove('none');
+item.classList.remove(classNone);
 }
 }
 }
@@ -184,6 +308,7 @@ e.preventDefault();
 return false;
 }, false);
 }
+enableKeyboardNavigate();
 enableDragUpload();
 enableFilter();
 enableNonRefreshDelete();

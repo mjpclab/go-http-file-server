@@ -18,6 +18,7 @@ body {
 	font-variant-ligatures: none;
 	font-kerning: none;
 	hyphens: none;
+	padding-bottom: 1em;
 }
 
 form {
@@ -39,12 +40,16 @@ a {
 	outline: 0;
 }
 
-a:focus {
-	background: #fffaee;
-}
-
 a:hover {
 	background: #f5f5f5;
+}
+
+a:focus {
+	background: #fffae0;
+}
+
+a:hover:focus {
+	background: #faf7ea;
 }
 
 input, button {

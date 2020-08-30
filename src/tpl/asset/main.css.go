@@ -18,6 +18,7 @@ font-size: 0.625em;
 font-variant-ligatures: none;
 font-kerning: none;
 hyphens: none;
+padding-bottom: 1em;
 }
 form {
 margin: 0;
@@ -35,11 +36,14 @@ color: #000;
 text-decoration: none;
 outline: 0;
 }
-a:focus {
-background: #fffaee;
-}
 a:hover {
 background: #f5f5f5;
+}
+a:focus {
+background: #fffae0;
+}
+a:hover:focus {
+background: #faf7ea;
 }
 input, button {
 min-width: 0;
