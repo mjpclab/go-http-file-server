@@ -29,7 +29,7 @@ func init() {
 	serverErrHandler.CheckFatal(err)
 
 	opt = goNixArgParser.NewFlagValueOption("defaultsort", "--default-sort", "GHFS_DEFAULT_SORT", "/n", "default sort for files and directories")
-	opt.Description = "Available sort key:\n- `n` sort by name ascending\n- `N` sort by name descending\n- `s` sort by size ascending\n- `S` sort by size descending\n- `t` sort by modify time ascending\n- `T` sort by modify time descending\n- `_` no sort\nDirectory sort:\n- `/<key>` directories before files\n- `<key>/` directories after files\n- `<key>` directories mixed with files\n"
+	opt.Description = "Available sort key:\n- `n` sort by name ascending\n- `N` sort by name descending\n- `e` sort by type(suffix) ascending\n- `E` sort by type(suffix) descending\n- `s` sort by size ascending\n- `S` sort by size descending\n- `t` sort by modify time ascending\n- `T` sort by modify time descending\n- `_` no sort\nDirectory sort:\n- `/<key>` directories before files\n- `<key>/` directories after files\n- `<key>` directories mixed with files\n"
 	err = options.Add(opt)
 	serverErrHandler.CheckFatal(err)
 
