@@ -98,13 +98,11 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSu
 		_, err = io.Copy(file, part)
 		if err != nil {
 			errs = append(errs, err)
-			continue
 		}
 
 		err = file.Close()
 		if err != nil {
 			errs = append(errs, err)
-			continue
 		}
 	}
 
