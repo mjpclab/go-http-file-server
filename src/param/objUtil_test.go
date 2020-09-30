@@ -31,3 +31,22 @@ func TestEntriesToUsers(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestEntriesToHeaders(t *testing.T) {
+	entries := []string{
+		"",
+		"key1:",
+		":value2",
+		"key3:value3",
+	}
+	headers := entriesToHeaders(entries)
+	if len(headers) != 1 {
+		t.Fatal("headers count should be 1", headers)
+	}
+	if headers[0][0] != "key3" {
+		t.Error("key should be \"key3\"")
+	}
+	if headers[0][1] != "value3" {
+		t.Error("value should be \"value3\"")
+	}
+}

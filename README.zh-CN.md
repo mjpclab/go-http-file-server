@@ -142,6 +142,9 @@ server [选项]
     将某个文件系统路径挂载到URL路径下。
     例如：“:/doc:/usr/share/doc”。
 
+--header <名称>:<值> ...
+    设置自定义HTTP响应头。
+
 -U|--global-upload
     对所有URL路径开启上传权限。
     请谨慎使用。

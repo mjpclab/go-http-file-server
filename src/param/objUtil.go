@@ -29,6 +29,20 @@ func EntriesToUsers(entries []string) []*user {
 	return users
 }
 
+func entriesToHeaders(entries []string) [][2]string {
+	headers := make([][2]string, 0, len(entries))
+	for _, entry := range entries {
+		colonIndex := strings.IndexByte(entry, ':')
+		if colonIndex <= 0 || colonIndex == len(entry)-1 {
+			continue
+		}
+		key := entry[:colonIndex]
+		value := entry[colonIndex+1:]
+		headers = append(headers, [2]string{key, value})
+	}
+	return headers
+}
+
 func WildcardToRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
 	if !found || len(wildcards) == 0 {
 		return nil, nil

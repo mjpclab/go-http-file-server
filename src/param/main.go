@@ -14,9 +14,10 @@ type Param struct {
 	Root      string
 	EmptyRoot bool
 
-	DefaultSort string
-	DirIndexes  []string
-	Aliases     map[string]string
+	DefaultSort   string
+	DirIndexes    []string
+	Aliases       map[string]string
+	GlobalHeaders [][2]string
 
 	GlobalUpload bool
 	UploadUrls   []string

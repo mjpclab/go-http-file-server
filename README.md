@@ -143,6 +143,9 @@ server [options]
     Mount a file system path to URL path.
     e.g. ":/doc:/usr/share/doc"
 
+--header <name>:<value> ...
+    Set custom HTTP response header.
+
 -U|--global-upload
     Allow upload files for all url paths.
     Use it with care.

@@ -20,6 +20,8 @@ type handler struct {
 	dirIndexes []string
 	aliases    aliases
 
+	globalHeaders [][2]string
+
 	globalUpload bool
 	uploadUrls   []string
 	uploadDirs   []string
@@ -86,6 +88,8 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.header(w)
+
 	if data.CanCors {
 		h.cors(w, r)
 	}
@@ -150,6 +154,8 @@ func NewHandler(
 
 		dirIndexes: p.DirIndexes,
 		aliases:    aliases,
+
+		globalHeaders: p.GlobalHeaders,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,

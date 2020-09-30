@@ -39,6 +39,9 @@ func init() {
 	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlagValues("globalheaders", "--header", "GHFS_HEADER", []string{}, "custom headers, e.g. <key>:<value>")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
 	serverErrHandler.CheckFatal(err)
 
@@ -251,6 +254,10 @@ func doParseCli() []*Param {
 		// dir indexes
 		dirIndexes, _ := result.GetStrings("dirindexes")
 		param.DirIndexes = normalizeFilenames(dirIndexes)
+
+		// headers
+		globalHeaders, _ := result.GetStrings("globalheaders")
+		param.GlobalHeaders = entriesToHeaders(globalHeaders)
 
 		// certificate
 		key, _ := result.GetString("key")
