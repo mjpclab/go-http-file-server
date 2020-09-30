@@ -49,3 +49,32 @@ func WildcardToRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
 	exp := strings.Join(normalizedWildcards, "|")
 	return regexp.Compile(exp)
 }
+
+func (param *Param) GetDupUserNames() []string {
+	usersGroups := [][]*user{
+		param.UsersPlain,
+		param.UsersBase64,
+		param.UsersMd5,
+		param.UsersSha1,
+		param.UsersSha256,
+		param.UsersSha512,
+	}
+
+	userMap := map[string]bool{}
+	dupUserMap := map[string]bool{}
+
+	for _, users := range usersGroups {
+		for _, user := range users {
+			if userMap[user.Username] {
+				dupUserMap[user.Username] = true
+			}
+			userMap[user.Username] = true
+		}
+	}
+
+	dupUserNames := make([]string, 0, len(dupUserMap))
+	for username, _ := range dupUserMap {
+		dupUserNames = append(dupUserNames, username)
+	}
+	return dupUserNames
+}
