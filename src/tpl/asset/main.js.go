@@ -186,6 +186,9 @@ return;
 }
 var selectorNone = '.' + classNone;
 var selectorNotNone = ':not(' + selectorNone + ')';
+var selectorItem = '.item-list > li:not(.' + classHeader + '):not(.parent)';
+var selectorItemNone = selectorItem + selectorNone;
+var selectorItemNotNone = selectorItem + selectorNotNone;
 // event handler
 var timeoutId;
 var lastFilterText = '';
@@ -194,21 +197,22 @@ var filterText = input.value.trim().toLowerCase();
 if (filterText === lastFilterText) {
 return;
 }
-var itemsSelector = '.item-list > li:not(.' + classHeader + '):not(.parent)';
-var items, i;
+var selector, items, i;
 if (!filterText) {	// filter cleared, show all items
-itemsSelector += selectorNone;
-items = document.body.querySelectorAll(itemsSelector);
+selector = selectorItemNone;
+items = document.body.querySelectorAll(selector);
 for (i = items.length - 1; i >= 0; i--) {
 items[i].classList.remove(classNone);
 }
 } else {
 if (filterText.indexOf(lastFilterText) >= 0) {	// increment search, find in visible items
-itemsSelector += selectorNotNone;
+selector = selectorItemNotNone;
 } else if (lastFilterText.indexOf(filterText) >= 0) {	// decrement search, find in hidden items
-itemsSelector += selectorNone;
+selector = selectorItemNone;
+} else {
+selector = selectorItem;
 }
-items = document.body.querySelectorAll(itemsSelector);
+items = document.body.querySelectorAll(selector);
 for (i = items.length - 1; i >= 0; i--) {
 var item = items[i];
 var name = item.querySelector('.name');
