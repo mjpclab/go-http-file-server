@@ -97,3 +97,58 @@ func normalizeFilenames(inputs []string) []string {
 
 	return outputs
 }
+
+func validateHstsPort(listensPlain, ListensTLS []string) bool {
+	var fromOK, toOK bool
+
+	for _, listen := range listensPlain {
+		port := util.ExtractListenPort(listen)
+		if len(port) == 0 || port == "80" {
+			fromOK = true
+			break
+		}
+	}
+
+	for _, listen := range ListensTLS {
+		port := util.ExtractListenPort(listen)
+		if len(port) == 0 || port == "443" {
+			toOK = true
+			break
+		}
+	}
+
+	return fromOK && toOK
+}
+
+func normalizeHttpsPort(httpsPort string, ListensTLS []string) (string, bool) {
+	if len(httpsPort) > 0 {
+		httpsPort = util.ExtractListenPort(httpsPort)
+		if len(httpsPort) == 0 {
+			return "", false
+		}
+	} else if len(ListensTLS) > 0 {
+		httpsPort = util.ExtractListenPort(ListensTLS[0])
+	}
+
+	lenHttpsPort := len(httpsPort)
+	httpsColonPort := ":" + httpsPort
+	for _, listen := range ListensTLS {
+		if lenHttpsPort == 0 && len(listen) == 0 {
+			return "", true
+		}
+
+		port := util.ExtractListenPort(listen)
+		if lenHttpsPort == 0 && len(port) == 0 {
+			return "", true
+		}
+		if httpsPort == port {
+			return httpsColonPort, true
+		}
+
+		if httpsPort == "443" && port == "" {
+			return "", true
+		}
+	}
+
+	return "", false
+}

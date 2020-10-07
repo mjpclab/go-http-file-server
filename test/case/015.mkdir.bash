@@ -16,4 +16,4 @@ curl_head_status 'http://127.0.0.1:3003/1/?mkdir&name=foo.tmp' > /dev/null
 ls -d "$file1"/ &> /dev/null || fail "$file1 not exists"
 
 cleanup
-kill %1
+jobs -p | xargs kill

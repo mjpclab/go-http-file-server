@@ -16,4 +16,4 @@ curl_get_body 'http://127.0.0.1:3003/?tar' > "$archive"
 (tar -tf "$archive" | grep -q 'hello/world/index.txt') || fail "hello/world/index.txt not in $(basename $archive)"
 
 cleanup
-kill %1
+jobs -p | xargs kill

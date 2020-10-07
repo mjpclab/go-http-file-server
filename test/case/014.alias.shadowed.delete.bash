@@ -23,4 +23,4 @@ curl_head_status 'http://127.0.0.1:3003/?delete&name=x.tmp' > /dev/null
 ls "$file2" &> /dev/null || fail "$file2 not exists"
 
 cleanup
-kill %1
+jobs -p | xargs kill

@@ -135,6 +135,12 @@ func init() {
 	err = options.AddFlagsValue("template", []string{"-t", "--template"}, "GHFS_TEMPLATE", "", "custom template file for page")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlag("globalhsts", "--hsts", "GHFS_HSTS", "enable HSTS(HTTP Strict Transport Security)")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValue("globalhttps", "--to-https", "GHFS_TO_HTTPS", "", "redirect http:// to https://, with optional target port")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlagsValues("shows", []string{"-S", "--show"}, "GHFS_SHOW", nil, "show directories or files match wildcard")
 	serverErrHandler.CheckFatal(err)
 	err = options.AddFlagsValues("showdirs", []string{"-SD", "--show-dir"}, "GHFS_SHOW_DIR", nil, "show directories match wildcard")
@@ -274,17 +280,6 @@ func doParseCli() []*Param {
 			serverErrHandler.CheckFatal(errors.New("missing certificate key file"))
 		}
 
-		// normalize listen
-		listens, _ := result.GetStrings("listens")
-		param.Listens = append(param.Listens, listens...)
-
-		listenRests := result.GetRests()
-		param.Listens = append(param.Listens, listenRests...)
-
-		param.ListensPlain, _ = result.GetStrings("listensplain")
-
-		param.ListensTLS, _ = result.GetStrings("listenstls")
-
 		// normalize aliases
 		arrAlias, _ := result.GetStrings("aliases")
 		param.Aliases = normalizePathMaps(arrAlias)
@@ -354,6 +349,31 @@ func doParseCli() []*Param {
 		dupUserNames := param.GetDupUserNames()
 		if len(dupUserNames) > 0 {
 			serverErrHandler.CheckFatal(fmt.Errorf("duplicated usernames: %q", dupUserNames))
+		}
+
+		// normalize listen
+		listens, _ := result.GetStrings("listens")
+		param.Listens = append(param.Listens, listens...)
+
+		listenRests := result.GetRests()
+		param.Listens = append(param.Listens, listenRests...)
+
+		param.ListensPlain, _ = result.GetStrings("listensplain")
+
+		param.ListensTLS, _ = result.GetStrings("listenstls")
+
+		// hsts & https
+		if len(param.ListensTLS) > 0 {
+			param.GlobalHsts = result.HasKey("globalhsts")
+			if param.GlobalHsts {
+				param.GlobalHsts = validateHstsPort(param.ListensPlain, param.ListensTLS)
+			}
+
+			param.GlobalHttps = result.HasKey("globalhttps")
+			if param.GlobalHttps {
+				httpsPort, _ := result.GetString("globalhttps")
+				param.HttpsPort, param.GlobalHttps = normalizeHttpsPort(httpsPort, param.ListensTLS)
+			}
 		}
 
 		// shows

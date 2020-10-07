@@ -23,4 +23,4 @@ assert "$go" 'vhost1/go/index.txt'
 yes=$(curl_get_body http://127.0.0.1:3003/not/exist/name/index.txt)
 assert "$yes" 'vhost1/yes/index.txt'
 
-kill %1
+jobs -p | xargs kill

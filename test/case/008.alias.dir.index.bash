@@ -8,4 +8,4 @@ sleep 0.05 # wait server ready
 world=$(curl_get_body http://127.0.0.1:3003/foo)
 assert "$world" 'vhost1/go/index.txt'
 
-kill %1
+jobs -p | xargs kill

@@ -56,6 +56,10 @@ type Param struct {
 	HostNames    []string
 	Template     string
 
+	GlobalHsts  bool
+	GlobalHttps bool
+	HttpsPort   string
+
 	Shows     *regexp.Regexp
 	ShowDirs  *regexp.Regexp
 	ShowFiles *regexp.Regexp

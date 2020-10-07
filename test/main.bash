@@ -2,7 +2,7 @@
 
 cd $(dirname $0)
 
-for cmd in realpath curl grep sed; do
+for cmd in realpath curl grep sed xargs; do
 	type "$cmd" &> /dev/null
 	if [ $? -ne 0 ]; then
 		echo "command '$cmd' not found" >&2

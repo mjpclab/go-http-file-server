@@ -221,6 +221,14 @@ server [选项]
 -t|--template <模板文件>
     指定用于渲染页面的自定义模板，代替内建模板。
 
+--hsts
+    启用HSTS(HTTP Strict Transport Security)。
+    仅当当前虚拟主机的纯HTTP和TLS模式都监听在标准端口上时才有效。
+--to-https [<目标端口>]
+    将纯HTTP请求重定向到HTTPS端口。
+    目标端口必须存在于当前虚拟主机--listen-tls中。
+    如果省略目标端口，则使用--listen-tls中的第一项。
+
 -S|--show <通配符> ...
 -SD|--show-dir <通配符> ...
 -SF|--show-file <通配符> ...

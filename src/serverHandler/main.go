@@ -14,6 +14,9 @@ import (
 type handler struct {
 	root        string
 	emptyRoot   bool
+	globalHsts  bool
+	globalHttps bool
+	httpsPort   string // with prefix ":"
 	defaultSort string
 	urlPrefix   string
 
@@ -61,6 +64,16 @@ type handler struct {
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	go h.logRequest(r)
+
+	// hsts redirect
+	if h.globalHsts && h.hsts(w, r) {
+		return
+	}
+
+	// https redirect
+	if h.globalHttps && h.https(w, r) {
+		return
+	}
 
 	// asset
 	const assetPrefix = "asset="
@@ -149,6 +162,9 @@ func NewHandler(
 	h := &handler{
 		root:        root,
 		emptyRoot:   emptyRoot,
+		globalHsts:  p.GlobalHsts,
+		globalHttps: p.GlobalHttps,
+		httpsPort:   p.HttpsPort,
 		defaultSort: p.DefaultSort,
 		urlPrefix:   urlPrefix,
 

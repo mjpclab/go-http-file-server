@@ -223,6 +223,14 @@ server [options]
 -t|--template <file>
     Use a custom template file for rendering pages, instead of builtin template.
 
+--hsts
+    Enable HSTS(HTTP Strict Transport Security).
+    Only available if current virtual host listens both plain HTTP and TLS on standard ports.
+--to-https [<target-port>]
+    Redirect plain HTTP request to HTTPS TLS port.
+    Target port must be exists in --listen-tls of current virtual host.
+    If target port is omitted, the first item from --listen-tls will be used.
+
 -S|--show <wildcard> ...
 -SD|--show-dir <wildcard> ...
 -SF|--show-file <wildcard> ...

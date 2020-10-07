@@ -21,4 +21,4 @@ curl_get_body 'http://127.0.0.1:3003/b/?tar' > "$archive"
 (tar -tf "$archive" | grep -q b2.txt) || fail "b2.txt not in $(basename $archive)"
 
 cleanup
-kill %1
+jobs -p | xargs kill

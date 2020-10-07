@@ -14,4 +14,4 @@ assert "$file1" 'vhost1/file1.txt'
 (curl_get_body http://127.0.0.1:3003/hello/ | grep -q './index.txt') ||
 	fail "resource /hello/ does not contains './index.txt'"
 
-kill %1
+jobs -p | xargs kill

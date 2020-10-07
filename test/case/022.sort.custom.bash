@@ -16,4 +16,4 @@ if [ $? -ne 0 ]; then
 fi
 
 cleanup
-kill %1
+jobs -p | xargs kill

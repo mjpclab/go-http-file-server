@@ -8,4 +8,4 @@ sleep 0.05 # wait server ready
 yes=$(curl_get_body http://127.0.0.1:3003/yes)
 assert "$yes" 'vhost1/yes/index.txt'
 
-kill %1
+jobs -p | xargs kill

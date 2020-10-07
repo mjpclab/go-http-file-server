@@ -21,4 +21,4 @@ uploaded2=$(cat "$fs"/uploaded/2/uploaded.tmp)
 assert "$uploaded2" "$content2"
 
 cleanup
-kill %1
+jobs -p | xargs kill
