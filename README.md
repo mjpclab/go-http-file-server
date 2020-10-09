@@ -29,38 +29,38 @@ Then compile the project like above.
 ## Examples
 Start server on port 8080, root directory is current working  directory:
 ```sh
-server -l 8080
+ghfs -l 8080
 ``` 
 
 Start server on port 8080, root directory is /usr/share/doc:
 ```sh
-server -l 8080 -r /usr/share/doc
+ghfs -l 8080 -r /usr/share/doc
 ```
 
 Start server on default port, root directory is /tmp, and allow upload files to file system directory /tmp/data:
 ```sh
-server -r /tmp -u /data
+ghfs -r /tmp -u /data
 ```
 
 Share files from /etc, but also mount /usr/share/doc to url path /doc
 ```sh
-server -r /etc -a :/doc:/usr/share/doc
+ghfs -r /etc -a :/doc:/usr/share/doc
 ```
 
 Start server on port 8080, serve for HTTPS protocol
 ```sh
-server -k /path/to/certificate/key -c /path/to/certificate/file -l 8080
+ghfs -k /path/to/certificate/key -c /path/to/certificate/file -l 8080
 ```
 
 Do not show hidden unix directories and files that starts with `.`.
 Tips: wrap wildcard by quotes to prevent expanding by shell.
 ```sh
-server -H '.*'
+ghfs -H '.*'
 ```
 
 Show access log on console:
 ```sh
-server -L -
+ghfs -L -
 ```
 
 Http Basic Auth:
@@ -68,7 +68,7 @@ Http Basic Auth:
 - username: user1, password: pass1
 - username: user2, password: pass2
 ```sh
-server --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
+ghfs --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
 ```
 
 Start 2 virtual hosts:
@@ -87,7 +87,7 @@ Start 2 virtual hosts:
     - hostname: server2.example.com
     - root directory: /var/www/server2
 ```sh
-server --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.key --hostname server1.example.com -r /var/www/server1 ,, --listen-plain 80 --listen-tls 443 -c /cert/server2.pem -k /cert/server2.key --hostname server2.example.com -r /var/www/server2
+ghfs --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.key --hostname server1.example.com -r /var/www/server1 ,, --listen-plain 80 --listen-tls 443 -c /cert/server2.pem -k /cert/server2.key --hostname server2.example.com -r /var/www/server2
 ```
 
 ## Usage
