@@ -16,6 +16,7 @@
 - Go 1.11 supports OSX 10.10 Yosemite or later
 - Go 1.12 is the last release supports OSX 10.10 Yosemite
 - Go 1.13 supports OSX 10.11 El Capitan or later
+- Go 1.14 is the last release supports 32-bit binaries on OSX
 - Go 1.14 is the last release supports OSX 10.11 El Capitan
 - Go 1.15 supports OSX 10.12 Sierra or later
 

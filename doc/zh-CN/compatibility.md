@@ -16,6 +16,7 @@
 - Go 1.11支持OSX 10.10 Yosemite及后续版本
 - Go 1.12是最后支持OSX 10.10 Yosemite的版本
 - Go 1.13支持OSX 10.11 El Capitan及后续版本
+- Go 1.14是最后支持OSX 32位二进制程序的版本
 - Go 1.14是最后支持OSX 10.11 El Capitan的版本
 - Go 1.15支持OSX 10.12 Sierra及后续版本
 
