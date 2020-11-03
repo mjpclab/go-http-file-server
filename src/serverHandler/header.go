@@ -8,6 +8,6 @@ func (h *handler) header(w http.ResponseWriter) {
 	}
 	header := w.Header()
 	for _, headerPair := range h.globalHeaders {
-		header.Set(headerPair[0], headerPair[1])
+		header.Add(headerPair[0], headerPair[1])
 	}
 }
