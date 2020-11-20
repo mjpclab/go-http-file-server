@@ -18,26 +18,28 @@ var itemList = document.body.querySelector('.item-list');
 if (!pathList && !itemList) {
 return;
 }
-function getFocusableSibling(container, isPrev) {
+function getFocusableSibling(container, isPrev, startA) {
 if (!container) {
 return
 }
-var focusA = container.querySelector(':focus');
-var focusLI = focusA;
-while (focusLI && focusLI.tagName !== 'LI') {
-focusLI = focusLI.parentElement;
+if (!startA) {
+startA = container.querySelector(':focus');
 }
-if (!focusLI) {
+var startLI = startA;
+while (startLI && startLI.tagName !== 'LI') {
+startLI = startLI.parentElement;
+}
+if (!startLI) {
 if (isPrev) {
-focusLI = container.firstElementChild;
+startLI = container.firstElementChild;
 } else {
-focusLI = container.lastElementChild;
+startLI = container.lastElementChild;
 }
 }
-if (!focusLI) {
+if (!startLI) {
 return;
 }
-var siblingLI = focusLI;
+var siblingLI = startLI;
 do {
 if (isPrev) {
 siblingLI = siblingLI.previousElementSibling;
@@ -50,14 +52,49 @@ if (!siblingLI) {
 siblingLI = container.firstElementChild;
 }
 }
-} while (siblingLI !== focusLI && (
+} while (siblingLI !== startLI && (
 siblingLI.classList.contains(classNone) ||
 siblingLI.classList.contains(classHeader)
 ));
 if (siblingLI) {
-var newFocusA = siblingLI.querySelector('a');
-return newFocusA;
+var siblingA = siblingLI.querySelector('a');
+return siblingA;
 }
+}
+function getMatchedFocusableSibling(container, isPrev, startA, buf, key) {
+var skipRound = buf === key;
+var matchKeyA;
+var firstCheckA;
+var secondCheckA;
+var a = startA;
+do {
+if (skipRound) {
+skipRound = false;
+continue;
+}
+if (!a) {
+continue;
+}
+// firstCheckA maybe a focused a that not belongs to the list
+// secondCheckA must be in the list
+if (!firstCheckA) {
+firstCheckA = a;
+} else if (firstCheckA === a) {
+return;
+} else if (firstCheckA && !secondCheckA) {
+secondCheckA = a
+} else if (secondCheckA === a) {
+return;
+}
+var textContent = (a.querySelector('.name') || a).textContent.toLowerCase();
+if (buf.length <= textContent.length && textContent.substring(0, buf.length) === buf) {
+return a;
+}
+if (!matchKeyA && textContent[0] === key) {
+matchKeyA = a;
+}
+} while (a = getFocusableSibling(container, isPrev, a));
+return matchKeyA;
 }
 var UP = 'Up';
 var DOWN = 'Down';
@@ -71,14 +108,39 @@ var ARROW_UP_CODE = 38;
 var ARROW_DOWN_CODE = 40;
 var ARROW_LEFT_CODE = 37;
 var ARROW_RIGHT_CODE = 39;
-var skipTags = ['INPUT', 'BUTTON', 'TEXTAREA'];
+var SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
+var lookupKey = '';
+var lookupBuffer = '';
+var lookupStartA = null;
+var lookupTimer;
+function delayClearLookupContext() {
+clearTimeout(lookupTimer);
+lookupTimer = setTimeout(function () {
+lookupBuffer = '';
+lookupStartA = null;
+}, 850);
+}
+function lookup(key) {
+key = key.toLowerCase();
+if (key === lookupKey && key === lookupBuffer) {
+// same as last key, lookup next for the same key as prefix
+lookupStartA = itemList.querySelector(':focus');
+lookupBuffer = lookupKey;
+} else {
+if (!lookupStartA) {
+lookupStartA = itemList.querySelector(':focus');
+}
+lookupKey = key;
+lookupBuffer += key;
+}
+delayClearLookupContext();
+return getMatchedFocusableSibling(itemList, false, lookupStartA, lookupBuffer, key);
+}
 document.addEventListener('keydown', function (e) {
 if (
 e.ctrlKey ||
 e.altKey ||
-e.shiftKey ||
-e.metaKey ||
-skipTags.indexOf(e.target.tagName) >= 0
+SKIP_TAGS.indexOf(e.target.tagName) >= 0
 ) {
 return;
 }
@@ -87,35 +149,60 @@ if (e.key) {
 switch (e.key) {
 case LEFT:
 case ARROW_LEFT:
+if (!e.shiftKey && !e.metaKey) {
 newFocusEl = getFocusableSibling(pathList, true);
+}
 break;
 case RIGHT:
 case ARROW_RIGHT:
+if (!e.shiftKey && !e.metaKey) {
 newFocusEl = getFocusableSibling(pathList, false);
+}
 break;
 case UP:
 case ARROW_UP:
+if (!e.shiftKey && !e.metaKey) {
 newFocusEl = getFocusableSibling(itemList, true);
+}
 break;
 case DOWN:
 case ARROW_DOWN:
+if (!e.shiftKey && !e.metaKey) {
 newFocusEl = getFocusableSibling(itemList, false);
+}
+break;
+default:
+if (e.key.length === 1) {
+newFocusEl = lookup(e.key);
+}
 break;
 }
 } else if (e.keyCode) {
 switch (e.keyCode) {
 case ARROW_LEFT_CODE:
+if (!e.shiftKey && !e.metaKey) {
 newFocusEl = getFocusableSibling(pathList, true);
+}
 break;
 case ARROW_RIGHT_CODE:
+if (!e.shiftKey && !e.metaKey) {
 newFocusEl = getFocusableSibling(pathList, false);
+}
 break;
 case ARROW_UP_CODE:
+if (!e.shiftKey && !e.metaKey) {
 newFocusEl = getFocusableSibling(itemList, true);
+}
 break;
 case ARROW_DOWN_CODE:
+if (!e.shiftKey && !e.metaKey) {
 newFocusEl = getFocusableSibling(itemList, false);
+}
 break;
+default:
+if (e.keyCode >= 32 && e.keyCode <= 126) {
+newFocusEl = lookup(String.fromCharCode(e.keyCode));
+}
 }
 }
 if (newFocusEl) {
