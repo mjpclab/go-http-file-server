@@ -61,6 +61,17 @@ var siblingA = siblingLI.querySelector('a');
 return siblingA;
 }
 }
+var selectorFirstAvailLi = 'li:not(.' + classNone + '):not(.' + classHeader + ')';
+function getFirstFocusableSibling(container) {
+var li = container.querySelector(selectorFirstAvailLi);
+var a = li && li.querySelector('a');
+return a;
+}
+function getLastFocusableSibling(container) {
+var a = container.querySelector('li a');
+a = getFocusableSibling(container, true, a);
+return a;
+}
 function getMatchedFocusableSibling(container, isPrev, startA, buf, key) {
 var skipRound = buf === key;
 var matchKeyA;
@@ -136,75 +147,82 @@ lookupBuffer += key;
 delayClearLookupContext();
 return getMatchedFocusableSibling(itemList, false, lookupStartA, lookupBuffer, key);
 }
-document.addEventListener('keydown', function (e) {
-if (
-e.ctrlKey ||
-e.altKey ||
-SKIP_TAGS.indexOf(e.target.tagName) >= 0
-) {
+function getFocusItemByKeyPress(e) {
+if (SKIP_TAGS.indexOf(e.target.tagName) >= 0) {
 return;
 }
-var newFocusEl;
 if (e.key) {
+if (!e.altKey && !e.shiftKey) {
 switch (e.key) {
 case LEFT:
 case ARROW_LEFT:
-if (!e.shiftKey && !e.metaKey) {
-newFocusEl = getFocusableSibling(pathList, true);
+if (e.ctrlKey || e.metaKey) {
+return getFirstFocusableSibling(pathList);
+} else {
+return getFocusableSibling(pathList, true);
 }
-break;
 case RIGHT:
 case ARROW_RIGHT:
-if (!e.shiftKey && !e.metaKey) {
-newFocusEl = getFocusableSibling(pathList, false);
+if (e.ctrlKey || e.metaKey) {
+return getLastFocusableSibling(pathList);
+} else {
+return getFocusableSibling(pathList, false);
 }
-break;
 case UP:
 case ARROW_UP:
-if (!e.shiftKey && !e.metaKey) {
-newFocusEl = getFocusableSibling(itemList, true);
+if (e.ctrlKey || e.metaKey) {
+return getFirstFocusableSibling(itemList);
+} else {
+return getFocusableSibling(itemList, true);
 }
-break;
 case DOWN:
 case ARROW_DOWN:
-if (!e.shiftKey && !e.metaKey) {
-newFocusEl = getFocusableSibling(itemList, false);
+if (e.ctrlKey || e.metaKey) {
+return getLastFocusableSibling(itemList);
+} else {
+return getFocusableSibling(itemList, false);
 }
-break;
-default:
-if (e.key.length === 1) {
-newFocusEl = lookup(e.key);
 }
-break;
+}
+if (!e.ctrlKey && !e.metaKey && e.key.length === 1) {
+return lookup(e.key);
 }
 } else if (e.keyCode) {
+if (!e.altKey && !e.shiftKey) {
 switch (e.keyCode) {
 case ARROW_LEFT_CODE:
-if (!e.shiftKey && !e.metaKey) {
-newFocusEl = getFocusableSibling(pathList, true);
+if (e.ctrlKey || e.metaKey) {
+return getFirstFocusableSibling(pathList);
+} else {
+return getFocusableSibling(pathList, true);
 }
-break;
 case ARROW_RIGHT_CODE:
-if (!e.shiftKey && !e.metaKey) {
-newFocusEl = getFocusableSibling(pathList, false);
+if (e.ctrlKey || e.metaKey) {
+return getLastFocusableSibling(pathList);
+} else {
+return getFocusableSibling(pathList, false);
 }
-break;
 case ARROW_UP_CODE:
-if (!e.shiftKey && !e.metaKey) {
-newFocusEl = getFocusableSibling(itemList, true);
+if (e.ctrlKey || e.metaKey) {
+return getFirstFocusableSibling(itemList);
+} else {
+return getFocusableSibling(itemList, true);
 }
-break;
 case ARROW_DOWN_CODE:
-if (!e.shiftKey && !e.metaKey) {
-newFocusEl = getFocusableSibling(itemList, false);
-}
-break;
-default:
-if (e.keyCode >= 32 && e.keyCode <= 126) {
-newFocusEl = lookup(String.fromCharCode(e.keyCode));
+if (e.ctrlKey || e.metaKey) {
+return getLastFocusableSibling(itemList);
+} else {
+return getFocusableSibling(itemList, false);
 }
 }
 }
+if (!e.ctrlKey && !e.metaKey && e.keyCode >= 32 && e.keyCode <= 126) {
+return lookup(String.fromCharCode(e.keyCode));
+}
+}
+}
+document.addEventListener('keydown', function (e) {
+var newFocusEl = getFocusItemByKeyPress(e);
 if (newFocusEl) {
 e.preventDefault();
 newFocusEl.focus();
