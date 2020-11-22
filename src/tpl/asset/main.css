@@ -320,6 +320,85 @@ em {
 	background: #ffc;
 }
 
+@media (prefers-color-scheme: dark) {
+	html, body {
+		background: #111;
+	}
+
+	body {
+		color: #ccc;
+	}
+
+	a {
+		color: #ddd;
+	}
+
+	a:hover {
+		background-color: #222;
+	}
+
+	a:focus {
+		background-color: #220;
+	}
+
+	a:hover:focus {
+		background-color: #2f2f0f;
+	}
+
+	em {
+		border-color: #555;
+	}
+
+	.path-list {
+		border-bottom-color: #999;
+	}
+
+	.path-list a:after {
+		border-color: #555 #555 transparent transparent;
+	}
+
+	.panel {
+		background-color: #222;
+	}
+
+	.archive a {
+		border-color: #222;
+	}
+
+	.archive a:hover {
+		border-color: #555;
+	}
+
+	.item-list li:hover {
+		background: #222;
+	}
+
+	.item-list .detail,
+	.item-list .delete {
+		border-bottom-color: #222;
+	}
+
+	.item-list .size {
+		color: #999;
+	}
+
+	.item-list .time {
+		color: #666;
+	}
+
+	.item-list .delete {
+		color: #f99;
+	}
+
+	.item-list .delete:hover {
+		background-color: #433;
+	}
+
+	.item-list .header .detail {
+		background-color: #181818;
+	}
+}
+
 @media only screen and (max-width: 375px) {
 	.item-list .header .time {
 		width: 4.05em;
