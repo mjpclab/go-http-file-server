@@ -245,6 +245,7 @@
 		var ARROW_RIGHT_CODE = 39;
 
 		var SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
+		var IS_MAC_PLATFORM = navigator.platform.indexOf('Mac') >= 0;
 
 		var lookupKey = '';
 		var lookupBuffer = '';
@@ -315,7 +316,7 @@
 							}
 					}
 				}
-				if (!e.ctrlKey && !e.metaKey && e.key.length === 1) {
+				if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
 					return lookup(e.key);
 				}
 			} else if (e.keyCode) {
@@ -347,7 +348,7 @@
 							}
 					}
 				}
-				if (!e.ctrlKey && !e.metaKey && e.keyCode >= 32 && e.keyCode <= 126) {
+				if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.keyCode >= 32 && e.keyCode <= 126) {
 					return lookup(String.fromCharCode(e.keyCode));
 				}
 			}
