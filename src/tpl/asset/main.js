@@ -2,6 +2,119 @@
 	var classNone = 'none';
 	var classHeader = 'header';
 
+	function enableFilter() {
+		if (!document.querySelector) {
+			var filter = document.getElementById && document.getElementById('panel-filter');
+			if (filter) {
+				filter.className += ' none';
+			}
+			return;
+		}
+
+		// pre check
+		var filter = document.body.querySelector('.filter');
+		if (!filter) {
+			return;
+		}
+		if (!filter.classList || !filter.addEventListener) {
+			filter.className += ' none';
+			return;
+		}
+
+		var input = filter.querySelector('input.filter-text');
+		if (!input) {
+			return;
+		}
+
+		var selectorNone = '.' + classNone;
+		var selectorNotNone = ':not(' + selectorNone + ')';
+		var selectorItem = '.item-list > li:not(.' + classHeader + '):not(.parent)';
+		var selectorItemNone = selectorItem + selectorNone;
+		var selectorItemNotNone = selectorItem + selectorNotNone;
+
+		// event handler
+		var timeoutId;
+		var lastFilterText = '';
+		var doFilter = function () {
+			var filterText = input.value.trim().toLowerCase();
+			if (filterText === lastFilterText) {
+				return;
+			}
+
+			var selector, items, i;
+
+			if (!filterText) {	// filter cleared, show all items
+				selector = selectorItemNone;
+				items = document.body.querySelectorAll(selector);
+				for (i = items.length - 1; i >= 0; i--) {
+					items[i].classList.remove(classNone);
+				}
+			} else {
+				if (filterText.indexOf(lastFilterText) >= 0) {	// increment search, find in visible items
+					selector = selectorItemNotNone;
+				} else if (lastFilterText.indexOf(filterText) >= 0) {	// decrement search, find in hidden items
+					selector = selectorItemNone;
+				} else {
+					selector = selectorItem;
+				}
+
+				items = document.body.querySelectorAll(selector);
+				for (i = items.length - 1; i >= 0; i--) {
+					var item = items[i];
+					var name = item.querySelector('.name');
+					if (name && name.textContent.toLowerCase().indexOf(filterText) < 0) {
+						item.classList.add(classNone);
+					} else {
+						item.classList.remove(classNone);
+					}
+				}
+			}
+
+			lastFilterText = filterText;
+		};
+
+		var onValueMayChange = function () {
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(doFilter, 350);
+		};
+		input.addEventListener('input', onValueMayChange, false);
+		input.addEventListener('change', onValueMayChange, false);
+		input.addEventListener('keydown', function (e) {
+			switch (e.key) {
+				case 'Enter':
+					clearTimeout(timeoutId);
+					input.blur();
+					doFilter();
+					e.preventDefault();
+					break;
+				case 'Escape':
+				case 'Esc':
+					clearTimeout(timeoutId);
+					input.value = '';
+					doFilter();
+					e.preventDefault();
+					break;
+			}
+		}, false);
+
+		// init
+		if (sessionStorage) {
+			var prevSessionFilter = sessionStorage.getItem(location.pathname);
+			sessionStorage.removeItem(location.pathname);
+			window.addEventListener('beforeunload', function () {
+				if (input.value) {
+					sessionStorage.setItem(location.pathname, input.value);
+				}
+			}, false);
+			if (prevSessionFilter) {
+				input.value = prevSessionFilter;
+			}
+		}
+		if (input.value) {
+			doFilter();
+		}
+	}
+
 	function enableKeyboardNavigate() {
 		if (
 			!document.querySelector ||
@@ -297,119 +410,6 @@
 		upload.addEventListener('drop', onDrop, false);
 	}
 
-	function enableFilter() {
-		if (!document.querySelector) {
-			var filter = document.getElementById && document.getElementById('panel-filter');
-			if (filter) {
-				filter.className += ' none';
-			}
-			return;
-		}
-
-		// pre check
-		var filter = document.body.querySelector('.filter');
-		if (!filter) {
-			return;
-		}
-		if (!filter.classList || !filter.addEventListener) {
-			filter.className += ' none';
-			return;
-		}
-
-		var input = filter.querySelector('input.filter-text');
-		if (!input) {
-			return;
-		}
-
-		var selectorNone = '.' + classNone;
-		var selectorNotNone = ':not(' + selectorNone + ')';
-		var selectorItem = '.item-list > li:not(.' + classHeader + '):not(.parent)';
-		var selectorItemNone = selectorItem + selectorNone;
-		var selectorItemNotNone = selectorItem + selectorNotNone;
-
-		// event handler
-		var timeoutId;
-		var lastFilterText = '';
-		var doFilter = function () {
-			var filterText = input.value.trim().toLowerCase();
-			if (filterText === lastFilterText) {
-				return;
-			}
-
-			var selector, items, i;
-
-			if (!filterText) {	// filter cleared, show all items
-				selector = selectorItemNone;
-				items = document.body.querySelectorAll(selector);
-				for (i = items.length - 1; i >= 0; i--) {
-					items[i].classList.remove(classNone);
-				}
-			} else {
-				if (filterText.indexOf(lastFilterText) >= 0) {	// increment search, find in visible items
-					selector = selectorItemNotNone;
-				} else if (lastFilterText.indexOf(filterText) >= 0) {	// decrement search, find in hidden items
-					selector = selectorItemNone;
-				} else {
-					selector = selectorItem;
-				}
-
-				items = document.body.querySelectorAll(selector);
-				for (i = items.length - 1; i >= 0; i--) {
-					var item = items[i];
-					var name = item.querySelector('.name');
-					if (name && name.textContent.toLowerCase().indexOf(filterText) < 0) {
-						item.classList.add(classNone);
-					} else {
-						item.classList.remove(classNone);
-					}
-				}
-			}
-
-			lastFilterText = filterText;
-		};
-
-		var onValueMayChange = function () {
-			clearTimeout(timeoutId);
-			timeoutId = setTimeout(doFilter, 350);
-		};
-		input.addEventListener('input', onValueMayChange, false);
-		input.addEventListener('change', onValueMayChange, false);
-		input.addEventListener('keydown', function (e) {
-			switch (e.key) {
-				case 'Enter':
-					clearTimeout(timeoutId);
-					input.blur();
-					doFilter();
-					e.preventDefault();
-					break;
-				case 'Escape':
-				case 'Esc':
-					clearTimeout(timeoutId);
-					input.value = '';
-					doFilter();
-					e.preventDefault();
-					break;
-			}
-		}, false);
-
-		// init
-		if (sessionStorage) {
-			var prevSessionFilter = sessionStorage.getItem(location.pathname);
-			sessionStorage.removeItem(location.pathname);
-			window.addEventListener('beforeunload', function () {
-				if (input.value) {
-					sessionStorage.setItem(location.pathname, input.value);
-				}
-			}, false);
-			if (prevSessionFilter) {
-				input.value = prevSessionFilter;
-			}
-		}
-		if (input.value) {
-			doFilter();
-		}
-	}
-
 	function enableNonRefreshDelete() {
 		if (!document.querySelector) {
 			return;
@@ -462,8 +462,8 @@
 		}, false);
 	}
 
+	enableFilter();
 	enableKeyboardNavigate();
 	enableDragUpload();
-	enableFilter();
 	enableNonRefreshDelete();
 })();
