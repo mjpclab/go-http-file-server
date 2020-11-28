@@ -92,8 +92,8 @@ if (!firstCheckA) {
 firstCheckA = a;
 } else if (firstCheckA === a) {
 return;
-} else if (firstCheckA && !secondCheckA) {
-secondCheckA = a
+} else if (!secondCheckA) {
+secondCheckA = a;
 } else if (secondCheckA === a) {
 return;
 }
