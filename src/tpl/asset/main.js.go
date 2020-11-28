@@ -222,7 +222,8 @@ var ARROW_DOWN_CODE = 40;
 var ARROW_LEFT_CODE = 37;
 var ARROW_RIGHT_CODE = 39;
 var SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
-var IS_MAC_PLATFORM = navigator.platform.indexOf('Mac') >= 0;
+var PLATFORM = navigator.platform;
+var IS_MAC_PLATFORM = PLATFORM.indexOf('Mac') >= 0 || PLATFORM.indexOf('iPhone') >= 0 || PLATFORM.indexOf('iPad') >= 0 || PLATFORM.indexOf('iPod') >= 0
 var lookupKey = '';
 var lookupBuffer = '';
 var lookupStartA = null;
