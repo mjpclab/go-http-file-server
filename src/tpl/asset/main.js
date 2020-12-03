@@ -101,11 +101,14 @@
 		if (sessionStorage) {
 			var prevSessionFilter = sessionStorage.getItem(location.pathname);
 			sessionStorage.removeItem(location.pathname);
-			window.addEventListener('beforeunload', function () {
+
+			var leavingEvent = typeof window.onpagehide !== 'undefined' ? 'pagehide' : 'beforeunload';
+			window.addEventListener(leavingEvent, function () {
 				if (input.value) {
 					sessionStorage.setItem(location.pathname, input.value);
 				}
 			}, false);
+
 			if (prevSessionFilter) {
 				input.value = prevSessionFilter;
 			}
