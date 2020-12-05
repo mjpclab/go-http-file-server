@@ -60,6 +60,9 @@ border-radius: 3px;
 .none, :root body .none {
 display: none;
 }
+.hidden {
+visibility: hidden;
+}
 .path-list {
 font-size: 1.5em;
 overflow: hidden;
@@ -95,6 +98,32 @@ padding-right: 0.5em;
 }
 .path-list li:last-child a:after {
 display: none;
+}
+.tab {
+display: flex;
+white-space: nowrap;
+margin: 1em 1em -1em 1em;
+}
+.tab label {
+flex: 0 0 auto;
+margin-right: 0.5em;
+padding: 1em;
+cursor: pointer;
+}
+.tab label:focus {
+outline: 0;
+text-decoration: underline;
+text-decoration-style: dotted;
+}
+.tab label:hover {
+background: #fbfbfb;
+}
+.tab label.active {
+color: #000;
+background: #f7f7f7;
+}
+.tab label:last-child {
+margin-right: 0;
 }
 .panel {
 margin: 1em;
@@ -297,6 +326,13 @@ border-bottom-color: #999;
 }
 .path-list a:after {
 border-color: #555 #555 transparent transparent;
+}
+.tab label:hover {
+background-color: #181818;
+}
+.tab label.active {
+color: #fff;
+background-color: #222;
 }
 .panel {
 background-color: #222;

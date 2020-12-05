@@ -4,6 +4,7 @@ const mainJs = `
 (function () {
 var classNone = 'none';
 var classHeader = 'header';
+var leavingEvent = typeof window.onpagehide !== 'undefined' ? 'pagehide' : 'beforeunload';
 function enableFilter() {
 if (!document.querySelector) {
 var filter = document.getElementById && document.getElementById('panel-filter');
@@ -93,7 +94,6 @@ break;
 if (sessionStorage) {
 var prevSessionFilter = sessionStorage.getItem(location.pathname);
 sessionStorage.removeItem(location.pathname);
-var leavingEvent = typeof window.onpagehide !== 'undefined' ? 'pagehide' : 'beforeunload';
 window.addEventListener(leavingEvent, function () {
 if (input.value) {
 sessionStorage.setItem(location.pathname, input.value);
@@ -334,7 +334,7 @@ newFocusEl.focus();
 }
 });
 }
-function enableDragUpload() {
+function enhanceUpload() {
 if (!document.querySelector || !document.addEventListener || !document.body.classList) {
 return;
 }
@@ -343,35 +343,113 @@ if (!upload) {
 return;
 }
 var fileInput = upload.querySelector('.file');
-var addClass = function (ele, className) {
+if (!fileInput) {
+return;
+}
+var uploadType = document.body.querySelector('.upload-type');
+if (!uploadType) {
+return;
+}
+var file = 'file';
+var dirFile = 'dirfile';
+var innerDirFile = 'innerdirfile';
+var optFile = uploadType.querySelector('.' + file);
+var optDirFile = uploadType.querySelector('.' + dirFile);
+var optInnerDirFile = uploadType.querySelector('.' + innerDirFile);
+var optActive = optFile;
+function addClass(ele, className) {
 ele && ele.classList.add(className);
-};
-var removeClass = function (ele, className) {
+}
+function removeClass(ele, className) {
 ele && ele.classList.remove(className);
-};
-var onDragEnterOver = function (e) {
+}
+function enableAddDir() {
+var classHidden = 'hidden';
+var classActive = 'active';
+function onClickOpt(e) {
+var optTarget = e.target;
+if (optTarget === optActive) {
+return;
+}
+removeClass(optActive, classActive);
+optActive = optTarget;
+addClass(optActive, classActive);
+fileInput.value = '';
+}
+if (typeof fileInput.webkitdirectory === 'undefined') {
+return;
+}
+removeClass(optDirFile, classHidden);
+removeClass(optInnerDirFile, classHidden);
+if (optFile) {
+optFile.addEventListener('click', onClickOpt);
+optFile.addEventListener('click', function () {
+fileInput.name = file;
+fileInput.webkitdirectory = false;
+});
+}
+if (optDirFile) {
+optDirFile.addEventListener('click', onClickOpt);
+optDirFile.addEventListener('click', function () {
+fileInput.name = dirFile;
+fileInput.webkitdirectory = true
+});
+}
+if (optInnerDirFile) {
+optInnerDirFile.addEventListener('click', onClickOpt);
+optInnerDirFile.addEventListener('click', function () {
+fileInput.name = innerDirFile;
+fileInput.webkitdirectory = true
+});
+}
+if (sessionStorage) {
+var uploadTypeField = 'upload-type';
+var prevUploadType = sessionStorage.getItem(uploadTypeField);
+sessionStorage.removeItem(uploadTypeField);
+window.addEventListener(leavingEvent, function () {
+var activeUploadType = fileInput.name;
+if (activeUploadType !== file) {
+sessionStorage.setItem(uploadTypeField, activeUploadType)
+}
+}, false);
+if (prevUploadType === dirFile) {
+optDirFile && optDirFile.click();
+} else if (prevUploadType === innerDirFile) {
+optInnerDirFile && optInnerDirFile.click();
+}
+}
+}
+function enableAddDragDrop() {
+function onDragEnterOver(e) {
 e.stopPropagation();
 e.preventDefault();
 addClass(e.currentTarget, 'dragging');
-};
-var onDragLeave = function (e) {
+}
+function onDragLeave(e) {
 if (e.target === e.currentTarget) {
 removeClass(e.currentTarget, 'dragging');
 }
-};
-var onDrop = function (e) {
+}
+function onDrop(e) {
 e.stopPropagation();
 e.preventDefault();
 removeClass(e.currentTarget, 'dragging');
 if (!e.dataTransfer.files) {
 return;
 }
+if (optFile && optActive !== optFile) {
+optFile.focus();
+optFile.click();
+}
 fileInput.files = e.dataTransfer.files;
-};
+}
 upload.addEventListener('dragenter', onDragEnterOver, false);
 upload.addEventListener('dragover', onDragEnterOver, false);
 upload.addEventListener('dragleave', onDragLeave, false);
 upload.addEventListener('drop', onDrop, false);
+}
+enableAddDir();
+enableAddDragDrop();
 }
 function enableNonRefreshDelete() {
 if (!document.querySelector) {
@@ -422,7 +500,7 @@ return false;
 }
 enableFilter();
 enableKeyboardNavigate();
-enableDragUpload();
+enhanceUpload();
 enableNonRefreshDelete();
 })();
 `

@@ -28,6 +28,11 @@
 {{end}}
 
 {{if .CanUpload}}
+	<div class="tab upload-type">
+		<label class="file active" tabindex="0" title="Upload files">Files</label>
+		{{if .CanMkdir}}<label class="dirfile hidden" tabindex="0" title="Upload Directory itself">Dir</label>{{end}}
+		<label class="innerdirfile hidden" tabindex="0" title="Upload contents of directory">Dir contents</label>
+	</div>
 	<div class="panel upload">
 		<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
 			<input type="file" name="file" multiple="multiple" class="file"/>
