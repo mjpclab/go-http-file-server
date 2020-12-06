@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+const file = "file"
+const dirFile = "dirfile"
+const innerDirFile = "innerdirfile"
+
 func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) string {
 	if len(fsPrefix) == 0 {
 		fsPrefix = "/"
@@ -36,7 +40,7 @@ func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) stri
 	return ""
 }
 
-func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
+func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	errs := []error{}
 
 	reader, err := r.MultipartReader()
@@ -54,8 +58,50 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSu
 			break
 		}
 
-		filename := part.FileName()
-		slashIndex := strings.LastIndexAny(filename, "/\\")
+		partFilename := path.Clean(strings.ReplaceAll(part.FileName(), "\\", "/"))
+		if partFilename[0] == '/' {
+			partFilename = partFilename[1:]
+		}
+		if len(partFilename) == 0 {
+			continue
+		}
+
+		slashIndex := strings.LastIndexByte(partFilename, '/')
+
+		fsInfix := ""
+		formname := part.FormName()
+		if formname == dirFile {
+			if slashIndex <= 0 {
+				continue
+			}
+			fsInfix = partFilename[0:slashIndex]
+		} else if formname == innerDirFile { // get file path, strip first level of dir
+			if slashIndex <= 0 {
+				continue
+			}
+			filepath := partFilename[0:slashIndex]
+			prefixSlashIndex := strings.IndexByte(filepath, '/')
+			if prefixSlashIndex > 0 {
+				fsInfix = filepath[prefixSlashIndex+1:]
+			}
+		}
+
+		filePrefix := fsPrefix
+		if len(fsInfix) > 0 {
+			if !createDir {
+				errs = append(errs, errors.New("Upload failed: mkdir is not enabled for "+fsPrefix))
+				continue
+			}
+
+			filePrefix = fsPrefix + "/" + fsInfix
+			err := os.MkdirAll(filePrefix, 0755)
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+		}
+
+		filename := partFilename
 		if slashIndex >= 0 {
 			filename = filename[slashIndex+1:]
 		}
@@ -66,7 +112,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSu
 		isFilenameAliased := containsItem(aliasSubItems, filename)
 		var fsFilename string
 		if overwriteExists && !isFilenameAliased {
-			tryPath := fsPrefix + "/" + filename
+			tryPath := filePrefix + "/" + filename
 			var info os.FileInfo
 			info, err = os.Lstat(tryPath)
 			if info != nil && !info.IsDir() {
@@ -79,7 +125,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSu
 			}
 		}
 		if len(fsFilename) == 0 {
-			fsFilename = getAvailableFilename(fsPrefix, filename, isFilenameAliased)
+			fsFilename = getAvailableFilename(filePrefix, filename, isFilenameAliased)
 		}
 		if len(fsFilename) == 0 {
 			err := errors.New("no available filename for " + filename)
@@ -87,7 +133,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSu
 			continue
 		}
 
-		fsPath := path.Clean(fsPrefix + "/" + fsFilename)
+		fsPath := path.Clean(filePrefix + "/" + fsFilename)
 		go h.logUpload(filename, fsPath, r)
 		file, err := os.OpenFile(fsPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
