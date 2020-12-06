@@ -63,6 +63,15 @@ display: none;
 .hidden {
 visibility: hidden;
 }
+.if-disabled {
+display: none;
+}
+:disabled .if-disabled {
+display: inherit;
+}
+:disabled .if-enabled {
+display: none;
+}
 .path-list {
 font-size: 1.5em;
 overflow: hidden;
@@ -147,12 +156,13 @@ background: #c9c;
 .upload.dragging::before {
 display: block;
 }
-.upload input {
+.upload input,
+.upload button {
 display: block;
 width: 100%;
 box-sizing: border-box;
 }
-.upload input + input {
+.upload button {
 margin-top: 0.5em;
 }
 .archive {

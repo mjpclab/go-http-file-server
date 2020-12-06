@@ -377,7 +377,11 @@
 		if (!upload) {
 			return;
 		}
-		var fileInput = upload.querySelector('.file');
+		var form = upload.querySelector('form');
+		if (!form) {
+			return;
+		}
+		var fileInput = form.querySelector('.file');
 		if (!fileInput) {
 			return;
 		}
@@ -516,8 +520,57 @@
 			upload.addEventListener('drop', onDrop, false);
 		}
 
+		function enableUploadProgress() {	// also fix Safari upload filename has no path info
+			if (!FormData) {
+				return;
+			}
+
+			var btnSubmit = form.querySelector('.submit');
+			if (!btnSubmit) {
+				return;
+			}
+
+			function onComplete() {
+				btnSubmit.disabled = false;
+			}
+
+			function onLoad() {
+				location.reload();
+			}
+
+			form.addEventListener('submit', function (e) {
+				e.stopPropagation();
+				e.preventDefault();
+
+				var files = Array.prototype.slice.call(fileInput.files);
+				if (!files.length) {
+					return;
+				}
+
+				var formName = fileInput.name;
+				var parts = new FormData();
+				files.forEach(function (file) {
+					if (file.webkitRelativePath) {
+						parts.append(formName, file, file.webkitRelativePath);
+					} else {
+						parts.append(formName, file);
+					}
+				});
+
+				var xhr = new XMLHttpRequest();
+				xhr.addEventListener('error', onComplete);
+				xhr.addEventListener('load', onComplete);
+				xhr.addEventListener('load', onLoad);
+
+				xhr.open(form.method, form.action);
+				xhr.send(parts);
+				btnSubmit.disabled = true;
+			});
+		}
+
 		enableAddDir();
 		enableAddDragDrop();
+		enableUploadProgress();
 	}
 
 	function enableNonRefreshDelete() {

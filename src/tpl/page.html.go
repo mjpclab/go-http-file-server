@@ -44,7 +44,9 @@ const pageTplStr = `
 <div class="panel upload">
 <form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
 <input type="file" name="file" multiple="multiple" class="file"/>
-<input type="submit" value="Upload" class="submit"/>
+<button type="submit" class="submit">
+<span class="if-enabled">Upload</span><span class="if-disabled">Uploading ...</span>
+</button>
 </form>
 </div>
 {{end}}
