@@ -486,15 +486,27 @@
 				e.stopPropagation();
 				e.preventDefault();
 				removeClass(e.currentTarget, 'dragging');
+				fileInput.value = '';
 
-				if (!e.dataTransfer.files) {
+				if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
 					return;
+				}
+
+				var items = Array.prototype.slice.call(e.dataTransfer.items);
+				if (items && items.length && items[0].webkitGetAsEntry) {
+					for (var i = 0, len = items.length; i < len; i++) {
+						var entry = items[i].webkitGetAsEntry();
+						if (entry && entry.isDirectory) {
+							return;
+						}
+					}
 				}
 
 				if (optFile && optActive !== optFile) {
 					optFile.focus();
 					optFile.click();
 				}
+
 				fileInput.files = e.dataTransfer.files;
 			}
 
