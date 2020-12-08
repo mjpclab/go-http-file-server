@@ -58,7 +58,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			break
 		}
 
-		partFilename := path.Clean(strings.ReplaceAll(part.FileName(), "\\", "/"))
+		partFilename := path.Clean(strings.Replace(part.FileName(), "\\", "/", -1))
 		if partFilename[0] == '/' {
 			partFilename = partFilename[1:]
 		}
