@@ -381,10 +381,11 @@ addClass(optActive, classActive);
 fileInput.value = '';
 }
 if (typeof fileInput.webkitdirectory === 'undefined') {
+addClass(uploadType, classNone);
 return;
 }
-removeClass(optDirFile, classHidden);
-removeClass(optInnerDirFile, classHidden);
+optDirFile && removeClass(optDirFile, classHidden);
+optInnerDirFile && removeClass(optInnerDirFile, classHidden);
 if (optFile) {
 optFile.addEventListener('click', onClickOpt);
 optFile.addEventListener('click', function () {
