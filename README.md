@@ -160,6 +160,7 @@ server [options]
         If filename exists and is a regular file,
         will try to remove it first if deleting is enabled(e.g. by --delete),
         otherwise will try to add or increase numeric suffix.
+        For directory upload mode, sub directories will be uploaded only if mkdir is enabled.
 
 --global-mkdir
     Allow create sub directory under all url paths.
