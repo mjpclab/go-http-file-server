@@ -412,8 +412,7 @@
 			var classHidden = 'hidden';
 			var classActive = 'active';
 
-			function onClickOpt(e) {
-				var optTarget = e.target;
+			function onClickOpt(optTarget, clearInput) {
 				if (optTarget === optActive) {
 					return;
 				}
@@ -422,7 +421,31 @@
 				optActive = optTarget;
 				addClass(optActive, classActive);
 
-				fileInput.value = '';
+				if (clearInput) {
+					fileInput.value = '';
+				}
+				return true;
+			}
+
+			function onClickOptFile(e) {
+				if (onClickOpt(optFile, Boolean(e))) {
+					fileInput.name = file;
+					fileInput.webkitdirectory = false;
+				}
+			}
+
+			function onClickOptDirFile(e) {
+				if (onClickOpt(optDirFile, Boolean(e))) {
+					fileInput.name = dirFile;
+					fileInput.webkitdirectory = true;
+				}
+			}
+
+			function onClickOptInnerDirFile(e) {
+				if (onClickOpt(optInnerDirFile, Boolean(e))) {
+					fileInput.name = innerDirFile;
+					fileInput.webkitdirectory = true;
+				}
 			}
 
 			if (typeof fileInput.webkitdirectory === 'undefined') {
@@ -433,25 +456,13 @@
 			optInnerDirFile && removeClass(optInnerDirFile, classHidden);
 
 			if (optFile) {
-				optFile.addEventListener('click', onClickOpt);
-				optFile.addEventListener('click', function () {
-					fileInput.name = file;
-					fileInput.webkitdirectory = false;
-				});
+				optFile.addEventListener('click', onClickOptFile);
 			}
 			if (optDirFile) {
-				optDirFile.addEventListener('click', onClickOpt);
-				optDirFile.addEventListener('click', function () {
-					fileInput.name = dirFile;
-					fileInput.webkitdirectory = true
-				});
+				optDirFile.addEventListener('click', onClickOptDirFile);
 			}
 			if (optInnerDirFile) {
-				optInnerDirFile.addEventListener('click', onClickOpt);
-				optInnerDirFile.addEventListener('click', function () {
-					fileInput.name = innerDirFile;
-					fileInput.webkitdirectory = true
-				});
+				optInnerDirFile.addEventListener('click', onClickOptInnerDirFile);
 			}
 
 			if (sessionStorage) {
@@ -472,6 +483,25 @@
 					optInnerDirFile && optInnerDirFile.click();
 				}
 			}
+
+			optFile && fileInput.addEventListener('change', function (e) {
+				// workaround fix for mobile device, select dir not work but still act like select files
+				// switch back to file
+				if (optActive === optFile) {
+					return;
+				}
+				var files = e.target.files;
+				if (!files || !files.length) {
+					return;
+				}
+
+				var nodir = Array.prototype.slice.call(files).every(function (file) {
+					return !file.webkitRelativePath;
+				});
+				if (nodir) {
+					onClickOptFile();	// prevent clear input files
+				}
+			});
 		}
 
 		function enableAddDragDrop() {
