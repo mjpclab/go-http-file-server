@@ -1,4 +1,4 @@
-package vhostMux
+package vhostHandler
 
 import (
 	"../param"
@@ -10,18 +10,18 @@ import (
 	"net/http"
 )
 
-type VhostMux struct {
+type VhostHandler struct {
 	p            *param.Param
 	logger       *serverLog.Logger
 	errorHandler *serverErrHandler.ErrHandler
-	ServeMux     *http.ServeMux
+	Handler      http.Handler
 }
 
-func NewServeMux(
+func NewHandler(
 	p *param.Param,
 	logger *serverLog.Logger,
 	errorHandler *serverErrHandler.ErrHandler,
-) *VhostMux {
+) *VhostHandler {
 	users := user.NewUsers()
 	for _, u := range p.UsersPlain {
 		errorHandler.LogError(users.AddPlain(u.Username, u.Password))
@@ -61,7 +61,7 @@ func NewServeMux(
 		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, p, users, pageTpl, logger, errorHandler)
 	}
 
-	// create ServeMux
+	var handler http.Handler
 	serveMux := &http.ServeMux{}
 	for urlPath, handler := range handlers {
 		serveMux.Handle(urlPath, handler)
@@ -69,22 +69,23 @@ func NewServeMux(
 			serveMux.Handle(urlPath+"/", handler)
 		}
 	}
+	handler = serveMux
 
-	vhostMux := &VhostMux{
+	vhostHandler := &VhostHandler{
 		p:            p,
 		logger:       logger,
 		errorHandler: errorHandler,
-		ServeMux:     serveMux,
+		Handler:      handler,
 	}
 
-	return vhostMux
+	return vhostHandler
 }
 
-func (m *VhostMux) ReOpenLog() {
+func (m *VhostHandler) ReOpenLog() {
 	errors := m.logger.ReOpen()
 	serverErrHandler.CheckError(errors...)
 }
 
-func (m *VhostMux) Close() {
+func (m *VhostHandler) Close() {
 	m.logger.Close()
 }

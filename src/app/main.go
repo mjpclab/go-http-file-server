@@ -5,13 +5,13 @@ import (
 	"../param"
 	"../serverErrHandler"
 	"../serverLog"
-	"../vhostMux"
+	"../vhostHandler"
 	"os"
 )
 
 type App struct {
-	vhostSvc   *goVirtualHost.Service
-	vhostMuxes []*vhostMux.VhostMux
+	vhostSvc      *goVirtualHost.Service
+	vhostHandlers []*vhostHandler.VhostHandler
 }
 
 func (app *App) Open() {
@@ -22,22 +22,22 @@ func (app *App) Open() {
 }
 
 func (app *App) Close() {
-	for _, vhMux := range app.vhostMuxes {
-		vhMux.Close()
+	for _, vhHandler := range app.vhostHandlers {
+		vhHandler.Close()
 	}
 
 	app.vhostSvc.Close()
 }
 
 func (app *App) ReOpenLog() {
-	for _, vhMux := range app.vhostMuxes {
-		vhMux.ReOpenLog()
+	for _, vhhandler := range app.vhostHandlers {
+		vhhandler.ReOpenLog()
 	}
 }
 
 func NewApp(params []*param.Param) *App {
 	vhSvc := goVirtualHost.NewService()
-	vhMuxes := make([]*vhostMux.VhostMux, 0, len(params))
+	vhHandlers := make([]*vhostHandler.VhostHandler, 0, len(params))
 
 	for _, p := range params {
 		// logger
@@ -49,8 +49,8 @@ func NewApp(params []*param.Param) *App {
 		errHandler := serverErrHandler.NewErrHandler(logger)
 
 		// ServeMux
-		vhMux := vhostMux.NewServeMux(p, logger, errHandler)
-		vhMuxes = append(vhMuxes, vhMux)
+		vhHandler := vhostHandler.NewHandler(p, logger, errHandler)
+		vhHandlers = append(vhHandlers, vhHandler)
 
 		// init vhost
 		listens := p.Listens
@@ -68,7 +68,7 @@ func NewApp(params []*param.Param) *App {
 			ListensTLS:   p.ListensTLS,
 			Cert:         p.Certificate,
 			HostNames:    p.HostNames,
-			Handler:      vhMux.ServeMux,
+			Handler:      vhHandler.Handler,
 		})
 		if len(errors) > 0 {
 			serverErrHandler.CheckFatal(errors...)
@@ -78,7 +78,7 @@ func NewApp(params []*param.Param) *App {
 	}
 
 	return &App{
-		vhostSvc:   vhSvc,
-		vhostMuxes: vhMuxes,
+		vhostSvc:      vhSvc,
+		vhostHandlers: vhHandlers,
 	}
 }
