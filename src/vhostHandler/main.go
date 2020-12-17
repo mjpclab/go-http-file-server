@@ -62,14 +62,18 @@ func NewHandler(
 	}
 
 	var handler http.Handler
-	serveMux := &http.ServeMux{}
-	for urlPath, handler := range handlers {
-		serveMux.Handle(urlPath, handler)
-		if len(urlPath) > 1 {
-			serveMux.Handle(urlPath+"/", handler)
+	if len(handlers) == 0 {
+		handler = handlers["/"]
+	} else {
+		serveMux := http.NewServeMux()
+		for urlPath, handler := range handlers {
+			serveMux.Handle(urlPath, handler)
+			if len(urlPath) > 1 {
+				serveMux.Handle(urlPath+"/", handler)
+			}
 		}
+		handler = serveMux
 	}
-	handler = serveMux
 
 	vhostHandler := &VhostHandler{
 		p:            p,
