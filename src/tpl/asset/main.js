@@ -3,6 +3,11 @@
 	var classHeader = 'header';
 	var leavingEvent = typeof window.onpagehide !== 'undefined' ? 'pagehide' : 'beforeunload';
 
+	var Enter = 'Enter';
+	var Escape = 'Escape';
+	var Esc = 'Esc';
+	var Space = ' ';
+
 	function enableFilter() {
 		if (!document.querySelector) {
 			var filter = document.getElementById && document.getElementById('panel-filter');
@@ -82,14 +87,14 @@
 		input.addEventListener('change', onValueMayChange, false);
 		input.addEventListener('keydown', function (e) {
 			switch (e.key) {
-				case 'Enter':
+				case Enter:
 					clearTimeout(timeoutId);
 					input.blur();
 					doFilter();
 					e.preventDefault();
 					break;
-				case 'Escape':
-				case 'Esc':
+				case Escape:
+				case Esc:
 					clearTimeout(timeoutId);
 					input.value = '';
 					doFilter();
@@ -448,6 +453,23 @@
 				}
 			}
 
+			function onKeydownOpt(e) {
+				switch (e.key) {
+					case Enter:
+					case Space:
+						if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) {
+							break;
+						}
+						e.preventDefault();
+						e.stopPropagation();
+						if (e.target === optActive) {
+							break;
+						}
+						e.target.click();
+						break;
+				}
+			}
+
 			if (typeof fileInput.webkitdirectory === 'undefined') {
 				addClass(uploadType, classNone);
 				return;
@@ -457,12 +479,15 @@
 
 			if (optFile) {
 				optFile.addEventListener('click', onClickOptFile);
+				optFile.addEventListener('keydown', onKeydownOpt);
 			}
 			if (optDirFile) {
 				optDirFile.addEventListener('click', onClickOptDirFile);
+				optDirFile.addEventListener('keydown', onKeydownOpt);
 			}
 			if (optInnerDirFile) {
 				optInnerDirFile.addEventListener('click', onClickOptInnerDirFile);
+				optInnerDirFile.addEventListener('keydown', onKeydownOpt);
 			}
 
 			if (sessionStorage) {
