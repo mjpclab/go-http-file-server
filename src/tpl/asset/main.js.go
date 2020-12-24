@@ -486,6 +486,7 @@ function onComplete() {
 if (elProgress) {
 elProgress.style.width = '';
 }
+fileInput.disabled = false;
 btnSubmit.disabled = false;
 }
 function onLoad() {
@@ -521,6 +522,7 @@ xhr.upload.addEventListener('progress', onProgress);
 }
 xhr.open(form.method, form.action);
 xhr.send(parts);
+fileInput.disabled = true;
 btnSubmit.disabled = true;
 }
 form.addEventListener('submit', function (e) {

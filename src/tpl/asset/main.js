@@ -547,6 +547,7 @@
 				if (elProgress) {
 					elProgress.style.width = '';
 				}
+				fileInput.disabled = false;
 				btnSubmit.disabled = false;
 			}
 
@@ -588,6 +589,7 @@
 
 				xhr.open(form.method, form.action);
 				xhr.send(parts);
+				fileInput.disabled = true;
 				btnSubmit.disabled = true;
 			}
 
