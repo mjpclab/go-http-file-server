@@ -1,7 +1,9 @@
 (function () {
+	var strUndef = 'undefined';
+
 	var classNone = 'none';
 	var classHeader = 'header';
-	var leavingEvent = typeof window.onpagehide !== 'undefined' ? 'pagehide' : 'beforeunload';
+	var leavingEvent = typeof window.onpagehide !== strUndef ? 'pagehide' : 'beforeunload';
 
 	var Enter = 'Enter';
 	var Escape = 'Escape';
@@ -470,7 +472,7 @@
 				}
 			}
 
-			if (typeof fileInput.webkitdirectory === 'undefined') {
+			if (typeof fileInput.webkitdirectory === strUndef) {
 				addClass(uploadType, classNone);
 				return;
 			}
@@ -581,12 +583,17 @@
 				return;
 			}
 
-			var btnSubmit = form.querySelector('.submit');
+			var btnSubmit = form.querySelector('.submit') || form.querySelector('input[type=submit]');
 			if (!btnSubmit) {
 				return;
 			}
 
+			var elProgress = btnSubmit.querySelector('.progress');
+
 			function onComplete() {
+				if (elProgress) {
+					elProgress.style.width = '';
+				}
 				btnSubmit.disabled = false;
 			}
 
@@ -594,10 +601,14 @@
 				location.reload();
 			}
 
-			form.addEventListener('submit', function (e) {
-				e.stopPropagation();
-				e.preventDefault();
+			function onProgress(e) {
+				if (e.lengthComputable) {
+					var percent = 100 * e.loaded / e.total;
+					elProgress.style.width = percent + '%';
+				}
+			}
 
+			function uploadProgressively() {
 				var files = Array.prototype.slice.call(fileInput.files);
 				if (!files.length) {
 					return;
@@ -614,13 +625,24 @@
 				});
 
 				var xhr = new XMLHttpRequest();
-				xhr.addEventListener('error', onComplete);
-				xhr.addEventListener('load', onComplete);
-				xhr.addEventListener('load', onLoad);
+				xhr.upload.addEventListener('error', onComplete);
+				xhr.upload.addEventListener('abort', onComplete);
+				xhr.upload.addEventListener('load', onComplete);
+				xhr.upload.addEventListener('load', onLoad);
+				if (elProgress) {
+					xhr.upload.addEventListener('progress', onProgress);
+				}
 
 				xhr.open(form.method, form.action);
 				xhr.send(parts);
 				btnSubmit.disabled = true;
+			}
+
+			form.addEventListener('submit', function (e) {
+				e.stopPropagation();
+				e.preventDefault();
+
+				uploadProgressively();
 			});
 		}
 

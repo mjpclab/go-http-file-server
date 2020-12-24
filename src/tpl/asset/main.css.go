@@ -146,6 +146,7 @@ position: relative;
 display: none;
 content: '';
 position: absolute;
+z-index: 1;
 left: 0;
 top: 0;
 right: 0;
@@ -163,7 +164,20 @@ width: 100%;
 box-sizing: border-box;
 }
 .upload button {
+position: relative;
 margin-top: 0.5em;
+}
+.upload button span {
+position: relative;
+}
+.upload button .progress {
+position: absolute;
+left: 0;
+top: 0;
+bottom: 0;
+width: 0;
+opacity: 0.5;
+background: #c9c;
 }
 .archive {
 margin: 1em;
