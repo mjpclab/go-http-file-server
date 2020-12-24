@@ -531,53 +531,6 @@
 			});
 		}
 
-		function enableAddDragDrop() {
-			function onDragEnterOver(e) {
-				e.stopPropagation();
-				e.preventDefault();
-				addClass(e.currentTarget, 'dragging');
-			}
-
-			function onDragLeave(e) {
-				if (e.target === e.currentTarget) {
-					removeClass(e.currentTarget, 'dragging');
-				}
-			}
-
-			function onDrop(e) {
-				e.stopPropagation();
-				e.preventDefault();
-				removeClass(e.currentTarget, 'dragging');
-				fileInput.value = '';
-
-				if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
-					return;
-				}
-
-				var items = Array.prototype.slice.call(e.dataTransfer.items);
-				if (items && items.length && items[0].webkitGetAsEntry) {
-					for (var i = 0, len = items.length; i < len; i++) {
-						var entry = items[i].webkitGetAsEntry();
-						if (entry && entry.isDirectory) {
-							return;
-						}
-					}
-				}
-
-				if (optFile && optActive !== optFile) {
-					optFile.focus();
-					optFile.click();
-				}
-
-				fileInput.files = e.dataTransfer.files;
-			}
-
-			upload.addEventListener('dragenter', onDragEnterOver, false);
-			upload.addEventListener('dragover', onDragEnterOver, false);
-			upload.addEventListener('dragleave', onDragLeave, false);
-			upload.addEventListener('drop', onDrop, false);
-		}
-
 		function enableUploadProgress() {	// also fix Safari upload filename has no path info
 			if (!FormData) {
 				return;
@@ -646,9 +599,56 @@
 			});
 		}
 
+		function enableAddDragDrop() {
+			function onDragEnterOver(e) {
+				e.stopPropagation();
+				e.preventDefault();
+				addClass(e.currentTarget, 'dragging');
+			}
+
+			function onDragLeave(e) {
+				if (e.target === e.currentTarget) {
+					removeClass(e.currentTarget, 'dragging');
+				}
+			}
+
+			function onDrop(e) {
+				e.stopPropagation();
+				e.preventDefault();
+				removeClass(e.currentTarget, 'dragging');
+				fileInput.value = '';
+
+				if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
+					return;
+				}
+
+				var items = Array.prototype.slice.call(e.dataTransfer.items);
+				if (items && items.length && items[0].webkitGetAsEntry) {
+					for (var i = 0, len = items.length; i < len; i++) {
+						var entry = items[i].webkitGetAsEntry();
+						if (entry && entry.isDirectory) {
+							return;
+						}
+					}
+				}
+
+				if (optFile && optActive !== optFile) {
+					optFile.focus();
+					optFile.click();
+				}
+
+				fileInput.files = e.dataTransfer.files;
+			}
+
+			upload.addEventListener('dragenter', onDragEnterOver, false);
+			upload.addEventListener('dragover', onDragEnterOver, false);
+			upload.addEventListener('dragleave', onDragLeave, false);
+			upload.addEventListener('drop', onDrop, false);
+		}
+
 		enableAddDir();
-		enableAddDragDrop();
 		enableUploadProgress();
+		enableAddDragDrop();
 	}
 
 	function enableNonRefreshDelete() {
