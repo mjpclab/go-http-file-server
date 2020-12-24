@@ -597,9 +597,12 @@
 
 				uploadProgressively();
 			});
+
+			fileInput.addEventListener('change', uploadProgressively);
+			return uploadProgressively;
 		}
 
-		function enableAddDragDrop() {
+		function enableAddDragDrop(uploadProgressively) {
 			function onDragEnterOver(e) {
 				e.stopPropagation();
 				e.preventDefault();
@@ -638,6 +641,11 @@
 				}
 
 				fileInput.files = e.dataTransfer.files;
+				if (uploadProgressively) {
+					uploadProgressively();
+				} else {
+					form.submit();
+				}
 			}
 
 			upload.addEventListener('dragenter', onDragEnterOver, false);
@@ -647,8 +655,8 @@
 		}
 
 		enableAddDir();
-		enableUploadProgress();
-		enableAddDragDrop();
+		var uploadProgressively = enableUploadProgress();
+		enableAddDragDrop(uploadProgressively);
 	}
 
 	function enableNonRefreshDelete() {

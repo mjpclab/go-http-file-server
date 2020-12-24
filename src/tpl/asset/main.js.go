@@ -528,8 +528,10 @@ e.stopPropagation();
 e.preventDefault();
 uploadProgressively();
 });
+fileInput.addEventListener('change', uploadProgressively);
+return uploadProgressively;
 }
-function enableAddDragDrop() {
+function enableAddDragDrop(uploadProgressively) {
 function onDragEnterOver(e) {
 e.stopPropagation();
 e.preventDefault();
@@ -562,6 +564,11 @@ optFile.focus();
 optFile.click();
 }
 fileInput.files = e.dataTransfer.files;
+if (uploadProgressively) {
+uploadProgressively();
+} else {
+form.submit();
+}
 }
 upload.addEventListener('dragenter', onDragEnterOver, false);
 upload.addEventListener('dragover', onDragEnterOver, false);
@@ -569,8 +576,8 @@ upload.addEventListener('dragleave', onDragLeave, false);
 upload.addEventListener('drop', onDrop, false);
 }
 enableAddDir();
-enableUploadProgress();
-enableAddDragDrop();
+var uploadProgressively = enableUploadProgress();
+enableAddDragDrop(uploadProgressively);
 }
 function enableNonRefreshDelete() {
 if (!document.querySelector) {
