@@ -345,6 +345,10 @@ em {
 		display: none;
 	}
 
+	.tab {
+		display: none;
+	}
+
 	.has-deletable .detail {
 		padding-right: 0;
 	}

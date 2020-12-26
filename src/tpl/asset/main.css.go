@@ -290,6 +290,9 @@ display: none;
 :root .panel {
 display: none;
 }
+.tab {
+display: none;
+}
 .has-deletable .detail {
 padding-right: 0;
 }
