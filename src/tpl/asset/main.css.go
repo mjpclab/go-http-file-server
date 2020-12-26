@@ -417,6 +417,9 @@ display: none;
 page-break-inside: avoid;
 break-inside: avoid;
 }
+.item-list li.parent {
+display: none;
+}
 .has-deletable .detail {
 padding-right: 0;
 }
