@@ -353,6 +353,10 @@ display: none;
 .tab {
 display: none;
 }
+.item-list li {
+page-break-inside: avoid;
+break-inside: avoid;
+}
 .has-deletable .detail {
 padding-right: 0;
 }
