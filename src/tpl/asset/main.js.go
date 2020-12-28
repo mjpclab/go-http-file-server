@@ -180,8 +180,8 @@ var a = container.querySelector('li a');
 a = getFocusableSibling(container, true, a);
 return a;
 }
-function getMatchedFocusableSibling(container, isPrev, startA, buf, key) {
-var skipRound = buf === key;
+function getMatchedFocusableSibling(container, isPrev, startA, buf) {
+var skipRound = buf.length === 1;	// find next prefix
 var matchKeyA;
 var firstCheckA;
 var secondCheckA;
@@ -209,9 +209,6 @@ var textContent = (a.querySelector('.name') || a).textContent.toLowerCase();
 if (buf.length <= textContent.length && textContent.substring(0, buf.length) === buf) {
 return a;
 }
-if (!matchKeyA && textContent[0] === key) {
-matchKeyA = a;
-}
 } while (a = getFocusableSibling(container, isPrev, a));
 return matchKeyA;
 }
@@ -230,32 +227,41 @@ var ARROW_RIGHT_CODE = 39;
 var SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
 var PLATFORM = navigator.platform;
 var IS_MAC_PLATFORM = PLATFORM.indexOf('Mac') >= 0 || PLATFORM.indexOf('iPhone') >= 0 || PLATFORM.indexOf('iPad') >= 0 || PLATFORM.indexOf('iPod') >= 0
-var lookupKey = '';
-var lookupBuffer = '';
-var lookupStartA = null;
+var lookupKey;
+var lookupBuffer;
+var lookupStartA;
 var lookupTimer;
-function delayClearLookupContext() {
-clearTimeout(lookupTimer);
-lookupTimer = setTimeout(function () {
+function clearLookupContext() {
+lookupKey = undefined;
 lookupBuffer = '';
 lookupStartA = null;
-}, 850);
+}
+clearLookupContext();
+function delayClearLookupContext() {
+clearTimeout(lookupTimer);
+lookupTimer = setTimeout(clearLookupContext, 850);
 }
 function lookup(key) {
 key = key.toLowerCase();
-if (key === lookupKey && key === lookupBuffer) {
+var currentLookupStartA;
+if (key === lookupKey) {
 // same as last key, lookup next for the same key as prefix
-lookupStartA = itemList.querySelector(':focus');
-lookupBuffer = lookupKey;
+currentLookupStartA = itemList.querySelector(':focus');
 } else {
 if (!lookupStartA) {
 lookupStartA = itemList.querySelector(':focus');
 }
+currentLookupStartA = lookupStartA;
+if (lookupKey === undefined) {
 lookupKey = key;
-lookupBuffer += key;
+} else {
+// key changed, no more prefix match
+lookupKey = '';
 }
+}
+lookupBuffer += key;
 delayClearLookupContext();
-return getMatchedFocusableSibling(itemList, false, lookupStartA, lookupBuffer, key);
+return getMatchedFocusableSibling(itemList, false, currentLookupStartA, lookupKey || lookupBuffer);
 }
 function getFocusItemByKeyPress(e) {
 if (SKIP_TAGS.indexOf(e.target.tagName) >= 0) {
