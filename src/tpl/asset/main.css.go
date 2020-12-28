@@ -166,6 +166,7 @@ box-sizing: border-box;
 .upload button {
 position: relative;
 margin-top: 0.5em;
+overflow: hidden;
 }
 .upload button span {
 position: relative;
