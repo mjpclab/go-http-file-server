@@ -361,6 +361,10 @@ var fileInput = form.querySelector('.file');
 if (!fileInput) {
 return;
 }
+var btnSubmit = form.querySelector('.submit') || form.querySelector('input[type=submit]');
+if (!btnSubmit) {
+return;
+}
 var uploadType = document.body.querySelector('.upload-type');
 if (!uploadType) {
 return;
@@ -483,10 +487,6 @@ function enableUploadProgress() {	// also fix Safari upload filename has no path
 if (!FormData) {
 return;
 }
-var btnSubmit = form.querySelector('.submit') || form.querySelector('input[type=submit]');
-if (!btnSubmit) {
-return;
-}
 var elProgress = btnSubmit.querySelector('.progress');
 function onComplete() {
 if (elProgress) {
@@ -511,11 +511,15 @@ return;
 var formName = fileInput.name;
 var parts = new FormData();
 files.forEach(function (file) {
-if (file.webkitRelativePath) {
-parts.append(formName, file, file.webkitRelativePath);
-} else {
-parts.append(formName, file);
+var relativePath
+if (file.file) {
+// unwrap object {file, relativePath}
+relativePath = file.relativePath;
+file = file.file;
+} else if (file.webkitRelativePath) {
+relativePath = file.webkitRelativePath
 }
+parts.append(formName, file, relativePath);
 });
 var xhr = new XMLHttpRequest();
 xhr.upload.addEventListener('error', onComplete);
@@ -553,6 +557,53 @@ if (e.target === e.currentTarget) {
 removeClass(e.currentTarget, 'dragging');
 }
 }
+function getFilesFromEntries(entries, onDone) {
+var files = [];
+var len = entries.length;
+var cb = 0;
+function increaseCb() {
+cb++;
+if (cb === len) {
+onDone(files);
+}
+}
+entries.forEach(function (entry) {
+if (entry.isFile) {
+var relativePath = entry.fullPath.substring(entry.fullPath.indexOf('/') + 1)
+entry.file(function (file) {
+files.push({file: file, relativePath: relativePath});
+increaseCb();
+}, function (err) {
+console && console.error(err);
+increaseCb();
+});
+} else {
+var reader = entry.createReader();
+reader.readEntries(function (subEntries) {
+if (subEntries.length) {
+getFilesFromEntries(subEntries, function (subFiles) {
+Array.prototype.push.apply(files, subFiles);
+increaseCb();
+}, function (err) {
+console && console.error(err);
+increaseCb();
+});
+} else {
+increaseCb();
+}
+});
+}
+});
+}
+function getFilesFromItems(items, onDone) {
+var files = [];
+var entries = [];
+for (var i = 0, len = items.length; i < len; i++) {
+var entry = items[i].webkitGetAsEntry();
+entries.push(entry);
+}
+getFilesFromEntries(entries, onDone);
+}
 function onDrop(e) {
 e.stopPropagation();
 e.preventDefault();
@@ -561,15 +612,41 @@ fileInput.value = '';
 if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
 return;
 }
+var hasDir = false;
+if (e.dataTransfer.items) {
 var items = Array.prototype.slice.call(e.dataTransfer.items);
 if (items && items.length && items[0].webkitGetAsEntry) {
 for (var i = 0, len = items.length; i < len; i++) {
 var entry = items[i].webkitGetAsEntry();
-if (entry && entry.isDirectory) {
+if (entry.isDirectory) {
+hasDir = true;
+break;
+}
+}
+}
+}
+if (hasDir) {
+if (!optDirFile && !optInnerDirFile) {
 return;
 }
+if (optActive === optFile) {
+if (optDirFile) {
+optDirFile.focus();
+optDirFile.click();
+} else if (optInnerDirFile) {
+optInnerDirFile.focus();
+optInnerDirFile.click();
 }
 }
+if (uploadProgressively) {
+btnSubmit.disabled = true;	// disable earlier
+getFilesFromItems(e.dataTransfer.items, function (files) {
+uploadProgressively(files);
+});
+} else {
+form.submit();
+}
+} else {
 if (optFile && optActive !== optFile) {
 optFile.focus();
 optFile.click();
@@ -580,6 +657,7 @@ var files = Array.prototype.slice.call(e.dataTransfer.files);
 uploadProgressively(files);
 } else {
 form.submit();
+}
 }
 }
 upload.addEventListener('dragenter', onDragEnterOver, false);
