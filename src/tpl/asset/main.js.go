@@ -504,9 +504,8 @@ var percent = 100 * e.loaded / e.total;
 elProgress.style.width = percent + '%';
 }
 }
-function uploadProgressively() {
-var files = Array.prototype.slice.call(fileInput.files);
-if (!files.length) {
+function uploadProgressively(files) {
+if (!files || !files.length) {
 return;
 }
 var formName = fileInput.name;
@@ -534,9 +533,13 @@ btnSubmit.disabled = true;
 form.addEventListener('submit', function (e) {
 e.stopPropagation();
 e.preventDefault();
-uploadProgressively();
+var files = Array.prototype.slice.call(fileInput.files);
+uploadProgressively(files);
 });
-fileInput.addEventListener('change', uploadProgressively);
+fileInput.addEventListener('change', function () {
+var files = Array.prototype.slice.call(fileInput.files);
+uploadProgressively(files);
+});
 return uploadProgressively;
 }
 function enableAddDragDrop(uploadProgressively) {
@@ -573,7 +576,8 @@ optFile.click();
 }
 fileInput.files = e.dataTransfer.files;
 if (uploadProgressively) {
-uploadProgressively();
+var files = Array.prototype.slice.call(e.dataTransfer.files);
+uploadProgressively(files);
 } else {
 form.submit();
 }

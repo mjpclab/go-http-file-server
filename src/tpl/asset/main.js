@@ -570,9 +570,8 @@
 				}
 			}
 
-			function uploadProgressively() {
-				var files = Array.prototype.slice.call(fileInput.files);
-				if (!files.length) {
+			function uploadProgressively(files) {
+				if (!files || !files.length) {
 					return;
 				}
 
@@ -605,10 +604,14 @@
 				e.stopPropagation();
 				e.preventDefault();
 
-				uploadProgressively();
+				var files = Array.prototype.slice.call(fileInput.files);
+				uploadProgressively(files);
 			});
 
-			fileInput.addEventListener('change', uploadProgressively);
+			fileInput.addEventListener('change', function () {
+				var files = Array.prototype.slice.call(fileInput.files);
+				uploadProgressively(files);
+			});
 			return uploadProgressively;
 		}
 
@@ -652,7 +655,8 @@
 
 				fileInput.files = e.dataTransfer.files;
 				if (uploadProgressively) {
-					uploadProgressively();
+					var files = Array.prototype.slice.call(e.dataTransfer.files);
+					uploadProgressively(files);
 				} else {
 					form.submit();
 				}
