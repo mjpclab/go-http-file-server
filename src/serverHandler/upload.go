@@ -54,8 +54,17 @@ func (h *handler) saveUploadFiles(fsPrefix string, overwriteExists bool, aliasSu
 			break
 		}
 
-		filename := part.FileName()
-		slashIndex := strings.LastIndexAny(filename, "/\\")
+		inputPartFilename := part.FileName()
+		if len(inputPartFilename) == 0 {
+			continue
+		}
+		filename, ok := getCleanDirFilePath(inputPartFilename)
+		if !ok {
+			errs = append(errs, errors.New("upload: illegal file name "+inputPartFilename))
+			continue
+		}
+
+		slashIndex := strings.LastIndexByte(filename, '/')
 		if slashIndex >= 0 {
 			filename = filename[slashIndex+1:]
 		}
