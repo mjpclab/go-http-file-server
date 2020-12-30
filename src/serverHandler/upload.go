@@ -58,11 +58,13 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			break
 		}
 
-		partFilename := path.Clean(strings.Replace(part.FileName(), "\\", "/", -1))
-		if partFilename[0] == '/' {
-			partFilename = partFilename[1:]
+		inputPartFilename := part.FileName()
+		if len(inputPartFilename) == 0 {
+			continue
 		}
-		if len(partFilename) == 0 {
+		partFilename, ok := getCleanDirFilePath(inputPartFilename)
+		if !ok {
+			errs = append(errs, errors.New("upload: illegal file name "+inputPartFilename))
 			continue
 		}
 
