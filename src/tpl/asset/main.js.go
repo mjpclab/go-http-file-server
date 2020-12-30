@@ -569,13 +569,16 @@ onDone(files);
 }
 entries.forEach(function (entry) {
 if (entry.isFile) {
-var relativePath = entry.fullPath.substring(entry.fullPath.indexOf('/') + 1)
+var relativePath = entry.fullPath;
+if (relativePath[0] === '/') {
+relativePath = relativePath.substring(1);
+}
 entry.file(function (file) {
 files.push({file: file, relativePath: relativePath});
 increaseCb();
 }, function (err) {
-console && console.error(err);
 increaseCb();
+console && console.error(err);
 });
 } else {
 var reader = entry.createReader();
@@ -585,8 +588,8 @@ getFilesFromEntries(subEntries, function (subFiles) {
 Array.prototype.push.apply(files, subFiles);
 increaseCb();
 }, function (err) {
-console && console.error(err);
 increaseCb();
+console && console.error(err);
 });
 } else {
 increaseCb();
@@ -615,7 +618,7 @@ return;
 var hasDir = false;
 if (e.dataTransfer.items) {
 var items = Array.prototype.slice.call(e.dataTransfer.items);
-if (items && items.length && items[0].webkitGetAsEntry) {
+if (items.length && items[0].webkitGetAsEntry) {
 for (var i = 0, len = items.length; i < len; i++) {
 var entry = items[i].webkitGetAsEntry();
 if (entry.isDirectory) {
