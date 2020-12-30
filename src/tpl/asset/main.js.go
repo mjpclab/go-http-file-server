@@ -606,29 +606,27 @@ itemList.addEventListener('click', function (e) {
 if (e.defaultPrevented || !e.target || e.target.className.indexOf('delete') < 0) {
 return;
 }
-var target = e.target;
+var elLink = e.target;
+function onComplete() {
+elLink = null;
+}
+function onLoad() {
+var elItem = elLink;
+while (elItem && elItem.nodeName !== 'LI') {
+elItem = elItem.parentNode;
+}
+if (!elItem) {
+return;
+}
+var elItemParent = elItem.parentNode;
+elItemParent && elItemParent.removeChild(elItem);
+}
 var xhr = new XMLHttpRequest();
-xhr.open('POST', target.href);
-xhr.onload = function () {
-var item = target;
-var parentNode = item.parentNode;
-while (item.nodeName !== 'LI') {
-if (!parentNode) {
-break;
-}
-item = parentNode;
-parentNode = item.parentNode;
-}
-if (parentNode) {
-parentNode.removeChild(item);
-}
-item = null;
-parentNode = null;
-target = null;
-};
-xhr.onerror = xhr.onabort = function () {
-target = null;
-};
+xhr.open('POST', elLink.href);	// will retrieve deleted result into bfcache
+xhr.addEventListener('load', onLoad);
+xhr.addEventListener('load', onComplete);
+xhr.addEventListener('error', onComplete);
+xhr.addEventListener('abort', onComplete);
 xhr.send();
 e.preventDefault();
 return false;

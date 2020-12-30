@@ -29,13 +29,11 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 		header.Set("Cache-Control", "public, max-age=0")
 		w.WriteHeader(http.StatusOK)
 
-		w.Write([]byte{'{', '"', 's', 'u', 'c', 'c', 'e', 's', 's', '"', ':'})
 		if success {
-			w.Write([]byte{'t', 'r', 'u', 'e'})
+			w.Write([]byte(`{"success":true}`))
 		} else {
-			w.Write([]byte{'f', 'a', 'l', 's', 'e'})
+			w.Write([]byte(`{"success":false}`))
 		}
-		w.Write([]byte{'}'})
 	} else {
 		reqPath := r.RequestURI
 		qsIndex := strings.IndexByte(reqPath, '?')
