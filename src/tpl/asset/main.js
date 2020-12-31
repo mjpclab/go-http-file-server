@@ -656,7 +656,7 @@
 							increaseCb();
 						}, function (err) {
 							increaseCb();
-							console && console.error(err);
+							typeof console !== strUndef && console.error(err);
 						});
 					} else {
 						var reader = entry.createReader();
@@ -665,9 +665,6 @@
 								getFilesFromEntries(subEntries, function (subFiles) {
 									Array.prototype.push.apply(files, subFiles);
 									increaseCb();
-								}, function (err) {
-									increaseCb();
-									console && console.error(err);
 								});
 							} else {
 								increaseCb();
