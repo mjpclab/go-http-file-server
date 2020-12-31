@@ -685,15 +685,11 @@ return;
 return;
 }
 itemList.addEventListener('click', function (e) {
-if (e.defaultPrevented || !e.target || e.target.className.indexOf('delete') < 0) {
+if (e.defaultPrevented || !e.target || !e.target.href || e.target.className.indexOf('delete') < 0) {
 return;
 }
-var elLink = e.target;
-function onComplete() {
-elLink = null;
-}
 function onLoad() {
-var elItem = elLink;
+var elItem = e.target;
 while (elItem && elItem.nodeName !== 'LI') {
 elItem = elItem.parentNode;
 }
@@ -704,11 +700,8 @@ var elItemParent = elItem.parentNode;
 elItemParent && elItemParent.removeChild(elItem);
 }
 var xhr = new XMLHttpRequest();
-xhr.open('POST', elLink.href);	// will retrieve deleted result into bfcache
+xhr.open('POST', e.target.href);	// will retrieve deleted result into bfcache
 xhr.addEventListener('load', onLoad);
-xhr.addEventListener('load', onComplete);
-xhr.addEventListener('error', onComplete);
-xhr.addEventListener('abort', onComplete);
 xhr.send();
 e.preventDefault();
 return false;
