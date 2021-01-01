@@ -369,6 +369,7 @@ var uploadType = document.body.querySelector('.upload-type');
 if (!uploadType) {
 return;
 }
+var classUploading = 'uploading';
 var file = 'file';
 var dirFile = 'dirfile';
 var innerDirFile = 'innerdirfile';
@@ -381,6 +382,9 @@ ele && ele.classList.add(className);
 }
 function removeClass(ele, className) {
 ele && ele.classList.remove(className);
+}
+function hasClass(ele, className) {
+return ele && ele.classList.contains(className);
 }
 function enableAddDir() {
 var classHidden = 'hidden';
@@ -494,6 +498,7 @@ elProgress.style.width = '';
 }
 fileInput.disabled = false;
 btnSubmit.disabled = false;
+removeClass(upload, classUploading);
 }
 function onLoad() {
 location.reload();
@@ -531,6 +536,7 @@ xhr.upload.addEventListener('progress', onProgress);
 }
 xhr.open(form.method, form.action);
 xhr.send(parts);
+addClass(upload, classUploading);
 fileInput.disabled = true;
 btnSubmit.disabled = true;
 }
@@ -547,14 +553,15 @@ uploadProgressively(files);
 return uploadProgressively;
 }
 function enableAddDragDrop(uploadProgressively) {
+var classDragging = 'dragging';
 function onDragEnterOver(e) {
 e.stopPropagation();
 e.preventDefault();
-addClass(e.currentTarget, 'dragging');
+addClass(e.currentTarget, classDragging);
 }
 function onDragLeave(e) {
 if (e.target === e.currentTarget) {
-removeClass(e.currentTarget, 'dragging');
+removeClass(e.currentTarget, classDragging);
 }
 }
 function getFilesFromEntries(entries, onDone) {
@@ -607,7 +614,10 @@ getFilesFromEntries(entries, onDone);
 function onDrop(e) {
 e.stopPropagation();
 e.preventDefault();
-removeClass(e.currentTarget, 'dragging');
+removeClass(e.currentTarget, classDragging);
+if (hasClass(e.currentTarget, classUploading)) {
+return;
+}
 fileInput.value = '';
 if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
 return;
@@ -660,10 +670,10 @@ form.submit();
 }
 }
 }
-upload.addEventListener('dragenter', onDragEnterOver, false);
-upload.addEventListener('dragover', onDragEnterOver, false);
-upload.addEventListener('dragleave', onDragLeave, false);
-upload.addEventListener('drop', onDrop, false);
+upload.addEventListener('dragenter', onDragEnterOver);
+upload.addEventListener('dragover', onDragEnterOver);
+upload.addEventListener('dragleave', onDragLeave);
+upload.addEventListener('drop', onDrop);
 }
 enableAddDir();
 var uploadProgressively = enableUploadProgress();

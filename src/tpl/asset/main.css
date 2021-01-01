@@ -188,6 +188,10 @@ em {
 	display: block;
 }
 
+.upload.uploading.dragging::before {
+	background: transparent;
+}
+
 .upload input,
 .upload button {
 	display: block;

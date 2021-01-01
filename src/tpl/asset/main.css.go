@@ -157,6 +157,9 @@ background: #c9c;
 .upload.dragging::before {
 display: block;
 }
+.upload.uploading.dragging::before {
+background: transparent;
+}
 .upload input,
 .upload button {
 display: block;
