@@ -460,15 +460,15 @@
 				}
 			}
 
-			function onClickOptDirFile(e) {
-				if (onClickOpt(optDirFile, Boolean(e))) {
+			function onClickOptDirFile() {
+				if (onClickOpt(optDirFile, optActive === optFile)) {
 					fileInput.name = dirFile;
 					fileInput.webkitdirectory = true;
 				}
 			}
 
-			function onClickOptInnerDirFile(e) {
-				if (onClickOpt(optInnerDirFile, Boolean(e))) {
+			function onClickOptInnerDirFile() {
+				if (onClickOpt(optInnerDirFile, optActive === optFile)) {
 					fileInput.name = innerDirFile;
 					fileInput.webkitdirectory = true;
 				}
