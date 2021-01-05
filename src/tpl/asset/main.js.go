@@ -636,6 +636,9 @@ break;
 }
 }
 if (hasDir) {
+if (!uploadProgressively) {
+return;
+}
 if (!optDirFile && !optInnerDirFile) {
 return;
 }
@@ -648,14 +651,10 @@ optInnerDirFile.focus();
 optInnerDirFile.click();
 }
 }
-if (uploadProgressively) {
 btnSubmit.disabled = true;	// disable earlier
 getFilesFromItems(e.dataTransfer.items, function (files) {
 uploadProgressively(files);
 });
-} else {
-form.submit();
-}
 } else {
 if (optFile && optActive !== optFile) {
 optFile.focus();
