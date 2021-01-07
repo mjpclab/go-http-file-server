@@ -64,6 +64,10 @@ func TestExtractListenPort(t *testing.T) {
 		t.Error(1)
 	}
 
+	if ExtractListenPort("65535") != "65535" {
+		t.Error(1)
+	}
+
 	if ExtractListenPort("65536") != "" {
 		t.Error(1)
 	}
