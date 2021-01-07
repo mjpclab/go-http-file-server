@@ -1,8 +1,8 @@
 package serverHandler
 
 import (
+	"../shimgo"
 	"../util"
-	"bytes"
 	"os"
 	"sort"
 	"strings"
@@ -81,8 +81,8 @@ func (xInfos infosNames) LessFileType(i, j int) (less, ok bool) {
 	bufferI := xInfos.names[i]
 	bufferJ := xInfos.names[j]
 	for {
-		dotIndexI := bytes.LastIndexByte(bufferI, '.')
-		dotIndexJ := bytes.LastIndexByte(bufferJ, '.')
+		dotIndexI := shimgo.Bytes_LastIndexByte(bufferI, '.')
+		dotIndexJ := shimgo.Bytes_LastIndexByte(bufferJ, '.')
 		if dotIndexI < 0 && dotIndexJ < 0 {
 			break
 		}
@@ -232,7 +232,7 @@ func (infos infosSizeAsc) Less(i, j int) bool {
 		return items[i].Size() < items[j].Size()
 	}
 
-	cmpResult := strings.Compare(items[i].Name(), items[j].Name())
+	cmpResult := shimgo.Strings_Compare(items[i].Name(), items[j].Name())
 	if cmpResult != 0 {
 		return cmpResult < 0
 	}
@@ -262,7 +262,7 @@ func (infos infosSizeDesc) Less(i, j int) bool {
 		return items[j].Size() < items[i].Size()
 	}
 
-	cmpResult := strings.Compare(items[j].Name(), items[i].Name())
+	cmpResult := shimgo.Strings_Compare(items[j].Name(), items[i].Name())
 	if cmpResult != 0 {
 		return cmpResult < 0
 	}
@@ -292,7 +292,7 @@ func (infos infosTimeAsc) Less(i, j int) bool {
 		return items[i].ModTime().Before(items[j].ModTime())
 	}
 
-	cmpResult := strings.Compare(items[i].Name(), items[j].Name())
+	cmpResult := shimgo.Strings_Compare(items[i].Name(), items[j].Name())
 	if cmpResult != 0 {
 		return cmpResult < 0
 	}
@@ -322,7 +322,7 @@ func (infos infosTimeDesc) Less(i, j int) bool {
 		return items[j].ModTime().Before(items[i].ModTime())
 	}
 
-	cmpResult := strings.Compare(items[j].Name(), items[i].Name())
+	cmpResult := shimgo.Strings_Compare(items[j].Name(), items[i].Name())
 	if cmpResult != 0 {
 		return cmpResult < 0
 	}

@@ -1,6 +1,7 @@
 package serverHandler
 
 import (
+	"../shimgo"
 	"../util"
 	"net/http"
 	"strings"
@@ -11,19 +12,19 @@ func (h *handler) cors(w http.ResponseWriter, r *http.Request) {
 
 	header.Set("Access-Control-Allow-Origin", "*")
 
-	if r.Method != http.MethodOptions {
+	if r.Method != shimgo.Net_Http_MethodOptions {
 		return
 	}
 
 	// Access-Control-Allow-Methods
 	acAllowMethods := []string{
-		http.MethodGet,
-		http.MethodHead,
-		http.MethodPost,
-		http.MethodPut,
-		http.MethodDelete,
-		http.MethodOptions,
-		http.MethodTrace,
+		shimgo.Net_Http_MethodGet,
+		shimgo.Net_Http_MethodHead,
+		shimgo.Net_Http_MethodPost,
+		shimgo.Net_Http_MethodPut,
+		shimgo.Net_Http_MethodDelete,
+		shimgo.Net_Http_MethodOptions,
+		shimgo.Net_Http_MethodTrace,
 	}
 	acReqMethods := r.Header["Access-Control-Request-Method"]
 	if len(acReqMethods) > 0 {

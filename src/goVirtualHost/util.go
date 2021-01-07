@@ -1,6 +1,7 @@
 package goVirtualHost
 
 import (
+	"../shimgo"
 	"strings"
 )
 
@@ -21,7 +22,7 @@ func extractHostName(host string) string {
 		}
 	}
 
-	colonIndex := strings.LastIndexByte(host, ':')
+	colonIndex := shimgo.Strings_LastIndexByte(host, ':')
 	if colonIndex >= 0 {
 		return host[:colonIndex]
 	}
@@ -82,7 +83,7 @@ func splitListen(listen string, useTLS bool) (proto, addr string) {
 	}
 
 	colonIndex := strings.IndexByte(listen, ':')
-	lastColonIndex := strings.LastIndexByte(listen, ':')
+	lastColonIndex := shimgo.Strings_LastIndexByte(listen, ':')
 
 	// ipv6
 	squareEnd := strings.IndexByte(listen, ']')
@@ -99,7 +100,7 @@ func splitListen(listen string, useTLS bool) (proto, addr string) {
 	dotIndex2 := dotIndex1 + 1 + strings.IndexByte(listen[dotIndex1+1:], '.')
 	dotIndex3 := dotIndex2 + 1 + strings.IndexByte(listen[dotIndex2+1:], '.')
 	dotIndex4 := dotIndex3 + 1 + strings.IndexByte(listen[dotIndex3+1:], '.')
-	lastDotIndex := strings.LastIndexByte(listen, '.')
+	lastDotIndex := shimgo.Strings_LastIndexByte(listen, '.')
 	isIPv4 := dotIndex1 > 0 && dotIndex2 > dotIndex1 && dotIndex3 > dotIndex2 && dotIndex4 == dotIndex3 &&
 		colonIndex == lastColonIndex &&
 		(lastColonIndex == -1 || lastColonIndex > lastDotIndex+1)

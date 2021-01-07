@@ -26,7 +26,8 @@ func reOpenLogOnHup() {
 	signal.Notify(chSignal, syscall.SIGHUP)
 
 	go func() {
-		for range chSignal {
+		for sig := range chSignal {
+			sig = sig // ignore iterate value
 			appInst.ReOpenLog()
 		}
 	}()

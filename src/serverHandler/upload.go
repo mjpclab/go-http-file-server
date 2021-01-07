@@ -1,6 +1,7 @@
 package serverHandler
 
 import (
+	"../shimgo"
 	"../util"
 	"errors"
 	"io"
@@ -68,7 +69,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			continue
 		}
 
-		slashIndex := strings.LastIndexByte(partFilename, '/')
+		slashIndex := shimgo.Strings_LastIndexByte(partFilename, '/')
 
 		fsInfix := ""
 		formname := part.FormName()

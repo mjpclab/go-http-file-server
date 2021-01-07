@@ -1,6 +1,7 @@
 package serverHandler
 
 import (
+	"../shimgo"
 	"net/http"
 	"strings"
 )
@@ -10,7 +11,7 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 
 	switch {
 	case data.IsUpload:
-		if data.CanUpload && r.Method == http.MethodPost {
+		if data.CanUpload && r.Method == shimgo.Net_Http_MethodPost {
 			success = h.saveUploadFiles(h.root+data.handlerReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
 		}
 	case data.IsMkdir:

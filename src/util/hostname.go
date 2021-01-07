@@ -1,6 +1,9 @@
 package util
 
-import "strings"
+import (
+	"../shimgo"
+	"strings"
+)
 
 func ExtractHostnamePort(host string) (hostname, port string) {
 	if len(host) == 0 {
@@ -11,7 +14,7 @@ func ExtractHostnamePort(host string) (hostname, port string) {
 	if hostname[len(hostname)-1] != ']' { // not [IPv6]
 		if colonIndex := strings.LastIndex(hostname, "]:"); colonIndex > 0 { // [IPv6]:port
 			hostname = hostname[:colonIndex+1]
-		} else if colonIndex = strings.LastIndexByte(hostname, ':'); colonIndex >= 0 {
+		} else if colonIndex = shimgo.Strings_LastIndexByte(hostname, ':'); colonIndex >= 0 {
 			hostname = hostname[:colonIndex]
 		}
 	}
@@ -30,7 +33,7 @@ func ExtractListenPort(listen string) string {
 		return listen[colonIndex+2:]
 	} else if listen[len(listen)-1] == ']' { // [IPv6]
 		return ""
-	} else if colonIndex = strings.LastIndexByte(listen, ':'); colonIndex >= 0 {
+	} else if colonIndex = shimgo.Strings_LastIndexByte(listen, ':'); colonIndex >= 0 {
 		return listen[colonIndex+1:]
 	} else {
 		lenListen := len(listen)

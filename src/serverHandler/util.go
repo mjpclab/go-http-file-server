@@ -1,17 +1,17 @@
 package serverHandler
 
 import (
-	"net/http"
+	"../shimgo"
 	"os"
 	"path"
 	"strings"
 )
 
 func needResponseBody(method string) bool {
-	return method != http.MethodHead &&
-		method != http.MethodOptions &&
-		method != http.MethodConnect &&
-		method != http.MethodTrace
+	return method != shimgo.Net_Http_MethodHead &&
+		method != shimgo.Net_Http_MethodOptions &&
+		method != shimgo.Net_Http_MethodConnect &&
+		method != shimgo.Net_Http_MethodTrace
 }
 
 func containsItem(infos []os.FileInfo, name string) bool {

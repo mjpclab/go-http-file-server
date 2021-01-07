@@ -1,9 +1,9 @@
 package serverHandler
 
 import (
+	"../shimgo"
 	"../util"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -150,7 +150,7 @@ func (h *handler) archive(
 }
 
 func writeArchiveHeader(w http.ResponseWriter, contentType, filename string) {
-	filename = url.PathEscape(filename)
+	filename = shimgo.Net_Url_PathEscape(filename)
 
 	header := w.Header()
 	header.Set("Content-Type", contentType)

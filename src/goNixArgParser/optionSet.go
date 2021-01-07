@@ -1,9 +1,9 @@
 package goNixArgParser
 
 import (
+	"../shimgo"
 	"bytes"
 	"errors"
-	"os"
 	"strings"
 )
 
@@ -165,7 +165,7 @@ func (s *OptionSet) Add(opt Option) error {
 			if len(envVar) == 0 {
 				continue
 			}
-			envValue, hasEnv := os.LookupEnv(envVar)
+			envValue, hasEnv := shimgo.Os_LookupEnv(envVar)
 			if !hasEnv || len(envValue) == 0 {
 				continue
 			}

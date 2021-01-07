@@ -1,6 +1,7 @@
 package goVirtualHost
 
 import (
+	"../shimgo"
 	"crypto/tls"
 	"net/http"
 )
@@ -79,12 +80,12 @@ func (server *server) updateHttpServerHandler() {
 
 func (server *server) open(listener *listener) error {
 	if server.useTLS {
-		return server.httpServer.ServeTLS(listener.netListener, "", "")
+		return shimgo.Net_Http_Server_ServeTLS(server.httpServer, listener.netListener, "", "")
 	} else {
 		return server.httpServer.Serve(listener.netListener)
 	}
 }
 
 func (server *server) close() error {
-	return server.httpServer.Close()
+	return nil
 }

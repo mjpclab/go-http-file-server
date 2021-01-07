@@ -1,6 +1,7 @@
 package serverHandler
 
 import (
+	"../shimgo"
 	"../util"
 	"html/template"
 	"net/http"
@@ -362,7 +363,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	switch {
 	case strings.HasPrefix(rawQuery, "download"):
 		isDownload = true
-	case strings.HasPrefix(rawQuery, "upload") && r.Method == http.MethodPost:
+	case strings.HasPrefix(rawQuery, "upload") && r.Method == shimgo.Net_Http_MethodPost:
 		isUpload = true
 		isMutate = true
 	case strings.HasPrefix(rawQuery, "mkdir"):
