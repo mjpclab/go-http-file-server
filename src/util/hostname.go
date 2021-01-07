@@ -35,7 +35,7 @@ func ExtractListenPort(listen string) string {
 	} else {
 		lenListen := len(listen)
 		if (lenListen < 5 && IsDigits(listen)) ||
-			(lenListen == 5 && strings.Compare(listen, "65535") == -1) {
+			(lenListen == 5 && listen < "65536") {
 			return listen
 		}
 	}
