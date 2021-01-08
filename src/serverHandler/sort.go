@@ -34,10 +34,28 @@ var cmpDirMixed fnCompareDir = func(prev, next os.FileInfo) (less, ok bool) {
 	return true, false
 }
 
+// infos
+type infos struct {
+	items      []os.FileInfo
+	compareDir fnCompareDir
+}
+
+func (infos infos) Len() int {
+	return len(infos.items)
+}
+
+func (infos infos) Swap(i, j int) {
+	infos.items[i], infos.items[j] = infos.items[j], infos.items[i]
+}
+
+func newInfos(items []os.FileInfo, compareDir fnCompareDir) infos {
+	return infos{items, compareDir}
+}
+
 // infosNames
 
 type infosNames struct {
-	infos      []os.FileInfo
+	items      []os.FileInfo
 	names      [][]byte
 	compareDir fnCompareDir
 }
@@ -47,12 +65,12 @@ func (xInfos infosNames) Len() int {
 }
 
 func (xInfos infosNames) Swap(i, j int) {
-	xInfos.infos[i], xInfos.infos[j] = xInfos.infos[j], xInfos.infos[i]
+	xInfos.items[i], xInfos.items[j] = xInfos.items[j], xInfos.items[i]
 	xInfos.names[i], xInfos.names[j] = xInfos.names[j], xInfos.names[i]
 }
 
 func (xInfos infosNames) LessDir(i, j int) (less, ok bool) {
-	return xInfos.compareDir(xInfos.infos[i], xInfos.infos[j])
+	return xInfos.compareDir(xInfos.items[i], xInfos.items[j])
 }
 
 func (xInfos infosNames) LessFilename(i, j int) (less, ok bool) {
@@ -88,13 +106,13 @@ func (xInfos infosNames) LessFileType(i, j int) (less, ok bool) {
 	return util.CompareNumInFilename(bufferI, bufferJ)
 }
 
-func newInfosNames(infos []os.FileInfo, compareDir fnCompareDir) infosNames {
-	names := make([][]byte, len(infos))
-	for i := range infos {
-		names[i] = []byte(infos[i].Name())
+func newInfosNames(items []os.FileInfo, compareDir fnCompareDir) infosNames {
+	names := make([][]byte, len(items))
+	for i := range items {
+		names[i] = []byte(items[i].Name())
 	}
 
-	return infosNames{infos, names, compareDir}
+	return infosNames{items, names, compareDir}
 }
 
 // sort name asc
@@ -117,8 +135,8 @@ func (xInfos infosNamesAsc) Less(i, j int) bool {
 	return i < j
 }
 
-func sortInfoNamesAsc(infos []os.FileInfo, compareDir fnCompareDir) {
-	nameCachedInfos := infosNamesAsc{newInfosNames(infos, compareDir)}
+func sortInfoNamesAsc(items []os.FileInfo, compareDir fnCompareDir) {
+	nameCachedInfos := infosNamesAsc{newInfosNames(items, compareDir)}
 	sort.Sort(nameCachedInfos)
 }
 
@@ -142,8 +160,8 @@ func (xInfos infosNamesDesc) Less(i, j int) bool {
 	return j < i
 }
 
-func sortInfoNamesDesc(infos []os.FileInfo, compareDir fnCompareDir) {
-	nameCachedInfos := infosNamesDesc{newInfosNames(infos, compareDir)}
+func sortInfoNamesDesc(items []os.FileInfo, compareDir fnCompareDir) {
+	nameCachedInfos := infosNamesDesc{newInfosNames(items, compareDir)}
 	sort.Sort(nameCachedInfos)
 }
 
@@ -167,8 +185,8 @@ func (xInfos infosTypesAsc) Less(i, j int) bool {
 	return i < j
 }
 
-func sortInfoTypesAsc(infos []os.FileInfo, compareDir fnCompareDir) {
-	nameCachedInfos := infosTypesAsc{newInfosNames(infos, compareDir)}
+func sortInfoTypesAsc(items []os.FileInfo, compareDir fnCompareDir) {
+	nameCachedInfos := infosTypesAsc{newInfosNames(items, compareDir)}
 	sort.Sort(nameCachedInfos)
 }
 
@@ -192,115 +210,155 @@ func (xInfos infosTypesDesc) Less(i, j int) bool {
 	return j < i
 }
 
-func sortInfoTypesDesc(infos []os.FileInfo, compareDir fnCompareDir) {
-	nameCachedInfos := infosTypesDesc{newInfosNames(infos, compareDir)}
+func sortInfoTypesDesc(items []os.FileInfo, compareDir fnCompareDir) {
+	nameCachedInfos := infosTypesDesc{newInfosNames(items, compareDir)}
 	sort.Sort(nameCachedInfos)
 }
 
 // sort size asc
 
-func sortInfoSizesAsc(infos []os.FileInfo, compareDir fnCompareDir) {
-	sort.Slice(infos, func(i, j int) bool {
-		less, ok := compareDir(infos[i], infos[j])
-		if ok {
-			return less
-		}
+type infosSizeAsc struct {
+	infos
+}
 
-		if infos[i].Size() != infos[j].Size() {
-			return infos[i].Size() < infos[j].Size()
-		}
+func (infos infosSizeAsc) Less(i, j int) bool {
+	items := infos.items
+	less, ok := infos.compareDir(items[i], items[j])
+	if ok {
+		return less
+	}
 
-		cmpResult := strings.Compare(infos[i].Name(), infos[j].Name())
-		if cmpResult != 0 {
-			return cmpResult < 0
-		}
+	if items[i].Size() != items[j].Size() {
+		return items[i].Size() < items[j].Size()
+	}
 
-		return i < j
-	})
+	cmpResult := strings.Compare(items[i].Name(), items[j].Name())
+	if cmpResult != 0 {
+		return cmpResult < 0
+	}
+
+	return i < j
+}
+
+func sortInfoSizesAsc(items []os.FileInfo, compareDir fnCompareDir) {
+	infos := infosSizeAsc{newInfos(items, compareDir)}
+	sort.Sort(infos)
 }
 
 // sort size desc
 
-func sortInfoSizesDesc(infos []os.FileInfo, compareDir fnCompareDir) {
-	sort.Slice(infos, func(i, j int) bool {
-		less, ok := compareDir(infos[i], infos[j])
-		if ok {
-			return less
-		}
+type infosSizeDesc struct {
+	infos
+}
 
-		if infos[j].Size() != infos[i].Size() {
-			return infos[j].Size() < infos[i].Size()
-		}
+func (infos infosSizeDesc) Less(i, j int) bool {
+	items := infos.items
+	less, ok := infos.compareDir(items[i], items[j])
+	if ok {
+		return less
+	}
 
-		cmpResult := strings.Compare(infos[j].Name(), infos[i].Name())
-		if cmpResult != 0 {
-			return cmpResult < 0
-		}
+	if items[j].Size() != items[i].Size() {
+		return items[j].Size() < items[i].Size()
+	}
 
-		return j < i
-	})
+	cmpResult := strings.Compare(items[j].Name(), items[i].Name())
+	if cmpResult != 0 {
+		return cmpResult < 0
+	}
+
+	return j < i
+}
+
+func sortInfoSizesDesc(items []os.FileInfo, compareDir fnCompareDir) {
+	infos := infosSizeDesc{newInfos(items, compareDir)}
+	sort.Sort(infos)
 }
 
 // sort time asc
 
-func sortInfoTimesAsc(infos []os.FileInfo, compareDir fnCompareDir) {
-	sort.Slice(infos, func(i, j int) bool {
-		less, ok := compareDir(infos[i], infos[j])
-		if ok {
-			return less
-		}
+type infosTimeAsc struct {
+	infos
+}
 
-		if !infos[i].ModTime().Equal(infos[j].ModTime()) {
-			return infos[i].ModTime().Before(infos[j].ModTime())
-		}
+func (infos infosTimeAsc) Less(i, j int) bool {
+	items := infos.items
+	less, ok := infos.compareDir(items[i], items[j])
+	if ok {
+		return less
+	}
 
-		cmpResult := strings.Compare(infos[i].Name(), infos[j].Name())
-		if cmpResult != 0 {
-			return cmpResult < 0
-		}
+	if !items[i].ModTime().Equal(items[j].ModTime()) {
+		return items[i].ModTime().Before(items[j].ModTime())
+	}
 
-		return i < j
-	})
+	cmpResult := strings.Compare(items[i].Name(), items[j].Name())
+	if cmpResult != 0 {
+		return cmpResult < 0
+	}
+
+	return i < j
+}
+
+func sortInfoTimesAsc(items []os.FileInfo, compareDir fnCompareDir) {
+	infos := infosTimeAsc{newInfos(items, compareDir)}
+	sort.Sort(infos)
 }
 
 // sort time desc
 
-func sortInfoTimesDesc(infos []os.FileInfo, compareDir fnCompareDir) {
-	sort.Slice(infos, func(i, j int) bool {
-		less, ok := compareDir(infos[i], infos[j])
-		if ok {
-			return less
-		}
+type infosTimeDesc struct {
+	infos
+}
 
-		if !infos[j].ModTime().Equal(infos[i].ModTime()) {
-			return infos[j].ModTime().Before(infos[i].ModTime())
-		}
+func (infos infosTimeDesc) Less(i, j int) bool {
+	items := infos.items
+	less, ok := infos.compareDir(items[i], items[j])
+	if ok {
+		return less
+	}
 
-		cmpResult := strings.Compare(infos[j].Name(), infos[i].Name())
-		if cmpResult != 0 {
-			return cmpResult < 0
-		}
+	if !items[j].ModTime().Equal(items[i].ModTime()) {
+		return items[j].ModTime().Before(items[i].ModTime())
+	}
 
-		return j < i
-	})
+	cmpResult := strings.Compare(items[j].Name(), items[i].Name())
+	if cmpResult != 0 {
+		return cmpResult < 0
+	}
+
+	return j < i
+}
+
+func sortInfoTimesDesc(items []os.FileInfo, compareDir fnCompareDir) {
+	infos := infosTimeDesc{newInfos(items, compareDir)}
+	sort.Sort(infos)
 }
 
 // sort original
 
-func sortInfoOriginal(infos []os.FileInfo, compareDir fnCompareDir) {
-	sort.Slice(infos, func(i, j int) bool {
-		less, ok := compareDir(infos[i], infos[j])
-		if ok {
-			return less
-		}
+type infosOriginalOrder struct {
+	infos
+}
 
-		return i < j
-	})
+func (infos infosOriginalOrder) Less(i, j int) bool {
+	items := infos.items
+	less, ok := infos.compareDir(items[i], items[j])
+	if ok {
+		return less
+	}
+
+	return i < j
+}
+
+func sortInfoOriginal(items []os.FileInfo, compareDir fnCompareDir) {
+	infos := infosOriginalOrder{newInfos(items, compareDir)}
+	sort.Sort(infos)
 }
 
 // sort
 
-func sortInfos(infos []os.FileInfo, rawQuery string, defaultSortBy string) (rawSortBy *string, sortInfo SortState) {
+func sortInfos(items []os.FileInfo, rawQuery string, defaultSortBy string) (rawSortBy *string, sortInfo SortState) {
 	const sortPrefix = "sort="
 	var sortBy string
 
@@ -347,24 +405,24 @@ func sortInfos(infos []os.FileInfo, rawQuery string, defaultSortBy string) (rawS
 	// do sort
 	switch sortKey {
 	case 'n':
-		sortInfoNamesAsc(infos, compareDir)
+		sortInfoNamesAsc(items, compareDir)
 	case 'N':
-		sortInfoNamesDesc(infos, compareDir)
+		sortInfoNamesDesc(items, compareDir)
 	case 'e':
-		sortInfoTypesAsc(infos, compareDir)
+		sortInfoTypesAsc(items, compareDir)
 	case 'E':
-		sortInfoTypesDesc(infos, compareDir)
+		sortInfoTypesDesc(items, compareDir)
 	case 's':
-		sortInfoSizesAsc(infos, compareDir)
+		sortInfoSizesAsc(items, compareDir)
 	case 'S':
-		sortInfoSizesDesc(infos, compareDir)
+		sortInfoSizesDesc(items, compareDir)
 	case 't':
-		sortInfoTimesAsc(infos, compareDir)
+		sortInfoTimesAsc(items, compareDir)
 	case 'T':
-		sortInfoTimesDesc(infos, compareDir)
+		sortInfoTimesDesc(items, compareDir)
 	default:
 		if dirSort != dirSortMixed {
-			sortInfoOriginal(infos, compareDir)
+			sortInfoOriginal(items, compareDir)
 		}
 	}
 

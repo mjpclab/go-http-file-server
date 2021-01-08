@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-func expectInfos(infos []os.FileInfo, expects ...os.FileInfo) bool {
-	if len(infos) != len(expects) {
+func expectItems(items []os.FileInfo, expects ...os.FileInfo) bool {
+	if len(items) != len(expects) {
 		return false
 	}
 
-	for i, info := range expects {
-		if infos[i] != info {
+	for i, item := range expects {
+		if items[i] != item {
 			return false
 		}
 	}
@@ -37,112 +37,112 @@ func TestSort(t *testing.T) {
 
 	copy(infos, originInfos)
 	sortInfos(infos, "", "")
-	ok = expectInfos(infos, dir3, file2, dir1, file3, dir2, file1)
+	ok = expectItems(infos, dir3, file2, dir1, file3, dir2, file1)
 	if !ok {
 		t.Error(infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=/n", "")
-	ok = expectInfos(infos, dir1, dir2, dir3, file1, file2, file3)
+	ok = expectItems(infos, dir1, dir2, dir3, file1, file2, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=/N", "")
-	ok = expectInfos(infos, dir3, dir2, dir1, file3, file2, file1)
+	ok = expectItems(infos, dir3, dir2, dir1, file3, file2, file1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=n/", "")
-	ok = expectInfos(infos, file1, file2, file3, dir1, dir2, dir3)
+	ok = expectItems(infos, file1, file2, file3, dir1, dir2, dir3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=N/", "")
-	ok = expectInfos(infos, file3, file2, file1, dir3, dir2, dir1)
+	ok = expectItems(infos, file3, file2, file1, dir3, dir2, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=n", "")
-	ok = expectInfos(infos, dir1, file1, dir2, file2, dir3, file3)
+	ok = expectItems(infos, dir1, file1, dir2, file2, dir3, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=N", "")
-	ok = expectInfos(infos, file3, dir3, file2, dir2, file1, dir1)
+	ok = expectItems(infos, file3, dir3, file2, dir2, file1, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=e", "")
-	ok = expectInfos(infos, dir1, dir2, dir3, file2, file1, file3)
+	ok = expectItems(infos, dir1, dir2, dir3, file2, file1, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=E", "")
-	ok = expectInfos(infos, file3, file1, file2, dir3, dir2, dir1)
+	ok = expectItems(infos, file3, file1, file2, dir3, dir2, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=s", "")
-	ok = expectInfos(infos, dir1, file1, file2, dir3, file3, dir2)
+	ok = expectItems(infos, dir1, file1, file2, dir3, file3, dir2)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=S", "")
-	ok = expectInfos(infos, dir2, file3, dir3, file2, file1, dir1)
+	ok = expectItems(infos, dir2, file3, dir3, file2, file1, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=t", "")
-	ok = expectInfos(infos, dir1, file1, dir2, dir3, file2, file3)
+	ok = expectItems(infos, dir1, file1, dir2, dir3, file2, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=T", "")
-	ok = expectInfos(infos, file3, file2, dir3, dir2, file1, dir1)
+	ok = expectItems(infos, file3, file2, dir3, dir2, file1, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "?sort=/", "")
-	ok = expectInfos(infos, dir3, dir1, dir2, file2, file3, file1)
+	ok = expectItems(infos, dir3, dir1, dir2, file2, file3, file1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "", "")
-	ok = expectInfos(infos, originInfos...)
+	ok = expectItems(infos, originInfos...)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
 	sortInfos(infos, "", "/n")
-	ok = expectInfos(infos, dir1, dir2, dir3, file1, file2, file3)
+	ok = expectItems(infos, dir1, dir2, dir3, file1, file2, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
