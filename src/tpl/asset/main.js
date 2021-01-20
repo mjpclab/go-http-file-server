@@ -298,38 +298,56 @@
 			return getMatchedFocusableSibling(itemList, false, currentLookupStartA, lookupKey || lookupBuffer);
 		}
 
+		var canArrowMove;
+		var isToEnd;
+		if (IS_MAC_PLATFORM) {
+			canArrowMove = function (e) {
+				return !(e.ctrlKey || e.shiftKey || e.metaKey);	// only allow Opt
+			}
+			isToEnd = function (e) {
+				return e.altKey;	// Opt key
+			}
+		} else {
+			canArrowMove = function (e) {
+				return !(e.altKey || e.shiftKey || e.metaKey);	// only allow Ctrl
+			}
+			isToEnd = function (e) {
+				return e.ctrlKey;
+			}
+		}
+
 		function getFocusItemByKeyPress(e) {
 			if (SKIP_TAGS.indexOf(e.target.tagName) >= 0) {
 				return;
 			}
 
 			if (e.key) {
-				if (!e.altKey && !e.shiftKey) {
+				if (canArrowMove(e)) {
 					switch (e.key) {
 						case LEFT:
 						case ARROW_LEFT:
-							if (e.ctrlKey || e.metaKey) {
+							if (isToEnd(e)) {
 								return getFirstFocusableSibling(pathList);
 							} else {
 								return getFocusableSibling(pathList, true);
 							}
 						case RIGHT:
 						case ARROW_RIGHT:
-							if (e.ctrlKey || e.metaKey) {
+							if (isToEnd(e)) {
 								return getLastFocusableSibling(pathList);
 							} else {
 								return getFocusableSibling(pathList, false);
 							}
 						case UP:
 						case ARROW_UP:
-							if (e.ctrlKey || e.metaKey) {
+							if (isToEnd(e)) {
 								return getFirstFocusableSibling(itemList);
 							} else {
 								return getFocusableSibling(itemList, true);
 							}
 						case DOWN:
 						case ARROW_DOWN:
-							if (e.ctrlKey || e.metaKey) {
+							if (isToEnd(e)) {
 								return getLastFocusableSibling(itemList);
 							} else {
 								return getFocusableSibling(itemList, false);
@@ -340,28 +358,28 @@
 					return lookup(e.key);
 				}
 			} else if (e.keyCode) {
-				if (!e.altKey && !e.shiftKey) {
+				if (canArrowMove(e)) {
 					switch (e.keyCode) {
 						case ARROW_LEFT_CODE:
-							if (e.ctrlKey || e.metaKey) {
+							if (isToEnd(e)) {
 								return getFirstFocusableSibling(pathList);
 							} else {
 								return getFocusableSibling(pathList, true);
 							}
 						case ARROW_RIGHT_CODE:
-							if (e.ctrlKey || e.metaKey) {
+							if (isToEnd(e)) {
 								return getLastFocusableSibling(pathList);
 							} else {
 								return getFocusableSibling(pathList, false);
 							}
 						case ARROW_UP_CODE:
-							if (e.ctrlKey || e.metaKey) {
+							if (isToEnd(e)) {
 								return getFirstFocusableSibling(itemList);
 							} else {
 								return getFocusableSibling(itemList, true);
 							}
 						case ARROW_DOWN_CODE:
-							if (e.ctrlKey || e.metaKey) {
+							if (isToEnd(e)) {
 								return getLastFocusableSibling(itemList);
 							} else {
 								return getFocusableSibling(itemList, false);
