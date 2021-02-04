@@ -403,6 +403,40 @@ ele && ele.classList.remove(className);
 function hasClass(ele, className) {
 return ele && ele.classList.contains(className);
 }
+var padStart = String.prototype.padStart ? function (sourceString, targetLength, padTemplate) {
+return sourceString.padStart(targetLength, padTemplate);
+} : function (sourceString, targetLength, padTemplate) {
+var sourceLength = sourceString.length;
+if (sourceLength >= targetLength) {
+return sourceString;
+}
+var padLength = targetLength - sourceLength
+var repeatCount = Math.ceil(padLength / padTemplate.length);
+var padString;
+if (String.prototype.repeat) {
+padString = padTemplate.repeat(repeatCount);
+} else {
+padString = '';
+for (var i = 0; i < repeatCount; i++) {
+padString += padTemplate;
+}
+}
+if (padString.length > padLength) {
+padString = padString.substring(0, padLength);
+}
+return padString + sourceString;
+}
+function getTimeStamp() {
+var now = new Date();
+var date = String(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate());
+var time = String(now.getHours() * 10000 + now.getMinutes() * 100 + now.getSeconds());
+var ms = String(now.getMilliseconds());
+date = padStart(date, 8, '0');
+time = padStart(time, 6, '0');
+var ms = padStart(ms, 3, '0');
+var ts = '-' + date + '-' + time + '-' + ms;
+return ts;
+}
 function enableAddDir() {
 var classHidden = 'hidden';
 var classActive = 'active';
@@ -541,6 +575,9 @@ file = file.file;
 } else if (file.webkitRelativePath) {
 relativePath = file.webkitRelativePath
 }
+if (!relativePath) {
+relativePath = file.name;
+}
 parts.append(formName, file, relativePath);
 });
 var xhr = new XMLHttpRequest();
@@ -677,11 +714,11 @@ if (optFile && optActive !== optFile) {
 optFile.focus();
 optFile.click();
 }
-fileInput.files = e.dataTransfer.files;
 if (uploadProgressively) {
 var files = Array.prototype.slice.call(e.dataTransfer.files);
 uploadProgressively(files);
 } else {
+fileInput.files = e.dataTransfer.files;
 form.submit();
 }
 }
@@ -691,9 +728,102 @@ upload.addEventListener('dragover', onDragEnterOver);
 upload.addEventListener('dragleave', onDragLeave);
 upload.addEventListener('drop', onDrop);
 }
+function enableAddPaste(uploadProgressively) {
+if (!uploadProgressively) {
+document.documentElement.addEventListener('paste', function (e) {
+var data = e.clipboardData;
+if (data && data.files && data.files.length) {
+if (optFile && optActive !== optFile) {
+optFile.focus();
+optFile.click();
+}
+fileInput.files = data.files;
+form.submit();
+}
+});
+return;
+}
+var typeTextPlain = 'text/plain';
+function uploadPastedFiles(files) {
+if (optFile && optActive !== optFile) {
+optFile.focus();
+optFile.click();
+}
+var ts = getTimeStamp();
+files = files.map(function (f, i) {
+var filename = f.name;
+var dotIndex = filename.lastIndexOf('.');
+if (dotIndex < 0) {
+dotIndex = filename.length;
+}
+filename = filename.substring(0, dotIndex) + ts + '-' + i + filename.substring(dotIndex);
+return {
+file: f,
+relativePath: filename
+}
+});
+uploadProgressively(files);
+}
+var createTextFile;
+var textFilename = 'text.txt';
+if (Blob && Blob.prototype.msClose) {	// legacy Edge
+createTextFile = function (content) {
+var file = new Blob([content], {type: typeTextPlain});
+file.name = textFilename;
+return file;
+};
+} else if (File) {
+createTextFile = function (content) {
+return new File([content], textFilename, {type: typeTextPlain});
+}
+}
+document.documentElement.addEventListener('paste', function (e) {
+var data = e.clipboardData;
+if (!data) {
+return;
+}
+var files;
+var items;
+if (data.files && data.files.length) {
+files = Array.prototype.slice.call(data.files);
+} else if (data.items && data.items.length) {
+items = Array.prototype.slice.call(data.items);
+files = items.map(function (item) {
+return item.getAsFile();
+}).filter(Boolean);
+} else {
+files = [];
+}
+if (files.length) {
+uploadPastedFiles(files);
+return;
+}
+if (!createTextFile) {
+return;
+}
+if (!items) {
+return;
+}
+var plainTextFiles = 0;
+for (var i = 0, itemsCount = items.length; i < itemsCount; i++) {
+if (data.types[i] !== typeTextPlain) {
+continue
+}
+plainTextFiles++;
+items[i].getAsString(function (content) {
+var file = createTextFile(content);
+files.push(file);
+if (files.length === plainTextFiles) {
+uploadPastedFiles(files);
+}
+});
+}
+});
+}
 enableAddDir();
 var uploadProgressively = enableUploadProgress();
 enableAddDragDrop(uploadProgressively);
+enableAddPaste(uploadProgressively);
 }
 function enableNonRefreshDelete() {
 if (!document.querySelector) {
