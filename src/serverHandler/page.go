@@ -25,11 +25,11 @@ func updateSubItemsHtml(data *responseData) {
 		if info.IsDir() {
 			displayName = tplutil.FormatFilename(name) + "/"
 			typ = TypeDir
-			url = data.SubItemPrefix + name + "/" + dirQueryString
+			url = data.SubItemPrefix + tplutil.FormatFileUrl(name) + "/" + dirQueryString
 		} else {
 			displayName = tplutil.FormatFilename(name)
 			typ = TypeFile
-			url = data.SubItemPrefix + name
+			url = data.SubItemPrefix + tplutil.FormatFileUrl(name)
 			readableSize = tplutil.FormatSize(info.Size())
 		}
 
