@@ -341,11 +341,6 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 
 	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
 
-	context := &pathContext{
-		defaultSort: h.defaultSort,
-		sort:        rawSortBy,
-	}
-
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
 	canDelete := h.getCanDelete(item, rawReqPath, reqFsPath)
@@ -373,6 +368,12 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		isMutate = true
 	}
 	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
+
+	context := &pathContext{
+		download:    isDownload,
+		sort:        rawSortBy,
+		defaultSort: h.defaultSort,
+	}
 
 	return &responseData{
 		rawReqPath:     rawReqPath,

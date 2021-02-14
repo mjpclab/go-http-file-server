@@ -36,6 +36,20 @@ Example:
 curl http://localhost/ghfs/?json
 ```
 
+# Render page for downloading
+```
+GET <path>?download[&sort=key]
+```
+Similar to regular page rendering, but hide path list,
+sortable list header,
+and parent directory link.
+It's convenient for tools like "wget" to download files recursively.
+
+Example:
+```shell
+wget --recursive -nc -nH -np http://localhost/dir/?download
+```
+
 # Download a file
 Notify user agent download a file rather than display its content.
 ```

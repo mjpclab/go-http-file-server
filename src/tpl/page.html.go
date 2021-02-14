@@ -22,11 +22,13 @@ const pageTplStr = `
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 {{$contextQueryString := .Context.QueryString}}
+{{if not .IsDownload}}
 <ol class="path-list">
 {{range .Paths}}
 <li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 {{end}}
 </ol>
+{{end}}
 {{if .CanMkdir}}
 <div class="panel mkdir">
 <form method="POST" action="{{.SubItemPrefix}}?mkdir">
@@ -75,6 +77,7 @@ return confirm('Delete?\n' + name);
 </script>
 {{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
+{{if not .IsDownload}}
 <li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
 <span class="detail">
 <a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">Dir{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
@@ -91,6 +94,7 @@ return confirm('Delete?\n' + name);
 <span class="field time"></span>
 </a>
 </li>
+{{end}}
 {{range .SubItemsHtml}}
 <li class="{{.Type}}">
 <a href="{{.Url}}" class="detail">
