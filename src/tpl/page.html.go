@@ -28,7 +28,6 @@ const pageTplStr = `
 <li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 {{end}}
 </ol>
-{{end}}
 {{if .CanMkdir}}
 <div class="panel mkdir">
 <form method="POST" action="{{.SubItemPrefix}}?mkdir">
@@ -75,6 +74,7 @@ var name = decodeURIComponent(href.substr(href.lastIndexOf('=') + 1));
 return confirm('Delete?\n' + name);
 }
 </script>
+{{end}}
 {{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
 {{if not .IsDownload}}

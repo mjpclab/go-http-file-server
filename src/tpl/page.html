@@ -15,61 +15,61 @@
 {{if not .IsDownload}}
 <ol class="path-list">
 	{{range .Paths}}
-		<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
+	<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 	{{end}}
 </ol>
-{{end}}
 
 {{if .CanMkdir}}
-	<div class="panel mkdir">
-		<form method="POST" action="{{.SubItemPrefix}}?mkdir">
-			<input type="text" autocomplete="off" name="name" class="name"/>
-			<input type="submit" value="mkdir" class="submit"/>
-		</form>
-	</div>
+<div class="panel mkdir">
+	<form method="POST" action="{{.SubItemPrefix}}?mkdir">
+		<input type="text" autocomplete="off" name="name" class="name"/>
+		<input type="submit" value="mkdir" class="submit"/>
+	</form>
+</div>
 {{end}}
 
 {{if .CanUpload}}
-	<div class="tab upload-type">
-		<label class="file active" tabindex="0" role="button" title="Upload files">Files</label>
-		{{if .CanMkdir}}<label class="dirfile hidden" tabindex="0" role="button" title="Upload Directory itself">Dir</label>{{end}}
-		<label class="innerdirfile hidden" tabindex="0" role="button" title="Upload contents of directory">Dir contents</label>
-	</div>
-	<div class="panel upload">
-		<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
-			<input type="file" name="file" multiple="multiple" class="file"/>
-			<button type="submit" class="submit">
-				<span class="progress"></span>
-				<span class="if-enabled">Upload</span><span class="if-disabled">Uploading ...</span>
-			</button>
-		</form>
-	</div>
+<div class="tab upload-type">
+	<label class="file active" tabindex="0" role="button" title="Upload files">Files</label>
+	{{if .CanMkdir}}<label class="dirfile hidden" tabindex="0" role="button" title="Upload Directory itself">Dir</label>{{end}}
+	<label class="innerdirfile hidden" tabindex="0" role="button" title="Upload contents of directory">Dir contents</label>
+</div>
+<div class="panel upload">
+	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
+		<input type="file" name="file" multiple="multiple" class="file"/>
+		<button type="submit" class="submit">
+			<span class="progress"></span>
+			<span class="if-enabled">Upload</span><span class="if-disabled">Uploading ...</span>
+		</button>
+	</form>
+</div>
 {{end}}
 
 {{if .CanArchive}}
-	<div class="archive">
-		<a href="{{.SubItemPrefix}}?tar" download="{{.ItemName}}.tar">.tar</a>
-		<a href="{{.SubItemPrefix}}?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
-		<a href="{{.SubItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
-	</div>
+<div class="archive">
+	<a href="{{.SubItemPrefix}}?tar" download="{{.ItemName}}.tar">.tar</a>
+	<a href="{{.SubItemPrefix}}?tgz" download="{{.ItemName}}.tar.gz">.tar.gz</a>
+	<a href="{{.SubItemPrefix}}?zip" download="{{.ItemName}}.zip">.zip</a>
+</div>
 {{end}}
 
 {{if .SubItemsHtml}}
-	<div class="panel filter" id="panel-filter">
-		<div class="form">
-			<input type="text" accesskey="r" placeholder="filter..." name="filter-text" class="filter-text"/>
-		</div>
+<div class="panel filter" id="panel-filter">
+	<div class="form">
+		<input type="text" accesskey="r" placeholder="filter..." name="filter-text" class="filter-text"/>
 	</div>
+</div>
 {{end}}
 
 {{if .CanDelete}}
-	<script type="text/javascript">
-		function confirmDelete(el) {
-			var href = el.href;
-			var name = decodeURIComponent(href.substr(href.lastIndexOf('=') + 1));
-			return confirm('Delete?\n' + name);
-		}
-	</script>
+<script type="text/javascript">
+	function confirmDelete(el) {
+		var href = el.href;
+		var name = decodeURIComponent(href.substr(href.lastIndexOf('=') + 1));
+		return confirm('Delete?\n' + name);
+	}
+</script>
+{{end}}
 {{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
 	{{if not .IsDownload}}
@@ -91,23 +91,23 @@
 	</li>
 	{{end}}
 	{{range .SubItemsHtml}}
-		<li class="{{.Type}}">
-			<a href="{{.Url}}" class="detail">
-				<span class="field name">{{.DisplayName}}</span>
-				<span class="field size">{{.DisplaySize}}</span>
-				<span class="field time">{{.DisplayTime}}</span>
-			</a>
-			{{if .DeleteUrl}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)">x</a>{{end}}
-		</li>
+	<li class="{{.Type}}">
+		<a href="{{.Url}}" class="detail">
+			<span class="field name">{{.DisplayName}}</span>
+			<span class="field size">{{.DisplaySize}}</span>
+			<span class="field time">{{.DisplayTime}}</span>
+		</a>
+		{{if .DeleteUrl}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)">x</a>{{end}}
+	</li>
 	{{end}}
 </ul>
 
 {{if eq .Status 403}}
-	<div class="error">403 resource is forbidden</div>
+<div class="error">403 resource is forbidden</div>
 {{else if eq .Status 404}}
-	<div class="error">404 resource not found</div>
+<div class="error">404 resource not found</div>
 {{else if eq .Status 500}}
-	<div class="error">500 potential issue occurred</div>
+<div class="error">500 potential issue occurred</div>
 {{end}}
 
 <script type="text/javascript" src="{{.RootRelPath}}/../asset/main.js" defer="defer" async="async"></script>
