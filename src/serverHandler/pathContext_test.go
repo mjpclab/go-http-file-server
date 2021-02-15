@@ -7,13 +7,9 @@ import (
 func TestPathContext(t *testing.T) {
 	var result string
 	var sort string
+	var download bool
 
 	result = (&pathContext{}).QueryString()
-	if result != "" {
-		t.Error(result)
-	}
-
-	result = (&pathContext{defaultSort: "/n"}).QueryString()
 	if result != "" {
 		t.Error(result)
 	}
@@ -39,6 +35,32 @@ func TestPathContext(t *testing.T) {
 	sort = "/n"
 	result = (&pathContext{sort: &sort}).QueryString()
 	if result != "?sort=/n" {
+		t.Error(result)
+	}
+
+	download = false
+	result = (&pathContext{download: download}).QueryString()
+	if result != "" {
+		t.Error(result)
+	}
+
+	download = false
+	sort = "/n"
+	result = (&pathContext{download: download, sort: &sort}).QueryString()
+	if result != "?sort=/n" {
+		t.Error(result)
+	}
+
+	download = true
+	result = (&pathContext{download: download}).QueryString()
+	if result != "?download" {
+		t.Error(result)
+	}
+
+	download = true
+	sort = "/n"
+	result = (&pathContext{download: download, sort: &sort}).QueryString()
+	if result != "?download&sort=/n" {
 		t.Error(result)
 	}
 }

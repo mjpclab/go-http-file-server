@@ -36,6 +36,20 @@ Example:
 curl http://localhost/ghfs/?json
 ```
 
+# Render page for downloading
+```
+GET <path>?download[&sort=key]
+```
+Similar to regular page rendering, but hide path list,
+sortable list header,
+and parent directory link.
+It's convenient for tools like "wget" to download files recursively.
+
+Example:
+```shell
+wget --recursive -nc -nH -np http://localhost/dir/?download
+```
+
 # Download a file
 Notify user agent download a file rather than display its content.
 ```
@@ -60,20 +74,6 @@ Example:
 curl http://localhost/tmp/?zip > tmp.zip
 ```
 
-# Upload files to specific path
-Only work when "upload" is enabled.
-```
-POST <path>?upload[&json]
-```
-- Must use `POST` method
-- Must use `multipart/form-data` encoding type
-- Each file content use one part, field name is `file`
-
-Example:
-```sh
-curl -F 'file=@file1.txt' -F 'file=@file2.txt' http://localhost/tmp/?upload
-```
-
 # Create directories in specific path
 Only work when "mkdir" is enabled.
 ```
@@ -88,6 +88,34 @@ name=<dir1>&name=<dir2>&...name=<dirN>
 Example:
 ```sh
 curl -X POST -d 'name=dir1&name=dir2&name=dir3' http://localhost/tmp/?mkdir
+```
+
+# Upload files to specific path
+Only work when "upload" is enabled.
+```
+POST <path>?upload[&json]
+```
+- Must use `POST` method
+- Must use `multipart/form-data` encoding type
+- Each file content use one part, form field name can be `file`, `dirfile` or `innerdirfile`
+
+Example:
+```sh
+curl -F 'file=@file1.txt' -F 'file=@file2.txt;filename=renamed.txt' http://localhost/tmp/?upload
+```
+
+If "mkdir" is also enabled, it is possible to upload file to a specific path relative to current URL path,
+using form name `dirfile` instead of `file`:
+```sh
+curl -F 'dirfile=@file1.txt;filename=subdir/childdir/filename.txt' http://localhost/tmp/?upload
+# file is now available at http://localhost/tmp/subdir/childdir/filename.txt
+```
+
+Another form name `innerdirfile` is similar to `dirfile`, but strip first level of upload directory.
+It is convenient to upload contents of a directory:
+```sh
+curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' http://localhost/tmp/?upload
+# file is now available at http://localhost/tmp/childdir/filename.txt
 ```
 
 # Delete files or directories in specific path

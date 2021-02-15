@@ -36,6 +36,18 @@ GET <path>?json[&sort=key]
 curl http://localhost/ghfs/?json
 ```
 
+# 显示用于下载的页面
+```
+GET <path>?download[&sort=key]
+```
+类似于常规显示的页面，但隐藏路径列表、可排序的表头和上级目录链接。
+这为“wget”之类的工具递归下载提供了方便。
+
+举例：
+```shell
+wget --recursive -nc -nH -np http://localhost/dir/?download
+```
+
 # 下载文件
 通知用户代理下载文件而不是显示其内容。
 ```
@@ -60,20 +72,6 @@ GET <path>?zip
 curl http://localhost/tmp/?zip > tmp.zip
 ```
 
-# 上传文件到指定路径
-仅在“upload”选项启用时有效。
-```
-POST <path>?upload[&json]
-```
-- 必须使用`POST`方法
-- 必须使用`multipart/form-data`编码
-- 每个文件内容占用一个段，字段名为`file`
-
-举例：
-```sh
-curl -F 'file=@file1.txt' -F 'file=@file2.txt' http://localhost/tmp/?upload
-```
-
 # 在指定路径下创建目录
 仅在“mkdir”选项启用时有效。
 ```
@@ -88,6 +86,34 @@ name=<dir1>&name=<dir2>&...name=<dirN>
 举例：
 ```sh
 curl -X POST -d 'name=dir1&name=dir2&name=dir3' http://localhost/tmp/?mkdir
+```
+
+# 上传文件到指定路径
+仅在“upload”选项启用时有效。
+```
+POST <path>?upload[&json]
+```
+- 必须使用`POST`方法
+- 必须使用`multipart/form-data`编码
+- 每个文件内容占用一个段，表单字段名可以是`file`，`dirfile`或`innerdirfile`
+
+举例：
+```sh
+curl -F 'file=@file1.txt' -F 'file=@file2.txt;filename=renamed.txt' http://localhost/tmp/?upload
+```
+
+如果还启用了“mkdir”选项，可以将文件上传到相对于当前URL路径的特定路径，
+使用表单字段`dirfile`代替`file`：
+```sh
+curl -F 'dirfile=@file1.txt;filename=subdir/childdir/filename.txt' http://localhost/tmp/?upload
+# 文件现在位于 http://localhost/tmp/subdir/childdir/filename.txt
+```
+
+另一表单字段`innerdirfile`与`dirfile`很相似，只是会去除第一级上传目录。
+这对于上传一个目录中的内容很方便：
+```sh
+curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' http://localhost/tmp/?upload
+# 文件现在位于 http://localhost/tmp/childdir/filename.txt
 ```
 
 # 在指定路径下删除文件或目录
