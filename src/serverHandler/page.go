@@ -16,6 +16,7 @@ func updateSubItemsHtml(data *responseData) {
 
 	for i, info := range data.SubItems {
 		name := info.Name()
+		urlEscapedName := tplutil.FormatFileUrl(name)
 
 		var displayName template.HTML
 		var typ template.HTML
@@ -25,11 +26,11 @@ func updateSubItemsHtml(data *responseData) {
 		if info.IsDir() {
 			displayName = tplutil.FormatFilename(name) + "/"
 			typ = TypeDir
-			url = data.SubItemPrefix + tplutil.FormatFileUrl(name) + "/" + dirQueryString
+			url = data.SubItemPrefix + urlEscapedName + "/" + dirQueryString
 		} else {
 			displayName = tplutil.FormatFilename(name)
 			typ = TypeFile
-			url = data.SubItemPrefix + tplutil.FormatFileUrl(name)
+			url = data.SubItemPrefix + urlEscapedName
 			readableSize = tplutil.FormatSize(info.Size())
 		}
 
@@ -38,7 +39,7 @@ func updateSubItemsHtml(data *responseData) {
 			_, isRenamedInfo := info.(*renamedFileInfo)
 			_, isFakeInfo := info.(*fakeFileInfo)
 			if !isRenamedInfo && !isFakeInfo {
-				deleteUrl = data.SubItemPrefix + "?delete&name=" + name
+				deleteUrl = data.SubItemPrefix + "?delete&name=" + urlEscapedName
 			}
 		}
 
