@@ -276,10 +276,10 @@ server [options]
 
 ## Shortcut key for default page template
 - `←`, `→`: move focus between path items
-- `Ctrl`/`Cmd` + `←`: move focus to first path item
-- `Ctrl`/`Cmd` + `→`: move focus to last path item
+- `Ctrl`/`Opt` + `←`: move focus to first path item
+- `Ctrl`/`Opt` + `→`: move focus to last path item
 - `↑`, `↓`: move focus between file items
-- `Ctrl`/`Cmd` + `↑`: move focus to first file item
-- `Ctrl`/`Cmd` + `↓`: move focus to last file item
+- `Ctrl`/`Opt` + `↑`: move focus to first file item
+- `Ctrl`/`Opt` + `↓`: move focus to last file item
 - Repeat inputting same character will look for next file that prefixes with it.
 - Non-repeat inputs will be remembered as a string in short time to look for next file prefix match.
