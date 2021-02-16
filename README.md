@@ -283,3 +283,4 @@ server [options]
 - `Ctrl`/`Opt` + `↓`: move focus to last file item
 - Repeat inputting same character will look for next file that prefixes with it.
 - Non-repeat inputs will be remembered as a string in short time to look for next file prefix match.
+- When upload is enabled, pasting(`Ctrl`/`Cmd` + `v`) image or text content will upload that content as a file.
