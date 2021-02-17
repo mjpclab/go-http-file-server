@@ -2,6 +2,8 @@
 
 cd $(dirname "$0")
 
+export GO111MODULE=auto
+
 TMP='/tmp'
 OUTDIR='../output'
 MAINNAME='ghfs'

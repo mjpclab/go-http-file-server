@@ -15,7 +15,7 @@ Simple command line based HTTP file server to share local file system.
 ## Compile
 Minimal required Go version is 1.9.
 ```bash
-go build src/main.go
+GO111MODULE=auto go build src/main.go
 ```
 Will generate executable file "main" in current directory.
 
@@ -276,10 +276,11 @@ server [options]
 
 ## Shortcut key for default page template
 - `←`, `→`: move focus between path items
-- `Ctrl`/`Cmd` + `←`: move focus to first path item
-- `Ctrl`/`Cmd` + `→`: move focus to last path item
+- `Ctrl`/`Opt` + `←`: move focus to first path item
+- `Ctrl`/`Opt` + `→`: move focus to last path item
 - `↑`, `↓`: move focus between file items
-- `Ctrl`/`Cmd` + `↑`: move focus to first file item
-- `Ctrl`/`Cmd` + `↓`: move focus to last file item
+- `Ctrl`/`Opt` + `↑`: move focus to first file item
+- `Ctrl`/`Opt` + `↓`: move focus to last file item
 - Repeat inputting same character will look for next file that prefixes with it.
 - Non-repeat inputs will be remembered as a string in short time to look for next file prefix match.
+- When upload is enabled, pasting(`Ctrl`/`Cmd` + `v`) image or text content will upload that content as a file.
