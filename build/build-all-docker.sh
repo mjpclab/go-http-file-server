@@ -53,3 +53,7 @@ buildByDocker "$gover" "${builds[@]}"
 #gover=1.14
 #builds=('darwin 386 -10.11-el_capitan' 'darwin amd64 -10.11-el_capitan')
 #buildByDocker "$gover" "${builds[@]}"
+
+#gover=1.16
+#builds=('darwin amd64 -10.12-sierra')
+#buildByDocker "$gover" "${builds[@]}"
