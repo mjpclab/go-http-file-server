@@ -15,7 +15,7 @@
 ## 编译
 至少需要Go 1.9版本。
 ```bash
-go build src/main.go
+GO111MODULE=auto go build src/main.go
 ```
 会在当前目录生成"main"可执行文件。
 
