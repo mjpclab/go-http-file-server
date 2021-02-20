@@ -1,7 +1,7 @@
 package serverHandler
 
 import (
-	"../tpl"
+	"../tpl/asset"
 	"net/http"
 	"time"
 )
@@ -9,7 +9,7 @@ import (
 var initTime = time.Now()
 
 func (h *handler) asset(w http.ResponseWriter, r *http.Request, assetPath string) {
-	content, ok := tpl.GetAsset(assetPath)
+	content, ok := asset.Get(assetPath)
 	if !ok {
 		return
 	}

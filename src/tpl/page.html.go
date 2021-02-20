@@ -8,7 +8,7 @@ import (
 	"path"
 )
 
-//go:embed frontend/page.html
+//go:embed page.html
 var pageTplStr string
 
 var defaultPageTpl *template.Template
