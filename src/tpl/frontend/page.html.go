@@ -1,3 +1,6 @@
+package frontend
+
+const PageTplStr = `
 <!DOCTYPE html>
 <html lang="">
 <head>
@@ -8,7 +11,7 @@
 	<meta name="renderer" content="webkit"/>
 	<meta name="wap-font-scale" content="no"/>
 	<title>{{.Path}}</title>
-	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}/../asset/main.css"/>
+	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=main.css"/>
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 {{$contextQueryString := .Context.QueryString}}
@@ -111,6 +114,7 @@
 <div class="error">500 potential issue occurred</div>
 {{end}}
 
-<script type="text/javascript" src="{{.RootRelPath}}/../asset/main.js" defer="defer" async="async"></script>
+<script type="text/javascript" src="{{.RootRelPath}}?asset=main.js" defer="defer" async="async"></script>
 </body>
 </html>
+`
