@@ -7,6 +7,7 @@ import (
 	"../version"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -213,7 +214,7 @@ func doParseCli() []*Param {
 			continue
 		}
 
-		configStr, err := os.ReadFile(config)
+		configStr, err := ioutil.ReadFile(config)
 		if serverErrHandler.CheckError(err) || len(configStr) == 0 {
 			continue
 		}
