@@ -1,8 +1,8 @@
 package asset
 
 import (
-	"bytes"
 	"io"
+	"strings"
 )
 
 type content struct {
@@ -11,8 +11,8 @@ type content struct {
 }
 
 var assets = map[string]content{
-	"main.css": {"text/css", bytes.NewReader(mainCss)},
-	"main.js":  {"application/javascript", bytes.NewReader(mainJs)},
+	"main.css": {"text/css", strings.NewReader(mainCss)},
+	"main.js":  {"application/javascript", strings.NewReader(mainJs)},
 }
 
 func Get(path string) (content, bool) {

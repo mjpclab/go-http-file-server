@@ -13,11 +13,18 @@ Simple command line based HTTP file server to share local file system.
 - Support location alias(mount another directory to url location)
 
 ## Compile
-Minimal required Go version is 1.16.
+Minimal required Go version is 1.9.
 ```bash
 GO111MODULE=auto go build src/main.go
 ```
 Will generate executable file "main" in current directory.
+
+If default html template files under `src/tpl` changed, need to re-embed templates into go files:
+```bash
+cd src
+make tpls
+```
+Then compile the project like above.
 
 ## Examples
 Start server on port 8080, root directory is current working  directory:
