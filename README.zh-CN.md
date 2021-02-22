@@ -13,7 +13,7 @@
 - 支持目录别名（将另一个目录挂载到某个URL路径）
 
 ## 编译
-至少需要Go 1.9版本。
+至少需要Go 1.2版本。
 ```bash
 GO111MODULE=auto go build src/main.go
 ```
