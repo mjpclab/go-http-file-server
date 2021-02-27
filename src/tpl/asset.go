@@ -6,11 +6,11 @@ import (
 	"io"
 )
 
-//go:embed frontend/main.css
-var mainCss []byte
+//go:embed frontend/index.css
+var css []byte
 
-//go:embed frontend/main.js
-var mainJs []byte
+//go:embed frontend/index.js
+var js []byte
 
 type content struct {
 	ContentType string
@@ -18,8 +18,8 @@ type content struct {
 }
 
 var assets = map[string]content{
-	"main.css": {"text/css", bytes.NewReader(mainCss)},
-	"main.js":  {"application/javascript", bytes.NewReader(mainJs)},
+	"index.css": {"text/css", bytes.NewReader(css)},
+	"index.js":  {"application/javascript", bytes.NewReader(js)},
 }
 
 func GetAsset(path string) (content, bool) {
