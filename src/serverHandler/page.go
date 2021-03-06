@@ -57,6 +57,7 @@ func updateSubItemsHtml(data *responseData) {
 
 func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
+	header.Set("X-Content-Type-Options", "nosniff")
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
