@@ -3,6 +3,7 @@ package serverHandler
 import (
 	tplutil "../tpl/util"
 	"html/template"
+	"io"
 	"net/http"
 )
 
@@ -59,11 +60,24 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
+	if !needResponseBody(r.Method) {
+		w.WriteHeader(data.Status)
+		return
+	}
+
+	var bodyW io.Writer
+	if compressW, encoding, useCompressW := getCompressWriter(w, r); useCompressW {
+		header.Set("Content-Encoding", encoding)
+		bodyW = compressW
+		defer compressW.Close()
+	} else {
+		bodyW = w
+	}
 	w.WriteHeader(data.Status)
 
-	if needResponseBody(r.Method) {
-		updateSubItemsHtml(data)
-		err := h.theme.Template.Execute(w, data)
-		h.errHandler.LogError(err)
+	updateSubItemsHtml(data)
+	err := h.theme.Template.Execute(bodyW, data)
+	if err != nil {
+		go h.errHandler.LogError(err)
 	}
 }
