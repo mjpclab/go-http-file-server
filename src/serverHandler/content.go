@@ -1,30 +1,11 @@
 package serverHandler
 
 import (
-	"mime"
+	"../util"
 	"net/http"
-	"os"
-	"path"
 	"strconv"
 	"time"
 )
-
-func getContentType(item os.FileInfo, file *os.File) (string, error) {
-	ext := path.Ext(item.Name())
-	ctype := mime.TypeByExtension(ext)
-	if len(ctype) > 0 {
-		return ctype, nil
-	}
-
-	var buf [512]byte
-	n, err := file.Read(buf[:])
-	if err != nil {
-		return ctype, err
-	}
-
-	ctype = http.DetectContentType(buf[:n])
-	return ctype, nil
-}
 
 func (h *handler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
@@ -40,7 +21,7 @@ func (h *handler) content(w http.ResponseWriter, r *http.Request, data *response
 		return
 	}
 
-	ctype, err := getContentType(item, file)
+	ctype, err := util.GetContentType(item.Name(), file)
 	if err == nil {
 		header.Set("Content-Type", ctype)
 		header.Set("Content-Length", strconv.FormatInt(item.Size(), 10))

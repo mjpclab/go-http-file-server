@@ -63,7 +63,7 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 
 	if needResponseBody(r.Method) {
 		updateSubItemsHtml(data)
-		err := h.template.Execute(w, data)
+		err := h.theme.Template.Execute(w, data)
 		h.errHandler.LogError(err)
 	}
 }

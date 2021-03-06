@@ -9,7 +9,7 @@ Simple command line based HTTP file server to share local file system.
 - Single executable file
 - Can download the whole contents of current directory as archive file if enabled
 - Can upload files to current directory if enabled
-- Can specify a custom template for page rendering
+- Can specify a custom theme for page rendering
 - Support location alias(mount another directory to url location)
 
 ## Compile
@@ -214,8 +214,9 @@ server [options]
 -k|--key <file>
     Specify key file of TLS certificate.
 
--t|--template <file>
-    Use a custom template file for rendering pages, instead of builtin template.
+--theme <file>
+    Use a custom theme file for rendering pages, instead of builtin one.
+    Theme contents are cached in memory at runtime.
 
 --hsts
     Enable HSTS(HTTP Strict Transport Security).
@@ -267,7 +268,7 @@ server [options]
     otherwise use the first virtual host.
 ```
 
-## Shortcut key for default page template
+## Shortcut key for default theme
 - `←`, `→`: move focus between path items
 - `Ctrl`/`Opt` + `←`: move focus to first path item
 - `Ctrl`/`Opt` + `→`: move focus to last path item
