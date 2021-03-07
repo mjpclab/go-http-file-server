@@ -1,6 +1,7 @@
 package serverHandler
 
 import (
+	"../i18n"
 	"../util"
 	"html/template"
 	"net/http"
@@ -59,6 +60,9 @@ type responseData struct {
 	IsDelete   bool
 	IsMutate   bool
 	WantJson   bool
+
+	Lang  string
+	Trans *i18n.Translation
 }
 
 func isSlash(c rune) bool {

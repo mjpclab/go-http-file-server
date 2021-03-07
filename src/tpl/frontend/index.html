@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="{{.Lang}}">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -24,23 +24,23 @@
 <div class="panel mkdir">
 	<form method="POST" action="{{.SubItemPrefix}}?mkdir">
 		<input type="text" autocomplete="off" name="name" class="name"/>
-		<input type="submit" value="mkdir" class="submit"/>
+		<input type="submit" value="{{.Trans.MkdirLabel}}" class="submit"/>
 	</form>
 </div>
 {{end}}
 
 {{if .CanUpload}}
 <div class="tab upload-type">
-	<label class="file active" tabindex="0" role="button" title="Upload files">Files</label>
-	{{if .CanMkdir}}<label class="dirfile hidden" tabindex="0" role="button" title="Upload Directory itself">Dir</label>{{end}}
-	<label class="innerdirfile hidden" tabindex="0" role="button" title="Upload contents of directory">Dir contents</label>
+	<label class="file active" tabindex="0" role="button" title="{{.Trans.UploadFilesHint}}">{{.Trans.UploadFilesLabel}}</label>
+	{{if .CanMkdir}}<label class="dirfile hidden" tabindex="0" role="button" title="{{.Trans.UploadDirHint}}">{{.Trans.UploadDirLabel}}</label>{{end}}
+	<label class="innerdirfile hidden" tabindex="0" role="button" title="{{.Trans.UploadDirContentsHint}}">{{.Trans.UploadDirContentsLabel}}</label>
 </div>
 <div class="panel upload">
 	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
 		<input type="file" name="file" multiple="multiple" class="file"/>
 		<button type="submit" class="submit">
 			<span class="progress"></span>
-			<span class="if-enabled">Upload</span><span class="if-disabled">Uploading ...</span>
+			<span class="if-enabled">{{.Trans.UploadLabel}}</span><span class="if-disabled">{{.Trans.UploadingLabel}}</span>
 		</button>
 	</form>
 </div>
@@ -57,7 +57,7 @@
 {{if .SubItemsHtml}}
 <div class="panel filter" id="panel-filter">
 	<div class="form">
-		<input type="text" accesskey="r" placeholder="filter..." name="filter-text" class="filter-text"/>
+		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}" name="filter-text" class="filter-text"/>
 	</div>
 </div>
 {{end}}
@@ -67,7 +67,7 @@
 	function confirmDelete(el) {
 		var href = el.href;
 		var name = decodeURIComponent(href.substr(href.lastIndexOf('=') + 1));
-		return confirm('Delete?\n' + name);
+		return confirm('{{.Trans.DeleteConfirm}}\n' + name);
 	}
 </script>
 {{end}}
@@ -76,11 +76,11 @@
 	{{if not .IsDownload}}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
 		<span class="detail">
-		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">Dir{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
-		<a class="field name" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextNameSort}}">Name{{if eq $sortKey "n"}}&uarr;{{else if eq $sortKey "N"}}&darr;{{end}}</a>
-		<a class="field type" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTypeSort}}">Type{{if eq $sortKey "e"}}&uarr;{{else if eq $sortKey "E"}}&darr;{{end}}</a>
-		<a class="field size" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextSizeSort}}">Size{{if eq $sortKey "s"}}&uarr;{{else if eq $sortKey "S"}}&darr;{{end}}</a>
-		<a class="field time" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTimeSort}}">Time{{if eq $sortKey "t"}}&uarr;{{else if eq $sortKey "T"}}&darr;{{end}}</a>
+		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">{{.Trans.ListDirLabel}}{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
+		<a class="field name" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextNameSort}}">{{.Trans.ListNameLabel}}{{if eq $sortKey "n"}}&uarr;{{else if eq $sortKey "N"}}&darr;{{end}}</a>
+		<a class="field type" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTypeSort}}">{{.Trans.ListTypeLabel}}{{if eq $sortKey "e"}}&uarr;{{else if eq $sortKey "E"}}&darr;{{end}}</a>
+		<a class="field size" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextSizeSort}}">{{.Trans.ListSizeLabel}}{{if eq $sortKey "s"}}&uarr;{{else if eq $sortKey "S"}}&darr;{{end}}</a>
+		<a class="field time" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTimeSort}}">{{.Trans.ListTimeLabel}}{{if eq $sortKey "t"}}&uarr;{{else if eq $sortKey "T"}}&darr;{{end}}</a>
 		</span>
 	</li>
 	<li class="dir parent">
@@ -104,11 +104,11 @@
 </ul>
 
 {{if eq .Status 403}}
-<div class="error">403 resource is forbidden</div>
+<div class="error">{{.Trans.Error403}}</div>
 {{else if eq .Status 404}}
-<div class="error">404 resource not found</div>
+<div class="error">{{.Trans.Error404}}</div>
 {{else if eq .Status 500}}
-<div class="error">500 potential issue occurred</div>
+<div class="error">{{.Trans.Error500}}</div>
 {{end}}
 
 <script type="text/javascript" src="{{.RootRelPath}}?asset=index.js" defer="defer" async="async"></script>

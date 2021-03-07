@@ -1,7 +1,10 @@
 package serverHandler
 
 import (
+	"../acceptHeaders"
+	"../i18n"
 	tplutil "../tpl/util"
+	"../util"
 	"html/template"
 	"io"
 	"net/http"
@@ -55,11 +58,24 @@ func updateSubItemsHtml(data *responseData) {
 	}
 }
 
+func updateTranslation(r *http.Request, data *responseData) {
+	accepts := acceptHeaders.ParseAccepts(util.AsciiToLowerCase(r.Header.Get("Accept-Language")))
+	index, _, ok := accepts.GetPreferredValue(i18n.LanguageTags)
+	if !ok {
+		index = 0
+	}
+	data.Lang = i18n.LanguageTags[index]
+	data.Trans = i18n.Dictionaries[index].Trans
+}
+
 func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
 	header.Set("X-Content-Type-Options", "nosniff")
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
+
+	updateTranslation(r, data)
+	header.Set("Content-Language", data.Lang)
 
 	if !needResponseBody(r.Method) {
 		w.WriteHeader(data.Status)
