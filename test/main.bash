@@ -16,7 +16,7 @@ export cert=$(realpath cert)
 export src=$(realpath ../src)
 export ghfs=$(realpath bin)/ghfs
 
-go build -o "$ghfs" "$src/main.go"
+GO111MODULE=auto go build -o "$ghfs" "$src/main.go"
 
 pattern="$1"
 if [ -z "$pattern" ]; then
