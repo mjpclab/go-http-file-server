@@ -777,7 +777,17 @@ createTextFile = function (content) {
 return new File([content], textFilename, {type: typeTextPlain});
 }
 }
+var nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
 document.documentElement.addEventListener('paste', function (e) {
+var tagName = e.target.tagName;
+if (tagName === 'INPUT') {
+if (nonTextInputTypes.indexOf(e.target.type) < 0) {
+return;
+}
+}
+if (tagName === 'TEXTAREA') {
+return;
+}
 var data = e.clipboardData;
 if (!data) {
 return;
