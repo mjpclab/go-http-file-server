@@ -39,7 +39,7 @@ func updateSubItemsHtml(data *responseData) {
 			_, isRenamedInfo := info.(*renamedFileInfo)
 			_, isFakeInfo := info.(*fakeFileInfo)
 			if !isRenamedInfo && !isFakeInfo {
-				deleteUrl = data.SubItemPrefix + "?delete&name=" + urlEscapedName
+				deleteUrl = name
 			}
 		}
 

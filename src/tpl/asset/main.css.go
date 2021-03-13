@@ -9,7 +9,7 @@ background: #fff;
 html {
 font-family: "roboto_condensedbold", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-body, input, textarea {
+body, input, textarea, button {
 font-family: Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
 }
 body {
@@ -296,13 +296,20 @@ position: absolute;
 top: 0;
 right: 0;
 bottom: 0;
+display: flex;
+align-items: stretch;
+}
+.item-list .delete button {
+border: 0;
 color: #800000;
+background: none;
 font-weight: bold;
 font-size: 1.6em;
 line-height: 1em;
 padding: 0.1875em 0.3125em 0.3125em;
+cursor: pointer;
 }
-.item-list .delete:hover {
+.item-list .delete button:hover {
 background: #fee;
 }
 .item-list .header:hover {
