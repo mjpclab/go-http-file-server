@@ -876,7 +876,17 @@
 				}
 			}
 
+			var nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
 			document.documentElement.addEventListener('paste', function (e) {
+				var tagName = e.target.tagName;
+				if (tagName === 'INPUT') {
+					if (nonTextInputTypes.indexOf(e.target.type) < 0) {
+						return;
+					}
+				}
+				if (tagName === 'TEXTAREA') {
+					return;
+				}
 				var data = e.clipboardData;
 				if (!data) {
 					return;
@@ -946,8 +956,8 @@
 			return;
 		}
 
-		itemList.addEventListener('click', function (e) {
-			if (e.defaultPrevented || !e.target || !e.target.href || e.target.className.indexOf('delete') < 0) {
+		itemList.addEventListener('submit', function (e) {
+			if (e.defaultPrevented) {
 				return;
 			}
 
@@ -963,8 +973,22 @@
 				elItemParent && elItemParent.removeChild(elItem);
 			}
 
+			var params = '';
+			var els = [];
+			Array.prototype.push.apply(els, e.target.elements)
+			for (var i = 0, len = els.length; i < len; i++) {
+				if (!els[i].name) {
+					continue
+				}
+				if (params.length > 0) {
+					params += '&'
+				}
+				params += els[i].name + '=' + encodeURIComponent(els[i].value)
+			}
+			var url = e.target.action + '?' + params
+
 			var xhr = new XMLHttpRequest();
-			xhr.open('POST', e.target.href);	// will retrieve deleted result into bfcache
+			xhr.open('POST', url);	// will retrieve deleted result into bfcache
 			xhr.addEventListener('load', onLoad);
 			xhr.send();
 			e.preventDefault();

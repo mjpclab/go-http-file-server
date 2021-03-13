@@ -23,6 +23,7 @@ const pageTplStr = `
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 {{$contextQueryString := .Context.QueryString}}
 {{$isDownload := .IsDownload}}
+{{$SubItemPrefix := .SubItemPrefix}}
 {{if not $isDownload}}
 <ol class="path-list">
 {{range .Paths}}
@@ -69,9 +70,8 @@ const pageTplStr = `
 {{end}}
 {{if .CanDelete}}
 <script type="text/javascript">
-function confirmDelete(el) {
-var href = el.href;
-var name = decodeURIComponent(href.substr(href.lastIndexOf('=') + 1));
+function confirmDelete(form) {
+var name = form.name.value;
 return confirm('Delete?\n' + name);
 }
 </script>
@@ -103,7 +103,7 @@ return confirm('Delete?\n' + name);
 <span class="field size">{{.DisplaySize}}</span>
 <span class="field time">{{.DisplayTime}}</span>
 </a>
-{{if and (not $isDownload) .DeleteUrl}}<a href="{{.DeleteUrl}}" class="delete" onclick="return confirmDelete(this)">x</a>{{end}}
+{{if and (not $isDownload) .DeleteUrl}}<form class="delete" action="{{$SubItemPrefix}}" onsubmit="return confirmDelete(this)"><input type="hidden" name="delete"/><input type="hidden" name="name" value="{{.DeleteUrl}}"/><button type="submit">x</button></form>{{end}}
 </li>
 {{end}}
 </ul>
