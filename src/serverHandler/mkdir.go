@@ -18,7 +18,8 @@ func (h *handler) mkdirs(fsPrefix string, files []string, aliasSubItems []os.Fil
 		if filename, ok = getCleanFilePath(inputFilename); !ok {
 			errs = append(errs, errors.New("mkdir: illegal directory name "+inputFilename))
 			continue
-		} else if containsItem(aliasSubItems, filename) {
+		}
+		if containsItem(aliasSubItems, filename) {
 			continue
 		}
 		err := os.Mkdir(fsPrefix+"/"+filename, 0755)
