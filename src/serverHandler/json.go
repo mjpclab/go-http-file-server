@@ -46,13 +46,11 @@ func getJsonData(data *responseData) *jsonResponseData {
 
 	if data.Item != nil {
 		item = getJsonItem(data.Item)
+	}
 
-		if data.Item.IsDir() {
-			subItems = make([]*jsonItem, len(data.SubItems))
-			for i := range data.SubItems {
-				subItems[i] = getJsonItem(data.SubItems[i])
-			}
-		}
+	subItems = make([]*jsonItem, len(data.SubItems))
+	for i := range data.SubItems {
+		subItems[i] = getJsonItem(data.SubItems[i])
 	}
 
 	return &jsonResponseData{
