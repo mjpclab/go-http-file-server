@@ -68,3 +68,13 @@ func getCompressWriter(w http.ResponseWriter, r *http.Request) (wr io.WriteClose
 	}
 	return wr, encoding, true
 }
+
+func isVirtual(info os.FileInfo) bool {
+	if _, isRenamedInfo := info.(*renamedFileInfo); isRenamedInfo {
+		return true
+	}
+	if _, isFakeInfo := info.(*fakeFileInfo); isFakeInfo {
+		return true
+	}
+	return false
+}
