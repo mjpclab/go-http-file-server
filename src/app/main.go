@@ -52,14 +52,20 @@ func NewApp(params []*param.Param) *App {
 		errHandler := serverErrHandler.NewErrHandler(logger)
 
 		// theme
-		var err error
-		themeKey, err := filepath.Abs(p.Theme)
-		serverErrHandler.CheckFatal(err)
-		theme, themeExists := themes[themeKey]
-		if !themeExists {
-			theme, err = tpl.LoadTheme(p.Theme)
+		var theme tpl.Theme
+		if len(p.Theme) == 0 {
+			theme = tpl.DefaultTheme
+		} else {
+			themeKey, err := filepath.Abs(p.Theme)
 			serverErrHandler.CheckFatal(err)
-			themes[themeKey] = theme
+
+			var themeExists bool
+			theme, themeExists = themes[themeKey]
+			if !themeExists {
+				theme, err = tpl.LoadMemTheme(p.Theme)
+				serverErrHandler.CheckFatal(err)
+				themes[themeKey] = theme
+			}
 		}
 
 		// vHostMux

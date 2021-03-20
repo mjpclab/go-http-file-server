@@ -89,7 +89,7 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 	w.WriteHeader(data.Status)
 
 	updateSubItemsHtml(data)
-	err := h.theme.Template.Execute(bodyW, data)
+	err := h.theme.RenderPage(bodyW, data)
 	if err != nil {
 		go h.errHandler.LogError(err)
 	}
