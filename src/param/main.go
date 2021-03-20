@@ -55,6 +55,7 @@ type Param struct {
 	ListensTLS   []string
 	HostNames    []string
 	Theme        string
+	ThemeDir     string
 
 	GlobalHsts  bool
 	GlobalHttps bool

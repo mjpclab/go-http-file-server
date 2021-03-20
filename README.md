@@ -215,8 +215,18 @@ server [options]
     Specify key file of TLS certificate.
 
 --theme <file>
-    Use a custom theme file for rendering pages, instead of builtin one.
+    Specify a zip archive file as custom theme for rendering page and assets, instead of builtin ones.
     Theme contents are cached in memory at runtime.
+--theme-dir <directory>
+    Specify a directory which contains theme files.
+    Theme contents will be evaluated for each request.
+    It is convenient for developing themes.
+
+    Notes for theme options:
+        --theme and --theme-dir are mutually exclusive.
+        --theme-dir is prior.
+        Page template filename is always "index.html".
+        Use "?asset=<asset-path>" to reference an asset in theme.
 
 --hsts
     Enable HSTS(HTTP Strict Transport Security).

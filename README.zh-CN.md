@@ -213,8 +213,18 @@ server [选项]
     指定TLS私钥文件。
 
 --theme <主题文件>
-    指定用于渲染页面的自定义主题，代替内建主题。
+    指定用于渲染页面和静态资源的自定义主题zip压缩文件，代替内建主题。
     主题的内容在运行时一直缓存在内存中。
+--theme-dir <主题目录>
+    指定主题文件所在的目录。
+    每次请求时主题内容都会重新计算。
+    这为开发主题提供了便利。
+
+    主题选项注意事项：
+        --theme和--theme-dir是互斥的。
+        --theme-dir更为优先。
+        页面模板文件名固定为“index.html”。
+        使用“?asset=<asset-path>”格式来引用主题中的静态资源。
 
 --hsts
     启用HSTS(HTTP Strict Transport Security)。

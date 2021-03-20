@@ -42,7 +42,7 @@ func LoadMemTheme(themePath string) (theme MemTheme, err error) {
 		if err != nil {
 			return
 		}
-		if f.Name == "index.html" {
+		if f.Name == templateFilename {
 			currentTheme.template, err = ParsePageTpl(string(raw))
 			if err != nil {
 				return
@@ -57,7 +57,7 @@ func LoadMemTheme(themePath string) (theme MemTheme, err error) {
 		return
 	}
 
-	err = errors.New("lacks of page template 'index.html' in theme")
+	err = errors.New("lacks of page template '" + templateFilename + "' in theme")
 	return
 }
 

@@ -53,7 +53,9 @@ func NewApp(params []*param.Param) *App {
 
 		// theme
 		var theme tpl.Theme
-		if len(p.Theme) == 0 {
+		if len(p.ThemeDir) > 0 {
+			theme = tpl.DirTheme(p.ThemeDir)
+		} else if len(p.Theme) == 0 {
 			theme = tpl.DefaultTheme
 		} else {
 			themeKey, err := filepath.Abs(p.Theme)
