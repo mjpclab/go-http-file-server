@@ -132,7 +132,10 @@ func init() {
 	err = options.AddFlagValues("hostnames", "--hostname", "", nil, "hostname for the virtual host")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagsValue("template", []string{"-t", "--template"}, "GHFS_TEMPLATE", "", "custom template file for page")
+	err = options.AddFlagValue("theme", "--theme", "GHFS_THEME", "", "external theme file")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValue("themedir", "--theme-dir", "GHFS_THEME_DIR", "", "external theme directory")
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlag("globalhsts", "--hsts", "GHFS_HSTS", "enable HSTS(HTTP Strict Transport Security)")
@@ -248,7 +251,8 @@ func doParseCli() []*Param {
 		param.GlobalCors = result.HasKey("globalcors")
 		param.GlobalAuth = result.HasKey("globalauth")
 		param.HostNames, _ = result.GetStrings("hostnames")
-		param.Template, _ = result.GetString("template")
+		param.Theme, _ = result.GetString("theme")
+		param.ThemeDir, _ = result.GetString("themedir")
 		param.AccessLog, _ = result.GetString("accesslog")
 		param.ErrorLog, _ = result.GetString("errorlog")
 

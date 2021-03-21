@@ -4,8 +4,8 @@ import (
 	"../param"
 	"../serverErrHandler"
 	"../serverLog"
+	"../tpl"
 	"../user"
-	"html/template"
 	"net/http"
 	"regexp"
 	"strings"
@@ -56,7 +56,7 @@ type handler struct {
 	hides     *regexp.Regexp
 	hideDirs  *regexp.Regexp
 	hideFiles *regexp.Regexp
-	template  *template.Template
+	theme     tpl.Theme
 
 	logger     *serverLog.Logger
 	errHandler *serverErrHandler.ErrHandler
@@ -104,7 +104,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.header(w)
 
 	if data.CanCors {
-		h.cors(w, r)
+		h.cors(w)
 	}
 
 	if data.IsMutate {
@@ -150,7 +150,7 @@ func NewHandler(
 	urlPrefix string,
 	p *param.Param,
 	users user.Users,
-	template *template.Template,
+	theme tpl.Theme,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
 ) *handler {
@@ -204,7 +204,7 @@ func NewHandler(
 		hides:     p.Hides,
 		hideDirs:  p.HideDirs,
 		hideFiles: p.HideFiles,
-		template:  template,
+		theme:     theme,
 
 		logger:     logger,
 		errHandler: errHandler,

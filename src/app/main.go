@@ -5,8 +5,10 @@ import (
 	"../param"
 	"../serverErrHandler"
 	"../serverLog"
+	"../tpl"
 	"../vhostHandler"
 	"os"
+	"path/filepath"
 )
 
 type App struct {
@@ -38,6 +40,7 @@ func (app *App) ReOpenLog() {
 func NewApp(params []*param.Param) *App {
 	vhSvc := goVirtualHost.NewService()
 	vhHandlers := make([]*vhostHandler.VhostHandler, 0, len(params))
+	themes := make(map[string]tpl.Theme)
 
 	for _, p := range params {
 		// logger
@@ -48,8 +51,27 @@ func NewApp(params []*param.Param) *App {
 		// ErrHandler
 		errHandler := serverErrHandler.NewErrHandler(logger)
 
-		// ServeMux
-		vhHandler := vhostHandler.NewHandler(p, logger, errHandler)
+		// theme
+		var theme tpl.Theme
+		if len(p.ThemeDir) > 0 {
+			theme = tpl.DirTheme(p.ThemeDir)
+		} else if len(p.Theme) == 0 {
+			theme = tpl.DefaultTheme
+		} else {
+			themeKey, err := filepath.Abs(p.Theme)
+			serverErrHandler.CheckFatal(err)
+
+			var themeExists bool
+			theme, themeExists = themes[themeKey]
+			if !themeExists {
+				theme, err = tpl.LoadMemTheme(p.Theme)
+				serverErrHandler.CheckFatal(err)
+				themes[themeKey] = theme
+			}
+		}
+
+		// vHostMux
+		vhHandler := vhostHandler.NewHandler(p, logger, errHandler, theme)
 		vhHandlers = append(vhHandlers, vhHandler)
 
 		// init vhost
