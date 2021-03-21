@@ -1,22 +1,29 @@
 package tpl
 
 import (
-	"./frontend"
+	"../util"
+	"bytes"
 	"io"
-	"strings"
 )
 
-type content struct {
-	ContentType string
-	ReadSeeker  io.ReadSeeker
+type asset struct {
+	contentType string
+	readSeeker  io.ReadSeeker
 }
 
-var assets = map[string]content{
-	"main.css": {"text/css", strings.NewReader(frontend.MainCss)},
-	"main.js":  {"application/javascript", strings.NewReader(frontend.MainJs)},
-}
+type assets map[string]asset
 
-func GetAsset(path string) (content, bool) {
-	c, ok := assets[path]
-	return c, ok
+func (assets assets) set(path string, content []byte) error {
+	rd := bytes.NewReader(content)
+	ctype, err := util.GetContentType(path, rd)
+	if err != nil {
+		return err
+	}
+
+	asset := asset{
+		contentType: ctype,
+		readSeeker:  rd,
+	}
+	assets[path] = asset
+	return nil
 }

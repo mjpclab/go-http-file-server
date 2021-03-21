@@ -2,16 +2,18 @@ package serverHandler
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
 	"time"
 )
 
 type jsonItem struct {
-	IsDir   bool      `json:"isDir"`
-	Name    string    `json:"name"`
-	Size    int64     `json:"size"`
-	ModTime time.Time `json:"modTime"`
+	IsDir     bool      `json:"isDir"`
+	IsVirtual bool      `json:"isVirtual"`
+	Name      string    `json:"name"`
+	Size      int64     `json:"size"`
+	ModTime   time.Time `json:"modTime"`
 }
 
 type jsonResponseData struct {
@@ -33,10 +35,11 @@ type jsonResponseData struct {
 
 func getJsonItem(info os.FileInfo) *jsonItem {
 	return &jsonItem{
-		IsDir:   info.IsDir(),
-		Name:    info.Name(),
-		Size:    info.Size(),
-		ModTime: info.ModTime(),
+		IsDir:     info.IsDir(),
+		IsVirtual: isVirtual(info),
+		Name:      info.Name(),
+		Size:      info.Size(),
+		ModTime:   info.ModTime(),
 	}
 }
 
@@ -46,13 +49,11 @@ func getJsonData(data *responseData) *jsonResponseData {
 
 	if data.Item != nil {
 		item = getJsonItem(data.Item)
+	}
 
-		if data.Item.IsDir() {
-			subItems = make([]*jsonItem, len(data.SubItems))
-			for i := range data.SubItems {
-				subItems[i] = getJsonItem(data.SubItems[i])
-			}
-		}
+	subItems = make([]*jsonItem, len(data.SubItems))
+	for i := range data.SubItems {
+		subItems[i] = getJsonItem(data.SubItems[i])
 	}
 
 	return &jsonResponseData{
@@ -78,12 +79,25 @@ func (h *handler) json(w http.ResponseWriter, r *http.Request, data *responseDat
 	header.Set("Content-Type", "application/json; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
+	if !needResponseBody(r.Method) {
+		w.WriteHeader(data.Status)
+		return
+	}
+
+	var bodyW io.Writer
+	if compressW, encoding, useCompressW := getCompressWriter(w, r); useCompressW {
+		header.Set("Content-Encoding", encoding)
+		bodyW = compressW
+		defer compressW.Close()
+	} else {
+		bodyW = w
+	}
 	w.WriteHeader(data.Status)
 
-	if needResponseBody(r.Method) {
-		jsonData := getJsonData(data)
-		encoder := json.NewEncoder(w)
-		err := encoder.Encode(jsonData)
-		h.errHandler.LogError(err)
+	jsonData := getJsonData(data)
+	encoder := json.NewEncoder(bodyW)
+	err := encoder.Encode(jsonData)
+	if err != nil {
+		go h.errHandler.LogError(err)
 	}
 }

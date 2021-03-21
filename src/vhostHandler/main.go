@@ -14,6 +14,7 @@ type VhostHandler struct {
 	p            *param.Param
 	logger       *serverLog.Logger
 	errorHandler *serverErrHandler.ErrHandler
+	theme        tpl.Theme
 	Handler      http.Handler
 }
 
@@ -21,6 +22,7 @@ func NewHandler(
 	p *param.Param,
 	logger *serverLog.Logger,
 	errorHandler *serverErrHandler.ErrHandler,
+	theme tpl.Theme,
 ) *VhostHandler {
 	users := user.NewUsers()
 	for _, u := range p.UsersPlain {
@@ -42,10 +44,6 @@ func NewHandler(
 		errorHandler.LogError(users.AddSha512(u.Username, u.Password))
 	}
 
-	// template
-	pageTpl, err := tpl.LoadPageTpl(p.Template)
-	errorHandler.LogError(err)
-
 	// register handlers
 	aliases := p.Aliases
 	_, hasRootAlias := aliases["/"]
@@ -58,7 +56,7 @@ func NewHandler(
 	handlers := map[string]http.Handler{}
 	for urlPath, fsPath := range aliases {
 		emptyHandlerRoot := emptyRoot && urlPath == "/"
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, p, users, pageTpl, logger, errorHandler)
+		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, p, users, theme, logger, errorHandler)
 	}
 
 	var handler http.Handler
