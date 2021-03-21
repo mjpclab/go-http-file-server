@@ -2,8 +2,8 @@ package tpl
 
 import (
 	"io"
+	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 )
@@ -12,7 +12,7 @@ type DirTheme string
 
 func (dir DirTheme) RenderPage(w io.Writer, data interface{}) error {
 	filename := string(dir) + "/" + templateFilename
-	tplStr, err := os.ReadFile(filename)
+	tplStr, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
 	}

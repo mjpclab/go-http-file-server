@@ -5,6 +5,7 @@ import (
 	"errors"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -37,7 +38,7 @@ func LoadMemTheme(themePath string) (theme MemTheme, err error) {
 			continue
 		}
 		var raw []byte
-		raw, err = io.ReadAll(rd)
+		raw, err = ioutil.ReadAll(rd)
 		rd.Close()
 		if err != nil {
 			return

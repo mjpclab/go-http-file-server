@@ -5,6 +5,6 @@ define embed
 endef
 
 tpls:
-	$(call embed, tpl/frontend/page.html)
-	$(call embed, tpl/frontend/main.css)
-	$(call embed, tpl/frontend/main.js)
+	$(call embed, tpl/frontend/index.html)
+	$(call embed, tpl/frontend/index.css)
+	$(call embed, tpl/frontend/index.js)

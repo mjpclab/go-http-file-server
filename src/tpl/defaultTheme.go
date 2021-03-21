@@ -1,31 +1,22 @@
 package tpl
 
 import (
-	"bytes"
-	_ "embed"
+	"./frontend"
+	"strings"
 )
-
-//go:embed frontend/index.html
-var defaultTplStr string
-
-//go:embed frontend/index.css
-var defaultCss []byte
-
-//go:embed frontend/index.js
-var defaultJs []byte
 
 var DefaultTheme MemTheme
 
 func init() {
-	defaultTpl, err := ParsePageTpl(defaultTplStr)
+	defaultTpl, err := ParsePageTpl(frontend.DefaultTplStr)
 	if err != nil {
 		defaultTpl, _ = ParsePageTpl("Builtin Template Error")
 	}
 	DefaultTheme.template = defaultTpl
 
 	defaultAssets := map[string]asset{
-		"index.css": {"text/css", bytes.NewReader(defaultCss)},
-		"index.js":  {"application/javascript", bytes.NewReader(defaultJs)},
+		"index.css": {"text/css", strings.NewReader(frontend.DefaultCss)},
+		"index.js":  {"application/javascript", strings.NewReader(frontend.DefaultJs)},
 	}
 	DefaultTheme.assets = defaultAssets
 }
