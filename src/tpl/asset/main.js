@@ -989,6 +989,7 @@
 
 			var xhr = new XMLHttpRequest();
 			xhr.open('POST', url);	// will retrieve deleted result into bfcache
+			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			xhr.addEventListener('load', onLoad);
 			xhr.send();
 			e.preventDefault();
