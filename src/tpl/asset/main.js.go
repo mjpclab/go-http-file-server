@@ -880,6 +880,7 @@ params += els[i].name + '=' + encodeURIComponent(els[i].value)
 var url = e.target.action + '?' + params
 var xhr = new XMLHttpRequest();
 xhr.open('POST', url);	// will retrieve deleted result into bfcache
+xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 xhr.addEventListener('load', onLoad);
 xhr.send();
 e.preventDefault();
