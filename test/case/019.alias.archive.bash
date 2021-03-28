@@ -12,6 +12,10 @@ cleanup
 
 archive="$fs"/downloaded/archive.tar.tmp
 curl_get_body 'http://127.0.0.1:3003/?tar' > "$archive"
+(tar -tf "$archive" | grep -q '^a/') || fail "a/ not in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^b/') || fail "b/ not in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^file1.txt') || fail "file1.txt not in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^file2.txt') || fail "file2.txt not in $(basename $archive)"
 (tar -tf "$archive" | grep -q 'go/index.txt') || fail "go/index.txt not in $(basename $archive)"
 (tar -tf "$archive" | grep -q 'hello/world/index.txt') || fail "hello/world/index.txt not in $(basename $archive)"
 
