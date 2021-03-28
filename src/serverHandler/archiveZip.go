@@ -50,7 +50,6 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *response
 		pageData,
 		".zip",
 		"application/zip",
-		h.FilterItems,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			return writeZip(zipWriter, f, fInfo, relPath)
 		},
