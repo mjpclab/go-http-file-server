@@ -9,13 +9,11 @@ import (
 	"strings"
 )
 
-type filterCallback func([]os.FileInfo) []os.FileInfo
 type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error
 
 func (h *handler) visitFs(
 	initFsPath, rawRequestPath, relPath string,
 	statFs bool,
-	filterCallback filterCallback,
 	archiveCallback archiveCallback,
 ) {
 	alias, hasAlias := h.aliases.byUrlPath(rawRequestPath)
@@ -65,7 +63,7 @@ func (h *handler) visitFs(
 				if h.errHandler.LogError(err) {
 					return err
 				}
-				childInfos = filterCallback(childInfos)
+				childInfos = h.FilterItems(childInfos)
 			}
 
 			return nil
@@ -107,17 +105,17 @@ func (h *handler) visitFs(
 			childRelPath := relPath + childPath
 
 			if childAliasedFsPath, hasChildAlias := childAliases[childRawRequestPath]; hasChildAlias {
-				h.visitFs(childAliasedFsPath, childRawRequestPath, childRelPath, statFs, filterCallback, archiveCallback)
+				h.visitFs(childAliasedFsPath, childRawRequestPath, childRelPath, statFs, archiveCallback)
 				delete(childAliases, childRawRequestPath) // delete walked alias
 			} else {
-				h.visitFs(childFsPath, childRawRequestPath, childRelPath, statFs, filterCallback, archiveCallback)
+				h.visitFs(childFsPath, childRawRequestPath, childRelPath, statFs, archiveCallback)
 			}
 		}
 
 		// rest aliases are standalone aliases that not shadows exists dir/file
 		for childRawRequestPath, childAliasedFsPath := range childAliases {
 			childRelPath := relPath + "/" + path.Base(childRawRequestPath)
-			h.visitFs(childAliasedFsPath, childRawRequestPath, childRelPath, statFs, filterCallback, archiveCallback)
+			h.visitFs(childAliasedFsPath, childRawRequestPath, childRelPath, statFs, archiveCallback)
 		}
 	}
 }
@@ -128,7 +126,6 @@ func (h *handler) archive(
 	pageData *responseData,
 	fileSuffix string,
 	contentType string,
-	filterCallback filterCallback,
 	cbWriteFile archiveCallback,
 ) {
 	var itemName string
@@ -152,7 +149,6 @@ func (h *handler) archive(
 		pageData.rawReqPath,
 		"",
 		!h.emptyRoot,
-		filterCallback,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			go h.logArchive(targetFilename, relPath, r)
 			err := cbWriteFile(f, fInfo, relPath)
