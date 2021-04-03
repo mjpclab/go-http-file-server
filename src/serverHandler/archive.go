@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"strings"
 )
 
 type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error
@@ -16,25 +15,25 @@ func (h *handler) visitFs(
 	statFs bool,
 	archiveCallback archiveCallback,
 ) {
-	alias, hasAlias := h.aliases.byUrlPath(rawRequestPath)
-
 	var fsPath string
+	alias, hasAlias := h.aliases.byUrlPath(rawRequestPath)
 	if hasAlias {
 		fsPath = alias.fsPath
+		if alias.urlPath != "/" {
+			statFs = true
+		}
 	} else {
 		fsPath = initFsPath
 	}
 
-	if hasAlias && rawRequestPath != "/" {
-		statFs = true
-	}
-
 	var fInfo os.FileInfo
 	var childInfos []os.FileInfo
-	if statFs {
-		// wrap func to run defer ASAP
-		err := func() error {
-			f, err := os.Open(fsPath)
+	// wrap func to run defer ASAP
+	err := func() error {
+		var f *os.File
+		var err error
+		if statFs {
+			f, err = os.Open(fsPath)
 			if f != nil {
 				defer f.Close()
 			}
@@ -51,51 +50,32 @@ func (h *handler) visitFs(
 					return err
 				}
 			}
-
-			if len(relPath) > 0 {
-				if err := archiveCallback(f, fInfo, relPath); err != nil {
-					return err
-				}
-			}
-
-			if f != nil && fInfo.IsDir() {
-				childInfos, err = f.Readdir(0)
-				if h.errHandler.LogError(err) {
-					return err
-				}
-				childInfos = h.FilterItems(childInfos)
-			}
-
-			return nil
-		}()
-		if err != nil {
-			return
+		} else {
+			fInfo = newFakeFileInfo(path.Base(fsPath), true)
 		}
-	} else {
-		fInfo = newFakeFileInfo(path.Base(fsPath), true)
+
+		if len(relPath) > 0 {
+			if err := archiveCallback(f, fInfo, relPath); err != nil {
+				return err
+			}
+		}
+
+		if f != nil && fInfo.IsDir() {
+			childInfos, err = f.Readdir(0)
+			if h.errHandler.LogError(err) {
+				return err
+			}
+		}
+
+		return nil
+	}()
+	if err != nil {
+		return
 	}
 
 	if fInfo.IsDir() {
-		childAliases := map[string]string{}
-		for _, alias := range h.aliases {
-			if alias.isChildOf(rawRequestPath) {
-				childAliases[alias.urlPath] = alias.fsPath
-				continue
-			}
-
-			// just generate a path for walk down, mapped value is not important
-			if alias.isSuccessorOf(rawRequestPath) {
-				succPath := alias.urlPath[len(rawRequestPath):]
-				if succPath[0] == '/' {
-					succPath = succPath[1:]
-				}
-				childName := succPath[:strings.Index(succPath, "/")]
-				childUrlPath := util.CleanUrlPath(rawRequestPath + "/" + childName)
-				childFsPath := fsPath + "/" + childName
-				childAliases[childUrlPath] = childFsPath
-				continue
-			}
-		}
+		childInfos, _, _ := h.mergeAlias(rawRequestPath, fInfo, childInfos)
+		childInfos = h.FilterItems(childInfos)
 
 		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
 		for _, childInfo := range childInfos {
@@ -104,18 +84,11 @@ func (h *handler) visitFs(
 			childRawRequestPath := util.CleanUrlPath(rawRequestPath + childPath)
 			childRelPath := relPath + childPath
 
-			if childAliasedFsPath, hasChildAlias := childAliases[childRawRequestPath]; hasChildAlias {
-				h.visitFs(childAliasedFsPath, childRawRequestPath, childRelPath, statFs, archiveCallback)
-				delete(childAliases, childRawRequestPath) // delete walked alias
+			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawRequestPath); hasChildAlias {
+				h.visitFs(childAlias.fsPath, childRawRequestPath, childRelPath, statFs, archiveCallback)
 			} else {
 				h.visitFs(childFsPath, childRawRequestPath, childRelPath, statFs, archiveCallback)
 			}
-		}
-
-		// rest aliases are standalone aliases that not shadows exists dir/file
-		for childRawRequestPath, childAliasedFsPath := range childAliases {
-			childRelPath := relPath + "/" + path.Base(childRawRequestPath)
-			h.visitFs(childAliasedFsPath, childRawRequestPath, childRelPath, statFs, archiveCallback)
 		}
 	}
 }
