@@ -65,14 +65,15 @@ func NewHandler(
 	}
 
 	var handler http.Handler
-	if len(handlers) == 0 {
+	if len(handlers) == 1 {
 		handler = handlers["/"]
-	} else {
+	}
+	if handler == nil {
 		serveMux := http.NewServeMux()
-		for urlPath, handler := range handlers {
-			serveMux.Handle(urlPath, handler)
+		for urlPath, urlHandler := range handlers {
+			serveMux.Handle(urlPath, urlHandler)
 			if len(urlPath) > 1 {
-				serveMux.Handle(urlPath+"/", handler)
+				serveMux.Handle(urlPath+"/", urlHandler)
 			}
 		}
 		handler = serveMux
