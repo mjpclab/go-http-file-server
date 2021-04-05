@@ -86,11 +86,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// data
 	data := h.getResponseData(r)
 	if len(data.errors) > 0 {
-		go func() {
-			for _, err := range data.errors {
-				h.errHandler.LogError(err)
-			}
-		}()
+		go h.logger.LogErrors(data.errors...)
 	}
 	file := data.File
 	if file != nil {
