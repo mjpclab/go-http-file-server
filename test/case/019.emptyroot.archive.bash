@@ -12,9 +12,14 @@ cleanup
 
 archive="$fs"/downloaded/archive.tar.tmp
 curl_get_body 'http://127.0.0.1:3003/?tar' > "$archive"
-(tar -tf "$archive" | grep -q 'go/index.txt') || fail "go/index.txt not in $(basename $archive)"
-(tar -tf "$archive" | grep -q 'hello/world/index.txt') || fail "hello/world/index.txt not in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^go/index.txt$') || fail "go/index.txt should in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^hello/world/index.txt$') || fail "hello/world/index.txt should in $(basename $archive)"
 (tar -tf "$archive" | grep -q -E -v '^(go|hello)/') && fail "unexpected file in $(basename $archive)"
+
+archive="$fs"/downloaded/archive-partial.tar.tmp
+curl_get_body 'http://127.0.0.1:3003/?tar&name=go' > "$archive"
+(tar -tf "$archive" | grep -q '^go/index.txt$') || fail "go/index.txt should in $(basename $archive)"
+(tar -tf "$archive" | grep -q -E -v '^go/') && fail "unexpected file in $(basename $archive)"
 
 cleanup
 jobs -p | xargs kill

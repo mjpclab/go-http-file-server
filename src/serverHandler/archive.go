@@ -6,13 +6,45 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 )
 
 type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error
 
-func (h *handler) visitFs(
+func matchSelection(name string, selections []string) (matchName, matchPrefix bool, childSelections []string) {
+	if len(selections) == 0 {
+		return true, false, nil
+	}
+
+	for _, sel := range selections {
+		if sel == name {
+			matchName = true
+			continue
+		}
+
+		slashIndex := strings.IndexByte(sel, '/')
+		if slashIndex <= 0 {
+			continue
+		}
+
+		prefix := sel[:slashIndex]
+		if prefix == name {
+			childSel := sel[slashIndex+1:]
+			if len(childSel) > 0 {
+				matchPrefix = true
+				childSelections = append(childSelections, childSel)
+			}
+			continue
+		}
+	}
+
+	return
+}
+
+func (h *handler) visitTreeNode(
 	fsPath, rawReqPath, relPath string,
-	statFs bool,
+	statNode bool,
+	childSelections []string,
 	archiveCallback archiveCallback,
 ) {
 	var fInfo os.FileInfo
@@ -21,14 +53,13 @@ func (h *handler) visitFs(
 	err := func() error {
 		var f *os.File
 		var err error
-		if statFs {
+		if statNode {
 			f, err = os.Open(fsPath)
 			if f != nil {
 				defer f.Close()
 			}
-			h.errHandler.LogError(err)
 
-			if err != nil {
+			if h.errHandler.LogError(err) {
 				if os.IsExist(err) {
 					return err
 				}
@@ -68,15 +99,21 @@ func (h *handler) visitFs(
 
 		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
 		for _, childInfo := range childInfos {
-			childPath := "/" + childInfo.Name()
+			childName := childInfo.Name()
+			matchChildName, matchChildPrefix, childChildSelections := matchSelection(childName, childSelections)
+			if !matchChildName && !matchChildPrefix {
+				continue
+			}
+
+			childPath := "/" + childName
 			childFsPath := fsPath + childPath
 			childRawReqPath := util.CleanUrlPath(rawReqPath + childPath)
 			childRelPath := relPath + childPath
 
 			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
-				h.visitFs(childAlias.fsPath, childRawReqPath, childRelPath, true, archiveCallback)
+				h.visitTreeNode(childAlias.fsPath, childRawReqPath, childRelPath, true, childChildSelections, archiveCallback)
 			} else {
-				h.visitFs(childFsPath, childRawReqPath, childRelPath, statFs, archiveCallback)
+				h.visitTreeNode(childFsPath, childRawReqPath, childRelPath, statNode, childChildSelections, archiveCallback)
 			}
 		}
 	}
@@ -86,6 +123,7 @@ func (h *handler) archive(
 	w http.ResponseWriter,
 	r *http.Request,
 	pageData *responseData,
+	selections []string,
 	fileSuffix string,
 	contentType string,
 	cbWriteFile archiveCallback,
@@ -106,11 +144,12 @@ func (h *handler) archive(
 		return
 	}
 
-	h.visitFs(
+	h.visitTreeNode(
 		path.Clean(h.root+pageData.handlerReqPath),
 		pageData.rawReqPath,
 		"",
-		!h.emptyRoot,
+		pageData.Item != nil, // not empty root
+		selections,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			go h.logArchive(targetFilename, relPath, r)
 			err := cbWriteFile(f, fInfo, relPath)
@@ -128,4 +167,27 @@ func writeArchiveHeader(w http.ResponseWriter, contentType, filename string) {
 	header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+filename)
 	header.Set("Cache-Control", "public, max-age=0")
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *handler) getArchiveSelections(r *http.Request) ([]string, bool) {
+	if h.errHandler.LogError(r.ParseForm()) {
+		return nil, false
+	}
+	inputs := r.Form["name"]
+	if len(inputs) == 0 {
+		return nil, true
+	}
+
+	count := len(inputs)
+	selections := make([]string, count)
+	for i := 0; i < count; i++ {
+		var ok bool
+		selections[i], ok = getCleanDirFilePath(inputs[i])
+		if !ok {
+			h.logger.LogErrorString("archive: illegal path " + inputs[i])
+			return nil, false
+		}
+	}
+
+	return selections, true
 }

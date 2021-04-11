@@ -65,11 +65,32 @@ curl http://localhost/ghfs/file?download
 GET <path>?tar
 GET <path>?tgz
 GET <path>?zip
+POST <path>?tar
+POST <path>?tgz
+POST <path>?zip
 ```
 
 举例：
 ```sh
 curl http://localhost/tmp/?zip > tmp.zip
+```
+
+要打包当前目录下的指定子项，用`name`参数指定：
+```
+GET <path>?tar&name=<path1>&name=<path2>&...name=<pathN>
+GET <path>?tgz&name=<path1>&name=<path2>&...name=<pathN>
+GET <path>?zip&name=<path1>&name=<path2>&...name=<pathN>
+```
+
+```
+POST <path>?tar
+
+name=<path1>&name=<path2>&...name=<pathN>
+```
+
+举例：
+```sh
+curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file31' http://localhost/tmp/?zip > tmp.zip
 ```
 
 # 在指定路径下创建目录

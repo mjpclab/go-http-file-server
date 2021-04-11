@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-const CHAN_BUFFER = 7
+const CHAN_BUFFER = 15
 
 type Logger struct {
 	accLogMan *logMan

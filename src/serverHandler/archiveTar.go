@@ -48,6 +48,11 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 }
 
 func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+	selections, ok := h.getArchiveSelections(r)
+	if !ok {
+		return
+	}
+
 	tw := tar.NewWriter(w)
 	defer func() {
 		err := tw.Close()
@@ -58,6 +63,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 		w,
 		r,
 		pageData,
+		selections,
 		".tar",
 		"application/octet-stream",
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
@@ -67,6 +73,11 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 }
 
 func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+	selections, ok := h.getArchiveSelections(r)
+	if !ok {
+		return
+	}
+
 	gzw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 	if h.errHandler.LogError(err) {
 		return
@@ -86,6 +97,7 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *response
 		w,
 		r,
 		pageData,
+		selections,
 		".tar.gz",
 		"application/octet-stream",
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
