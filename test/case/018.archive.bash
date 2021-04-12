@@ -12,13 +12,18 @@ cleanup
 
 archive="$fs"/downloaded/a.tar.tmp
 curl_get_body 'http://127.0.0.1:3003/a?tar' > "$archive"
-(tar -tf "$archive" | grep -q a1.txt) || fail "a1.txt not in $(basename $archive)"
-(tar -tf "$archive" | grep -q a2.txt) || fail "a2.txt not in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^a1.txt$') || fail "a1.txt should in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^a2.txt$') || fail "a2.txt should in $(basename $archive)"
 
 archive="$fs"/downloaded/b.tar.tmp
 curl_get_body 'http://127.0.0.1:3003/b/?tar' > "$archive"
-(tar -tf "$archive" | grep -q b1.txt) || fail "b1.txt not in $(basename $archive)"
-(tar -tf "$archive" | grep -q b2.txt) || fail "b2.txt not in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^b1.txt$') || fail "b1.txt should in $(basename $archive)"
+(tar -tf "$archive" | grep -q '^b2.txt$') || fail "b2.txt should in $(basename $archive)"
+
+archive="$fs"/downloaded/a-part.tar.tmp
+curl_get_body 'http://127.0.0.1:3003/a?tar&name=a1.txt' > "$archive"
+(tar -tf "$archive" | grep -q '^a1.txt$') || fail "a1.txt should in $(basename $archive)"
+(tar -tf "$archive" | grep -q 'a2.txt') && fail "a2.txt should not in $(basename $archive)"
 
 cleanup
 jobs -p | xargs kill

@@ -86,11 +86,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// data
 	data := h.getResponseData(r)
 	if len(data.errors) > 0 {
-		go func() {
-			for _, err := range data.errors {
-				h.errHandler.LogError(err)
-			}
-		}()
+		go h.logger.LogErrors(data.errors...)
 	}
 	file := data.File
 	if file != nil {
@@ -114,8 +110,8 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// regular flows
 
-	if len(r.URL.RawQuery) > 0 {
-		switch r.URL.RawQuery {
+	if len(r.URL.RawQuery) >= 3 {
+		switch r.URL.RawQuery[:3] {
 		case "tar":
 			if data.CanArchive {
 				h.tar(w, r, data)
