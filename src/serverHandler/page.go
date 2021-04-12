@@ -80,9 +80,9 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 
 	var bodyW io.Writer
 	if compressW, encoding, useCompressW := getCompressWriter(w, r); useCompressW {
+		defer compressW.Close()
 		header.Set("Content-Encoding", encoding)
 		bodyW = compressW
-		defer compressW.Close()
 	} else {
 		bodyW = w
 	}

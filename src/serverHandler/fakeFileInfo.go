@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+var initTime = time.Now()
+
 type fakeFileInfo struct {
 	name  string
 	isDir bool
@@ -23,7 +25,7 @@ func (info *fakeFileInfo) Mode() os.FileMode {
 }
 
 func (info *fakeFileInfo) ModTime() time.Time {
-	return time.Now()
+	return initTime
 }
 
 func (info *fakeFileInfo) IsDir() bool {

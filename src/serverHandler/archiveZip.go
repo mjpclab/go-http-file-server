@@ -38,6 +38,11 @@ func writeZip(zw *zip.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 }
 
 func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+	selections, ok := h.getArchiveSelections(r)
+	if !ok {
+		return
+	}
+
 	zipWriter := zip.NewWriter(w)
 	defer func() {
 		err := zipWriter.Close()
@@ -48,9 +53,9 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *response
 		w,
 		r,
 		pageData,
+		selections,
 		".zip",
 		"application/zip",
-		h.FilterItems,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			return writeZip(zipWriter, f, fInfo, relPath)
 		},

@@ -2,10 +2,7 @@ package serverHandler
 
 import (
 	"net/http"
-	"time"
 )
-
-var initTime = time.Now()
 
 func (h *handler) asset(w http.ResponseWriter, r *http.Request, assetPath string) {
 	header := w.Header()
