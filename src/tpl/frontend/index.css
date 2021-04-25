@@ -58,6 +58,13 @@ input, button {
 	padding: 0.25em 0;
 }
 
+input[type=button],
+input[type=submit],
+input[type=reset],
+button {
+	cursor: pointer;
+}
+
 em {
 	font-style: normal;
 	font-weight: normal;
@@ -365,7 +372,6 @@ em {
 	font-size: 1.6em;
 	line-height: 1em;
 	padding: 0.1875em 0.3125em 0.3125em;
-	cursor: pointer;
 }
 
 .item-list .delete button:hover {
