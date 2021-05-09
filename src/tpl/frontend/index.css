@@ -8,10 +8,6 @@ html {
 	font-family: "roboto_condensedbold", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-body, input, textarea, button {
-	font-family: Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
-}
-
 body {
 	color: #333;
 	font-size: 0.625em;
@@ -19,6 +15,14 @@ body {
 	font-kerning: none;
 	hyphens: none;
 	padding-bottom: 1em;
+}
+
+body, input, textarea, button {
+	font-family: Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
+}
+
+input::-ms-clear {
+	display: none;
 }
 
 form {
@@ -291,13 +295,26 @@ em {
 }
 
 .filter .form {
+	position: relative;
 	display: flex;
 }
 
-.filter .filter-text {
+.filter input {
 	flex: 1 1 auto;
 	width: 100%;
+	padding-right: 1.5em;
 	box-sizing: border-box;
+}
+
+.filter button {
+	display: none;
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	border: 0;
+	background: none;
+	padding: 0 0.5em;
 }
 
 .item-list {

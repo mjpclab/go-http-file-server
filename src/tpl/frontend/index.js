@@ -29,10 +29,11 @@
 			return;
 		}
 
-		var input = filter.querySelector('input.filter-text');
+		var input = filter.querySelector('input');
 		if (!input) {
 			return;
 		}
+		var clear = filter.querySelector('button');
 
 		var selectorNone = '.' + classNone;
 		var selectorNotNone = ':not(' + selectorNone + ')';
@@ -52,12 +53,18 @@
 			var selector, items, i;
 
 			if (!filterText) {	// filter cleared, show all items
+				if (clear) {
+					clear.style.display = '';
+				}
 				selector = selectorItemNone;
 				items = document.body.querySelectorAll(selector);
 				for (i = items.length - 1; i >= 0; i--) {
 					items[i].classList.remove(classNone);
 				}
 			} else {
+				if (clear) {
+					clear.style.display = 'block';
+				}
 				if (filterText.indexOf(lastFilterText) >= 0) {	// increment search, find in visible items
 					selector = selectorItemNotNone;
 				} else if (lastFilterText.indexOf(filterText) >= 0) {	// decrement search, find in hidden items
@@ -104,6 +111,13 @@
 					break;
 			}
 		}, false);
+
+		clear && clear.addEventListener('click', function () {
+			clearTimeout(timeoutId);
+			input.value = '';
+			input.focus();
+			doFilter();
+		});
 
 		// init
 		if (sessionStorage) {
