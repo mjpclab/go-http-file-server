@@ -15,7 +15,7 @@
 {{$isDownload := .IsDownload}}
 {{$SubItemPrefix := .SubItemPrefix}}
 {{if not $isDownload}}
-<ol class="path-list">
+<ol class="path-list" translate="no">
 	{{range .Paths}}
 	<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 	{{end}}
@@ -86,7 +86,7 @@
 	</li>
 	<li class="parent">
 		<a href="{{if .IsRoot}}./{{else}}../{{end}}{{$contextQueryString}}" class="detail">
-			<span class="field name">../</span>
+			<span class="field name" translate="no">../</span>
 			<span class="field size"></span>
 			<span class="field time"></span>
 		</a>
@@ -95,7 +95,7 @@
 	{{range .SubItemsHtml}}
 	<li class="{{.Type}}">
 		<a href="{{.Url}}" class="detail">
-			<span class="field name">{{.DisplayName}}</span>
+			<span class="field name" translate="no">{{.DisplayName}}</span>
 			<span class="field size">{{.DisplaySize}}</span>
 			<span class="field time">{{.DisplayTime}}</span>
 		</a>
