@@ -715,7 +715,7 @@
 				}
 			}
 
-			function getFilesFromEntries(entries, onDone) {
+			function entriesToFiles(entries, onDone) {
 				var files = [];
 				var len = entries.length;
 				var cb = 0;
@@ -744,7 +744,7 @@
 						var reader = entry.createReader();
 						reader.readEntries(function (subEntries) {
 							if (subEntries.length) {
-								getFilesFromEntries(subEntries, function (subFiles) {
+								entriesToFiles(subEntries, function (subFiles) {
 									Array.prototype.push.apply(files, subFiles);
 									increaseCb();
 								});
@@ -756,15 +756,13 @@
 				});
 			}
 
-			function getFilesFromItems(items, onDone) {
-				var files = [];
-
+			function itemsToFiles(items, onDone) {
 				var entries = [];
 				for (var i = 0, len = items.length; i < len; i++) {
 					var entry = items[i].webkitGetAsEntry();
 					entries.push(entry);
 				}
-				getFilesFromEntries(entries, onDone);
+				entriesToFiles(entries, onDone);
 			}
 
 			function onDrop(e) {
@@ -811,7 +809,7 @@
 						}
 					}
 					btnSubmit.disabled = true;	// disable earlier
-					getFilesFromItems(e.dataTransfer.items, function (files) {
+					itemsToFiles(e.dataTransfer.items, function (files) {
 						uploadProgressively(files);
 					});
 				} else {
