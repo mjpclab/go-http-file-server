@@ -436,15 +436,15 @@ em {
 	}
 
 	a:hover {
-		background-color: #222;
+		background-color: #333;
 	}
 
 	a:focus {
-		background-color: #220;
+		background-color: #330;
 	}
 
 	a:hover:focus {
-		background-color: #2f2f0f;
+		background-color: #33331a;
 	}
 
 	em {
