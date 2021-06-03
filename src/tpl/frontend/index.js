@@ -503,6 +503,96 @@
 			return ts;
 		}
 
+		function entriesToFiles(entries, onDone) {
+			var files = [];
+			var len = entries.length;
+			var cb = 0;
+
+			function increaseCb() {
+				cb++;
+				if (cb === len) {
+					onDone(files);
+				}
+			}
+
+			entries.forEach(function (entry) {
+				if (entry.isFile) {
+					var relativePath = entry.fullPath;
+					if (relativePath[0] === '/') {
+						relativePath = relativePath.substring(1);
+					}
+					entry.file(function (file) {
+						files.push({file: file, relativePath: relativePath});
+						increaseCb();
+					}, function (err) {
+						increaseCb();
+						typeof console !== strUndef && console.error(err);
+					});
+				} else {
+					var reader = entry.createReader();
+					reader.readEntries(function (subEntries) {
+						if (subEntries.length) {
+							entriesToFiles(subEntries, function (subFiles) {
+								Array.prototype.push.apply(files, subFiles);
+								increaseCb();
+							});
+						} else {
+							increaseCb();
+						}
+					});
+				}
+			});
+		}
+
+		function itemsToFiles(dataTransferItems, onDone) {
+			var entries = [];
+			for (var i = 0, len = dataTransferItems.length; i < len; i++) {
+				var entry = dataTransferItems[i].webkitGetAsEntry();
+				entries.push(entry);
+			}
+			entriesToFiles(entries, onDone);
+		}
+
+		function itemsHasDir(dataTransferItems) {
+			if (!dataTransferItems) {
+				return false;
+			}
+			var hasDir = false;
+			var items = Array.prototype.slice.call(dataTransferItems);
+			if (items.length && items[0].webkitGetAsEntry) {
+				for (var i = 0, len = items.length; i < len; i++) {
+					var entry = items[i].webkitGetAsEntry();
+					if (entry.isDirectory) {
+						hasDir = true;
+						break;
+					}
+				}
+			}
+			return hasDir;
+		}
+
+		function switchToFileMode() {
+			if (optFile && optActive !== optFile) {
+				optFile.focus();
+				optFile.click();
+			}
+		}
+
+		function switchToDirMode() {
+			if (!optDirFile && !optInnerDirFile) {
+				return;
+			}
+			if (optActive === optFile) {
+				if (optDirFile) {
+					optDirFile.focus();
+					optDirFile.click();
+				} else if (optInnerDirFile) {
+					optInnerDirFile.focus();
+					optInnerDirFile.click();
+				}
+			}
+		}
+
 		function enableAddDir() {
 			var classHidden = 'hidden';
 			var classActive = 'active';
@@ -715,56 +805,6 @@
 				}
 			}
 
-			function entriesToFiles(entries, onDone) {
-				var files = [];
-				var len = entries.length;
-				var cb = 0;
-
-				function increaseCb() {
-					cb++;
-					if (cb === len) {
-						onDone(files);
-					}
-				}
-
-				entries.forEach(function (entry) {
-					if (entry.isFile) {
-						var relativePath = entry.fullPath;
-						if (relativePath[0] === '/') {
-							relativePath = relativePath.substring(1);
-						}
-						entry.file(function (file) {
-							files.push({file: file, relativePath: relativePath});
-							increaseCb();
-						}, function (err) {
-							increaseCb();
-							typeof console !== strUndef && console.error(err);
-						});
-					} else {
-						var reader = entry.createReader();
-						reader.readEntries(function (subEntries) {
-							if (subEntries.length) {
-								entriesToFiles(subEntries, function (subFiles) {
-									Array.prototype.push.apply(files, subFiles);
-									increaseCb();
-								});
-							} else {
-								increaseCb();
-							}
-						});
-					}
-				});
-			}
-
-			function itemsToFiles(items, onDone) {
-				var entries = [];
-				for (var i = 0, len = items.length; i < len; i++) {
-					var entry = items[i].webkitGetAsEntry();
-					entries.push(entry);
-				}
-				entriesToFiles(entries, onDone);
-			}
-
 			function onDrop(e) {
 				e.stopPropagation();
 				e.preventDefault();
@@ -778,45 +818,18 @@
 					return;
 				}
 
-				var hasDir = false;
-				if (e.dataTransfer.items) {
-					var items = Array.prototype.slice.call(e.dataTransfer.items);
-					if (items.length && items[0].webkitGetAsEntry) {
-						for (var i = 0, len = items.length; i < len; i++) {
-							var entry = items[i].webkitGetAsEntry();
-							if (entry.isDirectory) {
-								hasDir = true;
-								break;
-							}
-						}
-					}
-				}
-
-				if (hasDir) {
+				if (itemsHasDir(e.dataTransfer.items)) {
 					if (!uploadProgressively) {
+						// must use progressive upload by JS if has directory
 						return;
 					}
-					if (!optDirFile && !optInnerDirFile) {
-						return;
-					}
-					if (optActive === optFile) {
-						if (optDirFile) {
-							optDirFile.focus();
-							optDirFile.click();
-						} else if (optInnerDirFile) {
-							optInnerDirFile.focus();
-							optInnerDirFile.click();
-						}
-					}
+					switchToDirMode();
 					btnSubmit.disabled = true;	// disable earlier
 					itemsToFiles(e.dataTransfer.items, function (files) {
 						uploadProgressively(files);
 					});
 				} else {
-					if (optFile && optActive !== optFile) {
-						optFile.focus();
-						optFile.click();
-					}
+					switchToFileMode();
 
 					if (uploadProgressively) {
 						var files = Array.prototype.slice.call(e.dataTransfer.files);
@@ -839,10 +852,7 @@
 				document.documentElement.addEventListener('paste', function (e) {
 					var data = e.clipboardData;
 					if (data && data.files && data.files.length) {
-						if (optFile && optActive !== optFile) {
-							optFile.focus();
-							optFile.click();
-						}
+						switchToFileMode();
 						fileInput.files = data.files;
 						form.submit();
 					}
@@ -853,11 +863,7 @@
 			var typeTextPlain = 'text/plain';
 
 			function uploadPastedFiles(files) {
-				if (optFile && optActive !== optFile) {
-					optFile.focus();
-					optFile.click();
-				}
-
+				switchToFileMode();
 				var ts = getTimeStamp();
 				files = files.map(function (f, i) {
 					var filename = f.name;
