@@ -6,7 +6,7 @@ const DefaultTplStr = `
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-	<meta name="viewport" content="initial-scale=1, user-scalable=no"/>
+	<meta name="viewport" content="width=device-width,user-scalable=no"/>
 	<meta name="format-detection" content="telephone=no"/>
 	<meta name="renderer" content="webkit"/>
 	<meta name="wap-font-scale" content="no"/>
@@ -18,7 +18,7 @@ const DefaultTplStr = `
 {{$isDownload := .IsDownload}}
 {{$SubItemPrefix := .SubItemPrefix}}
 {{if not $isDownload}}
-<ol class="path-list">
+<ol class="path-list" translate="no">
 	{{range .Paths}}
 	<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 	{{end}}
@@ -61,7 +61,8 @@ const DefaultTplStr = `
 {{if .SubItemsHtml}}
 <div class="panel filter" id="panel-filter">
 	<div class="form">
-		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}" name="filter-text" class="filter-text"/>
+		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}"/>
+		<button type="reset">X</button>
 	</div>
 </div>
 {{end}}
@@ -86,9 +87,9 @@ const DefaultTplStr = `
 		<a class="field time" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTimeSort}}">{{.Trans.ListTimeLabel}}{{if eq $sortKey "t"}}&uarr;{{else if eq $sortKey "T"}}&darr;{{end}}</a>
 		</span>
 	</li>
-	<li class="dir parent">
+	<li class="parent">
 		<a href="{{if .IsRoot}}./{{else}}../{{end}}{{$contextQueryString}}" class="detail">
-			<span class="field name">../</span>
+			<span class="field name" translate="no">../</span>
 			<span class="field size"></span>
 			<span class="field time"></span>
 		</a>
@@ -97,7 +98,7 @@ const DefaultTplStr = `
 	{{range .SubItemsHtml}}
 	<li class="{{.Type}}">
 		<a href="{{.Url}}" class="detail">
-			<span class="field name">{{.DisplayName}}</span>
+			<span class="field name" translate="no">{{.DisplayName}}</span>
 			<span class="field size">{{.DisplaySize}}</span>
 			<span class="field time">{{.DisplayTime}}</span>
 		</a>

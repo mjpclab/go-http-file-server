@@ -32,10 +32,11 @@ const DefaultJs = `
 			return;
 		}
 
-		var input = filter.querySelector('input.filter-text');
+		var input = filter.querySelector('input');
 		if (!input) {
 			return;
 		}
+		var clear = filter.querySelector('button');
 
 		var selectorNone = '.' + classNone;
 		var selectorNotNone = ':not(' + selectorNone + ')';
@@ -55,12 +56,18 @@ const DefaultJs = `
 			var selector, items, i;
 
 			if (!filterText) {	// filter cleared, show all items
+				if (clear) {
+					clear.style.display = '';
+				}
 				selector = selectorItemNone;
 				items = document.body.querySelectorAll(selector);
 				for (i = items.length - 1; i >= 0; i--) {
 					items[i].classList.remove(classNone);
 				}
 			} else {
+				if (clear) {
+					clear.style.display = 'block';
+				}
 				if (filterText.indexOf(lastFilterText) >= 0) {	// increment search, find in visible items
 					selector = selectorItemNotNone;
 				} else if (lastFilterText.indexOf(filterText) >= 0) {	// decrement search, find in hidden items
@@ -107,6 +114,13 @@ const DefaultJs = `
 					break;
 			}
 		}, false);
+
+		clear && clear.addEventListener('click', function () {
+			clearTimeout(timeoutId);
+			input.value = '';
+			input.focus();
+			doFilter();
+		});
 
 		// init
 		if (sessionStorage) {
@@ -492,6 +506,131 @@ const DefaultJs = `
 			return ts;
 		}
 
+		function entriesToFiles(entries, onDone) {
+			var files = [];
+			var len = entries.length;
+			var cb = 0;
+			if (!len) {
+				onDone(files);
+			}
+
+			function increaseCb() {
+				cb++;
+				if (cb === len) {
+					onDone(files);
+				}
+			}
+
+			entries.forEach(function (entry) {
+				if (entry.isFile) {
+					var relativePath = entry.fullPath;
+					if (relativePath[0] === '/') {
+						relativePath = relativePath.substring(1);
+					}
+					entry.file(function (file) {
+						files.push({file: file, relativePath: relativePath});
+						increaseCb();
+					}, function (err) {
+						increaseCb();
+						typeof console !== strUndef && console.error(err);
+					});
+				} else {
+					var reader = entry.createReader();
+					reader.readEntries(function (subEntries) {
+						if (subEntries.length) {
+							entriesToFiles(subEntries, function (subFiles) {
+								Array.prototype.push.apply(files, subFiles);
+								increaseCb();
+							});
+						} else {
+							increaseCb();
+						}
+					});
+				}
+			});
+		}
+
+		function itemsToFiles(dataTransferItems, onDone) {
+			var files = [];
+			var len = dataTransferItems.length;
+			if (!len) {
+				onDone(files);
+			}
+
+			var entries = [];
+			for (var i = 0; i < len; i++) {
+				var item = dataTransferItems[i];
+				var entry = item.webkitGetAsEntry();
+				if (!entry) {
+					continue;
+				}
+				if (entry.isFile) {
+					// Safari cannot get file from entry by entry.file(), if it is a pasted image
+					// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
+					var file = item.getAsFile();
+					files.push({file: file, relativePath: file.name});
+				} else {
+					entries.push(entry);
+				}
+			}
+
+			entriesToFiles(entries, function (entryFiles) {
+				files.push.apply(files, entryFiles);
+				onDone(files);
+			});
+		}
+
+		function itemsHasDir(dataTransferItems) {
+			if (!dataTransferItems) {
+				return false;
+			}
+			var hasDir = false;
+			var items = Array.prototype.slice.call(dataTransferItems);
+			if (items.length && items[0].webkitGetAsEntry) {
+				for (var i = 0, len = items.length; i < len; i++) {
+					var entry = items[i].webkitGetAsEntry();
+					if (entry && entry.isDirectory) {
+						hasDir = true;
+						break;
+					}
+				}
+			}
+			return hasDir;
+		}
+
+		function switchToFileMode() {
+			if (optFile && optActive !== optFile) {
+				optFile.focus();
+				optFile.click();
+			}
+		}
+
+		function switchToDirMode() {
+			if (optDirFile) {
+				if (optActive !== optDirFile) {
+					optDirFile.focus();
+					optDirFile.click();
+				}
+			} else if (optInnerDirFile) {
+				if (optActive !== optInnerDirFile) {
+					optInnerDirFile.focus();
+					optInnerDirFile.click();
+				}
+			}
+		}
+
+		function switchToAnyDirMode() {
+			if (optActive === optFile) {
+				if (optDirFile) {
+					optDirFile.focus();
+					optDirFile.click();
+				} else if (optInnerDirFile) {
+					optInnerDirFile.focus();
+					optInnerDirFile.click();
+				}
+			}
+		}
+
 		function enableAddDir() {
 			var classHidden = 'hidden';
 			var classActive = 'active';
@@ -704,58 +843,6 @@ const DefaultJs = `
 				}
 			}
 
-			function getFilesFromEntries(entries, onDone) {
-				var files = [];
-				var len = entries.length;
-				var cb = 0;
-
-				function increaseCb() {
-					cb++;
-					if (cb === len) {
-						onDone(files);
-					}
-				}
-
-				entries.forEach(function (entry) {
-					if (entry.isFile) {
-						var relativePath = entry.fullPath;
-						if (relativePath[0] === '/') {
-							relativePath = relativePath.substring(1);
-						}
-						entry.file(function (file) {
-							files.push({file: file, relativePath: relativePath});
-							increaseCb();
-						}, function (err) {
-							increaseCb();
-							typeof console !== strUndef && console.error(err);
-						});
-					} else {
-						var reader = entry.createReader();
-						reader.readEntries(function (subEntries) {
-							if (subEntries.length) {
-								getFilesFromEntries(subEntries, function (subFiles) {
-									Array.prototype.push.apply(files, subFiles);
-									increaseCb();
-								});
-							} else {
-								increaseCb();
-							}
-						});
-					}
-				});
-			}
-
-			function getFilesFromItems(items, onDone) {
-				var files = [];
-
-				var entries = [];
-				for (var i = 0, len = items.length; i < len; i++) {
-					var entry = items[i].webkitGetAsEntry();
-					entries.push(entry);
-				}
-				getFilesFromEntries(entries, onDone);
-			}
-
 			function onDrop(e) {
 				e.stopPropagation();
 				e.preventDefault();
@@ -769,45 +856,20 @@ const DefaultJs = `
 					return;
 				}
 
-				var hasDir = false;
-				if (e.dataTransfer.items) {
-					var items = Array.prototype.slice.call(e.dataTransfer.items);
-					if (items.length && items[0].webkitGetAsEntry) {
-						for (var i = 0, len = items.length; i < len; i++) {
-							var entry = items[i].webkitGetAsEntry();
-							if (entry.isDirectory) {
-								hasDir = true;
-								break;
-							}
-						}
-					}
-				}
-
-				if (hasDir) {
+				var items = e.dataTransfer.items;
+				if (itemsHasDir(items)) {
 					if (!uploadProgressively) {
+						// must use progressive upload by JS if has directory
 						return;
-					}
-					if (!optDirFile && !optInnerDirFile) {
-						return;
-					}
-					if (optActive === optFile) {
-						if (optDirFile) {
-							optDirFile.focus();
-							optDirFile.click();
-						} else if (optInnerDirFile) {
-							optInnerDirFile.focus();
-							optInnerDirFile.click();
-						}
 					}
 					btnSubmit.disabled = true;	// disable earlier
-					getFilesFromItems(e.dataTransfer.items, function (files) {
+					var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
+					itemsToFiles(items, function (files) {
+						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();
 						uploadProgressively(files);
 					});
 				} else {
-					if (optFile && optActive !== optFile) {
-						optFile.focus();
-						optFile.click();
-					}
+					switchToFileMode();
 
 					if (uploadProgressively) {
 						var files = Array.prototype.slice.call(e.dataTransfer.files);
@@ -830,10 +892,7 @@ const DefaultJs = `
 				document.documentElement.addEventListener('paste', function (e) {
 					var data = e.clipboardData;
 					if (data && data.files && data.files.length) {
-						if (optFile && optActive !== optFile) {
-							optFile.focus();
-							optFile.click();
-						}
+						switchToFileMode();
 						fileInput.files = data.files;
 						form.submit();
 					}
@@ -842,13 +901,24 @@ const DefaultJs = `
 			}
 
 			var typeTextPlain = 'text/plain';
+			var createTextFile;
+			var textFilename = 'text.txt';
+			if (Blob && Blob.prototype.msClose) {	// legacy Edge
+				createTextFile = function (content) {
+					var file = new Blob([content], {type: typeTextPlain});
+					file.name = textFilename;
+					return file;
+				};
+			} else if (File) {
+				createTextFile = function (content) {
+					return new File([content], textFilename, {type: typeTextPlain});
+				}
+			}
+
+			var nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
 
 			function uploadPastedFiles(files) {
-				if (optFile && optActive !== optFile) {
-					optFile.focus();
-					optFile.click();
-				}
-
+				switchToFileMode();
 				var ts = getTimeStamp();
 				files = files.map(function (f, i) {
 					var filename = f.name;
@@ -865,41 +935,14 @@ const DefaultJs = `
 				uploadProgressively(files);
 			}
 
-			var createTextFile;
-			var textFilename = 'text.txt';
-			if (Blob && Blob.prototype.msClose) {	// legacy Edge
-				createTextFile = function (content) {
-					var file = new Blob([content], {type: typeTextPlain});
-					file.name = textFilename;
-					return file;
-				};
-			} else if (File) {
-				createTextFile = function (content) {
-					return new File([content], textFilename, {type: typeTextPlain});
-				}
-			}
-
-			var nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
-			document.documentElement.addEventListener('paste', function (e) {
-				var tagName = e.target.tagName;
-				if (tagName === 'INPUT') {
-					if (nonTextInputTypes.indexOf(e.target.type) < 0) {
-						return;
-					}
-				}
-				if (tagName === 'TEXTAREA') {
-					return;
-				}
-				var data = e.clipboardData;
-				if (!data) {
-					return;
-				}
-
+			function generatePastedFiles(data) {
 				var files;
 				var items;
 				if (data.files && data.files.length) {
+					// pasted content is image
 					files = Array.prototype.slice.call(data.files);
 				} else if (data.items && data.items.length) {
+					// pasted content is text
 					items = Array.prototype.slice.call(data.items);
 					files = items.map(function (item) {
 						return item.getAsFile();
@@ -933,6 +976,52 @@ const DefaultJs = `
 						}
 					});
 				}
+			}
+
+			document.documentElement.addEventListener('paste', function (e) {
+				var tagName = e.target.tagName;
+				if (tagName === 'INPUT') {
+					if (nonTextInputTypes.indexOf(e.target.type) < 0) {
+						return;
+					}
+				}
+				if (tagName === 'TEXTAREA') {
+					return;
+				}
+				var data = e.clipboardData;
+				if (!data) {
+					return;
+				}
+
+				var items = data.items;
+				var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
+				if (!items || !itemsCount) {
+					generatePastedFiles(data);
+					return;
+				}
+				var hasDir = itemsHasDir(items);
+				itemsToFiles(items, function (files) {
+					if (!files.length) {
+						// for pasted text
+						generatePastedFiles(data);
+						return;
+					}
+					if (files.length === 1 && files[0].file.type === 'image/png') {
+						// suppose for pasted image
+						files = files.map(function (fileInfo) {
+							return fileInfo && fileInfo.file;
+						});
+						generatePastedFiles({files: files});
+						return;
+					}
+					// pasted real files, not image binary
+					if (hasDir) {
+						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();
+					} else {
+						switchToFileMode();
+					}
+					uploadProgressively(files);
+				});
 			});
 		}
 

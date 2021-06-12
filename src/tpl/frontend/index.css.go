@@ -11,10 +11,6 @@ html {
 	font-family: "roboto_condensedbold", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-body, input, textarea, button {
-	font-family: Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
-}
-
 body {
 	color: #333;
 	font-size: 0.625em;
@@ -22,6 +18,14 @@ body {
 	font-kerning: none;
 	hyphens: none;
 	padding-bottom: 1em;
+}
+
+body, input, textarea, button {
+	font-family: Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", monospace;
+}
+
+input::-ms-clear {
+	display: none;
 }
 
 form {
@@ -37,7 +41,7 @@ ul, ol, li {
 
 a {
 	display: block;
-	padding: 0.45em 0.5em;
+	padding: 0.5em;
 	color: #000;
 	text-decoration: none;
 	outline: 0;
@@ -59,6 +63,13 @@ input, button {
 	min-width: 0;
 	margin: 0;
 	padding: 0.25em 0;
+}
+
+input[type=button],
+input[type=submit],
+input[type=reset],
+button {
+	cursor: pointer;
 }
 
 em {
@@ -287,13 +298,26 @@ em {
 }
 
 .filter .form {
+	position: relative;
 	display: flex;
 }
 
-.filter .filter-text {
+.filter input {
 	flex: 1 1 auto;
 	width: 100%;
+	padding-right: 1.5em;
 	box-sizing: border-box;
+}
+
+.filter button {
+	display: none;
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	border: 0;
+	background: none;
+	padding: 0 0.5em;
 }
 
 .item-list {
@@ -368,7 +392,6 @@ em {
 	font-size: 1.6em;
 	line-height: 1em;
 	padding: 0.1875em 0.3125em 0.3125em;
-	cursor: pointer;
 }
 
 .item-list .delete button:hover {
@@ -416,15 +439,15 @@ em {
 	}
 
 	a:hover {
-		background-color: #222;
+		background-color: #333;
 	}
 
 	a:focus {
-		background-color: #220;
+		background-color: #330;
 	}
 
 	a:hover:focus {
-		background-color: #2f2f0f;
+		background-color: #33331a;
 	}
 
 	em {
