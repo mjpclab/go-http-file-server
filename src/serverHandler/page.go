@@ -71,7 +71,6 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 	header.Set("Cache-Control", "public, max-age=0")
 
 	updateTranslation(r, data)
-	header.Set("Content-Language", data.Lang)
 
 	if !needResponseBody(r.Method) {
 		w.WriteHeader(data.Status)

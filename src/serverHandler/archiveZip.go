@@ -38,6 +38,11 @@ func writeZip(zw *zip.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 }
 
 func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+	if !pageData.CanArchive {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	selections, ok := h.getArchiveSelections(r)
 	if !ok {
 		return

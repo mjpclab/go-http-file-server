@@ -20,6 +20,13 @@ type Translation struct {
 
 	FilterLabel string
 
+	SelectStart  string
+	SelectCancel string
+	SelectAll    string
+
+	ArchiveLabel string
+
+	DeleteLabel   string
 	DeleteConfirm string
 
 	Error403 string
@@ -33,7 +40,7 @@ var translationEnUs = Translation{
 	UploadFilesLabel:       "Files",
 	UploadFilesHint:        "Upload files",
 	UploadDirLabel:         "Dir",
-	UploadDirHint:          "Upload Directory itself",
+	UploadDirHint:          "Upload directory itself",
 	UploadDirContentsLabel: "Dir contents",
 	UploadDirContentsHint:  "Upload contents of directory",
 	UploadLabel:            "Upload",
@@ -47,7 +54,14 @@ var translationEnUs = Translation{
 
 	FilterLabel: "filter...",
 
-	DeleteConfirm: "Delete?",
+	SelectStart:  "Select",
+	SelectCancel: "Cancel",
+	SelectAll:    "Select all",
+
+	ArchiveLabel: "Archive",
+
+	DeleteLabel:   "Delete",
+	DeleteConfirm: "Confirm delete?",
 
 	Error403: "403 resource is forbidden",
 	Error404: "404 resource not found",
@@ -74,6 +88,13 @@ var translationZhSimp = Translation{
 
 	FilterLabel: "筛选……",
 
+	SelectStart:  "选择",
+	SelectCancel: "取消",
+	SelectAll:    "全选",
+
+	ArchiveLabel: "打包",
+
+	DeleteLabel:   "删除",
 	DeleteConfirm: "确认删除吗？",
 
 	Error403: "403 禁止访问资源",
@@ -101,6 +122,13 @@ var translationZhTrad = Translation{
 
 	FilterLabel: "篩選……",
 
+	SelectStart:  "選擇",
+	SelectCancel: "取消",
+	SelectAll:    "全選",
+
+	ArchiveLabel: "打包",
+
+	DeleteLabel:   "刪除",
 	DeleteConfirm: "確認刪除嗎？",
 
 	Error403: "403 禁止訪問資源",

@@ -27,6 +27,8 @@ func (dir DirTheme) RenderPage(w io.Writer, data interface{}) error {
 }
 
 func (dir DirTheme) RenderAsset(w http.ResponseWriter, r *http.Request, assetPath string) {
+	header := w.Header()
+	header.Set("Cache-Control", "public, max-age=0")
 	filename := string(dir) + "/" + strings.Replace(path.Clean(assetPath), "../", "", -1)
 	http.ServeFile(w, r, filename)
 }
