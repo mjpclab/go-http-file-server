@@ -507,6 +507,9 @@
 			var files = [];
 			var len = entries.length;
 			var cb = 0;
+			if (!len) {
+				onDone(files);
+			}
 
 			function increaseCb() {
 				cb++;
@@ -545,12 +548,33 @@
 		}
 
 		function itemsToFiles(dataTransferItems, onDone) {
-			var entries = [];
-			for (var i = 0, len = dataTransferItems.length; i < len; i++) {
-				var entry = dataTransferItems[i].webkitGetAsEntry();
-				entries.push(entry);
+			var files = [];
+			var len = dataTransferItems.length;
+			if (!len) {
+				onDone(files);
 			}
-			entriesToFiles(entries, onDone);
+
+			var entries = [];
+			for (var i = 0; i < len; i++) {
+				var item = dataTransferItems[i];
+				var entry = item.webkitGetAsEntry();
+				if (!entry) {
+					continue;
+				}
+				if (entry.isFile) {
+					// Safari cannot get file from entry by entry.file(), if it is a pasted image
+					// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
+					var file = item.getAsFile();
+					files.push({file: file, relativePath: file.name});
+				} else {
+					entries.push(entry);
+				}
+			}
+
+			entriesToFiles(entries, function (entryFiles) {
+				files.push.apply(files, entryFiles);
+				onDone(files);
+			});
 		}
 
 		function itemsHasDir(dataTransferItems) {
@@ -562,7 +586,7 @@
 			if (items.length && items[0].webkitGetAsEntry) {
 				for (var i = 0, len = items.length; i < len; i++) {
 					var entry = items[i].webkitGetAsEntry();
-					if (entry.isDirectory) {
+					if (entry && entry.isDirectory) {
 						hasDir = true;
 						break;
 					}
@@ -579,9 +603,20 @@
 		}
 
 		function switchToDirMode() {
-			if (!optDirFile && !optInnerDirFile) {
-				return;
+			if (optDirFile) {
+				if (optActive !== optDirFile) {
+					optDirFile.focus();
+					optDirFile.click();
+				}
+			} else if (optInnerDirFile) {
+				if (optActive !== optInnerDirFile) {
+					optInnerDirFile.focus();
+					optInnerDirFile.click();
+				}
 			}
+		}
+
+		function switchToAnyDirMode() {
 			if (optActive === optFile) {
 				if (optDirFile) {
 					optDirFile.focus();
@@ -818,14 +853,16 @@
 					return;
 				}
 
-				if (itemsHasDir(e.dataTransfer.items)) {
+				var items = e.dataTransfer.items;
+				if (itemsHasDir(items)) {
 					if (!uploadProgressively) {
 						// must use progressive upload by JS if has directory
 						return;
 					}
-					switchToDirMode();
 					btnSubmit.disabled = true;	// disable earlier
-					itemsToFiles(e.dataTransfer.items, function (files) {
+					var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
+					itemsToFiles(items, function (files) {
+						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();
 						uploadProgressively(files);
 					});
 				} else {
@@ -861,6 +898,21 @@
 			}
 
 			var typeTextPlain = 'text/plain';
+			var createTextFile;
+			var textFilename = 'text.txt';
+			if (Blob && Blob.prototype.msClose) {	// legacy Edge
+				createTextFile = function (content) {
+					var file = new Blob([content], {type: typeTextPlain});
+					file.name = textFilename;
+					return file;
+				};
+			} else if (File) {
+				createTextFile = function (content) {
+					return new File([content], textFilename, {type: typeTextPlain});
+				}
+			}
+
+			var nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
 
 			function uploadPastedFiles(files) {
 				switchToFileMode();
@@ -880,41 +932,14 @@
 				uploadProgressively(files);
 			}
 
-			var createTextFile;
-			var textFilename = 'text.txt';
-			if (Blob && Blob.prototype.msClose) {	// legacy Edge
-				createTextFile = function (content) {
-					var file = new Blob([content], {type: typeTextPlain});
-					file.name = textFilename;
-					return file;
-				};
-			} else if (File) {
-				createTextFile = function (content) {
-					return new File([content], textFilename, {type: typeTextPlain});
-				}
-			}
-
-			var nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
-			document.documentElement.addEventListener('paste', function (e) {
-				var tagName = e.target.tagName;
-				if (tagName === 'INPUT') {
-					if (nonTextInputTypes.indexOf(e.target.type) < 0) {
-						return;
-					}
-				}
-				if (tagName === 'TEXTAREA') {
-					return;
-				}
-				var data = e.clipboardData;
-				if (!data) {
-					return;
-				}
-
+			function generatePastedFiles(data) {
 				var files;
 				var items;
 				if (data.files && data.files.length) {
+					// pasted content is image
 					files = Array.prototype.slice.call(data.files);
 				} else if (data.items && data.items.length) {
+					// pasted content is text
 					items = Array.prototype.slice.call(data.items);
 					files = items.map(function (item) {
 						return item.getAsFile();
@@ -948,6 +973,52 @@
 						}
 					});
 				}
+			}
+
+			document.documentElement.addEventListener('paste', function (e) {
+				var tagName = e.target.tagName;
+				if (tagName === 'INPUT') {
+					if (nonTextInputTypes.indexOf(e.target.type) < 0) {
+						return;
+					}
+				}
+				if (tagName === 'TEXTAREA') {
+					return;
+				}
+				var data = e.clipboardData;
+				if (!data) {
+					return;
+				}
+
+				var items = data.items;
+				var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
+				if (!items || !itemsCount) {
+					generatePastedFiles(data);
+					return;
+				}
+				var hasDir = itemsHasDir(items);
+				itemsToFiles(items, function (files) {
+					if (!files.length) {
+						// for pasted text
+						generatePastedFiles(data);
+						return;
+					}
+					if (files.length === 1 && files[0].file.type === 'image/png') {
+						// suppose for pasted image
+						files = files.map(function (fileInfo) {
+							return fileInfo && fileInfo.file;
+						});
+						generatePastedFiles({files: files});
+						return;
+					}
+					// pasted real files, not image binary
+					if (hasDir) {
+						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();
+					} else {
+						switchToFileMode();
+					}
+					uploadProgressively(files);
+				});
 			});
 		}
 
