@@ -48,6 +48,11 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 }
 
 func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+	if !pageData.CanArchive {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	selections, ok := h.getArchiveSelections(r)
 	if !ok {
 		return
@@ -73,6 +78,11 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 }
 
 func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+	if !pageData.CanArchive {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	selections, ok := h.getArchiveSelections(r)
 	if !ok {
 		return

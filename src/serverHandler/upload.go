@@ -74,10 +74,9 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 		fsInfix := ""
 		formname := part.FormName()
 		if formname == dirFile {
-			if slashIndex <= 0 {
-				continue
+			if slashIndex > 0 {
+				fsInfix = partFilename[0:slashIndex]
 			}
-			fsInfix = partFilename[0:slashIndex]
 		} else if formname == innerDirFile { // get file path, strip first level of dir
 			if slashIndex <= 0 {
 				continue
