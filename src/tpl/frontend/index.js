@@ -628,7 +628,7 @@
 			}
 		}
 
-		function enableAddDir() {
+		function enableAddDirFile() {
 			var classHidden = 'hidden';
 			var classActive = 'active';
 
@@ -1022,7 +1022,7 @@
 			});
 		}
 
-		enableAddDir();
+		enableAddDirFile();
 		var uploadProgressively = enableUploadProgress();
 		enableAddDragDrop(uploadProgressively);
 		enableAddPaste(uploadProgressively);
