@@ -85,6 +85,8 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			if prefixSlashIndex > 0 {
 				fsInfix = filepath[prefixSlashIndex+1:]
 			}
+		} else if formname != file {
+			continue
 		}
 
 		filePrefix := fsPrefix
