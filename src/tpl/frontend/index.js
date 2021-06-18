@@ -531,7 +531,7 @@
 						increaseCb();
 						typeof console !== strUndef && console.error(err);
 					});
-				} else {
+				} else if (entry.isDirectory) {
 					var reader = entry.createReader();
 					reader.readEntries(function (subEntries) {
 						if (subEntries.length) {
@@ -566,7 +566,7 @@
 					// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
 					var file = item.getAsFile();
 					files.push({file: file, relativePath: file.name});
-				} else {
+				} else if (entry.isDirectory) {
 					entries.push(entry);
 				}
 			}
