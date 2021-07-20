@@ -881,10 +881,11 @@
 				}
 			}
 
-			upload.addEventListener('dragenter', onDragEnterOver);
-			upload.addEventListener('dragover', onDragEnterOver);
-			upload.addEventListener('dragleave', onDragLeave);
-			upload.addEventListener('drop', onDrop);
+			var dragDropEl = document.documentElement;
+			dragDropEl.addEventListener('dragenter', onDragEnterOver);
+			dragDropEl.addEventListener('dragover', onDragEnterOver);
+			dragDropEl.addEventListener('dragleave', onDragLeave);
+			dragDropEl.addEventListener('drop', onDrop);
 		}
 
 		function enableAddPaste(uploadProgressively) {
