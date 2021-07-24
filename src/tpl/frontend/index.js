@@ -433,17 +433,10 @@
 			return;
 		}
 
-		var btnSubmit = form.querySelector('.submit') || form.querySelector('input[type=submit]');
-		if (!btnSubmit) {
-			return;
-		}
-
 		var uploadType = document.body.querySelector('.upload-type');
 		if (!uploadType) {
 			return;
 		}
-
-		var classUploading = 'uploading';
 
 		var file = 'file';
 		var dirFile = 'dirfile';
@@ -460,10 +453,6 @@
 
 		function removeClass(ele, className) {
 			ele && ele.classList.remove(className);
-		}
-
-		function hasClass(ele, className) {
-			return ele && ele.classList.contains(className);
 		}
 
 		var padStart = String.prototype.padStart ? function (sourceString, targetLength, padTemplate) {
@@ -749,19 +738,23 @@
 				return;
 			}
 
-			var elProgress = btnSubmit.querySelector('.progress');
+			var uploading = false;
+			var batches = [];
+			var elProgress = upload.querySelector('.progress');
 
 			function onComplete() {
 				if (elProgress) {
 					elProgress.style.width = '';
 				}
-				fileInput.disabled = false;
-				btnSubmit.disabled = false;
-				removeClass(upload, classUploading);
+				if (batches.length) {
+					uploadBatch(batches.shift());
+				} else {
+					uploading = false;
+				}
 			}
 
 			function onLoad() {
-				location.reload();
+				!uploading && location.reload();
 			}
 
 			function onProgress(e) {
@@ -776,6 +769,15 @@
 					return;
 				}
 
+				if (uploading) {
+					batches.push(files);
+				} else {
+					uploading = true;
+					uploadBatch(files);
+				}
+			}
+
+			function uploadBatch(files) {
 				var formName = fileInput.name;
 				var parts = new FormData();
 				files.forEach(function (file) {
@@ -805,9 +807,6 @@
 
 				xhr.open(form.method, form.action);
 				xhr.send(parts);
-				addClass(upload, classUploading);
-				fileInput.disabled = true;
-				btnSubmit.disabled = true;
 			}
 
 			return uploadProgressively;
@@ -847,9 +846,6 @@
 				e.stopPropagation();
 				e.preventDefault();
 				removeClass(e.currentTarget, classDragging);
-				if (hasClass(e.currentTarget, classUploading)) {
-					return;
-				}
 				fileInput.value = '';
 
 				if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
@@ -862,7 +858,6 @@
 						// must use progressive upload by JS if has directory
 						return;
 					}
-					btnSubmit.disabled = true;	// disable earlier
 					var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
 					itemsToFiles(items, function (files) {
 						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();

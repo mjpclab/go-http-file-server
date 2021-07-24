@@ -92,18 +92,6 @@ em {
 	visibility: hidden;
 }
 
-.if-disabled {
-	display: none;
-}
-
-:disabled .if-disabled {
-	display: inherit;
-}
-
-:disabled .if-enabled {
-	display: none;
-}
-
 
 html::before {
 	display: none;
@@ -225,7 +213,7 @@ html.dragging::before {
 	position: relative;
 }
 
-.upload button .progress {
+.upload .progress {
 	position: fixed;
 	left: 0;
 	top: 0;
