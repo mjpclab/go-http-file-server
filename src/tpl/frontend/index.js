@@ -810,6 +810,10 @@
 				btnSubmit.disabled = true;
 			}
 
+			return uploadProgressively;
+		}
+
+		function enableFormUploadProgress(uploadProgressively) {
 			form.addEventListener('submit', function (e) {
 				e.stopPropagation();
 				e.preventDefault();
@@ -822,7 +826,6 @@
 				var files = Array.prototype.slice.call(fileInput.files);
 				uploadProgressively(files);
 			});
-			return uploadProgressively;
 		}
 
 		function enableAddDragDrop(uploadProgressively) {
@@ -1024,6 +1027,7 @@
 
 		enableAddDirFile();
 		var uploadProgressively = enableUploadProgress();
+		enableFormUploadProgress(uploadProgressively);
 		enableAddDragDrop(uploadProgressively);
 		enableAddPaste(uploadProgressively);
 	}
