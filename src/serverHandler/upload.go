@@ -86,12 +86,17 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			if prefixSlashIndex > 0 {
 				fsInfix = filepath[prefixSlashIndex+1:]
 			}
+		} else if formname == file {
+			// noop
+		} else {
+			errs = append(errs, errors.New("upload: unknown mode "+formname))
+			continue
 		}
 
 		filePrefix := fsPrefix
 		if len(fsInfix) > 0 {
 			if !createDir {
-				errs = append(errs, errors.New("Upload failed: mkdir is not enabled for "+fsPrefix))
+				errs = append(errs, errors.New("upload: mkdir is not enabled for "+fsPrefix))
 				continue
 			}
 
