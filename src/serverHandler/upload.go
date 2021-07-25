@@ -81,18 +81,20 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 				continue
 			}
 			filepath := partFilePath[0:filenameIndex]
-			prefixSlashIndex := strings.IndexByte(filepath, '/')
-			if prefixSlashIndex > 0 {
-				fsInfix = filepath[prefixSlashIndex+1:]
+			if prefixEndIndex := strings.IndexByte(filepath, '/'); prefixEndIndex > 0 {
+				fsInfix = filepath[prefixEndIndex+1:]
 			}
-		} else if formname != file {
+		} else if formname == file {
+			// noop
+		} else {
+			errs = append(errs, errors.New("upload: unknown mode "+formname))
 			continue
 		}
 
 		filePrefix := fsPrefix
 		if len(fsInfix) > 0 {
 			if !createDir {
-				errs = append(errs, errors.New("Upload failed: mkdir is not enabled for "+fsPrefix))
+				errs = append(errs, errors.New("upload: mkdir is not enabled for "+fsPrefix))
 				continue
 			}
 

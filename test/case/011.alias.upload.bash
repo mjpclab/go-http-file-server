@@ -11,8 +11,13 @@ sleep 0.05 # wait server ready
 cleanup
 
 content='my/upload/uploaded.tmp'
-curl_upload_content 'http://127.0.0.1:3003/my/upload?upload' files "$content" uploaded.tmp
+curl_upload_content 'http://127.0.0.1:3003/my/upload?upload' file "$content" uploaded.tmp
 uploaded=$(cat "$fs"/uploaded/2/uploaded.tmp)
+assert "$uploaded" "$content"
+
+content='my/upload/uploaded2.tmp'
+curl_upload_content 'http://127.0.0.1:3003/my/upload?upload' file "$content" 'temp/dir/uploaded2.tmp'
+uploaded=$(cat "$fs"/uploaded/2/uploaded2.tmp)
 assert "$uploaded" "$content"
 
 cleanup
