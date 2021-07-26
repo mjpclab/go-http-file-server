@@ -10,10 +10,9 @@ source "$root"/lib.bash
 sleep 0.05 # wait server ready
 cleanup
 
-file="$fs"/uploaded/1/foo.tmp
-ls -d "$file1" &> /dev/null && fail "$file1 exists"
+file1="$fs"/uploaded/1/foo.tmp
 curl_head_status 'http://127.0.0.1:3003/1/?mkdir&name=foo.tmp' > /dev/null
-ls -d "$file1"/ &> /dev/null || fail "$file1 not exists"
+[ -d "$file1" ] || fail "$file1 should exists as directory"
 
 cleanup
 jobs -p | xargs kill
