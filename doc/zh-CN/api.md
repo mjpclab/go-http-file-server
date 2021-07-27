@@ -96,17 +96,17 @@ curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file
 # 在指定路径下创建目录
 仅在“mkdir”选项启用时有效。
 ```
-GET <path>?mkdir[&json]&name=<dir1>&name=<dir2>&...name=<dirN>
+GET <path>?mkdir[&json]&name=<dir1path>&name=<dir2path>&...name=<dirNpath>
 ```
 ```
 POST <path>?mkdir[&json]
 
-name=<dir1>&name=<dir2>&...name=<dirN>
+name=<dir1path>&name=<dir2path>&...name=<dirNpath>
 ```
 
 举例：
 ```sh
-curl -X POST -d 'name=dir1&name=dir2&name=dir3' http://localhost/tmp/?mkdir
+curl -X POST -d 'name=dir1&name=dir2&name=foo/bar/baz' http://localhost/tmp/?mkdir
 ```
 
 # 上传文件到指定路径

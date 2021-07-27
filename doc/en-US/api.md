@@ -98,17 +98,17 @@ curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file
 # Create directories in specific path
 Only work when "mkdir" is enabled.
 ```
-GET <path>?mkdir[&json]&name=<dir1>&name=<dir2>&...name=<dirN>
+GET <path>?mkdir[&json]&name=<dir1path>&name=<dir2path>&...name=<dirNpath>
 ```
 ```
 POST <path>?mkdir[&json]
 
-name=<dir1>&name=<dir2>&...name=<dirN>
+name=<dir1path>&name=<dir2path>&...name=<dirNpath>
 ```
 
 Example:
 ```sh
-curl -X POST -d 'name=dir1&name=dir2&name=dir3' http://localhost/tmp/?mkdir
+curl -X POST -d 'name=dir1&name=dir2&name=foo/bar/baz' http://localhost/tmp/?mkdir
 ```
 
 # Upload files to specific path
