@@ -58,43 +58,57 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			break
 		}
 
-		inputPartFilename := part.FileName()
-		if len(inputPartFilename) == 0 {
+		inputPartFilePath := part.FileName()
+		if len(inputPartFilePath) == 0 {
 			continue
 		}
-		partFilename, ok := getCleanDirFilePath(inputPartFilename)
+		partFilePath, ok := getCleanDirFilePath(inputPartFilePath)
 		if !ok {
-			errs = append(errs, errors.New("upload: illegal file name "+inputPartFilename))
+			errs = append(errs, errors.New("upload: illegal file path "+inputPartFilePath))
 			continue
 		}
 
-		slashIndex := strings.LastIndexByte(partFilename, '/')
+		filenameIndex := strings.LastIndexByte(partFilePath, '/')
 
 		fsInfix := ""
 		formname := part.FormName()
 		if formname == dirFile {
-			if slashIndex > 0 {
-				fsInfix = partFilename[0:slashIndex]
+			if filenameIndex > 0 {
+				fsInfix = partFilePath[0:filenameIndex]
 			}
 		} else if formname == innerDirFile { // get file path, strip first level of dir
-			if slashIndex <= 0 {
+			if filenameIndex <= 0 {
 				continue
 			}
-			filepath := partFilename[0:slashIndex]
-			prefixSlashIndex := strings.IndexByte(filepath, '/')
-			if prefixSlashIndex > 0 {
-				fsInfix = filepath[prefixSlashIndex+1:]
+			filepath := partFilePath[0:filenameIndex]
+			if prefixEndIndex := strings.IndexByte(filepath, '/'); prefixEndIndex > 0 {
+				fsInfix = filepath[prefixEndIndex+1:]
 			}
+		} else if formname == file {
+			// noop
+		} else {
+			errs = append(errs, errors.New("upload: unknown mode "+formname))
+			continue
 		}
 
 		filePrefix := fsPrefix
 		if len(fsInfix) > 0 {
 			if !createDir {
-				errs = append(errs, errors.New("Upload failed: mkdir is not enabled for "+fsPrefix))
+				errs = append(errs, errors.New("upload: mkdir is not enabled for "+fsPrefix))
 				continue
 			}
 
-			filePrefix = fsPrefix + "/" + fsInfix
+			fsInfixPart1 := fsInfix
+			fsInfixSlashIndex := strings.IndexByte(fsInfixPart1, '/')
+			if fsInfixSlashIndex > 0 {
+				fsInfixPart1 = fsInfixPart1[0:fsInfixSlashIndex]
+			}
+			if containsItem(aliasSubItems, fsInfixPart1) {
+				errs = append(errs, errors.New("upload: ignore path shadowed by alias "+fsInfix))
+				continue
+			}
+
+			filePrefix += "/" + fsInfix
 			err := os.MkdirAll(filePrefix, 0755)
 			if err != nil {
 				errs = append(errs, err)
@@ -102,15 +116,15 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			}
 		}
 
-		filename := partFilename
-		if slashIndex >= 0 {
-			filename = filename[slashIndex+1:]
+		filename := partFilePath
+		if filenameIndex >= 0 {
+			filename = filename[filenameIndex+1:]
 		}
 		if len(filename) == 0 {
 			continue
 		}
 
-		isFilenameAliased := containsItem(aliasSubItems, filename)
+		isFilenameAliased := len(fsInfix) == 0 && containsItem(aliasSubItems, filename)
 		var fsFilename string
 		if overwriteExists && !isFilenameAliased {
 			tryPath := filePrefix + "/" + filename

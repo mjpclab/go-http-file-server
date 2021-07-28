@@ -11,14 +11,12 @@ sleep 0.05 # wait server ready
 cleanup
 
 file1="$fs"/uploaded/1/foo.tmp
-ls -d "$file1" &> /dev/null && fail "$file1 exists"
 curl_head_status 'http://127.0.0.1:3003/free/space?mkdir&name=foo.tmp' > /dev/null
-ls -d "$file1"/ &> /dev/null || fail "$file1 not exists"
+[ -d "$file1" ] || fail "$file1 should exists as directory"
 
 file2="$fs"/uploaded/2/bar.tmp
-ls -d "$file2" &> /dev/null && fail "$file2 exists"
 curl_head_status 'http://127.0.0.1:3003/share/dir/?mkdir&name=bar.tmp' > /dev/null
-ls -d "$file2"/ &> /dev/null || fail "$file2 not exists"
+[ -d "$file2" ] || fail "$file2 should exists as directory"
 
 cleanup
 jobs -p | xargs kill
