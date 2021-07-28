@@ -17,7 +17,7 @@ body {
 	font-variant-ligatures: none;
 	font-kerning: none;
 	hyphens: none;
-	padding-bottom: 1em;
+	padding-bottom: 2em;
 }
 
 body, input, textarea, button {
@@ -72,6 +72,13 @@ button {
 	cursor: pointer;
 }
 
+input:disabled[type=button],
+input:disabled[type=submit],
+input:disabled[type=reset],
+button:disabled {
+	cursor: default;
+}
+
 em {
 	font-style: normal;
 	font-weight: normal;
@@ -88,16 +95,23 @@ em {
 	visibility: hidden;
 }
 
-.if-disabled {
+
+html::before {
 	display: none;
+	content: '';
+	position: absolute;
+	position: fixed;
+	z-index: 1;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	opacity: 0.7;
+	background: #c9c;
 }
 
-:disabled .if-disabled {
-	display: inherit;
-}
-
-:disabled .if-enabled {
-	display: none;
+html.dragging::before {
+	display: block;
 }
 
 
@@ -185,27 +199,6 @@ em {
 	position: relative;
 }
 
-.upload::before {
-	display: none;
-	content: '';
-	position: absolute;
-	z-index: 1;
-	left: 0;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	opacity: 0.7;
-	background: #c9c;
-}
-
-.upload.dragging::before {
-	display: block;
-}
-
-.upload.uploading.dragging::before {
-	background: transparent;
-}
-
 .upload input,
 .upload button {
 	display: block;
@@ -223,14 +216,15 @@ em {
 	position: relative;
 }
 
-.upload button .progress {
-	position: absolute;
+.upload .progress {
+	position: fixed;
 	left: 0;
 	top: 0;
-	bottom: 0;
 	width: 0;
+	height: 4px;
 	opacity: 0.5;
 	background: #c9c;
+	pointer-events: none;
 }
 
 .archive {
