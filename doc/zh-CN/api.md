@@ -22,8 +22,8 @@ GET <path>[?sort=sortBy]
 
 举例：
 ```sh
-curl http://localhost/ghfs/
-curl http://localhost/ghfs/?sort=/T
+curl 'http://localhost/ghfs/'
+curl 'http://localhost/ghfs/?sort=/T'
 ```
 
 # 获取指定路径JSON形式的数据
@@ -33,7 +33,7 @@ GET <path>?json[&sort=key]
 
 举例：
 ```sh
-curl http://localhost/ghfs/?json
+curl 'http://localhost/ghfs/?json'
 ```
 
 # 显示用于下载的页面
@@ -45,7 +45,7 @@ GET <path>?download[&sort=key]
 
 举例：
 ```shell
-wget --recursive -nc -nH -np http://localhost/dir/?download
+wget --recursive -nc -nH -np 'http://localhost/dir/?download'
 ```
 
 # 下载文件
@@ -56,7 +56,7 @@ GET <path/to/file>?download
 
 举例：
 ```sh
-curl http://localhost/ghfs/file?download
+curl 'http://localhost/ghfs/file?download'
 ```
 
 # 以打包文件形式获取指定路径下的内容
@@ -72,7 +72,7 @@ POST <path>?zip
 
 举例：
 ```sh
-curl http://localhost/tmp/?zip > tmp.zip
+curl 'http://localhost/tmp/?zip' > tmp.zip
 ```
 
 要打包当前目录下的指定子项，用`name`参数指定：
@@ -90,7 +90,7 @@ name=<path1>&name=<path2>&...name=<pathN>
 
 举例：
 ```sh
-curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file31' http://localhost/tmp/?zip > tmp.zip
+curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file31' 'http://localhost/tmp/?zip' > tmp.zip
 ```
 
 # 在指定路径下创建目录
@@ -106,7 +106,7 @@ name=<dir1path>&name=<dir2path>&...name=<dirNpath>
 
 举例：
 ```sh
-curl -X POST -d 'name=dir1&name=dir2&name=foo/bar/baz' http://localhost/tmp/?mkdir
+curl -X POST -d 'name=dir1&name=dir2&name=foo/bar/baz' 'http://localhost/tmp/?mkdir'
 ```
 
 # 上传文件到指定路径
@@ -120,20 +120,20 @@ POST <path>?upload[&json]
 
 举例：
 ```sh
-curl -F 'file=@file1.txt' -F 'file=@file2.txt;filename=renamed.txt' http://localhost/tmp/?upload
+curl -F 'file=@file1.txt' -F 'file=@file2.txt;filename=renamed.txt' 'http://localhost/tmp/?upload'
 ```
 
 如果还启用了“mkdir”选项，可以将文件上传到相对于当前URL路径的特定路径，
 使用表单字段`dirfile`代替`file`：
 ```sh
-curl -F 'dirfile=@file1.txt;filename=subdir/childdir/filename.txt' http://localhost/tmp/?upload
+curl -F 'dirfile=@file1.txt;filename=subdir/childdir/filename.txt' 'http://localhost/tmp/?upload'
 # 文件现在位于 http://localhost/tmp/subdir/childdir/filename.txt
 ```
 
 另一表单字段`innerdirfile`与`dirfile`很相似，只是会去除第一级上传目录。
 这对于上传一个目录中的内容很方便：
 ```sh
-curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' http://localhost/tmp/?upload
+curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' 'http://localhost/tmp/?upload'
 # 文件现在位于 http://localhost/tmp/childdir/filename.txt
 ```
 
@@ -151,5 +151,5 @@ name=<dir1>&name=<dir2>&...name=<dirN>
 
 举例：
 ```sh
-curl -X POST -d 'name=dir1&name=dir2&name=dir3' http://localhost/tmp/?delete
+curl -X POST -d 'name=dir1&name=dir2&name=dir3' 'http://localhost/tmp/?delete'
 ```

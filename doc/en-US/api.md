@@ -22,8 +22,8 @@ Directory sort:
 
 Example:
 ```sh
-curl http://localhost/ghfs/
-curl http://localhost/ghfs/?sort=/T
+curl 'http://localhost/ghfs/'
+curl 'http://localhost/ghfs/?sort=/T'
 ```
 
 # Get JSON data of specified path
@@ -33,7 +33,7 @@ GET <path>?json[&sort=key]
 
 Example:
 ```sh
-curl http://localhost/ghfs/?json
+curl 'http://localhost/ghfs/?json'
 ```
 
 # Render page for downloading
@@ -47,7 +47,7 @@ It's convenient for tools like "wget" to download files recursively.
 
 Example:
 ```shell
-wget --recursive -nc -nH -np http://localhost/dir/?download
+wget --recursive -nc -nH -np 'http://localhost/dir/?download'
 ```
 
 # Download a file
@@ -58,7 +58,7 @@ GET <path/to/file>?download
 
 Example:
 ```sh
-curl http://localhost/ghfs/file?download
+curl 'http://localhost/ghfs/file?download'
 ```
 
 # Get contents of specified path as archive file
@@ -74,7 +74,7 @@ POST <path>?zip
 
 Example:
 ```sh
-curl http://localhost/tmp/?zip > tmp.zip
+curl 'http://localhost/tmp/?zip' > tmp.zip
 ```
 
 To archive specific sub items under current directory, pass `name` params:
@@ -92,7 +92,7 @@ name=<path1>&name=<path2>&...name=<pathN>
 
 Example:
 ```sh
-curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file31' http://localhost/tmp/?zip > tmp.zip
+curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file31' 'http://localhost/tmp/?zip' > tmp.zip
 ```
 
 # Create directories in specific path
@@ -108,7 +108,7 @@ name=<dir1path>&name=<dir2path>&...name=<dirNpath>
 
 Example:
 ```sh
-curl -X POST -d 'name=dir1&name=dir2&name=foo/bar/baz' http://localhost/tmp/?mkdir
+curl -X POST -d 'name=dir1&name=dir2&name=foo/bar/baz' 'http://localhost/tmp/?mkdir'
 ```
 
 # Upload files to specific path
@@ -122,20 +122,20 @@ POST <path>?upload[&json]
 
 Example:
 ```sh
-curl -F 'file=@file1.txt' -F 'file=@file2.txt;filename=renamed.txt' http://localhost/tmp/?upload
+curl -F 'file=@file1.txt' -F 'file=@file2.txt;filename=renamed.txt' 'http://localhost/tmp/?upload'
 ```
 
 If "mkdir" is also enabled, it is possible to upload file to a specific path relative to current URL path,
 using form name `dirfile` instead of `file`:
 ```sh
-curl -F 'dirfile=@file1.txt;filename=subdir/childdir/filename.txt' http://localhost/tmp/?upload
+curl -F 'dirfile=@file1.txt;filename=subdir/childdir/filename.txt' 'http://localhost/tmp/?upload'
 # file is now available at http://localhost/tmp/subdir/childdir/filename.txt
 ```
 
 Another form name `innerdirfile` is similar to `dirfile`, but strip first level of upload directory.
 It is convenient to upload contents of a directory:
 ```sh
-curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' http://localhost/tmp/?upload
+curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' 'http://localhost/tmp/?upload'
 # file is now available at http://localhost/tmp/childdir/filename.txt
 ```
 
@@ -153,5 +153,5 @@ name=<dir1>&name=<dir2>&...name=<dirN>
 
 Example:
 ```sh
-curl -X POST -d 'name=dir1&name=dir2&name=dir3' http://localhost/tmp/?delete
+curl -X POST -d 'name=dir1&name=dir2&name=dir3' 'http://localhost/tmp/?delete'
 ```
