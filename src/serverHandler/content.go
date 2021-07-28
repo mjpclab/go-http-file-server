@@ -24,6 +24,7 @@ func (h *handler) content(w http.ResponseWriter, r *http.Request, data *response
 
 	ctype, err := util.GetContentType(item.Name(), file)
 	if err == nil {
+		header.Set("Accept-Ranges", "bytes")
 		header.Set("Content-Type", ctype)
 		header.Set("Content-Length", strconv.FormatInt(item.Size(), 10))
 		header.Set("Date", time.Now().UTC().Format(http.TimeFormat))

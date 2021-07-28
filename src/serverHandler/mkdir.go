@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"errors"
 	"os"
+	"strings"
 )
 
 func (h *handler) mkdirs(fsPrefix string, files []string, aliasSubItems []os.FileInfo) bool {
@@ -15,14 +16,20 @@ func (h *handler) mkdirs(fsPrefix string, files []string, aliasSubItems []os.Fil
 
 		var filename string
 		var ok bool
-		if filename, ok = getCleanFilePath(inputFilename); !ok {
-			errs = append(errs, errors.New("mkdir: illegal directory name "+inputFilename))
+		if filename, ok = getCleanDirFilePath(inputFilename); !ok {
+			errs = append(errs, errors.New("mkdir: illegal directory path "+inputFilename))
 			continue
 		}
-		if containsItem(aliasSubItems, filename) {
+
+		filenamePart1 := filename
+		if prefixEndIndex := strings.IndexByte(filenamePart1, '/'); prefixEndIndex > 0 {
+			filenamePart1 = filenamePart1[0:prefixEndIndex]
+		}
+		if containsItem(aliasSubItems, filenamePart1) {
+			errs = append(errs, errors.New("mkdir: ignore path shadowed by alias "+filename))
 			continue
 		}
-		err := os.Mkdir(fsPrefix+"/"+filename, 0755)
+		err := os.MkdirAll(fsPrefix+"/"+filename, 0755)
 		if err != nil {
 			errs = append(errs, err)
 		}

@@ -42,11 +42,9 @@ const DefaultTplStr = `
 <div class="panel upload">
 	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
 		<input type="file" name="file" multiple="multiple" class="file"/>
-		<button type="submit" class="submit">
-			<span class="progress"></span>
-			<span class="if-enabled">{{.Trans.UploadLabel}}</span><span class="if-disabled">{{.Trans.UploadingLabel}}</span>
-		</button>
+		<button type="submit" class="submit">{{.Trans.UploadLabel}}</button>
 	</form>
+	<span class="progress"></span>
 </div>
 {{end}}
 
