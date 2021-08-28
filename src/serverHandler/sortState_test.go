@@ -52,24 +52,24 @@ func TestSortState_KeyState(t *testing.T) {
 	}
 
 	sortBy = state.NextSizeSort()
-	if sortBy != "/s" {
+	if sortBy != "/S" {
 		t.Error(sortBy)
 	}
 
 	sortBy = state.NextTimeSort()
-	if sortBy != "/t" {
+	if sortBy != "/T" {
 		t.Error(sortBy)
 	}
 
 	state.dirSort = dirSortMixed
 	sortBy = state.NextTimeSort()
-	if sortBy != "t" {
+	if sortBy != "T" {
 		t.Error(sortBy)
 	}
 
-	state.key = 't'
+	state.key = 'T'
 	sortBy = state.NextTimeSort()
-	if sortBy != "T" {
+	if sortBy != "t" {
 		t.Error(sortBy)
 	}
 }
