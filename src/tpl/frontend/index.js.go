@@ -831,12 +831,23 @@ const DefaultJs = `
 		}
 
 		function enableAddDragDrop(uploadProgressively) {
+			var isSelfDragging = false;
 			var classDragging = 'dragging';
 
+			function onSelfDragStart() {
+				isSelfDragging = true;
+			}
+
+			function onDragEnd() {
+				isSelfDragging = false;
+			}
+
 			function onDragEnterOver(e) {
-				e.stopPropagation();
-				e.preventDefault();
-				addClass(e.currentTarget, classDragging);
+				if(!isSelfDragging) {
+					e.stopPropagation();
+					e.preventDefault();
+					addClass(e.currentTarget, classDragging);
+				}
 			}
 
 			function onDragLeave(e) {
@@ -879,6 +890,8 @@ const DefaultJs = `
 				}
 			}
 
+			document.body.addEventListener('dragstart', onSelfDragStart);
+			document.body.addEventListener('dragend', onDragEnd);
 			var dragDropEl = document.documentElement;
 			dragDropEl.addEventListener('dragenter', onDragEnterOver);
 			dragDropEl.addEventListener('dragover', onDragEnterOver);
