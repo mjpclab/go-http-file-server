@@ -84,10 +84,10 @@ func (info SortState) NextTypeSort() string {
 func (info SortState) NextSizeSort() string {
 	var nextKey byte
 	switch info.key {
-	case sizeAsc:
-		nextKey = sizeDesc
-	default:
+	case sizeDesc:
 		nextKey = sizeAsc
+	default:
+		nextKey = sizeDesc
 	}
 	return info.mergeDirWithKey(nextKey)
 }
@@ -95,10 +95,10 @@ func (info SortState) NextSizeSort() string {
 func (info SortState) NextTimeSort() string {
 	var nextKey byte
 	switch info.key {
-	case timeAsc:
-		nextKey = timeDesc
-	default:
+	case timeDesc:
 		nextKey = timeAsc
+	default:
+		nextKey = timeDesc
 	}
 	return info.mergeDirWithKey(nextKey)
 }
