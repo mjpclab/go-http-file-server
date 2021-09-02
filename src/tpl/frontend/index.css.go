@@ -15,7 +15,10 @@ body {
 	color: #333;
 	font-size: 0.625em;
 	font-variant-ligatures: none;
+	font-variant-numeric: tabular-nums;
 	font-kerning: none;
+	-webkit-text-size-adjust: none;
+	text-size-adjust: none;
 	hyphens: none;
 	padding-bottom: 2em;
 }
@@ -325,6 +328,10 @@ html.dragging::before {
 
 .item-list li:hover {
 	background: #f5f5f5;
+}
+
+.item-list a {
+	padding: 0.6em;
 }
 
 .item-list .detail,
