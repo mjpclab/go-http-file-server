@@ -139,29 +139,15 @@ func (h *handler) mergeAlias(
 	}
 
 	for _, alias := range h.aliases {
+		if !alias.isSuccessorOf(rawRequestPath) {
+			continue
+		}
+
 		aliasUrlPath := alias.urlPath
 		aliasFsPath := alias.fsPath
 
-		if len(aliasUrlPath) <= len(rawRequestPath) {
-			continue
-		}
-
-		suffixIndex := len(rawRequestPath)
-		aliasPrefix := aliasUrlPath[:suffixIndex]
-		aliasSuffix := aliasUrlPath[suffixIndex:]
-
-		if aliasPrefix != rawRequestPath {
-			continue
-		}
-
-		if len(aliasPrefix) != 1 && aliasSuffix[0] != '/' {
-			// aliasUrlPath doesn't cover the whole directory name
-			// e.g:
-			// rawReqPath == "/abc/def/ghi"
-			// aliasPrefix == "/abc/de"
-			continue
-		}
-		if aliasSuffix[0] == '/' {
+		aliasSuffix := aliasUrlPath[len(rawRequestPath):]
+		if len(aliasSuffix) > 0 && aliasSuffix[0] == '/' {
 			aliasSuffix = aliasSuffix[1:]
 		}
 
@@ -174,7 +160,7 @@ func (h *handler) mergeAlias(
 		}
 
 		var aliasSubItem os.FileInfo
-		if path.Dir(aliasUrlPath) == rawRequestPath { // reached second deepest path of alias
+		if alias.isChildOf(rawRequestPath) { // reached second deepest path of alias
 			var err error
 			aliasSubItem, err = os.Stat(aliasFsPath)
 			if err == nil {
