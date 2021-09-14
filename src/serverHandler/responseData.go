@@ -160,6 +160,7 @@ func (h *handler) mergeAlias(
 		}
 
 		var aliasSubItem os.FileInfo
+		matchExisted := false
 		if alias.isChildOf(rawRequestPath) { // reached second deepest path of alias
 			var err error
 			aliasSubItem, err = os.Stat(aliasFsPath)
@@ -169,21 +170,28 @@ func (h *handler) mergeAlias(
 				errs = append(errs, err)
 				aliasSubItem = newFakeFileInfo(nextName, true)
 			}
-		} else {
+		}
+
+		for i, subItem := range subItems {
+			if subItem.Name() != nextName {
+				continue
+			}
+			matchExisted = true
+			if aliasSubItem == nil {
+				// use aliased item instead of original item
+				// to mark it as an alias, which results non-deletable
+				aliasSubItem = newRenamedFileInfo(nextName, subItems[i])
+			}
+			subItems[i] = aliasSubItem
+			break
+		}
+
+		if aliasSubItem == nil {
 			aliasSubItem = newFakeFileInfo(nextName, true)
 		}
 		aliasSubItems = append(aliasSubItems, aliasSubItem)
 
-		replaced := false
-		for i, subItem := range subItems {
-			if subItem.Name() == nextName {
-				subItems[i] = aliasSubItem
-				replaced = true
-				break
-			}
-		}
-
-		if !replaced {
+		if !matchExisted {
 			subItems = append(subItems, aliasSubItem)
 		}
 	}
