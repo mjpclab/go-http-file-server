@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 )
 
@@ -291,10 +290,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		rootRelPath = "./"
 	}
 
-	reqFsPath, _absErr := util.NormalizeFsPath(h.root + reqPath)
-	if _absErr != nil {
-		reqFsPath = filepath.Clean(h.root + reqPath)
-	}
+	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
 
 	file, item, _statErr := stat(reqFsPath, !h.emptyRoot)
 	if _statErr != nil {
