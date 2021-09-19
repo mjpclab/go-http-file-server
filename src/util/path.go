@@ -3,7 +3,6 @@ package util
 import (
 	"path"
 	"path/filepath"
-	"strings"
 )
 
 func CleanUrlPath(urlPath string) string {
@@ -20,25 +19,38 @@ func CleanUrlPath(urlPath string) string {
 }
 
 func HasUrlPrefixDir(urlPath, prefix string) bool {
-	if urlPath == prefix {
-		return true
-	}
-
-	if prefix[len(prefix)-1] != '/' {
-		prefix = prefix + "/"
-	}
-
-	return strings.HasPrefix(urlPath, prefix)
+	return hasPrefixDir(urlPath, prefix, '/')
 }
 
 func HasFsPrefixDir(fsPath, prefix string) bool {
-	if fsPath == prefix {
+	return hasPrefixDir(fsPath, prefix, filepath.Separator)
+}
+
+func hasPrefixDir(absPath, prefix string, separator byte) bool {
+	if absPath == prefix {
 		return true
 	}
 
-	if prefix[len(prefix)-1] != filepath.Separator {
-		prefix = prefix + string(filepath.Separator)
+	prefixMaxIndex := len(prefix) - 1
+
+	if len(absPath) < len(prefix) {
+		if len(absPath) == prefixMaxIndex && prefix[prefixMaxIndex] == separator && absPath == prefix[:prefixMaxIndex] {
+			return true
+		}
+		return false
 	}
 
-	return strings.HasPrefix(fsPath, prefix)
+	if absPath[:len(prefix)] != prefix {
+		return false
+	}
+
+	if prefix[prefixMaxIndex] == separator {
+		return true
+	}
+
+	if absPath[len(prefix)] == separator {
+		return true
+	}
+
+	return false
 }

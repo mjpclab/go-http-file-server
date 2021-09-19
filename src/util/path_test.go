@@ -43,7 +43,7 @@ func TestHasUrlPrefixDir(t *testing.T) {
 
 	full = "/a/b/c"
 	prefix = "/a/b/c/"
-	if HasUrlPrefixDir(full, prefix) {
+	if !HasUrlPrefixDir(full, prefix) {
 		t.Error(full, prefix)
 	}
 
