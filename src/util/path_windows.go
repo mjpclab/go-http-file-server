@@ -3,7 +3,10 @@
 
 package util
 
-import "path/filepath"
+import (
+	"path/filepath"
+	"strings"
+)
 
 func NormalizeFsPath(input string) (string, error) {
 	abs, err := filepath.Abs(input)
@@ -11,7 +14,7 @@ func NormalizeFsPath(input string) (string, error) {
 		return abs, err
 	}
 
-	abs = AsciiToLowerCase(abs)
+	abs = strings.ToLower(abs)
 
 	return abs, err
 }
