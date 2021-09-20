@@ -12,6 +12,15 @@ type alias struct {
 
 type aliases []*alias
 
+func NewAlias(urlPath, fsPath string) *alias {
+	return &alias{urlPath, fsPath}
+}
+
+func NewAliases(capacity int) aliases {
+	aliases := make(aliases, 0, capacity)
+	return aliases
+}
+
 func (aliases aliases) byUrlPath(urlPath string) (alias *alias, ok bool) {
 	for _, alias := range aliases {
 		if urlPath == alias.urlPath {

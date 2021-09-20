@@ -137,6 +137,7 @@ func NewHandler(
 	root string,
 	emptyRoot bool,
 	urlPrefix string,
+	allAliases aliases,
 	p *param.Param,
 	users user.Users,
 	theme tpl.Theme,
@@ -144,8 +145,10 @@ func NewHandler(
 	errHandler *serverErrHandler.ErrHandler,
 ) *handler {
 	aliases := aliases{}
-	for urlPath, fsPath := range p.Aliases {
-		aliases = append(aliases, &alias{urlPath, fsPath})
+	for _, alias := range allAliases {
+		if alias.isSuccessorOf(urlPrefix) {
+			aliases = append(aliases, alias)
+		}
 	}
 
 	h := &handler{
@@ -156,9 +159,9 @@ func NewHandler(
 		httpsPort:   p.HttpsPort,
 		defaultSort: p.DefaultSort,
 		urlPrefix:   urlPrefix,
+		aliases:     aliases,
 
 		dirIndexes: p.DirIndexes,
-		aliases:    aliases,
 
 		globalHeaders: p.GlobalHeaders,
 
