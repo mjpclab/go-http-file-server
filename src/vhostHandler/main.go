@@ -8,7 +8,6 @@ import (
 	"../tpl"
 	"../user"
 	"net/http"
-	"os"
 )
 
 type VhostHandler struct {
@@ -46,21 +45,9 @@ func NewHandler(
 	}
 
 	// register handlers
-	aliases := p.Aliases
-	_, hasRootAlias := aliases["/"]
-	emptyRoot := false
-	if !hasRootAlias {
-		emptyRoot = p.EmptyRoot
-		if emptyRoot {
-			aliases["/"] = os.DevNull
-		} else {
-			aliases["/"] = p.Root
-		}
-	}
-
 	handlers := map[string]http.Handler{}
-	for urlPath, fsPath := range aliases {
-		emptyHandlerRoot := emptyRoot && urlPath == "/"
+	for urlPath, fsPath := range p.Aliases {
+		emptyHandlerRoot := p.EmptyRoot && urlPath == "/"
 		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, p, users, theme, logger, errorHandler)
 	}
 

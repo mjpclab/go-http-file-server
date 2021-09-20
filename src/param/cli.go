@@ -405,6 +405,7 @@ func doParseCli() []*Param {
 		serverErrHandler.CheckFatal(err)
 		param.HideFiles = hideFiles
 
+		normalize(param)
 		params = append(params, param)
 	}
 

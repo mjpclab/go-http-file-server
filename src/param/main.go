@@ -2,6 +2,7 @@ package param
 
 import (
 	"crypto/tls"
+	"os"
 	"regexp"
 )
 
@@ -70,4 +71,16 @@ type Param struct {
 
 	AccessLog string
 	ErrorLog  string
+}
+
+func normalize(p *Param) {
+	_, hasRootAlias := p.Aliases["/"]
+	if hasRootAlias {
+		p.EmptyRoot = false
+	}
+	if p.EmptyRoot {
+		p.Aliases["/"] = os.DevNull
+	} else {
+		p.Aliases["/"] = p.Root
+	}
 }
