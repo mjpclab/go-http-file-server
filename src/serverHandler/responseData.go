@@ -138,55 +138,40 @@ func (h *handler) mergeAlias(
 	}
 
 	for _, alias := range h.aliases {
-		if !alias.isSuccessorOf(rawRequestPath) {
+		subName, isChildAlias, ok := alias.getSubPart(rawRequestPath)
+		if !ok {
 			continue
-		}
-
-		aliasUrlPath := alias.urlPath
-		aliasFsPath := alias.fsPath
-
-		aliasSuffix := aliasUrlPath[len(rawRequestPath):]
-		if len(aliasSuffix) > 0 && aliasSuffix[0] == '/' {
-			aliasSuffix = aliasSuffix[1:]
-		}
-
-		slashIndex := strings.Index(aliasSuffix, "/")
-		var nextName string
-		if slashIndex >= 0 {
-			nextName = aliasSuffix[:slashIndex]
-		} else {
-			nextName = aliasSuffix
 		}
 
 		var aliasSubItem os.FileInfo
 		matchExisted := false
-		if alias.isChildOf(rawRequestPath) { // reached second deepest path of alias
+		if isChildAlias { // reached second-deepest path of alias
 			var err error
-			aliasSubItem, err = os.Stat(aliasFsPath)
+			aliasSubItem, err = os.Stat(alias.fsPath)
 			if err == nil {
-				aliasSubItem = newRenamedFileInfo(nextName, aliasSubItem)
+				aliasSubItem = newRenamedFileInfo(subName, aliasSubItem)
 			} else {
 				errs = append(errs, err)
-				aliasSubItem = newFakeFileInfo(nextName, true)
+				aliasSubItem = newFakeFileInfo(subName, true)
 			}
 		}
 
 		for i, subItem := range subItems {
-			if !alias.namesEqual(subItem.Name(), nextName) {
+			if !alias.namesEqual(subItem.Name(), subName) {
 				continue
 			}
 			matchExisted = true
 			if aliasSubItem == nil {
 				// use aliased item instead of original item
 				// to mark it as an alias, which results non-deletable
-				aliasSubItem = newRenamedFileInfo(nextName, subItems[i])
+				aliasSubItem = newRenamedFileInfo(subName, subItems[i])
 			}
 			subItems[i] = aliasSubItem
 			break
 		}
 
 		if aliasSubItem == nil {
-			aliasSubItem = newFakeFileInfo(nextName, true)
+			aliasSubItem = newFakeFileInfo(subName, true)
 		}
 		aliasSubItems = append(aliasSubItems, aliasSubItem)
 
