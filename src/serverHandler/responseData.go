@@ -172,7 +172,7 @@ func (h *handler) mergeAlias(
 		}
 
 		for i, subItem := range subItems {
-			if subItem.Name() != nextName {
+			if !alias.namesEqual(subItem.Name(), nextName) {
 				continue
 			}
 			matchExisted = true
@@ -236,7 +236,7 @@ func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInf
 
 	for _, index := range h.dirIndexes {
 		for _, alias := range h.aliases {
-			if path.Clean(rawReqPath+"/"+index) != alias.urlPath {
+			if !alias.isMatch(path.Clean(rawReqPath + "/" + index)) {
 				continue
 			}
 			file, item, err = stat(alias.fsPath, true)
