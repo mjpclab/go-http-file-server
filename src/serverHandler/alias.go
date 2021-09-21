@@ -1,6 +1,9 @@
 package serverHandler
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 type alias interface {
 	urlPath() string
@@ -12,8 +15,16 @@ type alias interface {
 
 type aliases []alias
 
-func NewAliases(capacity int) aliases {
-	aliases := make(aliases, 0, capacity)
+func NewAliases(entriesAccurate, entriesNoCase map[string]string) aliases {
+	aliases := make(aliases, 0, len(entriesAccurate)+len(entriesNoCase))
+	for urlPath, fsPath := range entriesAccurate {
+		aliases = append(aliases, createAliasAccurate(urlPath, fsPath))
+	}
+	for urlPath, fsPath := range entriesNoCase {
+		aliases = append(aliases, createAliasNoCase(urlPath, fsPath))
+	}
+	sort.Sort(aliases)
+
 	return aliases
 }
 
@@ -46,4 +57,30 @@ func getAliasSubPart(alias alias, rawReqPath string) (subName string, isLastPart
 	ok = true
 
 	return
+}
+
+func (aliases aliases) Len() int {
+	return len(aliases)
+}
+
+func (aliases aliases) Less(i, j int) bool {
+	iLen := len(aliases[i].urlPath())
+	jLen := len(aliases[j].urlPath())
+	if iLen != jLen {
+		// longer is prior
+		return iLen > jLen
+	}
+
+	_, isIAccurate := aliases[i].(aliasAccurate)
+	_, isJAccurate := aliases[j].(aliasAccurate)
+	if isIAccurate != isJAccurate {
+		// accurate is prior
+		return isIAccurate
+	}
+
+	return i < j
+}
+
+func (aliases aliases) Swap(i, j int) {
+	aliases[i], aliases[j] = aliases[j], aliases[i]
 }

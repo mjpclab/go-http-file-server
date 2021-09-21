@@ -39,8 +39,37 @@ func TestSplitMapping(t *testing.T) {
 }
 
 func TestNormalizePathMaps(t *testing.T) {
-	maps := normalizePathMaps([]string{":/data/lib://usr/lib"})
+	var maps map[string]string
+
+	maps = normalizePathMaps([]string{":/data/lib://usr/lib"})
 	if maps["/data/lib"] != "/usr/lib" {
+		t.Error(maps)
+	}
+
+	maps = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
+	if len(maps) != 2 {
+		t.Error(maps)
+	}
+	if maps["/data/lib"] != "/usr/lib" {
+		t.Error(maps)
+	}
+	if maps["/foo"] != "bar/baz" {
+		t.Error(maps)
+	}
+}
+
+func TestNormalizePathMapsNoCase(t *testing.T) {
+	var maps map[string]string
+	maps = normalizePathMapsNoCase([]string{":/data/lib://usr/lib"})
+	if maps["/data/lib"] != "/usr/lib" {
+		t.Error(maps)
+	}
+
+	maps = normalizePathMapsNoCase([]string{":/data/lib://usr/lib", "#/Data/Lib#/tmp/"})
+	if len(maps) != 1 {
+		t.Error(maps)
+	}
+	if maps["/Data/Lib"] != "/tmp" {
 		t.Error(maps)
 	}
 }

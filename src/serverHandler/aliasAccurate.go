@@ -9,7 +9,7 @@ type aliasAccurate struct {
 	fs  string
 }
 
-func CreateAliasAccurate(urlPath, fsPath string) aliasAccurate {
+func createAliasAccurate(urlPath, fsPath string) aliasAccurate {
 	return aliasAccurate{urlPath, fsPath}
 }
 

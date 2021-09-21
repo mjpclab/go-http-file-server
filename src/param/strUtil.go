@@ -44,6 +44,30 @@ func normalizePathMaps(inputs []string) map[string]string {
 	return maps
 }
 
+func normalizePathMapsNoCase(inputs []string) map[string]string {
+	maps := make(map[string]string, len(inputs))
+
+	for _, input := range inputs {
+		urlPath, fsPath, ok := splitMapping(input)
+		if !ok {
+			continue
+		}
+
+		urlPath = util.CleanUrlPath(urlPath)
+		fsPath = filepath.Clean(fsPath)
+
+		for url := range maps {
+			if strings.EqualFold(url, urlPath) {
+				delete(maps, url)
+			}
+		}
+
+		maps[urlPath] = fsPath
+	}
+
+	return maps
+}
+
 func normalizeUrlPaths(inputs []string) []string {
 	outputs := make([]string, 0, len(inputs))
 

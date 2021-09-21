@@ -10,7 +10,7 @@ type aliasNoCase struct {
 	fs  string
 }
 
-func CreateAliasNoCase(urlPath, fsPath string) aliasNoCase {
+func createAliasNoCase(urlPath, fsPath string) aliasNoCase {
 	return aliasNoCase{urlPath, fsPath}
 }
 

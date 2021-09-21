@@ -45,10 +45,7 @@ func NewHandler(
 	}
 
 	// create aliases
-	aliases := serverHandler.NewAliases(len(p.Aliases))
-	for urlPath, fsPath := range p.Aliases {
-		aliases = append(aliases, serverHandler.CreateAliasAccurate(urlPath, fsPath))
-	}
+	aliases := serverHandler.NewAliases(p.Aliases, p.Binds)
 
 	// register handlers
 	handlers := map[string]http.Handler{}

@@ -6,7 +6,7 @@ func TestGetAliasSubPartAccurate(t *testing.T) {
 	var subName string
 	var isLastPart, ok bool
 
-	aliasAccurate := CreateAliasAccurate("/hello/world/foo", "/tmp")
+	aliasAccurate := createAliasAccurate("/hello/world/foo", "/tmp")
 
 	_, _, ok = getAliasSubPart(aliasAccurate, "/test")
 	if ok {
@@ -88,7 +88,7 @@ func TestGetAliasSubPartNoCase(t *testing.T) {
 	var subName string
 	var isLastPart, ok bool
 
-	aliasNoCase := CreateAliasNoCase("/hello/world/foo", "/tmp")
+	aliasNoCase := createAliasNoCase("/hello/world/foo", "/tmp")
 
 	_, _, ok = getAliasSubPart(aliasNoCase, "/test")
 	if ok {

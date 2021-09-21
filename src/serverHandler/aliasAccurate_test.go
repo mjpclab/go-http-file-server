@@ -3,7 +3,7 @@ package serverHandler
 import "testing"
 
 func TestAliasAccurate(t *testing.T) {
-	alias := CreateAliasAccurate("/hello/world/foo", "/tmp")
+	alias := createAliasAccurate("/hello/world/foo", "/tmp")
 
 	// isMatch
 	if !alias.isMatch("/hello/world/foo") {

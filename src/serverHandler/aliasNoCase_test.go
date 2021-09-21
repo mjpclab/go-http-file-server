@@ -3,7 +3,7 @@ package serverHandler
 import "testing"
 
 func TestAliasNoCase(t *testing.T) {
-	alias := CreateAliasNoCase("/hello/world/foo", "/tmp")
+	alias := createAliasNoCase("/hello/world/foo", "/tmp")
 
 	// isMatch
 	if !alias.isMatch("/hello/world/foo") {
