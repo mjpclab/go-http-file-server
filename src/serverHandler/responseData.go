@@ -138,7 +138,7 @@ func (h *handler) mergeAlias(
 	}
 
 	for _, alias := range h.aliases {
-		subName, isChildAlias, ok := alias.getSubPart(rawRequestPath)
+		subName, isChildAlias, ok := getAliasSubPart(alias, rawRequestPath)
 		if !ok {
 			continue
 		}
