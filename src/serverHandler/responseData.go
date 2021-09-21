@@ -147,7 +147,7 @@ func (h *handler) mergeAlias(
 		matchExisted := false
 		if isChildAlias { // reached second-deepest path of alias
 			var err error
-			aliasSubItem, err = os.Stat(alias.fsPath)
+			aliasSubItem, err = os.Stat(alias.fsPath())
 			if err == nil {
 				aliasSubItem = newRenamedFileInfo(subName, aliasSubItem)
 			} else {
@@ -224,7 +224,7 @@ func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInf
 			if !alias.isMatch(path.Clean(rawReqPath + "/" + index)) {
 				continue
 			}
-			file, item, err = stat(alias.fsPath, true)
+			file, item, err = stat(alias.fsPath(), true)
 			if err != nil && file != nil {
 				file.Close()
 			}
