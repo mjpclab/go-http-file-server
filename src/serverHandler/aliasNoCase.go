@@ -30,6 +30,10 @@ func (alias aliasNoCase) isSuccessorOf(rawReqPath string) bool {
 	return len(alias.url) > len(rawReqPath) && util.HasUrlPrefixDirNoCase(alias.url, rawReqPath)
 }
 
+func (alias aliasNoCase) isPredecessorOf(rawReqPath string) bool {
+	return len(rawReqPath) > len(alias.url) && util.HasUrlPrefixDirNoCase(rawReqPath, alias.url)
+}
+
 func (alias aliasNoCase) namesEqual(a, b string) bool {
 	return strings.EqualFold(a, b)
 }

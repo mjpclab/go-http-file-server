@@ -10,12 +10,13 @@ type alias interface {
 	fsPath() string
 	isMatch(rawReqPath string) bool
 	isSuccessorOf(rawReqPath string) bool
+	isPredecessorOf(rawReqPath string) bool
 	namesEqual(a, b string) bool
 }
 
 type aliases []alias
 
-func NewAliases(entriesAccurate, entriesNoCase map[string]string) aliases {
+func newAliases(entriesAccurate, entriesNoCase map[string]string) aliases {
 	aliases := make(aliases, 0, len(entriesAccurate)+len(entriesNoCase))
 	for urlPath, fsPath := range entriesAccurate {
 		aliases = append(aliases, createAliasAccurate(urlPath, fsPath))

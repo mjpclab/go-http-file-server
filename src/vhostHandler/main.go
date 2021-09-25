@@ -44,32 +44,7 @@ func NewHandler(
 		errorHandler.LogError(users.AddSha512(u.Username, u.Password))
 	}
 
-	// create aliases
-	aliases := serverHandler.NewAliases(p.Aliases, p.Binds)
-
-	// register handlers
-	handlers := map[string]http.Handler{}
-	for urlPath, fsPath := range p.Aliases {
-		emptyHandlerRoot := p.EmptyRoot && urlPath == "/"
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, aliases, p, users, theme, logger, errorHandler)
-	}
-
-	var handler http.Handler
-	// if there is only one handler, and is root handler, use it handler directly
-	if len(handlers) == 1 {
-		handler = handlers["/"]
-	}
-	// otherwise create a ServerMux to combine multiple handlers
-	if handler == nil {
-		serveMux := http.NewServeMux()
-		for urlPath, urlHandler := range handlers {
-			serveMux.Handle(urlPath, urlHandler)
-			if len(urlPath) > 1 {
-				serveMux.Handle(urlPath+"/", urlHandler)
-			}
-		}
-		handler = serveMux
-	}
+	handler := serverHandler.NewMultiplexer(p, users, theme, logger, errorHandler)
 
 	vhostHandler := &VhostHandler{
 		p:            p,

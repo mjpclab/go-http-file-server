@@ -50,4 +50,13 @@ func TestAliasAccurate(t *testing.T) {
 	if alias.isSuccessorOf("/hello/world/foo/bar/") {
 		t.Error()
 	}
+
+	// isPredecessorOf
+	if !alias.isPredecessorOf("/hello/world/foo/bar") {
+		t.Error()
+	}
+
+	if !alias.isPredecessorOf("/hello/world/foo/bar/") {
+		t.Error()
+	}
 }

@@ -133,17 +133,18 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewHandler(
+func newHandler(
+	p *param.Param,
 	root string,
-	emptyRoot bool,
 	urlPrefix string,
 	allAliases aliases,
-	p *param.Param,
 	users user.Users,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
-) *handler {
+) http.Handler {
+	emptyRoot := p.EmptyRoot && urlPrefix == "/"
+
 	aliases := aliases{}
 	for _, alias := range allAliases {
 		if alias.isSuccessorOf(urlPrefix) {

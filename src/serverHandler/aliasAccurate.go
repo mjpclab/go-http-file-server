@@ -29,6 +29,10 @@ func (alias aliasAccurate) isSuccessorOf(rawReqPath string) bool {
 	return len(alias.url) > len(rawReqPath) && util.HasUrlPrefixDir(alias.url, rawReqPath)
 }
 
+func (alias aliasAccurate) isPredecessorOf(rawReqPath string) bool {
+	return len(rawReqPath) > len(alias.url) && util.HasUrlPrefixDir(rawReqPath, alias.url)
+}
+
 func (alias aliasAccurate) namesEqual(a, b string) bool {
 	return a == b
 }

@@ -57,4 +57,13 @@ func TestAliasNoCase(t *testing.T) {
 	if alias.isSuccessorOf("/Hello/World/Foo/Bar/") {
 		t.Error()
 	}
+
+	// isPredecessorOf
+	if !alias.isPredecessorOf("/Hello/world/foo/bar") {
+		t.Error()
+	}
+
+	if !alias.isPredecessorOf("/hello/world/FOO/BAR/") {
+		t.Error()
+	}
 }
