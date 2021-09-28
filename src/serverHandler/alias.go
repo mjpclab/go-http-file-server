@@ -8,6 +8,7 @@ import (
 type alias interface {
 	urlPath() string
 	fsPath() string
+	caseSensitive() bool
 	isMatch(rawReqPath string) bool
 	isSuccessorOf(rawReqPath string) bool
 	isPredecessorOf(rawReqPath string) bool

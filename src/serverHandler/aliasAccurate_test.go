@@ -15,6 +15,10 @@ func TestAliasAccurate(t *testing.T) {
 	}
 
 	// isSuccessorOf
+	if !alias.isSuccessorOf("/") {
+		t.Error()
+	}
+
 	if !alias.isSuccessorOf("/hello") {
 		t.Error()
 	}
@@ -51,12 +55,28 @@ func TestAliasAccurate(t *testing.T) {
 		t.Error()
 	}
 
+	if alias.isSuccessorOf("/hi") {
+		t.Error()
+	}
+
+	if alias.isSuccessorOf("/hi/") {
+		t.Error()
+	}
+
+	if alias.isSuccessorOf("/hi/there") {
+		t.Error()
+	}
+
 	// isPredecessorOf
 	if !alias.isPredecessorOf("/hello/world/foo/bar") {
 		t.Error()
 	}
 
 	if !alias.isPredecessorOf("/hello/world/foo/bar/") {
+		t.Error()
+	}
+
+	if alias.isPredecessorOf("/hi/world/foo/bar") {
 		t.Error()
 	}
 }

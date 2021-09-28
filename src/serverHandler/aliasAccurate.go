@@ -21,6 +21,10 @@ func (alias aliasAccurate) fsPath() string {
 	return alias.fs
 }
 
+func (alias aliasAccurate) caseSensitive() bool {
+	return true
+}
+
 func (alias aliasAccurate) isMatch(rawReqPath string) bool {
 	return alias.url == rawReqPath
 }

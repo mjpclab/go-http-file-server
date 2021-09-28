@@ -22,6 +22,10 @@ func (alias aliasNoCase) fsPath() string {
 	return alias.fs
 }
 
+func (alias aliasNoCase) caseSensitive() bool {
+	return false
+}
+
 func (alias aliasNoCase) isMatch(rawReqPath string) bool {
 	return strings.EqualFold(alias.url, rawReqPath)
 }

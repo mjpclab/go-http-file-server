@@ -143,39 +143,45 @@ func (h *handler) mergeAlias(
 			continue
 		}
 
-		var aliasSubItem os.FileInfo
-		matchExisted := false
+		var fsItem os.FileInfo
 		if isChildAlias { // reached second-deepest path of alias
 			var err error
-			aliasSubItem, err = os.Stat(alias.fsPath())
-			if err == nil {
-				aliasSubItem = newRenamedFileInfo(subName, aliasSubItem)
-			} else {
+			fsItem, err = os.Stat(alias.fsPath())
+			if err != nil {
 				errs = append(errs, err)
-				aliasSubItem = newFakeFileInfo(subName, true)
 			}
 		}
 
+		matchExisted := false
 		for i, subItem := range subItems {
 			if !alias.namesEqual(subItem.Name(), subName) {
 				continue
 			}
-			matchExisted = true
-			if aliasSubItem == nil {
-				// use aliased item instead of original item
-				// to mark it as an alias, which results non-deletable
-				aliasSubItem = newRenamedFileInfo(subName, subItems[i])
+			if isVirtual(subItem) {
+				continue
 			}
+			matchExisted = true
+			var aliasSubItem os.FileInfo
+			if fsItem != nil {
+				aliasSubItem = newRenamedFileInfo(subItem.Name(), fsItem)
+			} else {
+				aliasSubItem = newRenamedFileInfo(subItem.Name(), subItem)
+			}
+			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems[i] = aliasSubItem
-			break
+			if alias.caseSensitive() {
+				break
+			}
 		}
-
-		if aliasSubItem == nil {
-			aliasSubItem = newFakeFileInfo(subName, true)
-		}
-		aliasSubItems = append(aliasSubItems, aliasSubItem)
 
 		if !matchExisted {
+			var aliasSubItem os.FileInfo
+			if fsItem != nil {
+				aliasSubItem = newRenamedFileInfo(subName, fsItem)
+			} else {
+				aliasSubItem = newFakeFileInfo(subName, true)
+			}
+			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems = append(subItems, aliasSubItem)
 		}
 	}
