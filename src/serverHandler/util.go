@@ -69,11 +69,28 @@ func getCompressWriter(w http.ResponseWriter, r *http.Request) (wr io.WriteClose
 	return wr, encoding, true
 }
 
-func isVirtual(info os.FileInfo) bool {
-	if _, isRenamedInfo := info.(*renamedFileInfo); isRenamedInfo {
-		return true
+func createVirtualFileInfo(name string, refItem os.FileInfo, caseSensitive bool) os.FileInfo {
+	if refItem != nil {
+		if caseSensitive {
+			return createRenamedFileInfo(name, refItem)
+		} else {
+			return createRenamedFileInfoNoCase(name, refItem)
+		}
+	} else {
+		if caseSensitive {
+			return createPlaceholderFileInfo(name, true)
+		} else {
+			return createPlaceholderFileInfoNoCase(name, true)
+		}
 	}
-	if _, isFakeInfo := info.(*fakeFileInfo); isFakeInfo {
+}
+
+func isVirtual(info os.FileInfo) bool {
+	switch info.(type) {
+	case placeholderFileInfo:
+	case renamedFileInfo:
+	case placeholderFileInfoNoCase:
+	case renamedFileInfoNoCase:
 		return true
 	}
 	return false

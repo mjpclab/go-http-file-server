@@ -142,6 +142,7 @@ func (h *handler) mergeAlias(
 		if !ok {
 			continue
 		}
+		aliasCaseSensitive := alias.caseSensitive()
 
 		var fsItem os.FileInfo
 		if isChildAlias { // reached second-deepest path of alias
@@ -161,26 +162,23 @@ func (h *handler) mergeAlias(
 				continue
 			}
 			matchExisted = true
-			var aliasSubItem os.FileInfo
+			var baseItem os.FileInfo
 			if fsItem != nil {
-				aliasSubItem = newRenamedFileInfo(subItem.Name(), fsItem)
+				baseItem = fsItem
 			} else {
-				aliasSubItem = newRenamedFileInfo(subItem.Name(), subItem)
+				baseItem = subItem
 			}
+			aliasSubItem := createVirtualFileInfo(subItem.Name(), baseItem, aliasCaseSensitive)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems[i] = aliasSubItem
-			if alias.caseSensitive() {
+			if aliasCaseSensitive {
 				break
 			}
 		}
 
 		if !matchExisted {
-			var aliasSubItem os.FileInfo
-			if fsItem != nil {
-				aliasSubItem = newRenamedFileInfo(subName, fsItem)
-			} else {
-				aliasSubItem = newFakeFileInfo(subName, true)
-			}
+			// fsItem could be nil
+			aliasSubItem := createVirtualFileInfo(subName, fsItem, aliasCaseSensitive)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems = append(subItems, aliasSubItem)
 		}

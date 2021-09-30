@@ -63,7 +63,7 @@ func (h *handler) visitTreeNode(
 				if os.IsExist(err) {
 					return err
 				}
-				fInfo = newFakeFileInfo(path.Base(fsPath), true) // prefix path for alias
+				fInfo = createPlaceholderFileInfo(path.Base(fsPath), true) // prefix path for alias
 			} else {
 				fInfo, err = f.Stat()
 				if h.errHandler.LogError(err) {
@@ -71,7 +71,7 @@ func (h *handler) visitTreeNode(
 				}
 			}
 		} else {
-			fInfo = newFakeFileInfo(path.Base(fsPath), true)
+			fInfo = createPlaceholderFileInfo(path.Base(fsPath), true)
 		}
 
 		if len(relPath) > 0 {
