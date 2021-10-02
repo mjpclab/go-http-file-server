@@ -18,15 +18,6 @@ func needResponseBody(method string) bool {
 		method != http.MethodTrace
 }
 
-func containsItem(infos []os.FileInfo, name string) bool {
-	for i := range infos {
-		if infos[i].Name() == name {
-			return true
-		}
-	}
-	return false
-}
-
 func getCleanFilePath(requestPath string) (filePath string, ok bool) {
 	filePath = path.Clean(requestPath)
 	ok = filePath == path.Base(filePath)
@@ -87,11 +78,42 @@ func createVirtualFileInfo(name string, refItem os.FileInfo, caseSensitive bool)
 
 func isVirtual(info os.FileInfo) bool {
 	switch info.(type) {
-	case placeholderFileInfo:
-	case renamedFileInfo:
-	case placeholderFileInfoNoCase:
-	case renamedFileInfoNoCase:
+	case placeholderFileInfo, renamedFileInfo, placeholderFileInfoNoCase, renamedFileInfoNoCase:
 		return true
+	}
+	return false
+}
+
+func isNameCaseSensitive(info os.FileInfo) bool {
+	switch info.(type) {
+	case placeholderFileInfoNoCase, renamedFileInfoNoCase:
+		return false
+	}
+	return true
+}
+
+func isNameEqualAccurate(a, b string) bool {
+	return a == b
+}
+
+func isNameEqualNoCase(a, b string) bool {
+	return strings.EqualFold(a, b)
+}
+
+func getIsNameEqualFunc(info os.FileInfo) func(a, b string) bool {
+	if isNameCaseSensitive(info) {
+		return isNameEqualAccurate
+	} else {
+		return isNameEqualNoCase
+	}
+}
+
+func containsItem(infos []os.FileInfo, name string) bool {
+	for i := range infos {
+		isNameEqual := getIsNameEqualFunc(infos[i])
+		if isNameEqual(infos[i].Name(), name) {
+			return true
+		}
 	}
 	return false
 }

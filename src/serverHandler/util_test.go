@@ -1,6 +1,9 @@
 package serverHandler
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestGetCleanFilePath(t *testing.T) {
 	var cleanPath string
@@ -69,5 +72,56 @@ func TestGetCleanDirFilePath(t *testing.T) {
 	cleanPath, ok = getCleanDirFilePath("../file5")
 	if ok {
 		t.Error(cleanPath, ok)
+	}
+}
+
+func TestIsVirtual(t *testing.T) {
+	var info os.FileInfo
+
+	info = createPlaceholderFileInfo("foo", true)
+	if !isVirtual(info) {
+		t.Error()
+	}
+	info = createPlaceholderFileInfoNoCase("foo", true)
+	if !isVirtual(info) {
+		t.Error()
+	}
+
+	baseInfo := dummyFileInfo{name: "foo"}
+	if isVirtual(baseInfo) {
+		t.Error()
+	}
+
+	info = createRenamedFileInfo("bar", baseInfo)
+	if !isVirtual(info) {
+		t.Error()
+	}
+	info = createRenamedFileInfoNoCase("bar", baseInfo)
+	if !isVirtual(info) {
+		t.Error()
+	}
+}
+
+func TestIsNameCaseSensitive(t *testing.T) {
+	var info os.FileInfo
+
+	info = createPlaceholderFileInfo("foo", true)
+	if !isNameCaseSensitive(info) {
+		t.Error()
+	}
+	info = createPlaceholderFileInfoNoCase("foo", true)
+	if isNameCaseSensitive(info) {
+		t.Error()
+	}
+
+	baseInfo := dummyFileInfo{name: "foo"}
+
+	info = createRenamedFileInfo("bar", baseInfo)
+	if !isNameCaseSensitive(info) {
+		t.Error()
+	}
+	info = createRenamedFileInfoNoCase("bar", baseInfo)
+	if isNameCaseSensitive(info) {
+		t.Error()
 	}
 }

@@ -26,7 +26,7 @@ func (alias aliasAccurate) caseSensitive() bool {
 }
 
 func (alias aliasAccurate) isMatch(rawReqPath string) bool {
-	return alias.url == rawReqPath
+	return isNameEqualAccurate(alias.url, rawReqPath)
 }
 
 func (alias aliasAccurate) isSuccessorOf(rawReqPath string) bool {
@@ -38,5 +38,5 @@ func (alias aliasAccurate) isPredecessorOf(rawReqPath string) bool {
 }
 
 func (alias aliasAccurate) namesEqual(a, b string) bool {
-	return a == b
+	return isNameEqualAccurate(a, b)
 }

@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"../util"
-	"strings"
 )
 
 type aliasNoCase struct {
@@ -27,7 +26,7 @@ func (alias aliasNoCase) caseSensitive() bool {
 }
 
 func (alias aliasNoCase) isMatch(rawReqPath string) bool {
-	return strings.EqualFold(alias.url, rawReqPath)
+	return isNameEqualNoCase(alias.url, rawReqPath)
 }
 
 func (alias aliasNoCase) isSuccessorOf(rawReqPath string) bool {
@@ -39,5 +38,5 @@ func (alias aliasNoCase) isPredecessorOf(rawReqPath string) bool {
 }
 
 func (alias aliasNoCase) namesEqual(a, b string) bool {
-	return strings.EqualFold(a, b)
+	return isNameEqualNoCase(a, b)
 }
