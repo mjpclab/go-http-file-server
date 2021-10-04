@@ -8,7 +8,6 @@ import (
 	"../tpl"
 	"../user"
 	"net/http"
-	"os"
 )
 
 type VhostHandler struct {
@@ -45,39 +44,7 @@ func NewHandler(
 		errorHandler.LogError(users.AddSha512(u.Username, u.Password))
 	}
 
-	// register handlers
-	aliases := p.Aliases
-	_, hasRootAlias := aliases["/"]
-	emptyRoot := false
-	if !hasRootAlias {
-		emptyRoot = p.EmptyRoot
-		if emptyRoot {
-			aliases["/"] = os.DevNull
-		} else {
-			aliases["/"] = p.Root
-		}
-	}
-
-	handlers := map[string]http.Handler{}
-	for urlPath, fsPath := range aliases {
-		emptyHandlerRoot := emptyRoot && urlPath == "/"
-		handlers[urlPath] = serverHandler.NewHandler(fsPath, emptyHandlerRoot, urlPath, p, users, theme, logger, errorHandler)
-	}
-
-	var handler http.Handler
-	if len(handlers) == 1 {
-		handler = handlers["/"]
-	}
-	if handler == nil {
-		serveMux := http.NewServeMux()
-		for urlPath, urlHandler := range handlers {
-			serveMux.Handle(urlPath, urlHandler)
-			if len(urlPath) > 1 {
-				serveMux.Handle(urlPath+"/", urlHandler)
-			}
-		}
-		handler = serveMux
-	}
+	handler := serverHandler.NewMultiplexer(p, users, theme, logger, errorHandler)
 
 	vhostHandler := &VhostHandler{
 		p:            p,

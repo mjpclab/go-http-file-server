@@ -43,7 +43,7 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *response
 		return
 	}
 
-	selections, ok := h.getArchiveSelections(r)
+	selections, ok := h.normalizeArchiveSelections(r)
 	if !ok {
 		return
 	}

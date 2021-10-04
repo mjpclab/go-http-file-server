@@ -53,7 +53,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 		return
 	}
 
-	selections, ok := h.getArchiveSelections(r)
+	selections, ok := h.normalizeArchiveSelections(r)
 	if !ok {
 		return
 	}
@@ -83,7 +83,7 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *response
 		return
 	}
 
-	selections, ok := h.getArchiveSelections(r)
+	selections, ok := h.normalizeArchiveSelections(r)
 	if !ok {
 		return
 	}

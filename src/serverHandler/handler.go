@@ -133,19 +133,23 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewHandler(
-	root string,
-	emptyRoot bool,
-	urlPrefix string,
+func newHandler(
 	p *param.Param,
+	root string,
+	urlPrefix string,
+	allAliases aliases,
 	users user.Users,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
-) *handler {
+) http.Handler {
+	emptyRoot := p.EmptyRoot && urlPrefix == "/"
+
 	aliases := aliases{}
-	for urlPath, fsPath := range p.Aliases {
-		aliases = append(aliases, &alias{urlPath, fsPath})
+	for _, alias := range allAliases {
+		if alias.isSuccessorOf(urlPrefix) {
+			aliases = append(aliases, alias)
+		}
 	}
 
 	h := &handler{
@@ -156,9 +160,9 @@ func NewHandler(
 		httpsPort:   p.HttpsPort,
 		defaultSort: p.DefaultSort,
 		urlPrefix:   urlPrefix,
+		aliases:     aliases,
 
 		dirIndexes: p.DirIndexes,
-		aliases:    aliases,
 
 		globalHeaders: p.GlobalHeaders,
 
