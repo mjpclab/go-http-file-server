@@ -158,10 +158,10 @@ func (h *handler) mergeAlias(
 			if !alias.namesEqual(subItem.Name(), subName) {
 				continue
 			}
+			matchExisted = true
 			if isVirtual(subItem) {
 				continue
 			}
-			matchExisted = true
 			var baseItem os.FileInfo
 			if fsItem != nil {
 				baseItem = fsItem
