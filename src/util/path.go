@@ -20,40 +20,71 @@ func CleanUrlPath(urlPath string) string {
 }
 
 func HasUrlPrefixDir(urlPath, prefix string) bool {
-	if urlPath == prefix {
-		return true
-	}
+	return hasPrefixDir(urlPath, prefix, '/')
+}
 
-	if prefix[len(prefix)-1] != '/' {
-		prefix = prefix + "/"
-	}
-
-	return strings.HasPrefix(urlPath, prefix)
+func HasUrlPrefixDirNoCase(urlPath, prefix string) bool {
+	return hasPrefixDirNoCase(urlPath, prefix, '/')
 }
 
 func HasFsPrefixDir(fsPath, prefix string) bool {
-	if fsPath == prefix {
+	return hasPrefixDir(fsPath, prefix, filepath.Separator)
+}
+
+func hasPrefixDir(absPath, prefix string, separator byte) bool {
+	if absPath == prefix {
 		return true
 	}
 
-	if prefix[len(prefix)-1] != filepath.Separator {
-		prefix = prefix + string(filepath.Separator)
+	prefixMaxIndex := len(prefix) - 1
+
+	if len(absPath) < len(prefix) {
+		if len(absPath) == prefixMaxIndex && prefix[prefixMaxIndex] == separator && absPath == prefix[:prefixMaxIndex] {
+			return true
+		}
+		return false
 	}
 
-	return strings.HasPrefix(fsPath, prefix)
+	if absPath[:len(prefix)] != prefix {
+		return false
+	}
+
+	if prefix[prefixMaxIndex] == separator {
+		return true
+	}
+
+	if absPath[len(prefix)] == separator {
+		return true
+	}
+
+	return false
 }
 
-func NormalizeFsPath(input string) (string, error) {
-	abs, err := filepath.Abs(input)
-	if err != nil {
-		return abs, err
+func hasPrefixDirNoCase(absPath, prefix string, separator byte) bool {
+	if len(absPath) == len(prefix) {
+		return strings.EqualFold(absPath, prefix)
 	}
 
-	volume := filepath.VolumeName(abs)
-	if len(volume) > 0 {
-		// assume on windows platform, ignore ascii case in path name
-		abs = AsciiToLowerCase(abs)
+	prefixMaxIndex := len(prefix) - 1
+
+	if len(absPath) < len(prefix) {
+		if len(absPath) == prefixMaxIndex && prefix[prefixMaxIndex] == separator && strings.EqualFold(absPath, prefix[:prefixMaxIndex]) {
+			return true
+		}
+		return false
 	}
 
-	return abs, err
+	if !strings.EqualFold(absPath[:len(prefix)], prefix) {
+		return false
+	}
+
+	if prefix[prefixMaxIndex] == separator {
+		return true
+	}
+
+	if absPath[len(prefix)] == separator {
+		return true
+	}
+
+	return false
 }

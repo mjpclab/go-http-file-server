@@ -12,15 +12,15 @@ cleanup
 
 file1="$fs"/uploaded/1/x.tmp
 echo -n 'uploaded/1/1.tmp' > "$file1"
-ls "$file1" &> /dev/null || fail "$file1 not exists"
+[ -e "$file1" ] || fail "$file1 should exists"
 curl_head_status 'http://127.0.0.1:3003/?delete&name=x.tmp' > /dev/null
-ls "$file1" &> /dev/null || fail "$file1 not exists"
+[ -e "$file1" ] || fail "$file1 should exists"
 
 file2="$fs"/uploaded/1/y.tmp
-echo -n 'uploaded/1/1.tmp' > "$file2"
-ls "$file2" &> /dev/null || fail "$file2 not exists"
-curl_head_status 'http://127.0.0.1:3003/?delete&name=x.tmp' > /dev/null
-ls "$file2" &> /dev/null || fail "$file2 not exists"
+echo -n 'uploaded/1/y.tmp' > "$file2"
+[ -e "$file2" ] || fail "$file2 should exists"
+curl_head_status 'http://127.0.0.1:3003/?delete&name=y.tmp' > /dev/null
+[ -e "$file2" ] || fail "$file2 should exists"
 
 cleanup
 jobs -p | xargs kill

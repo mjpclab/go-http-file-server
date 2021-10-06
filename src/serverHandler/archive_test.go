@@ -1,16 +1,24 @@
 package serverHandler
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestGetMatchInfo(t *testing.T) {
 	var matchName, matchPrefix bool
 	var childList []string
+	var info os.FileInfo
 
 	var expect = func(isMatchName, isMatchPrefix bool, isChildList ...string) bool {
 		if isMatchName != matchName {
 			return false
 		}
 		if isMatchPrefix != matchPrefix {
+			return false
+		}
+
+		if len(isChildList) != len(childList) {
 			return false
 		}
 
@@ -29,48 +37,63 @@ func TestGetMatchInfo(t *testing.T) {
 		return true
 	}
 
-	matchName, matchPrefix, childList = matchSelection("", nil)
+	info = createPlaceholderFileInfo("", true)
+	matchName, matchPrefix, childList = matchSelection(info, nil)
 	if !expect(true, false) {
 		t.Error(matchName, matchPrefix, childList)
 	}
 
-	matchName, matchPrefix, childList = matchSelection("", []string{})
+	info = createPlaceholderFileInfo("", true)
+	matchName, matchPrefix, childList = matchSelection(info, []string{})
 	if !expect(true, false) {
 		t.Error(matchName, matchPrefix, childList)
 	}
 
-	matchName, matchPrefix, childList = matchSelection("", []string{"dir-x"})
+	info = createPlaceholderFileInfo("", true)
+	matchName, matchPrefix, childList = matchSelection(info, []string{"dir-x"})
 	if !expect(false, false) {
 		t.Error(matchName, matchPrefix, childList)
 	}
 
-	matchName, matchPrefix, childList = matchSelection("dir-a", nil)
+	info = createPlaceholderFileInfo("dir-a", true)
+	matchName, matchPrefix, childList = matchSelection(info, nil)
 	if !expect(true, false) {
 		t.Error(matchName, matchPrefix, childList)
 	}
 
-	matchName, matchPrefix, childList = matchSelection("dir-a", []string{"dir-x"})
+	info = createPlaceholderFileInfo("dir-a", true)
+	matchName, matchPrefix, childList = matchSelection(info, []string{"dir-x"})
 	if !expect(false, false) {
 		t.Error(matchName, matchPrefix, childList)
 	}
 
-	matchName, matchPrefix, childList = matchSelection("dir-a", []string{"dir-a"})
+	info = createPlaceholderFileInfo("dir-a", true)
+	matchName, matchPrefix, childList = matchSelection(info, []string{"dir-a"})
 	if !expect(true, false) {
 		t.Error(matchName, matchPrefix, childList)
 	}
 
-	matchName, matchPrefix, childList = matchSelection("dir-a", []string{"dir-a/dir-a1"})
+	info = createPlaceholderFileInfo("dir-a", true)
+	matchName, matchPrefix, childList = matchSelection(info, []string{"dir-a/dir-a1"})
 	if !expect(false, true, "dir-a1") {
 		t.Error(matchName, matchPrefix, childList)
 	}
 
-	matchName, matchPrefix, childList = matchSelection("dir-a", []string{"dir-a/dir-a1", "dir-a/dir-a2", "dir-a/dir-a1/dir-a11", "dir-b"})
+	info = createPlaceholderFileInfo("dir-a", true)
+	matchName, matchPrefix, childList = matchSelection(info, []string{"dir-a/dir-a1", "dir-a/dir-a2", "dir-a/dir-a1/dir-a11", "dir-b"})
 	if !expect(false, true, "dir-a1", "dir-a2", "dir-a1/dir-a11") {
 		t.Error(matchName, matchPrefix, childList)
 	}
 
-	matchName, matchPrefix, childList = matchSelection("dir-a", []string{"dir-a", "dir-a/dir-a1"})
-	if !expect(true, true, "dir-a1") {
+	info = createPlaceholderFileInfoNoCase("dir-a", true)
+	matchName, matchPrefix, childList = matchSelection(info, []string{"Dir-a/dir-a1"})
+	if !expect(false, true, "dir-a1") {
+		t.Error(matchName, matchPrefix, childList)
+	}
+
+	info = createPlaceholderFileInfoNoCase("dir-a", true)
+	matchName, matchPrefix, childList = matchSelection(info, []string{"Dir-a/dir-a1", "dir-a/dir-a2", "dir-a/dir-a1/dir-a11", "dir-b"})
+	if !expect(false, true, "dir-a1", "dir-a2", "dir-a1/dir-a11") {
 		t.Error(matchName, matchPrefix, childList)
 	}
 }

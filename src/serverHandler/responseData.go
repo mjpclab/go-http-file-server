@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 )
 
@@ -140,65 +139,48 @@ func (h *handler) mergeAlias(
 	}
 
 	for _, alias := range h.aliases {
-		aliasUrlPath := alias.urlPath
-		aliasFsPath := alias.fsPath
-
-		if len(aliasUrlPath) <= len(rawRequestPath) {
+		subName, isChildAlias, ok := getAliasSubPart(alias, rawRequestPath)
+		if !ok {
 			continue
 		}
+		aliasCaseSensitive := alias.caseSensitive()
 
-		suffixIndex := len(rawRequestPath)
-		aliasPrefix := aliasUrlPath[:suffixIndex]
-		aliasSuffix := aliasUrlPath[suffixIndex:]
-
-		if aliasPrefix != rawRequestPath {
-			continue
-		}
-
-		if len(aliasPrefix) != 1 && aliasSuffix[0] != '/' {
-			// aliasUrlPath doesn't cover the whole directory name
-			// e.g:
-			// rawReqPath == "/abc/def/ghi"
-			// aliasPrefix == "/abc/de"
-			continue
-		}
-		if aliasSuffix[0] == '/' {
-			aliasSuffix = aliasSuffix[1:]
-		}
-
-		slashIndex := strings.Index(aliasSuffix, "/")
-		var nextName string
-		if slashIndex >= 0 {
-			nextName = aliasSuffix[:slashIndex]
-		} else {
-			nextName = aliasSuffix
-		}
-
-		var aliasSubItem os.FileInfo
-		if path.Dir(aliasUrlPath) == rawRequestPath { // reached second deepest path of alias
+		var fsItem os.FileInfo
+		if isChildAlias { // reached second-deepest path of alias
 			var err error
-			aliasSubItem, err = os.Stat(aliasFsPath)
-			if err == nil {
-				aliasSubItem = newRenamedFileInfo(nextName, aliasSubItem)
-			} else {
+			fsItem, err = os.Stat(alias.fsPath())
+			if err != nil {
 				errs = append(errs, err)
-				aliasSubItem = newFakeFileInfo(nextName, true)
 			}
-		} else {
-			aliasSubItem = newFakeFileInfo(nextName, true)
 		}
-		aliasSubItems = append(aliasSubItems, aliasSubItem)
 
-		replaced := false
+		matchExisted := false
 		for i, subItem := range subItems {
-			if subItem.Name() == nextName {
-				subItems[i] = aliasSubItem
-				replaced = true
+			if !alias.namesEqual(subItem.Name(), subName) {
+				continue
+			}
+			matchExisted = true
+			if isVirtual(subItem) {
+				continue
+			}
+			var baseItem os.FileInfo
+			if fsItem != nil {
+				baseItem = fsItem
+			} else {
+				baseItem = subItem
+			}
+			aliasSubItem := createVirtualFileInfo(subItem.Name(), baseItem, aliasCaseSensitive)
+			aliasSubItems = append(aliasSubItems, aliasSubItem)
+			subItems[i] = aliasSubItem
+			if aliasCaseSensitive {
 				break
 			}
 		}
 
-		if !replaced {
+		if !matchExisted {
+			// fsItem could be nil
+			aliasSubItem := createVirtualFileInfo(subName, fsItem, aliasCaseSensitive)
+			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems = append(subItems, aliasSubItem)
 		}
 	}
@@ -244,10 +226,10 @@ func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInf
 
 	for _, index := range h.dirIndexes {
 		for _, alias := range h.aliases {
-			if path.Clean(rawReqPath+"/"+index) != alias.urlPath {
+			if !alias.isMatch(path.Clean(rawReqPath + "/" + index)) {
 				continue
 			}
-			file, item, err = stat(alias.fsPath, true)
+			file, item, err = stat(alias.fsPath(), true)
 			if err != nil && file != nil {
 				file.Close()
 			}
@@ -298,10 +280,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		rootRelPath = "./"
 	}
 
-	reqFsPath, _absErr := util.NormalizeFsPath(h.root + reqPath)
-	if _absErr != nil {
-		reqFsPath = filepath.Clean(h.root + reqPath)
-	}
+	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
 
 	file, item, _statErr := stat(reqFsPath, !h.emptyRoot)
 	if _statErr != nil {
