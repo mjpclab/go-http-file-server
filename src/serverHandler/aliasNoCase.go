@@ -26,7 +26,7 @@ func (alias aliasNoCase) caseSensitive() bool {
 }
 
 func (alias aliasNoCase) isMatch(rawReqPath string) bool {
-	return isNameEqualNoCase(alias.url, rawReqPath)
+	return util.IsStrEqualNoCase(alias.url, rawReqPath)
 }
 
 func (alias aliasNoCase) isSuccessorOf(rawReqPath string) bool {
@@ -38,5 +38,5 @@ func (alias aliasNoCase) isPredecessorOf(rawReqPath string) bool {
 }
 
 func (alias aliasNoCase) namesEqual(a, b string) bool {
-	return isNameEqualNoCase(a, b)
+	return util.IsStrEqualNoCase(a, b)
 }
