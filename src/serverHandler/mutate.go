@@ -15,11 +15,11 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 		}
 	case data.IsMkdir:
 		if data.CanMkdir && !h.errHandler.LogError(r.ParseForm()) {
-			success = h.mkdirs(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
+			success = h.mkdirs(data.AuthUserName, h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	case data.IsDelete:
 		if data.CanDelete && !h.errHandler.LogError(r.ParseForm()) {
-			success = h.deleteItems(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
+			success = h.deleteItems(data.AuthUserName, h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	}
 

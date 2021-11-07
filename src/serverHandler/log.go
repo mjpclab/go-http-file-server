@@ -17,6 +17,27 @@ func (h *handler) logRequest(r *http.Request) {
 	h.logger.LogAccess(payload)
 }
 
+func (h *handler) logMutate(username, action, detail string, r *http.Request) {
+	if !h.logger.CanLogAccess() {
+		return
+	}
+
+	buffer := bytes.NewBuffer(make([]byte, 0, LOG_BUF_SIZE))
+
+	buffer.WriteString(r.RemoteAddr)
+	if len(username) > 0 {
+		buffer.WriteString(" (")
+		buffer.WriteString(username)
+		buffer.WriteByte(')')
+	}
+	buffer.WriteByte(' ')
+	buffer.WriteString(action)
+	buffer.WriteString(": ")
+	buffer.WriteString(detail)
+
+	h.logger.LogAccess(buffer.Bytes())
+}
+
 func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
