@@ -24,7 +24,7 @@ func NewHandler(
 	errorHandler *serverErrHandler.ErrHandler,
 	theme tpl.Theme,
 ) *VhostHandler {
-	users := user.NewUsers()
+	users := user.NewList()
 	for _, u := range p.UsersPlain {
 		errorHandler.LogError(users.AddPlain(u.Username, u.Password))
 	}
@@ -44,7 +44,7 @@ func NewHandler(
 		errorHandler.LogError(users.AddSha512(u.Username, u.Password))
 	}
 
-	handler := serverHandler.NewMultiplexer(p, users, theme, logger, errorHandler)
+	handler := serverHandler.NewMultiplexer(p, *users, theme, logger, errorHandler)
 
 	vhostHandler := &VhostHandler{
 		p:            p,

@@ -48,7 +48,7 @@ type handler struct {
 	globalAuth bool
 	authUrls   []string
 	authDirs   []string
-	users      user.Users
+	users      user.List
 
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
@@ -138,7 +138,7 @@ func newHandler(
 	root string,
 	urlPrefix string,
 	allAliases aliases,
-	users user.Users,
+	users user.List,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
