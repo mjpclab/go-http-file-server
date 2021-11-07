@@ -17,7 +17,7 @@ func (h *handler) logRequest(r *http.Request) {
 	h.logger.LogAccess(payload)
 }
 
-func (h *handler) logUpload(filename, fsPath string, r *http.Request) {
+func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
@@ -25,8 +25,12 @@ func (h *handler) logUpload(filename, fsPath string, r *http.Request) {
 	buffer := bytes.NewBuffer(make([]byte, 0, LOG_BUF_SIZE))
 
 	buffer.WriteString(r.RemoteAddr)
-	buffer.WriteByte(' ')
-	buffer.WriteString("save upload file: ")
+	if len(username) > 0 {
+		buffer.WriteString(" (")
+		buffer.WriteString(username)
+		buffer.WriteByte(')')
+	}
+	buffer.WriteString(" upload: ")
 	buffer.WriteString(filename)
 	buffer.WriteString(" -> ")
 	buffer.WriteString(fsPath)
@@ -42,8 +46,7 @@ func (h *handler) logArchive(filename, relPath string, r *http.Request) {
 	buffer := bytes.NewBuffer(make([]byte, 0, LOG_BUF_SIZE))
 
 	buffer.WriteString(r.RemoteAddr)
-	buffer.WriteByte(' ')
-	buffer.WriteString("archive file: \"")
+	buffer.WriteString(" archive file: \"")
 	buffer.WriteString(filename)
 	buffer.WriteString("\" <- ")
 	buffer.WriteString(relPath)

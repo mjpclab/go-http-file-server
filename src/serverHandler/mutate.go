@@ -11,7 +11,7 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 	switch {
 	case data.IsUpload:
 		if data.CanUpload && r.Method == http.MethodPost {
-			success = h.saveUploadFiles(h.root+data.handlerReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
+			success = h.saveUploadFiles(data.AuthUserName, h.root+data.handlerReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
 		}
 	case data.IsMkdir:
 		if data.CanMkdir && !h.errHandler.LogError(r.ParseForm()) {
