@@ -24,7 +24,7 @@ func NewHandler(
 	errorHandler *serverErrHandler.ErrHandler,
 	theme tpl.Theme,
 ) *VhostHandler {
-	users := user.NewList()
+	users := user.NewList(p.UserMatchCase)
 	for _, u := range p.UsersPlain {
 		errorHandler.LogError(users.AddPlain(u.Username, u.Password))
 	}

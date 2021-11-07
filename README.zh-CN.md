@@ -84,7 +84,7 @@ ghfs --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.ke
 
 ## 使用方法
 ```
-server [选项]
+ghfs [选项]
 
 -l|--listen <IP|端口|:端口|IP:端口|socket> ...
     指定服务器要侦听的IP和端口，例如“:80”或“127.0.0.1:80”。
@@ -207,6 +207,8 @@ server [选项]
 --user-sha256 [<用户名>]:<sha256密码> ...
 --user-sha512 [<用户名>]:<sha512密码> ...
     指定http基本验证的用户，对密码使用特定的编码。
+--user-match-case
+    用户名区分大小写。
 
 -c|--cert <证书文件>
     指定TLS证书文件。

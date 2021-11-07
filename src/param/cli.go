@@ -116,6 +116,9 @@ func init() {
 	err = options.AddFlagValues("userssha512", "--user-sha512", "", nil, "user info: <username>:<sha512-password>")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlag("usermatchcase", "--user-match-case", "GHFS_USER_MATCH_CASE", "username should be case sensitive")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
 	serverErrHandler.CheckFatal(err)
 
@@ -252,6 +255,7 @@ func doParseCli() []*Param {
 		param.GlobalArchive = result.HasKey("globalarchive")
 		param.GlobalCors = result.HasKey("globalcors")
 		param.GlobalAuth = result.HasKey("globalauth")
+		param.UserMatchCase = result.HasKey("usermatchcase")
 		param.HostNames, _ = result.GetStrings("hostnames")
 		param.Theme, _ = result.GetString("theme")
 		param.ThemeDir, _ = result.GetString("themedir")
