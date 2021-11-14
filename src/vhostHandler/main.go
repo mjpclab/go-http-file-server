@@ -55,12 +55,3 @@ func NewHandler(
 
 	return vhostHandler
 }
-
-func (m *VhostHandler) ReOpenLog() {
-	errors := m.logger.ReOpen()
-	serverErrHandler.CheckError(errors...)
-}
-
-func (m *VhostHandler) Close() {
-	m.logger.Close()
-}

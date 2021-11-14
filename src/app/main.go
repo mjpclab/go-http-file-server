@@ -14,38 +14,33 @@ import (
 type App struct {
 	vhostSvc      *goVirtualHost.Service
 	vhostHandlers []*vhostHandler.VhostHandler
+	logFileMan    *serverLog.FileMan
 }
 
 func (app *App) Open() {
 	errors := app.vhostSvc.Open()
-	for _, err := range errors {
-		serverErrHandler.CheckError(err)
-	}
+	serverErrHandler.CheckError(errors...)
 }
 
 func (app *App) Close() {
-	for _, vhHandler := range app.vhostHandlers {
-		vhHandler.Close()
-	}
-
 	app.vhostSvc.Close()
+	app.logFileMan.Close()
 }
 
 func (app *App) ReOpenLog() {
-	for _, vhhandler := range app.vhostHandlers {
-		vhhandler.ReOpenLog()
-	}
+	errors := app.logFileMan.Reopen()
+	serverErrHandler.CheckFatal(errors...)
 }
 
 func NewApp(params []*param.Param) *App {
 	vhSvc := goVirtualHost.NewService()
 	vhHandlers := make([]*vhostHandler.VhostHandler, 0, len(params))
+	logFileMan := serverLog.NewFileMan()
 	themes := make(map[string]tpl.Theme)
 
 	for _, p := range params {
 		// logger
-		logger := serverLog.NewLogger(p.AccessLog, p.ErrorLog)
-		errors := logger.Open()
+		logger, errors := logFileMan.NewLogger(p.AccessLog, p.ErrorLog)
 		serverErrHandler.CheckFatal(errors...)
 
 		// ErrHandler
@@ -102,5 +97,6 @@ func NewApp(params []*param.Param) *App {
 	return &App{
 		vhostSvc:      vhSvc,
 		vhostHandlers: vhHandlers,
+		logFileMan:    logFileMan,
 	}
 }
