@@ -10,6 +10,42 @@
 	var Esc = 'Esc';
 	var Space = ' ';
 
+	var hasClass, addClass, removeClass;
+	if (document.body.classList) {
+		hasClass = function (el, className) {
+			return el && el.classList.contains(className);
+		}
+		addClass = function (el, className) {
+			el && el.classList.add(className);
+		}
+		removeClass = function (el, className) {
+			el && el.classList.remove(className);
+		}
+	} else {
+		hasClass = function (el, className) {
+			if (!el) return;
+			var reClassName = new RegExp('\\b' + className + '\\b');
+			return reClassName.test(el.className);
+		}
+		addClass = function (el, className) {
+			if (!el) return;
+			var originalClassName = el.className;
+			var reClassName = new RegExp('\\b' + className + '\\b');
+			if (!reClassName.test(originalClassName)) {
+				el.className = originalClassName + ' ' + className;
+			}
+		}
+		removeClass = function (el, className) {
+			if (!el) return;
+			var originalClassName = el.className;
+			var reClassName = new RegExp('^\\s*' + className + '\\s+|\\s+' + className + '\\b', 'g');
+			var newClassName = originalClassName.replace(reClassName, '');
+			if (originalClassName !== newClassName) {
+				el.className = newClassName;
+			}
+		}
+	}
+
 	function enableFilter() {
 		if (!document.querySelector) {
 			var filter = document.getElementById && document.getElementById('panel-filter');
@@ -24,7 +60,7 @@
 		if (!filter) {
 			return;
 		}
-		if (!filter.classList || !filter.addEventListener) {
+		if (!filter.addEventListener) {
 			filter.className += ' none';
 			return;
 		}
@@ -59,7 +95,7 @@
 				selector = selectorItemNone;
 				items = document.body.querySelectorAll(selector);
 				for (i = items.length - 1; i >= 0; i--) {
-					items[i].classList.remove(classNone);
+					removeClass(items[i], classNone);
 				}
 			} else {
 				if (clear) {
@@ -78,9 +114,9 @@
 					var item = items[i];
 					var name = item.querySelector('.name');
 					if (name && name.textContent.toLowerCase().indexOf(filterText) < 0) {
-						item.classList.add(classNone);
+						addClass(item, classNone);
 					} else {
-						item.classList.remove(classNone);
+						removeClass(item, classNone);
 					}
 				}
 			}
@@ -143,7 +179,6 @@
 		if (
 			!document.querySelector ||
 			!document.addEventListener ||
-			!document.body.classList ||
 			!document.body.parentElement
 		) {
 			return;
@@ -191,8 +226,8 @@
 					}
 				}
 			} while (siblingLI !== startLI && (
-				siblingLI.classList.contains(classNone) ||
-				siblingLI.classList.contains(classHeader)
+				hasClass(siblingLI, classNone) ||
+				hasClass(siblingLI, classHeader)
 			));
 
 			if (siblingLI) {
@@ -416,7 +451,7 @@
 	}
 
 	function enhanceUpload() {
-		if (!document.querySelector || !document.addEventListener || !document.body.classList) {
+		if (!document.querySelector || !document.addEventListener) {
 			return;
 		}
 
@@ -446,14 +481,6 @@
 		var optDirFile = uploadType.querySelector('.' + dirFile);
 		var optInnerDirFile = uploadType.querySelector('.' + innerDirFile);
 		var optActive = optFile;
-
-		function addClass(ele, className) {
-			ele && ele.classList.add(className);
-		}
-
-		function removeClass(ele, className) {
-			ele && ele.classList.remove(className);
-		}
 
 		var padStart = String.prototype.padStart ? function (sourceString, targetLength, padTemplate) {
 			return sourceString.padStart(targetLength, padTemplate);
@@ -753,7 +780,7 @@
 				} else {
 					uploading = false;
 					if (elUploadStatus) {
-						elUploadStatus.classList.remove(classUploading);
+						removeClass(elUploadStatus, classUploading);
 					}
 				}
 			}
@@ -779,7 +806,7 @@
 				} else {
 					uploading = true;
 					if (elUploadStatus) {
-						elUploadStatus.classList.add(classUploading);
+						addClass(elUploadStatus, classUploading);
 					}
 					uploadBatch(files);
 				}
@@ -1058,13 +1085,7 @@
 		if (!itemList || !itemList.addEventListener) {
 			return;
 		}
-		if (itemList.classList) {
-			if (!itemList.classList.contains('has-deletable')) {
-				return;
-			}
-		} else if (itemList.className.indexOf('has-deletable') < 0) {
-			return;
-		}
+		if (!hasClass(itemList, 'has-deletable')) return;
 
 		itemList.addEventListener('submit', function (e) {
 			if (e.defaultPrevented) {
