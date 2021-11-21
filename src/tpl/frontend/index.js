@@ -740,7 +740,9 @@
 
 			var uploading = false;
 			var batches = [];
-			var elProgress = upload.querySelector('.progress');
+			var classUploading = 'uploading';
+			var elUploadStatus = document.body.querySelector('.upload-status');
+			var elProgress = elUploadStatus && elUploadStatus.querySelector('.progress');
 
 			function onComplete() {
 				if (elProgress) {
@@ -750,6 +752,9 @@
 					uploadBatch(batches.shift());
 				} else {
 					uploading = false;
+					if (elUploadStatus) {
+						elUploadStatus.classList.remove(classUploading);
+					}
 				}
 			}
 
@@ -773,6 +778,9 @@
 					batches.push(files);
 				} else {
 					uploading = true;
+					if (elUploadStatus) {
+						elUploadStatus.classList.add(classUploading);
+					}
 					uploadBatch(files);
 				}
 			}
@@ -840,7 +848,7 @@
 			}
 
 			function onDragEnterOver(e) {
-				if(!isSelfDragging) {
+				if (!isSelfDragging) {
 					e.stopPropagation();
 					e.preventDefault();
 					addClass(e.currentTarget, classDragging);

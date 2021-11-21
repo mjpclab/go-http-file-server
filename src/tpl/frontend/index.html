@@ -21,6 +21,13 @@
 	{{end}}
 </ol>
 
+{{if .CanUpload}}
+<div class="upload-status">
+	<span class="label">{{.Trans.UploadingLabel}}</span>
+	<span class="progress"></span>
+</div>
+{{end}}
+
 {{if .CanMkdir}}
 <div class="panel mkdir">
 	<form method="POST" action="{{.SubItemPrefix}}?mkdir">
@@ -41,7 +48,6 @@
 		<input type="file" name="file" multiple="multiple" class="file"/>
 		<button type="submit" class="submit">{{.Trans.UploadLabel}}</button>
 	</form>
-	<span class="progress"></span>
 </div>
 {{end}}
 
