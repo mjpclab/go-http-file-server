@@ -334,7 +334,7 @@ html.dragging::before {
 
 .filter input {
 	flex: 1 1 auto;
-	width: 100%;
+	width: 97%;
 	padding-right: 1.5em;
 	box-sizing: border-box;
 }

@@ -130,21 +130,45 @@
 		};
 		input.addEventListener('input', onValueMayChange, false);
 		input.addEventListener('change', onValueMayChange, false);
+
+		var onEnter = function () {
+			clearTimeout(timeoutId);
+			input.blur();
+			doFilter();
+		};
+		var onEscape = function () {
+			clearTimeout(timeoutId);
+			input.value = '';
+			doFilter();
+		};
+
+		var ENTER_CODE = 13;
+		var ESCAPE_CODE = 27;
+
 		input.addEventListener('keydown', function (e) {
-			switch (e.key) {
-				case Enter:
-					clearTimeout(timeoutId);
-					input.blur();
-					doFilter();
-					e.preventDefault();
-					break;
-				case Escape:
-				case Esc:
-					clearTimeout(timeoutId);
-					input.value = '';
-					doFilter();
-					e.preventDefault();
-					break;
+			if (e.key) {
+				switch (e.key) {
+					case Enter:
+						onEnter();
+						e.preventDefault();
+						break;
+					case Escape:
+					case Esc:
+						onEscape();
+						e.preventDefault();
+						break;
+				}
+			} else if (e.keyCode) {
+				switch (e.keyCode) {
+					case ENTER_CODE:
+						onEnter();
+						e.preventDefault();
+						break;
+					case ESCAPE_CODE:
+						onEscape();
+						e.preventDefault();
+						break;
+				}
 			}
 		}, false);
 
