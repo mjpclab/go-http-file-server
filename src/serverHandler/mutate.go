@@ -40,6 +40,15 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 		if qsIndex >= 0 {
 			reqPath = reqPath[:qsIndex]
 		}
+
+		ctxQsList := r.Form["contextquerystring"]
+		ctxQsListLen := len(ctxQsList)
+		if ctxQsListLen > 0 {
+			ctxQs := ctxQsList[ctxQsListLen-1]
+			if len(ctxQs) > 0 {
+				reqPath += ctxQs
+			}
+		}
 		http.Redirect(w, r, reqPath, http.StatusFound)
 	}
 }
