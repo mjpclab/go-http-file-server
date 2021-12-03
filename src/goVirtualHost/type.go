@@ -19,20 +19,21 @@ type HostInfo struct {
 
 // normalized HostInfo Param
 type param struct {
-	proto     string
-	addr      string
+	proto     string // "tcp", "tcp4", "tcp6"
+	ip        string
+	port      string
 	useTLS    bool
 	cert      *tls.Certificate
 	hostNames []string
-	handler   http.Handler
 }
 
 type params []*param
 
 // wrapper of net.Listener
 type listener struct {
-	proto       string
-	addr        string
+	proto       string // "tcp", "tcp4", "tcp6"
+	ip          string
+	port        string
 	netListener net.Listener
 	server      *server
 }
@@ -76,3 +77,15 @@ type Service struct {
 	servers   servers
 	vhosts    vhosts
 }
+
+// ip
+
+type ipAddr struct {
+	netIP              net.IP
+	version            int
+	isGlobalUnicast    bool
+	isLinkLocalUnicast bool
+	isNonPrivate       bool
+	isNonLoopback      bool
+}
+type ipAddrs []*ipAddr
