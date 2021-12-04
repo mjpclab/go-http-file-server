@@ -282,6 +282,11 @@ ghfs [options]
     otherwise use the first virtual host.
 ```
 
+## Environment variables
+### GHFS_QUIET
+To prevent outputting additional information on console, like accessible URLs, etc,
+set value to "1".
+
 ## Shortcut key for default theme
 - `←`, `→`: move focus between path items
 - `Ctrl`/`Opt` + `←`: move focus to first path item

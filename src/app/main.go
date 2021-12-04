@@ -6,6 +6,7 @@ import (
 	"../serverErrHandler"
 	"../serverLog"
 	"../tpl"
+	"../util"
 	"../vhostHandler"
 	"os"
 	"path/filepath"
@@ -92,6 +93,10 @@ func NewApp(params []*param.Param) *App {
 			logger.LogErrors(errors...)
 			os.Exit(1)
 		}
+	}
+
+	if !util.GetBoolEnv("GHFS_QUIET") {
+		go printAccessibleURLs(vhSvc)
 	}
 
 	return &App{
