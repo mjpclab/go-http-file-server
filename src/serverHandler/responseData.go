@@ -52,6 +52,7 @@ type responseData struct {
 	CanArchive   bool
 	CanCors      bool
 	NeedAuth     bool
+	AuthUserName string
 
 	IsDownload bool
 	IsUpload   bool

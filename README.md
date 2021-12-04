@@ -92,7 +92,7 @@ ghfs --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.ke
 
 ## Usage
 ```
-server [options]
+ghfs [options]
 
 -l|--listen <ip|port|:port|ip:port|socket> ...
     IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
@@ -216,6 +216,8 @@ server [options]
 --user-sha256 [<username>]:<sha256-password> ...
 --user-sha512 [<username>]:<sha512-password> ...
     Specify users for Basic Auth, with encoded password.
+--user-match-case
+    Username is case sensitive.
 
 -c|--cert <file>
     Specify TLS certificate file.
@@ -286,6 +288,11 @@ server [options]
     server will try to use first virtual host that has no hostname,
     otherwise use the first virtual host.
 ```
+
+## Environment variables
+### GHFS_QUIET
+To prevent outputting additional information on console, like accessible URLs, etc,
+set value to "1".
 
 ## Shortcut key for default theme
 - `←`, `→`: move focus between path items

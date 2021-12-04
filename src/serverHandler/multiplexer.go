@@ -35,7 +35,7 @@ func (mux multiplexer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func NewMultiplexer(
 	p *param.Param,
-	users user.Users,
+	users user.List,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,

@@ -2,10 +2,11 @@ package serverHandler
 
 import (
 	"errors"
+	"net/http"
 	"os"
 )
 
-func (h *handler) deleteItems(fsPrefix string, files []string, aliasSubItems []os.FileInfo) bool {
+func (h *handler) deleteItems(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	errs := []error{}
 
 	for _, inputFilename := range files {
@@ -22,7 +23,9 @@ func (h *handler) deleteItems(fsPrefix string, files []string, aliasSubItems []o
 		if containsItem(aliasSubItems, filename) {
 			continue
 		}
-		err := os.RemoveAll(fsPrefix + "/" + filename)
+		fsPath := fsPrefix + "/" + filename
+		h.logMutate(authUserName, "delete", fsPath, r)
+		err := os.RemoveAll(fsPath)
 		if err != nil {
 			errs = append(errs, err)
 		}

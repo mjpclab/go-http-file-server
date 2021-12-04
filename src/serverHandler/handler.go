@@ -48,7 +48,7 @@ type handler struct {
 	globalAuth bool
 	authUrls   []string
 	authDirs   []string
-	users      user.Users
+	users      user.List
 
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
@@ -93,7 +93,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 	}
 
-	if data.NeedAuth && !h.auth(w, r) {
+	if data.NeedAuth && !h.auth(w, r, data) {
 		return
 	}
 
@@ -138,7 +138,7 @@ func newHandler(
 	root string,
 	urlPrefix string,
 	allAliases aliases,
-	users user.Users,
+	users user.List,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,

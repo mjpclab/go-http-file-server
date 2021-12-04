@@ -11,15 +11,15 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 	switch {
 	case data.IsUpload:
 		if data.CanUpload && r.Method == http.MethodPost {
-			success = h.saveUploadFiles(h.root+data.handlerReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
+			success = h.saveUploadFiles(data.AuthUserName, h.root+data.handlerReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
 		}
 	case data.IsMkdir:
 		if data.CanMkdir && !h.errHandler.LogError(r.ParseForm()) {
-			success = h.mkdirs(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
+			success = h.mkdirs(data.AuthUserName, h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	case data.IsDelete:
 		if data.CanDelete && !h.errHandler.LogError(r.ParseForm()) {
-			success = h.deleteItems(h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems)
+			success = h.deleteItems(data.AuthUserName, h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	}
 
@@ -39,6 +39,15 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 		qsIndex := strings.IndexByte(reqPath, '?')
 		if qsIndex >= 0 {
 			reqPath = reqPath[:qsIndex]
+		}
+
+		ctxQsList := r.Form["contextquerystring"]
+		ctxQsListLen := len(ctxQsList)
+		if ctxQsListLen > 0 {
+			ctxQs := ctxQsList[ctxQsListLen-1]
+			if len(ctxQs) > 0 {
+				reqPath += ctxQs
+			}
 		}
 		http.Redirect(w, r, reqPath, http.StatusFound)
 	}

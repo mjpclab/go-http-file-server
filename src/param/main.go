@@ -41,15 +41,16 @@ type Param struct {
 	CorsUrls   []string
 	CorsDirs   []string
 
-	GlobalAuth  bool
-	AuthUrls    []string
-	AuthDirs    []string
-	UsersPlain  []*user
-	UsersBase64 []*user
-	UsersMd5    []*user
-	UsersSha1   []*user
-	UsersSha256 []*user
-	UsersSha512 []*user
+	GlobalAuth    bool
+	AuthUrls      []string
+	AuthDirs      []string
+	UsersPlain    []*user
+	UsersBase64   []*user
+	UsersMd5      []*user
+	UsersSha1     []*user
+	UsersSha256   []*user
+	UsersSha512   []*user
+	UserMatchCase bool
 
 	Certificate  *tls.Certificate
 	Listens      []string

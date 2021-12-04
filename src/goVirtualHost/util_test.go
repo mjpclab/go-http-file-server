@@ -39,157 +39,167 @@ func TestNormalizeHostNames(t *testing.T) {
 }
 
 func TestSplitListen(t *testing.T) {
-	var proto string
+	match := func(listen string, useTLS bool, expectProto, expectIP, expectPort string) bool {
+		proto, ip, port := splitListen(listen, useTLS)
+		return proto == expectProto && ip == expectIP && port == expectPort
+	}
 
 	// ipv4
-	ipv4 := "1.2.3.4"
-
-	proto, ipv4Http := splitListen(ipv4, false)
-	if proto != "tcp4" {
-		t.Error(proto)
+	if !match("1.2.3.4", false, "tcp4", "1.2.3.4", ":80") {
+		t.Error()
 	}
-	if ipv4Http != "1.2.3.4:80" {
-		t.Error(ipv4Http)
+	if !match(" 1.2.3.4\t", false, "tcp4", "1.2.3.4", ":80") {
+		t.Error()
 	}
-
-	proto, ipv4Https := splitListen(ipv4, true)
-	if proto != "tcp4" {
-		t.Error(proto)
+	if !match("1.2.3.4", true, "tcp4", "1.2.3.4", ":443") {
+		t.Error()
 	}
-	if ipv4Https != "1.2.3.4:443" {
-		t.Error(ipv4Https)
+	if !match("0.0.0.0", false, "tcp4", "", ":80") {
+		t.Error()
 	}
 
 	// ipv4:port
-	ipv4Port := "2.3.4.5:6"
-
-	proto, ipv4PortHttp := splitListen(ipv4Port, false)
-	if proto != "tcp4" {
-		t.Error(proto)
+	if !match("2.3.4.5:6", false, "tcp4", "2.3.4.5", ":6") {
+		t.Error()
 	}
-	if ipv4PortHttp != ipv4Port {
-		t.Error(ipv4PortHttp)
+	if !match("2.3.4.5:6", true, "tcp4", "2.3.4.5", ":6") {
+		t.Error()
 	}
-
-	proto, ipv4PortHttps := splitListen(ipv4Port, true)
-	if proto != "tcp4" {
-		t.Error(proto)
-	}
-	if ipv4PortHttps != ipv4Port {
-		t.Error(ipv4PortHttps)
+	if !match("0.0.0.0:6", false, "tcp4", "", ":6") {
+		t.Error()
 	}
 
 	// ipv6
-	ipv6 := "[::1]"
-
-	proto, ipv6Http := splitListen(ipv6, false)
-	if proto != "tcp6" {
-		t.Error(proto)
+	if !match("[::1]", false, "tcp6", "[::1]", ":80") {
+		t.Error()
 	}
-	if ipv6Http != "[::1]:80" {
-		t.Error(ipv6Http)
+	if !match("[::1]", true, "tcp6", "[::1]", ":443") {
+		t.Error()
 	}
-
-	proto, ipv6Https := splitListen(ipv6, true)
-	if proto != "tcp6" {
-		t.Error(proto)
-	}
-	if ipv6Https != "[::1]:443" {
-		t.Error(ipv6Https)
+	if !match("[::]", false, "tcp6", "", ":80") {
+		t.Error()
 	}
 
 	// ipv6:port
-	ipv6Port := "[fe80::1234]:7"
-
-	proto, ipv6PortHttp := splitListen(ipv6Port, false)
-	if proto != "tcp6" {
-		t.Error(proto)
+	if !match("[fe80::1234]:7", false, "tcp6", "[fe80::1234]", ":7") {
+		t.Error()
 	}
-	if ipv6PortHttp != ipv6Port {
-		t.Error(ipv6PortHttp)
+	if !match("[fe80::1234]:7", true, "tcp6", "[fe80::1234]", ":7") {
+		t.Error()
 	}
-
-	proto, ipv6PortHttps := splitListen(ipv6Port, true)
-	if proto != "tcp6" {
-		t.Error(proto)
-	}
-	if ipv6PortHttps != ipv6Port {
-		t.Error(ipv6PortHttps)
+	if !match("[::]:7", false, "tcp6", "", ":7") {
+		t.Error()
 	}
 
 	// port
-	portNum := "8080"
-
-	proto, portNumHttp := splitListen(portNum, false)
-	if proto != "tcp" {
-		t.Error(proto)
+	if !match("8080", false, "tcp", "", ":8080") {
+		t.Error()
 	}
-	if portNumHttp != ":8080" {
-		t.Error(portNumHttp)
-	}
-
-	proto, portNumHttps := splitListen(portNum, true)
-	if proto != "tcp" {
-		t.Error(proto)
-	}
-	if portNumHttps != ":8080" {
-		t.Error(portNumHttps)
+	if !match("8080", true, "tcp", "", ":8080") {
+		t.Error()
 	}
 
 	// :port
-	port := ":3000"
-
-	proto, portHttp := splitListen(port, false)
-	if proto != "tcp" {
-		t.Error(proto)
+	if !match(":3000", false, "tcp", "", ":3000") {
+		t.Error()
 	}
-	if portHttp != port {
-		t.Error(portHttp)
-	}
-
-	proto, portHttps := splitListen(port, true)
-	if proto != "tcp" {
-		t.Error(proto)
-	}
-	if portHttps != port {
-		t.Error(portHttps)
+	if !match(":3000", true, "tcp", "", ":3000") {
+		t.Error()
 	}
 
 	// hostname
-	hostname := "example.com"
-
-	proto, hostnameHttp := splitListen(hostname, false)
-	if proto != "tcp" {
-		t.Error(proto)
+	if !match("example.com", false, "tcp", "example.com", ":80") {
+		t.Error()
 	}
-	if hostnameHttp != "example.com:80" {
-		t.Error(hostnameHttp)
-	}
-
-	proto, hostnameHttps := splitListen(hostname, true)
-	if proto != "tcp" {
-		t.Error(proto)
-	}
-	if hostnameHttps != "example.com:443" {
-		t.Error(hostnameHttp)
+	if !match("example.com", true, "tcp", "example.com", ":443") {
+		t.Error()
 	}
 
 	// hostname:port
-	host := "example.com:3210"
-
-	proto, hostHttp := splitListen(host, false)
-	if proto != "tcp" {
-		t.Error(proto)
+	if !match("example.com:3210", false, "tcp", "example.com", ":3210") {
+		t.Error()
 	}
-	if hostHttp != "example.com:3210" {
-		t.Error(hostHttp)
+	if !match("example.com:3210", true, "tcp", "example.com", ":3210") {
+		t.Error()
 	}
 
-	proto, hostHttps := splitListen(host, true)
-	if proto != "tcp" {
-		t.Error(proto)
+	// socket
+	if !match("/var/run/ghfs.sock", false, "unix", "", "/var/run/ghfs.sock") {
+		t.Error()
 	}
-	if hostHttps != "example.com:3210" {
-		t.Error(hostHttp)
+	if !match("/var/run/ghfs.sock", true, "unix", "", "/var/run/ghfs.sock") {
+		t.Error()
+	}
+}
+
+func TestIsIPv4Wildcard(t *testing.T) {
+	if !isWildcardIPv4("0.0.0.0") {
+		t.Error()
+	}
+}
+
+func TestIsIPv6Wildcard(t *testing.T) {
+	if isWildcardIPv6("0.0.0.0") {
+		t.Error()
+	}
+
+	if isWildcardIPv6("[fe80::1]") {
+		t.Error()
+	}
+
+	if isWildcardIPv6("[::1]") {
+		t.Error()
+	}
+
+	if isWildcardIPv6("[fe80::1]:8080") {
+		t.Error()
+	}
+
+	if isWildcardIPv6("[::1]:8080") {
+		t.Error()
+	}
+
+	if isWildcardIPv6("8080") {
+		t.Error()
+	}
+
+	if isWildcardIPv6(":8080") {
+		t.Error()
+	}
+
+	if isWildcardIPv6("[::]:8080") {
+		t.Error()
+	}
+
+	if isWildcardIPv6("[::0]:8080") {
+		t.Error()
+	}
+
+	if !isWildcardIPv6("[::]") {
+		t.Error()
+	}
+
+	if !isWildcardIPv6("[::0]") {
+		t.Error()
+	}
+
+	if !isWildcardIPv6("[0::]") {
+		t.Error()
+	}
+
+	if !isWildcardIPv6("[0::0]") {
+		t.Error()
+	}
+
+	if !isWildcardIPv6("[::00]") {
+		t.Error()
+	}
+
+	if !isWildcardIPv6("[00::00]") {
+		t.Error()
+	}
+
+	if !isWildcardIPv6("[0000:0000:0000:0000:0000:0000:0000:0000]") {
+		t.Error()
 	}
 }
