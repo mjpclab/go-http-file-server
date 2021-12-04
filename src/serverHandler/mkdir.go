@@ -2,11 +2,12 @@ package serverHandler
 
 import (
 	"errors"
+	"net/http"
 	"os"
 	"strings"
 )
 
-func (h *handler) mkdirs(fsPrefix string, files []string, aliasSubItems []os.FileInfo) bool {
+func (h *handler) mkdirs(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	errs := []error{}
 
 	for _, inputFilename := range files {
@@ -29,7 +30,9 @@ func (h *handler) mkdirs(fsPrefix string, files []string, aliasSubItems []os.Fil
 			errs = append(errs, errors.New("mkdir: ignore path shadowed by alias "+filename))
 			continue
 		}
-		err := os.MkdirAll(fsPrefix+"/"+filename, 0755)
+		fsPath := fsPrefix + "/" + filename
+		h.logMutate(authUserName, "mkdir", fsPath, r)
+		err := os.MkdirAll(fsPath, 0755)
 		if err != nil {
 			errs = append(errs, err)
 		}

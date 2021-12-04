@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"../acceptHeaders"
 	"../shimgo"
+	"../util"
 	"compress/flate"
 	"compress/gzip"
 	"io"
@@ -93,19 +94,11 @@ func isNameCaseSensitive(info os.FileInfo) bool {
 	return true
 }
 
-func isNameEqualAccurate(a, b string) bool {
-	return a == b
-}
-
-func isNameEqualNoCase(a, b string) bool {
-	return strings.EqualFold(a, b)
-}
-
 func getIsNameEqualFunc(info os.FileInfo) func(a, b string) bool {
 	if isNameCaseSensitive(info) {
-		return isNameEqualAccurate
+		return util.IsStrEqualAccurate
 	} else {
-		return isNameEqualNoCase
+		return util.IsStrEqualNoCase
 	}
 }
 

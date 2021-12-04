@@ -24,10 +24,18 @@ const DefaultTplStr = `
 	{{end}}
 </ol>
 
+{{if .CanUpload}}
+<div class="upload-status">
+	<span class="label">{{.Trans.UploadingLabel}}</span>
+	<span class="progress"></span>
+</div>
+{{end}}
+
 {{if .CanMkdir}}
 <div class="panel mkdir">
 	<form method="POST" action="{{.SubItemPrefix}}?mkdir">
 		<input type="text" autocomplete="off" name="name" class="name"/>
+		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/>
 		<input type="submit" value="{{.Trans.MkdirLabel}}" class="submit"/>
 	</form>
 </div>
@@ -42,9 +50,9 @@ const DefaultTplStr = `
 <div class="panel upload">
 	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
 		<input type="file" name="file" multiple="multiple" class="file"/>
+		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/>
 		<button type="submit" class="submit">{{.Trans.UploadLabel}}</button>
 	</form>
-	<span class="progress"></span>
 </div>
 {{end}}
 
@@ -100,7 +108,7 @@ const DefaultTplStr = `
 			<span class="field size">{{.DisplaySize}}</span>
 			<span class="field time">{{.DisplayTime}}</span>
 		</a>
-		{{if and (not $isDownload) .DeleteUrl}}<form class="delete" action="{{$SubItemPrefix}}" onsubmit="return confirmDelete(this)"><input type="hidden" name="delete"/><input type="hidden" name="name" value="{{.DeleteUrl}}"/><button type="submit">x</button></form>{{end}}
+		{{if and (not $isDownload) .DeleteUrl}}<form class="delete" action="{{$SubItemPrefix}}" onsubmit="return confirmDelete(this)"><input type="hidden" name="delete"/><input type="hidden" name="name" value="{{.DeleteUrl}}"/><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/><button type="submit">x</button></form>{{end}}
 	</li>
 	{{end}}
 </ul>

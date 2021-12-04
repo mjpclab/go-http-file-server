@@ -5,28 +5,30 @@ import (
 	"os"
 )
 
-func newListener(proto, addr string) *listener {
+func newListener(proto, ip, port string) *listener {
 	listener := &listener{
 		proto: proto,
-		addr:  addr,
+		ip:    ip,
+		port:  port,
 	}
 
 	return listener
 }
 
 func (listener *listener) open() error {
+	addr := listener.ip + listener.port
 	if listener.proto == "unix" {
-		sockInfo, _ := os.Lstat(listener.addr)
+		sockInfo, _ := os.Lstat(addr)
 		if sockInfo != nil && (sockInfo.Mode()&os.ModeSocket != 0) {
-			os.Remove(listener.addr)
+			os.Remove(addr)
 		}
 	}
 
-	netListener, err := net.Listen(listener.proto, listener.addr)
+	netListener, err := net.Listen(listener.proto, addr)
 	listener.netListener = netListener
 
 	if listener.proto == "unix" && err == nil {
-		os.Chmod(listener.addr, 0777)
+		os.Chmod(addr, 0777)
 	}
 
 	return err

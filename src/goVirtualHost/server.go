@@ -19,35 +19,33 @@ func newServer(useTLS bool) *server {
 }
 
 func (server *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var vhost *vhost
-
 	hostname := extractHostName(r.Host)
-
-	for _, vh := range server.vhosts {
-		if vh.matchHostName(hostname) {
-			vhost = vh
-			break
+	for i := range server.vhosts {
+		if server.vhosts[i].matchHostName(hostname) {
+			server.vhosts[i].handler.ServeHTTP(w, r)
+			return
 		}
 	}
 
-	if vhost == nil {
-		vhost = server.defaultVhost
+	server.defaultVhost.handler.ServeHTTP(w, r)
+}
+
+func (server *server) getDefaultVhost() *vhost {
+	for _, vh := range server.vhosts {
+		if len(vh.hostNames) == 0 {
+			return vh
+		}
 	}
 
-	vhost.handler.ServeHTTP(w, r)
+	if len(server.vhosts) > 0 {
+		return server.vhosts[0]
+	}
+
+	return nil
 }
 
 func (server *server) updateDefaultVhost() {
-	for _, vh := range server.vhosts {
-		if len(vh.hostNames) == 0 {
-			server.defaultVhost = vh
-			break
-		}
-	}
-
-	if server.defaultVhost == nil {
-		server.defaultVhost = server.vhosts[0]
-	}
+	server.defaultVhost = server.getDefaultVhost()
 }
 
 func (server *server) updateHttpServerTLSConfig() {

@@ -15,6 +15,7 @@ export fs=$(realpath fs)
 export cert=$(realpath cert)
 export src=$(realpath ../src)
 export ghfs=$(realpath bin)/ghfs
+export GHFS_QUIET=1
 
 GO111MODULE=auto go build -o "$ghfs" "$src/main.go"
 

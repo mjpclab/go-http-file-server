@@ -1,7 +1,6 @@
 package serverHandler
 
 import (
-	"bytes"
 	"net/http"
 )
 
@@ -17,21 +16,46 @@ func (h *handler) logRequest(r *http.Request) {
 	h.logger.LogAccess(payload)
 }
 
-func (h *handler) logUpload(filename, fsPath string, r *http.Request) {
+func (h *handler) logMutate(username, action, detail string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
 
-	buffer := bytes.NewBuffer(make([]byte, 0, LOG_BUF_SIZE))
+	buf := make([]byte, 0, LOG_BUF_SIZE)
 
-	buffer.WriteString(r.RemoteAddr)
-	buffer.WriteByte(' ')
-	buffer.WriteString("save upload file: ")
-	buffer.WriteString(filename)
-	buffer.WriteString(" -> ")
-	buffer.WriteString(fsPath)
+	buf = append(buf, []byte(r.RemoteAddr)...) // 9-47 bytes, mainly 21 bytes
+	if len(username) > 0 {
+		buf = append(buf, []byte(" (")...) // 2 bytes
+		buf = append(buf, []byte(username)...)
+		buf = append(buf, ')') // 1 byte
+	}
+	buf = append(buf, ' ')               // 1 byte
+	buf = append(buf, []byte(action)...) // 5-6 bytes
+	buf = append(buf, []byte(": ")...)   // 2 bytes
+	buf = append(buf, []byte(detail)...)
 
-	h.logger.LogAccess(buffer.Bytes())
+	h.logger.LogAccess(buf)
+}
+
+func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) {
+	if !h.logger.CanLogAccess() {
+		return
+	}
+
+	buf := make([]byte, 0, LOG_BUF_SIZE)
+
+	buf = append(buf, []byte(r.RemoteAddr)...) // 9-47 bytes, mainly 21 bytes
+	if len(username) > 0 {
+		buf = append(buf, []byte(" (")...) // 2 bytes
+		buf = append(buf, []byte(username)...)
+		buf = append(buf, ')') // 1 byte
+	}
+	buf = append(buf, []byte(" upload: ")...) // 9 bytes
+	buf = append(buf, []byte(filename)...)
+	buf = append(buf, []byte(" -> ")...) // 4 bytes
+	buf = append(buf, []byte(fsPath)...)
+
+	h.logger.LogAccess(buf)
 }
 
 func (h *handler) logArchive(filename, relPath string, r *http.Request) {
@@ -39,14 +63,13 @@ func (h *handler) logArchive(filename, relPath string, r *http.Request) {
 		return
 	}
 
-	buffer := bytes.NewBuffer(make([]byte, 0, LOG_BUF_SIZE))
+	buf := make([]byte, 0, LOG_BUF_SIZE)
 
-	buffer.WriteString(r.RemoteAddr)
-	buffer.WriteByte(' ')
-	buffer.WriteString("archive file: \"")
-	buffer.WriteString(filename)
-	buffer.WriteString("\" <- ")
-	buffer.WriteString(relPath)
+	buf = append(buf, []byte(r.RemoteAddr)...)      // 9-47 bytes, mainly 21 bytes
+	buf = append(buf, []byte(" archive file: ")...) // 15 bytes
+	buf = append(buf, []byte(filename)...)
+	buf = append(buf, []byte(" <- ")...) // 4 bytes
+	buf = append(buf, []byte(relPath)...)
 
-	h.logger.LogAccess(buffer.Bytes())
+	h.logger.LogAccess(buf)
 }

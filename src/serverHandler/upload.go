@@ -41,7 +41,7 @@ func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) stri
 	return ""
 }
 
-func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
+func (h *handler) saveUploadFiles(authUserName, fsPrefix string, createDir, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	errs := []error{}
 
 	reader, err := r.MultipartReader()
@@ -150,7 +150,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 		}
 
 		fsPath := path.Clean(filePrefix + "/" + fsFilename)
-		go h.logUpload(filename, fsPath, r)
+		go h.logUpload(authUserName, filename, fsPath, r)
 		file, err := os.OpenFile(fsPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
 			errs = append(errs, err)

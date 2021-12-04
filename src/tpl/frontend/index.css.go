@@ -104,7 +104,7 @@ html::before {
 	content: '';
 	position: absolute;
 	position: fixed;
-	z-index: 1;
+	z-index: 2;
 	left: 0;
 	top: 0;
 	right: 0;
@@ -198,6 +198,53 @@ html.dragging::before {
 	background: #f7f7f7;
 }
 
+.upload-status {
+	visibility: hidden;
+	position: absolute;
+	position: sticky;
+	z-index: 1;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 4px;
+	margin-bottom: -4px;
+	background: #faf5fa;
+	background-color: rgba(204, 153, 204, 0.1);
+	pointer-events: none;
+}
+
+.upload-status.uploading {
+	visibility: visible;
+}
+
+.upload-status .label {
+	position: absolute;
+	left: 50%;
+	top: 100%;
+	opacity: 0;
+	transform: translate(-50%, -50%);
+	transition: transform .2s, opacity .2s;
+	padding: 0.5em 1em;
+	color: #fff;
+	background: #c9c;
+	background-color: rgba(204, 153, 204, 0.8);
+	white-space: nowrap;
+}
+
+.upload-status.uploading .label {
+	opacity: 1;
+	transform: translate(-50%, 10%);
+}
+
+.upload-status .progress {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 0;
+	height: 100%;
+	background: #c9c;
+}
+
 .upload {
 	position: relative;
 }
@@ -217,17 +264,6 @@ html.dragging::before {
 
 .upload button span {
 	position: relative;
-}
-
-.upload .progress {
-	position: fixed;
-	left: 0;
-	top: 0;
-	width: 0;
-	height: 4px;
-	opacity: 0.5;
-	background: #c9c;
-	pointer-events: none;
 }
 
 .archive {
@@ -301,7 +337,7 @@ html.dragging::before {
 
 .filter input {
 	flex: 1 1 auto;
-	width: 100%;
+	width: 97%;
 	padding-right: 1.5em;
 	box-sizing: border-box;
 }
