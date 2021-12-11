@@ -795,20 +795,31 @@ const DefaultJs = `
 			var uploading = false;
 			var batches = [];
 			var classUploading = 'uploading';
+			var classFailed = 'failed';
 			var elUploadStatus = document.body.querySelector('.upload-status');
 			var elProgress = elUploadStatus && elUploadStatus.querySelector('.progress');
+			var elFailedMessage = elUploadStatus && elUploadStatus.querySelector('.failed .message');
 
 			function onComplete() {
 				if (elProgress) {
 					elProgress.style.width = '';
 				}
+			}
+
+			function onSuccess() {
 				if (batches.length) {
-					uploadBatch(batches.shift());
+					return uploadBatch(batches.shift());	// use "return" for tail call optimize
 				} else {
 					uploading = false;
-					if (elUploadStatus) {
-						removeClass(elUploadStatus, classUploading);
-					}
+					removeClass(elUploadStatus, classUploading);
+				}
+			}
+
+			function onFail(e) {
+				removeClass(elUploadStatus, classUploading);
+				addClass(elUploadStatus, classFailed);
+				if (elFailedMessage) {
+					elFailedMessage.textContent = " - " + e.type;
 				}
 			}
 
@@ -832,9 +843,7 @@ const DefaultJs = `
 					batches.push(files);
 				} else {
 					uploading = true;
-					if (elUploadStatus) {
-						addClass(elUploadStatus, classUploading);
-					}
+					addClass(elUploadStatus, classUploading);
 					uploadBatch(files);
 				}
 			}
@@ -860,8 +869,11 @@ const DefaultJs = `
 
 				var xhr = new XMLHttpRequest();
 				xhr.upload.addEventListener('error', onComplete);
+				xhr.upload.addEventListener('error', onFail);
 				xhr.upload.addEventListener('abort', onComplete);
+				xhr.upload.addEventListener('abort', onFail);
 				xhr.upload.addEventListener('load', onComplete);
+				xhr.upload.addEventListener('load', onSuccess);
 				xhr.upload.addEventListener('load', onLoad);
 				if (elProgress) {
 					xhr.upload.addEventListener('progress', onProgress);

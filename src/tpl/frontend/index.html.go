@@ -26,7 +26,8 @@ const DefaultTplStr = `
 
 {{if .CanUpload}}
 <div class="upload-status">
-	<span class="label">{{.Trans.UploadingLabel}}</span>
+	<span class="label tips">{{.Trans.UploadingLabel}}</span>
+	<span class="label failed">{{.Trans.UploadFailLabel}}<span class="message"></span></span>
 	<span class="progress"></span>
 </div>
 {{end}}
