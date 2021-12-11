@@ -11,6 +11,8 @@ type Translation struct {
 	UploadDirContentsHint  string
 	UploadLabel            string
 	UploadingLabel         string
+	UploadSuccessLabel     string
+	UploadFailLabel        string
 
 	ListDirLabel  string
 	ListNameLabel string
@@ -45,6 +47,8 @@ var translationEnUs = Translation{
 	UploadDirContentsHint:  "Upload contents of directory",
 	UploadLabel:            "Upload",
 	UploadingLabel:         "Uploading...",
+	UploadSuccessLabel:     "Upload success",
+	UploadFailLabel:        "Upload failed",
 
 	ListDirLabel:  "Dir",
 	ListNameLabel: "Name",
@@ -79,6 +83,8 @@ var translationZhSimp = Translation{
 	UploadDirContentsHint:  "上传目录下的内容",
 	UploadLabel:            "上传",
 	UploadingLabel:         "上传中……",
+	UploadSuccessLabel:     "上传成功",
+	UploadFailLabel:        "上传失败",
 
 	ListDirLabel:  "目录",
 	ListNameLabel: "名称",
@@ -113,6 +119,8 @@ var translationZhTrad = Translation{
 	UploadDirContentsHint:  "上傳目錄下的內容",
 	UploadLabel:            "上傳",
 	UploadingLabel:         "上傳中……",
+	UploadSuccessLabel:     "上傳成功",
+	UploadFailLabel:        "上傳失敗",
 
 	ListDirLabel:  "目錄",
 	ListNameLabel: "名稱",
