@@ -210,7 +210,8 @@ html.dragging::before {
 	pointer-events: none;
 }
 
-.upload-status.uploading {
+.upload-status.uploading,
+.upload-status.failed {
 	visibility: visible;
 }
 
@@ -223,12 +224,21 @@ html.dragging::before {
 	transition: transform .2s, opacity .2s;
 	padding: 0.5em 1em;
 	color: #fff;
-	background: #c9c;
-	background-color: rgba(204, 153, 204, 0.8);
 	white-space: nowrap;
 }
 
-.upload-status.uploading .label {
+.upload-status .label.tips {
+	background: #c9c;
+	background-color: rgba(204, 153, 204, 0.8);
+}
+
+.upload-status .label.failed {
+	background: #800000;
+	background-color: rgba(128, 0, 0, 0.8);
+}
+
+.upload-status.uploading .label.tips,
+.upload-status.failed .label.failed {
 	opacity: 1;
 	transform: translate(-50%, 10%);
 }
