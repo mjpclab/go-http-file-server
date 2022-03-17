@@ -46,6 +46,12 @@
 		}
 	}
 
+	var hasStorage = false;
+	try {
+		if (typeof sessionStorage !== strUndef) hasStorage = true;
+	} catch (err) {
+	}
+
 	function enableFilter() {
 		if (!document.querySelector) {
 			var filter = document.getElementById && document.getElementById('panel-filter');
@@ -180,7 +186,7 @@
 		});
 
 		// init
-		if (sessionStorage) {
+		if (hasStorage) {
 			var prevSessionFilter = sessionStorage.getItem(location.pathname);
 			sessionStorage.removeItem(location.pathname);
 
@@ -745,7 +751,7 @@
 				optInnerDirFile.addEventListener('keydown', onKeydownOpt);
 			}
 
-			if (sessionStorage) {
+			if (hasStorage) {
 				var uploadTypeField = 'upload-type';
 				var prevUploadType = sessionStorage.getItem(uploadTypeField);
 				sessionStorage.removeItem(uploadTypeField);
