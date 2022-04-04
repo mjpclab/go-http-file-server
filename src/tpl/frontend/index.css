@@ -224,12 +224,42 @@ html.dragging::before {
 	transition: transform .2s, opacity .2s;
 	padding: 0.5em 1em;
 	color: #fff;
-	white-space: nowrap;
+	box-sizing: border-box;
+	max-width: 100%;
+	overflow-wrap: break-word;
 }
 
 .upload-status .label.tips {
+	padding-left: 2.5em;
 	background: #c9c;
 	background-color: rgba(204, 153, 204, 0.8);
+}
+
+@keyframes wheel {
+	from {
+		transform: rotate(0);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.upload-status .label.tips:before,
+.upload-status .label.tips:after {
+	content: '';
+	position: absolute;
+	left: 1em;
+	top: 0.70em;
+	width: 1em;
+	height: 1em;
+	box-sizing: border-box;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-radius: 50%;
+	animation: wheel 1s linear infinite;
+}
+
+.upload-status .label.tips:after {
+	border-color: currentColor transparent transparent transparent;
 }
 
 .upload-status .label.failed {
