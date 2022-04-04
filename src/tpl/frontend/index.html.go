@@ -11,6 +11,7 @@ const DefaultTplStr = `
 	<meta name="renderer" content="webkit"/>
 	<meta name="wap-font-scale" content="no"/>
 	<title>{{.Path}}</title>
+	<link rel="shortcut icon" href="{{.RootRelPath}}?asset=favicon.ico"/>
 	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=index.css"/>
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">

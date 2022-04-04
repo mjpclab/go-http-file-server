@@ -472,7 +472,7 @@ html.dragging::before {
 	background: #ffc;
 }
 
-@media (prefers-color-scheme: dark) {
+@media only screen and (prefers-color-scheme: dark) {
 	html, body {
 		background: #111;
 	}
