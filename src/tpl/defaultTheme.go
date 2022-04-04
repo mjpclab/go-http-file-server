@@ -8,6 +8,9 @@ import (
 //go:embed frontend/index.html
 var defaultTplStr string
 
+//go:embed frontend/favicon.ico
+var defaultFavicon []byte
+
 //go:embed frontend/index.css
 var defaultCss []byte
 
@@ -24,8 +27,9 @@ func init() {
 	DefaultTheme.template = defaultTpl
 
 	defaultAssets := map[string]asset{
-		"index.css": {"text/css", bytes.NewReader(defaultCss)},
-		"index.js":  {"application/javascript", bytes.NewReader(defaultJs)},
+		"favicon.ico": {"image/x-icon", bytes.NewReader(defaultFavicon)},
+		"index.css":   {"text/css", bytes.NewReader(defaultCss)},
+		"index.js":    {"application/javascript", bytes.NewReader(defaultJs)},
 	}
 	DefaultTheme.assets = defaultAssets
 }
