@@ -3,6 +3,10 @@
 ## FreeBSD platform
 - Go 1.9 is the last release supports FreeBSD 9.3
 - Go 1.10 supports FreeBSD 10.3+
+- Go 1.12 is the last release supports FreeBSD 10
+- Go 1.13 supports FreeBSD 11.2+
+- Go 1.18 is the last release supports FreeBSD 11
+- Go 1.19 supports FreeBSD 12.2+
 
 ## OpenBSD platform
 - Go 1.9 supports OpenBSD 6.0+

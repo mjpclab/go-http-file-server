@@ -2,6 +2,7 @@ package tpl
 
 import (
 	"./frontend"
+	"bytes"
 	"strings"
 )
 
@@ -15,8 +16,9 @@ func init() {
 	DefaultTheme.template = defaultTpl
 
 	defaultAssets := map[string]asset{
-		"index.css": {"text/css", strings.NewReader(frontend.DefaultCss)},
-		"index.js":  {"application/javascript", strings.NewReader(frontend.DefaultJs)},
+		"favicon.ico": {"image/x-icon", bytes.NewReader(frontend.DefaultFavicon)},
+		"index.css":   {"text/css", strings.NewReader(frontend.DefaultCss)},
+		"index.js":    {"application/javascript", strings.NewReader(frontend.DefaultJs)},
 	}
 	DefaultTheme.assets = defaultAssets
 }
