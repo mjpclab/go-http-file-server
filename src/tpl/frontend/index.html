@@ -24,8 +24,12 @@
 
 {{if .CanUpload}}
 <div class="upload-status">
-	<span class="label tips">{{.Trans.UploadingLabel}}</span>
-	<span class="label failed">{{.Trans.UploadFailLabel}}<span class="message"></span></span>
+	<span class="label info">
+		<span class="content">{{.Trans.UploadingLabel}}</span>
+	</span>
+	<span class="label warn">
+		<span class="content">{{.Trans.UploadFailLabel}}<span class="message"></span></span>
+	</span>
 	<span class="progress"></span>
 </div>
 {{end}}

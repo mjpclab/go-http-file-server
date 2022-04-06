@@ -801,7 +801,7 @@
 			var classFailed = 'failed';
 			var elUploadStatus = document.body.querySelector('.upload-status');
 			var elProgress = elUploadStatus && elUploadStatus.querySelector('.progress');
-			var elFailedMessage = elUploadStatus && elUploadStatus.querySelector('.failed .message');
+			var elFailedMessage = elUploadStatus && elUploadStatus.querySelector('.warn .message');
 
 			function onComplete() {
 				if (elProgress) {
