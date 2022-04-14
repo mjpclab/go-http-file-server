@@ -11,7 +11,7 @@ const DefaultTplStr = `
 	<meta name="renderer" content="webkit"/>
 	<meta name="wap-font-scale" content="no"/>
 	<title>{{.Path}}</title>
-	<link rel="shortcut icon" href="{{.RootRelPath}}?asset=favicon.ico"/>
+	<link rel="shortcut icon" type="image/x-icon" href="{{.RootRelPath}}?asset=favicon.ico"/>
 	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=index.css"/>
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
@@ -27,8 +27,12 @@ const DefaultTplStr = `
 
 {{if .CanUpload}}
 <div class="upload-status">
-	<span class="label tips">{{.Trans.UploadingLabel}}</span>
-	<span class="label failed">{{.Trans.UploadFailLabel}}<span class="message"></span></span>
+	<span class="label info">
+		<span class="content">{{.Trans.UploadingLabel}}</span>
+	</span>
+	<span class="label warn">
+		<span class="content">{{.Trans.UploadFailLabel}}<span class="message"></span></span>
+	</span>
 	<span class="progress"></span>
 </div>
 {{end}}
