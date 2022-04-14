@@ -3,6 +3,10 @@
 ## FreeBSD平台
 - Go 1.9是最后支持FreeBSD 9.3的版本
 - Go 1.10支持FreeBSD 10.3+
+- Go 1.12是最后支持FreeBSD 10的版本
+- Go 1.13支持FreeBSD 11.2+
+- Go 1.18是最后支持FreeBSD 11的版本
+- Go 1.19支持FreeBSD 12.2+
 
 ## OpenBSD平台
 - Go 1.9支持OpenBSD 6.0+

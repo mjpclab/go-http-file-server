@@ -213,6 +213,7 @@ html.dragging::before {
 	pointer-events: none;
 }
 
+.upload-status > *,
 .upload-status.uploading,
 .upload-status.failed {
 	visibility: visible;
@@ -220,30 +221,69 @@ html.dragging::before {
 
 .upload-status .label {
 	position: absolute;
-	left: 50%;
-	top: 100%;
-	opacity: 0;
-	transform: translate(-50%, -50%);
-	transition: transform .2s, opacity .2s;
-	padding: 0.5em 1em;
+	left: 0;
+	top: 0;
+	width: 100%;
 	color: #fff;
-	white-space: nowrap;
+	text-align: center;
+	opacity: 0;
+	transition: transform .2s, opacity .2s;
 }
 
-.upload-status .label.tips {
+.upload-status .label .content {
+	position: relative;
+	display: inline-block;
+	vertical-align: top;
+	text-align: left;
+	text-align: start;
+	padding: 0.5em 1em;
+	box-sizing: border-box;
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+
+.upload-status .info .content {
+	padding-left: 2.5em;
 	background: #c9c;
 	background-color: rgba(204, 153, 204, 0.8);
 }
 
-.upload-status .label.failed {
+@keyframes wheel {
+	from {
+		transform: rotate(0);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.upload-status .info .content:before,
+.upload-status .info .content:after {
+	content: '';
+	position: absolute;
+	left: 1em;
+	top: 0.70em;
+	width: 1em;
+	height: 1em;
+	box-sizing: border-box;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-radius: 50%;
+	animation: wheel 1s linear infinite;
+}
+
+.upload-status .info .content:after {
+	border-color: currentColor transparent transparent transparent;
+}
+
+.upload-status .warn .content {
 	background: #800000;
 	background-color: rgba(128, 0, 0, 0.8);
 }
 
-.upload-status.uploading .label.tips,
-.upload-status.failed .label.failed {
+.upload-status.uploading .info,
+.upload-status.failed .warn {
 	opacity: 1;
-	transform: translate(-50%, 10%);
+	transform: translateY(25%);
 }
 
 .upload-status .progress {
@@ -472,7 +512,7 @@ html.dragging::before {
 	background: #ffc;
 }
 
-@media (prefers-color-scheme: dark) {
+@media only screen and (prefers-color-scheme: dark) {
 	html, body {
 		background: #111;
 	}

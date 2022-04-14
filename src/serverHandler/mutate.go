@@ -28,11 +28,12 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 		header := w.Header()
 		header.Set("Content-Type", "application/json; charset=utf-8")
 		header.Set("Cache-Control", "public, max-age=0")
-		w.WriteHeader(http.StatusOK)
 
 		if success {
+			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"success":true}`))
 		} else {
+			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(`{"success":false}`))
 		}
 	} else {
@@ -50,6 +51,11 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 				reqPath += ctxQs
 			}
 		}
-		http.Redirect(w, r, reqPath, http.StatusFound)
+
+		if success {
+			http.Redirect(w, r, reqPath, http.StatusFound)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 }

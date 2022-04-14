@@ -70,6 +70,14 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
+	var vary string
+	if r.ProtoMajor <= 1 {
+		vary = "Accept-Encoding"
+	} else {
+		vary = "accept-encoding"
+	}
+	header.Set("Vary", vary)
+
 	updateTranslation(r, data)
 
 	if !needResponseBody(r.Method) {
