@@ -262,6 +262,9 @@ func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInf
 
 func (h *handler) getResponseData(r *http.Request) *responseData {
 	requestUri := r.URL.Path
+	if len(requestUri) == 0 {
+		requestUri = "/"
+	}
 	tailSlash := requestUri[len(requestUri)-1] == '/'
 
 	rawReqPath := util.CleanUrlPath(requestUri)
