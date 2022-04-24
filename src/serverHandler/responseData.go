@@ -28,6 +28,10 @@ type responseData struct {
 	rawReqPath     string
 	handlerReqPath string
 
+	NeedAuth     bool
+	AuthUserName string
+	AuthSuccess  bool
+
 	errors []error
 	Status int
 
@@ -51,8 +55,6 @@ type responseData struct {
 	HasDeletable bool
 	CanArchive   bool
 	CanCors      bool
-	NeedAuth     bool
-	AuthUserName string
 
 	IsDownload bool
 	IsUpload   bool
@@ -269,10 +271,18 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 
 	rawReqPath := util.CleanUrlPath(requestUri)
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
+	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
+
+	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
+	authUserName := ""
+	authSuccess := true
+	if needAuth {
+		authUserName, authSuccess = h.verifyAuth(r)
+	}
+
 	errs := []error{}
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
-
 	rawQuery := r.URL.RawQuery
 
 	pathEntries := getPathEntries(rawReqPath, tailSlash)
@@ -283,9 +293,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		rootRelPath = "./"
 	}
 
-	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
-
-	file, item, _statErr := stat(reqFsPath, !h.emptyRoot)
+	file, item, _statErr := stat(reqFsPath, authSuccess && !h.emptyRoot)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		status = getStatusByErr(_statErr)
@@ -307,7 +315,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, authSuccess && needResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
@@ -334,7 +342,6 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
-	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 
 	isDownload := false
 	isUpload := false
@@ -366,6 +373,10 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 
+		NeedAuth:     needAuth,
+		AuthUserName: authUserName,
+		AuthSuccess:  authSuccess,
+
 		errors: errs,
 		Status: status,
 
@@ -389,7 +400,6 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		HasDeletable: hasDeletable,
 		CanArchive:   canArchive,
 		CanCors:      canCors,
-		NeedAuth:     needAuth,
 
 		IsDownload: isDownload,
 		IsUpload:   isUpload,

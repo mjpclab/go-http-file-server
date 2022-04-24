@@ -17,6 +17,9 @@ type jsonItem struct {
 }
 
 type jsonResponseData struct {
+	NeedAuth           bool         `json:"needAuth"`
+	AuthUserName       string       `json:"authUserName"`
+	AuthSuccess        bool         `json:"authSuccess"`
 	IsRoot             bool         `json:"isRoot"`
 	Path               string       `json:"path"`
 	Paths              []*pathEntry `json:"paths"`
@@ -27,7 +30,6 @@ type jsonResponseData struct {
 	CanDelete          bool         `json:"canDelete"`
 	CanArchive         bool         `json:"canArchive"`
 	CanCors            bool         `json:"canCors"`
-	NeedAuth           bool         `json:"needAuth"`
 
 	Item     *jsonItem   `json:"item"`
 	SubItems []*jsonItem `json:"subItems"`
@@ -57,6 +59,9 @@ func getJsonData(data *responseData) *jsonResponseData {
 	}
 
 	return &jsonResponseData{
+		NeedAuth:           data.NeedAuth,
+		AuthUserName:       data.AuthUserName,
+		AuthSuccess:        data.AuthSuccess,
 		IsRoot:             data.IsRoot,
 		Path:               data.Path,
 		Paths:              data.Paths,
@@ -67,7 +72,6 @@ func getJsonData(data *responseData) *jsonResponseData {
 		CanDelete:          data.CanDelete,
 		CanArchive:         data.CanArchive,
 		CanCors:            data.CanCors,
-		NeedAuth:           data.NeedAuth,
 
 		Item:     item,
 		SubItems: subItems,
