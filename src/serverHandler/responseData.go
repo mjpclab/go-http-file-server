@@ -32,6 +32,20 @@ type responseData struct {
 	AuthUserName string
 	AuthSuccess  bool
 
+	IsDownload bool
+	IsUpload   bool
+	IsMkdir    bool
+	IsDelete   bool
+	IsMutate   bool
+	WantJson   bool
+
+	CanUpload    bool
+	CanMkdir     bool
+	CanDelete    bool
+	HasDeletable bool
+	CanArchive   bool
+	CanCors      bool
+
 	errors []error
 	Status int
 
@@ -48,20 +62,6 @@ type responseData struct {
 	SubItemPrefix string
 	SortState     SortState
 	Context       *pathContext
-
-	CanUpload    bool
-	CanMkdir     bool
-	CanDelete    bool
-	HasDeletable bool
-	CanArchive   bool
-	CanCors      bool
-
-	IsDownload bool
-	IsUpload   bool
-	IsMkdir    bool
-	IsDelete   bool
-	IsMutate   bool
-	WantJson   bool
 
 	Lang  string
 	Trans *i18n.Translation
@@ -280,10 +280,30 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		authUserName, authSuccess = h.verifyAuth(r)
 	}
 
+	rawQuery := r.URL.RawQuery
+	isDownload := false
+	isUpload := false
+	isMkdir := false
+	isDelete := false
+	isMutate := false
+	switch {
+	case strings.HasPrefix(rawQuery, "download"):
+		isDownload = true
+	case strings.HasPrefix(rawQuery, "upload") && r.Method == http.MethodPost:
+		isUpload = true
+		isMutate = true
+	case strings.HasPrefix(rawQuery, "mkdir"):
+		isMkdir = true
+		isMutate = true
+	case strings.HasPrefix(r.URL.RawQuery, "delete"):
+		isDelete = true
+		isMutate = true
+	}
+	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
+
 	errs := []error{}
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
-	rawQuery := r.URL.RawQuery
 
 	pathEntries := getPathEntries(rawReqPath, tailSlash)
 	var rootRelPath string
@@ -315,7 +335,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, authSuccess && needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && needResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
@@ -343,26 +363,6 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 
-	isDownload := false
-	isUpload := false
-	isMkdir := false
-	isDelete := false
-	isMutate := false
-	switch {
-	case strings.HasPrefix(rawQuery, "download"):
-		isDownload = true
-	case strings.HasPrefix(rawQuery, "upload") && r.Method == http.MethodPost:
-		isUpload = true
-		isMutate = true
-	case strings.HasPrefix(rawQuery, "mkdir"):
-		isMkdir = true
-		isMutate = true
-	case strings.HasPrefix(r.URL.RawQuery, "delete"):
-		isDelete = true
-		isMutate = true
-	}
-	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
-
 	context := &pathContext{
 		download:    isDownload,
 		sort:        rawSortBy,
@@ -376,6 +376,20 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		NeedAuth:     needAuth,
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
+
+		IsDownload: isDownload,
+		IsUpload:   isUpload,
+		IsMkdir:    isMkdir,
+		IsDelete:   isDelete,
+		IsMutate:   isMutate,
+		WantJson:   wantJson,
+
+		CanUpload:    canUpload,
+		CanMkdir:     canMkdir,
+		CanDelete:    canDelete,
+		HasDeletable: hasDeletable,
+		CanArchive:   canArchive,
+		CanCors:      canCors,
 
 		errors: errs,
 		Status: status,
@@ -393,19 +407,5 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		SubItemPrefix: subItemPrefix,
 		SortState:     sortState,
 		Context:       context,
-
-		CanUpload:    canUpload,
-		CanMkdir:     canMkdir,
-		CanDelete:    canDelete,
-		HasDeletable: hasDeletable,
-		CanArchive:   canArchive,
-		CanCors:      canCors,
-
-		IsDownload: isDownload,
-		IsUpload:   isUpload,
-		IsMkdir:    isMkdir,
-		IsDelete:   isDelete,
-		IsMutate:   isMutate,
-		WantJson:   wantJson,
 	}
 }
