@@ -263,6 +263,8 @@ func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInf
 }
 
 func (h *handler) getResponseData(r *http.Request) *responseData {
+	var errs []error
+
 	requestUri := r.URL.Path
 	if len(requestUri) == 0 {
 		requestUri = "/"
@@ -277,7 +279,11 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	authUserName := ""
 	authSuccess := true
 	if needAuth {
-		authUserName, authSuccess = h.verifyAuth(r)
+		var _authErr error
+		authUserName, authSuccess, _authErr = h.verifyAuth(r)
+		if _authErr != nil {
+			errs = append(errs, _authErr)
+		}
 	}
 
 	rawQuery := r.URL.RawQuery
@@ -301,7 +307,6 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	}
 	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
 
-	errs := []error{}
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
