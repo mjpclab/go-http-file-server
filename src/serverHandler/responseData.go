@@ -72,8 +72,10 @@ func isSlash(c rune) bool {
 }
 
 func getPathEntries(path string, tailSlash bool) []pathEntry {
-	paths := []string{"/"}
-	paths = append(paths, strings.FieldsFunc(path, isSlash)...)
+	restPaths := strings.FieldsFunc(path, isSlash)
+	paths := make([]string, 1, len(restPaths)+1)
+	paths[0] = "/"
+	paths = append(paths, restPaths...)
 
 	displayPathsCount := len(paths)
 
