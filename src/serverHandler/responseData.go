@@ -51,7 +51,7 @@ type responseData struct {
 
 	IsRoot        bool
 	Path          string
-	Paths         []*pathEntry
+	Paths         []pathEntry
 	RootRelPath   string
 	File          *os.File
 	Item          os.FileInfo
@@ -71,7 +71,7 @@ func isSlash(c rune) bool {
 	return c == '/'
 }
 
-func getPathEntries(path string, tailSlash bool) []*pathEntry {
+func getPathEntries(path string, tailSlash bool) []pathEntry {
 	paths := []string{"/"}
 	paths = append(paths, strings.FieldsFunc(path, isSlash)...)
 
@@ -82,7 +82,7 @@ func getPathEntries(path string, tailSlash bool) []*pathEntry {
 		pathsCount--
 	}
 
-	pathEntries := make([]*pathEntry, displayPathsCount)
+	pathEntries := make([]pathEntry, displayPathsCount)
 	for i := 0; i < displayPathsCount; i++ {
 		var rPath string
 		switch {
@@ -94,7 +94,7 @@ func getPathEntries(path string, tailSlash bool) []*pathEntry {
 			rPath = "./" + strings.Join(paths[pathsCount:], "/") + "/"
 		}
 
-		pathEntries[i] = &pathEntry{
+		pathEntries[i] = pathEntry{
 			Name: paths[i],
 			Path: rPath,
 		}

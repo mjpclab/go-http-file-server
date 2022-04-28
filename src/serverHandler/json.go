@@ -17,19 +17,19 @@ type jsonItem struct {
 }
 
 type jsonResponseData struct {
-	NeedAuth           bool         `json:"needAuth"`
-	AuthUserName       string       `json:"authUserName"`
-	AuthSuccess        bool         `json:"authSuccess"`
-	IsRoot             bool         `json:"isRoot"`
-	Path               string       `json:"path"`
-	Paths              []*pathEntry `json:"paths"`
-	SubItemPrefix      string       `json:"subItemPrefix"`
-	ContextQueryString string       `json:"contextQueryString"`
-	CanUpload          bool         `json:"canUpload"`
-	CanMkdir           bool         `json:"canMkdir"`
-	CanDelete          bool         `json:"canDelete"`
-	CanArchive         bool         `json:"canArchive"`
-	CanCors            bool         `json:"canCors"`
+	NeedAuth           bool        `json:"needAuth"`
+	AuthUserName       string      `json:"authUserName"`
+	AuthSuccess        bool        `json:"authSuccess"`
+	IsRoot             bool        `json:"isRoot"`
+	Path               string      `json:"path"`
+	Paths              []pathEntry `json:"paths"`
+	SubItemPrefix      string      `json:"subItemPrefix"`
+	ContextQueryString string      `json:"contextQueryString"`
+	CanUpload          bool        `json:"canUpload"`
+	CanMkdir           bool        `json:"canMkdir"`
+	CanDelete          bool        `json:"canDelete"`
+	CanArchive         bool        `json:"canArchive"`
+	CanCors            bool        `json:"canCors"`
 
 	Item     *jsonItem   `json:"item"`
 	SubItems []*jsonItem `json:"subItems"`
