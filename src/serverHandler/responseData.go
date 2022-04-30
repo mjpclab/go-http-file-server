@@ -29,12 +29,30 @@ type responseData struct {
 	rawReqPath     string
 	handlerReqPath string
 
+	NeedAuth     bool
+	AuthUserName string
+	AuthSuccess  bool
+
+	IsDownload bool
+	IsUpload   bool
+	IsMkdir    bool
+	IsDelete   bool
+	IsMutate   bool
+	WantJson   bool
+
+	CanUpload    bool
+	CanMkdir     bool
+	CanDelete    bool
+	HasDeletable bool
+	CanArchive   bool
+	CanCors      bool
+
 	errors []error
 	Status int
 
 	IsRoot        bool
 	Path          string
-	Paths         []*pathEntry
+	Paths         []pathEntry
 	RootRelPath   string
 	File          *os.File
 	Item          os.FileInfo
@@ -46,22 +64,6 @@ type responseData struct {
 	SortState     SortState
 	Context       *pathContext
 
-	CanUpload    bool
-	CanMkdir     bool
-	CanDelete    bool
-	HasDeletable bool
-	CanArchive   bool
-	CanCors      bool
-	NeedAuth     bool
-	AuthUserName string
-
-	IsDownload bool
-	IsUpload   bool
-	IsMkdir    bool
-	IsDelete   bool
-	IsMutate   bool
-	WantJson   bool
-
 	Lang  string
 	Trans *i18n.Translation
 }
@@ -70,9 +72,11 @@ func isSlash(c rune) bool {
 	return c == '/'
 }
 
-func getPathEntries(path string, tailSlash bool) []*pathEntry {
-	paths := []string{"/"}
-	paths = append(paths, strings.FieldsFunc(path, isSlash)...)
+func getPathEntries(path string, tailSlash bool) []pathEntry {
+	restPaths := strings.FieldsFunc(path, isSlash)
+	paths := make([]string, 1, len(restPaths)+1)
+	paths[0] = "/"
+	paths = append(paths, restPaths...)
 
 	displayPathsCount := len(paths)
 
@@ -81,7 +85,7 @@ func getPathEntries(path string, tailSlash bool) []*pathEntry {
 		pathsCount--
 	}
 
-	pathEntries := make([]*pathEntry, displayPathsCount)
+	pathEntries := make([]pathEntry, displayPathsCount)
 	for i := 0; i < displayPathsCount; i++ {
 		var rPath string
 		switch {
@@ -93,7 +97,7 @@ func getPathEntries(path string, tailSlash bool) []*pathEntry {
 			rPath = "./" + strings.Join(paths[pathsCount:], "/") + "/"
 		}
 
-		pathEntries[i] = &pathEntry{
+		pathEntries[i] = pathEntry{
 			Name: paths[i],
 			Path: rPath,
 		}
@@ -262,16 +266,52 @@ func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInf
 }
 
 func (h *handler) getResponseData(r *http.Request) *responseData {
+	var errs []error
+
 	requestUri := r.URL.Path
+	if len(requestUri) == 0 {
+		requestUri = "/"
+	}
 	tailSlash := requestUri[len(requestUri)-1] == '/'
 
 	rawReqPath := util.CleanUrlPath(requestUri)
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
-	errs := []error{}
-	status := http.StatusOK
-	isRoot := rawReqPath == "/"
+	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
+
+	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
+	authUserName := ""
+	authSuccess := true
+	if needAuth {
+		var _authErr error
+		authUserName, authSuccess, _authErr = h.verifyAuth(r)
+		if _authErr != nil {
+			errs = append(errs, _authErr)
+		}
+	}
 
 	rawQuery := r.URL.RawQuery
+	isDownload := false
+	isUpload := false
+	isMkdir := false
+	isDelete := false
+	isMutate := false
+	switch {
+	case strings.HasPrefix(rawQuery, "download"):
+		isDownload = true
+	case strings.HasPrefix(rawQuery, "upload") && r.Method == shimgo.Net_Http_MethodPost:
+		isUpload = true
+		isMutate = true
+	case strings.HasPrefix(rawQuery, "mkdir"):
+		isMkdir = true
+		isMutate = true
+	case strings.HasPrefix(r.URL.RawQuery, "delete"):
+		isDelete = true
+		isMutate = true
+	}
+	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
+
+	status := http.StatusOK
+	isRoot := rawReqPath == "/"
 
 	pathEntries := getPathEntries(rawReqPath, tailSlash)
 	var rootRelPath string
@@ -281,9 +321,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		rootRelPath = "./"
 	}
 
-	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
-
-	file, item, _statErr := stat(reqFsPath, !h.emptyRoot)
+	file, item, _statErr := stat(reqFsPath, authSuccess && !h.emptyRoot)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		status = getStatusByErr(_statErr)
@@ -305,7 +343,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && needResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
@@ -332,27 +370,6 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
-	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
-
-	isDownload := false
-	isUpload := false
-	isMkdir := false
-	isDelete := false
-	isMutate := false
-	switch {
-	case strings.HasPrefix(rawQuery, "download"):
-		isDownload = true
-	case strings.HasPrefix(rawQuery, "upload") && r.Method == shimgo.Net_Http_MethodPost:
-		isUpload = true
-		isMutate = true
-	case strings.HasPrefix(rawQuery, "mkdir"):
-		isMkdir = true
-		isMutate = true
-	case strings.HasPrefix(r.URL.RawQuery, "delete"):
-		isDelete = true
-		isMutate = true
-	}
-	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
 
 	context := &pathContext{
 		download:    isDownload,
@@ -363,6 +380,24 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	return &responseData{
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
+
+		NeedAuth:     needAuth,
+		AuthUserName: authUserName,
+		AuthSuccess:  authSuccess,
+
+		IsDownload: isDownload,
+		IsUpload:   isUpload,
+		IsMkdir:    isMkdir,
+		IsDelete:   isDelete,
+		IsMutate:   isMutate,
+		WantJson:   wantJson,
+
+		CanUpload:    canUpload,
+		CanMkdir:     canMkdir,
+		CanDelete:    canDelete,
+		HasDeletable: hasDeletable,
+		CanArchive:   canArchive,
+		CanCors:      canCors,
 
 		errors: errs,
 		Status: status,
@@ -380,20 +415,5 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		SubItemPrefix: subItemPrefix,
 		SortState:     sortState,
 		Context:       context,
-
-		CanUpload:    canUpload,
-		CanMkdir:     canMkdir,
-		CanDelete:    canDelete,
-		HasDeletable: hasDeletable,
-		CanArchive:   canArchive,
-		CanCors:      canCors,
-		NeedAuth:     needAuth,
-
-		IsDownload: isDownload,
-		IsUpload:   isUpload,
-		IsMkdir:    isMkdir,
-		IsDelete:   isDelete,
-		IsMutate:   isMutate,
-		WantJson:   wantJson,
 	}
 }

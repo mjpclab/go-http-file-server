@@ -2,7 +2,7 @@
 
 source "$root"/lib.bash
 
-"$ghfs" -l 3003 -r "$fs"/vhost1 --auth /hello --user alice:AliceSecret &
+"$ghfs" -l 3003 -r "$fs"/vhost1 --auth /hello --user alice:AliceSecret -E '' &
 sleep 0.05 # wait server ready
 
 yesstatus=$(curl_get_status http://127.0.0.1:3003/yes/)
