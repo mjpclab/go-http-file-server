@@ -87,12 +87,27 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			if prefixSlashIndex > 0 {
 				fsInfix = filepath[prefixSlashIndex+1:]
 			}
+		} else if formname == file {
+			// noop
+		} else {
+			errs = append(errs, errors.New("upload: unknown mode "+formname))
+			continue
 		}
 
 		filePrefix := fsPrefix
 		if len(fsInfix) > 0 {
 			if !createDir {
-				errs = append(errs, errors.New("Upload failed: mkdir is not enabled for "+fsPrefix))
+				errs = append(errs, errors.New("upload: mkdir is not enabled for "+fsPrefix))
+				continue
+			}
+
+			fsInfixPart1 := fsInfix
+			fsInfixSlashIndex := strings.IndexByte(fsInfixPart1, '/')
+			if fsInfixSlashIndex > 0 {
+				fsInfixPart1 = fsInfixPart1[0:fsInfixSlashIndex]
+			}
+			if containsItem(aliasSubItems, fsInfixPart1) {
+				errs = append(errs, errors.New("upload: ignore path shadowed by alias "+fsInfix))
 				continue
 			}
 
@@ -112,7 +127,7 @@ func (h *handler) saveUploadFiles(fsPrefix string, createDir, overwriteExists bo
 			continue
 		}
 
-		isFilenameAliased := containsItem(aliasSubItems, filename)
+		isFilenameAliased := len(fsInfix) == 0 && containsItem(aliasSubItems, filename)
 		var fsFilename string
 		if overwriteExists && !isFilenameAliased {
 			tryPath := filePrefix + "/" + filename
