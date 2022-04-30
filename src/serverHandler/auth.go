@@ -1,21 +1,30 @@
 package serverHandler
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
-func (h *handler) auth(w http.ResponseWriter, r *http.Request, data *responseData) (success bool) {
-	header := w.Header()
-	header.Set("WWW-Authenticate", "Basic realm=\""+r.URL.Path+"\"")
+func (h *handler) needAuth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("WWW-Authenticate", "Basic realm=\""+r.URL.Path+"\"")
+}
 
-	username, password, hasAuthReq := r.BasicAuth()
+func (h *handler) verifyAuth(r *http.Request) (username string, success bool, err error) {
+	var password string
+	var hasAuthReq bool
+	username, password, hasAuthReq = r.BasicAuth()
 	if hasAuthReq {
 		success = h.users.Auth(username, password)
-	}
-
-	if success {
-		data.AuthUserName = username
+		if !success {
+			err = errors.New(r.RemoteAddr + " auth failed")
+		}
 	} else {
-		w.WriteHeader(http.StatusUnauthorized)
+		err = errors.New(r.RemoteAddr + " missing auth info")
 	}
 
 	return
+}
+
+func (h *handler) authFailed(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusUnauthorized)
 }

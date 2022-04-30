@@ -93,7 +93,11 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 	}
 
-	if data.NeedAuth && !h.auth(w, r, data) {
+	if data.NeedAuth {
+		h.needAuth(w, r)
+	}
+	if !data.AuthSuccess {
+		h.authFailed(w)
 		return
 	}
 
