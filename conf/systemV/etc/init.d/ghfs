@@ -26,7 +26,8 @@ pidfile="/var/run/${prog}.pid"
 
 start() {
 	echo -n $"Starting $prog: "
-	"$ghfs" --config=/etc/ghfs.conf &
+	setcap CAP_NET_BIND_SERVICE=+ep "$ghfs"
+	runuser -u nobody -- "$ghfs" --config=/etc/ghfs.conf &
 	retval=$?
 	echo
 	if [ $retval -eq 0 ]; then
