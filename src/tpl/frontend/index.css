@@ -117,6 +117,7 @@ html.dragging::before {
 
 .path-list {
 	font-size: 1.5em;
+	line-height: 1.2;
 	overflow: hidden;
 	border-bottom: 1px #999 solid;
 	zoom: 1;
@@ -402,6 +403,7 @@ html.dragging::before {
 
 .item-list {
 	margin: 1em;
+	line-height: 1.2;
 }
 
 .item-list li {
