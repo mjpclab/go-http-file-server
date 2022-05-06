@@ -662,18 +662,6 @@
 			}
 		}
 
-		function switchToAnyDirMode() {
-			if (optActive === optFile) {
-				if (optDirFile) {
-					optDirFile.focus();
-					optDirFile.click();
-				} else if (optInnerDirFile) {
-					optInnerDirFile.focus();
-					optInnerDirFile.click();
-				}
-			}
-		}
-
 		function enableAddDirFile() {
 			var classHidden = 'hidden';
 			var classActive = 'active';
@@ -953,9 +941,8 @@
 						// must use progressive upload by JS if has directory
 						return;
 					}
-					var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
 					itemsToFiles(items, function (files) {
-						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();
+						switchToDirMode();
 						uploadProgressively(files);
 					});
 				} else {
@@ -1087,8 +1074,7 @@
 				}
 
 				var items = data.items;
-				var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
-				if (!items || !itemsCount) {
+				if (!items || !items.length) {
 					generatePastedFiles(data);
 					return;
 				}
@@ -1109,7 +1095,7 @@
 					}
 					// pasted real files, not image binary
 					if (hasDir) {
-						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();
+						switchToDirMode();
 					} else {
 						switchToFileMode();
 					}
