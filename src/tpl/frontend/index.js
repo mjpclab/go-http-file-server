@@ -627,18 +627,16 @@
 			if (!dataTransferItems) {
 				return false;
 			}
-			var hasDir = false;
 			var items = Array.prototype.slice.call(dataTransferItems);
 			if (items.length && items[0].webkitGetAsEntry) {
 				for (var i = 0, len = items.length; i < len; i++) {
 					var entry = items[i].webkitGetAsEntry();
 					if (entry && entry.isDirectory) {
-						hasDir = true;
-						break;
+						return true;
 					}
 				}
 			}
-			return hasDir;
+			return false;
 		}
 
 		function switchToFileMode() {
@@ -967,19 +965,7 @@
 			dragDropEl.addEventListener('drop', onDrop);
 		}
 
-		function enableAddPaste(uploadProgressively) {
-			if (!uploadProgressively) {
-				document.documentElement.addEventListener('paste', function (e) {
-					var data = e.clipboardData;
-					if (data && data.files && data.files.length) {
-						switchToFileMode();
-						fileInput.files = data.files;
-						form.submit();
-					}
-				});
-				return;
-			}
-
+		function enableAddPasteProgressively(uploadProgressively) {
 			var typeTextPlain = 'text/plain';
 			var createTextFile;
 			var textFilename = 'text.txt';
@@ -1104,11 +1090,26 @@
 			});
 		}
 
+		function enableAddPasteFormSubmit() {
+			document.documentElement.addEventListener('paste', function (e) {
+				var data = e.clipboardData;
+				if (data && data.files && data.files.length) {
+					switchToFileMode();
+					fileInput.files = data.files;
+					form.submit();
+				}
+			});
+		}
+
 		enableAddDirFile();
 		var uploadProgressively = enableUploadProgress();
-		enableFormUploadProgress(uploadProgressively);
+		if (uploadProgressively) {
+			enableFormUploadProgress(uploadProgressively);
+			enableAddPasteProgressively(uploadProgressively);
+		} else {
+			enableAddPasteFormSubmit();
+		}
 		enableAddDragDrop(uploadProgressively);
-		enableAddPaste(uploadProgressively);
 	}
 
 	function enableNonRefreshDelete() {
