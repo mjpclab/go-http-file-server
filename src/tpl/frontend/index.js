@@ -511,6 +511,7 @@
 		var optDirFile = uploadType.querySelector('.' + dirFile);
 		var optInnerDirFile = uploadType.querySelector('.' + innerDirFile);
 		var optActive = optFile;
+		var canMkdir = Boolean(optDirFile);
 
 		var padStart = String.prototype.padStart ? function (sourceString, targetLength, padTemplate) {
 			return sourceString.padStart(targetLength, padTemplate);
@@ -935,8 +936,9 @@
 
 				var items = e.dataTransfer.items;
 				if (itemsHasDir(items)) {
-					if (!uploadProgressively) {
-						// must use progressive upload by JS if has directory
+					// must use progressive upload by JS if has directory
+					if (!canMkdir || !uploadProgressively) {
+						typeof showUploadDirFailMessage !== strUndef && showUploadDirFailMessage();
 						return;
 					}
 					itemsToFiles(items, function (files) {
@@ -1065,6 +1067,10 @@
 					return;
 				}
 				var hasDir = itemsHasDir(items);
+				if (hasDir && !canMkdir) {
+					typeof showUploadDirFailMessage !== strUndef && showUploadDirFailMessage();
+					return;
+				}
 				itemsToFiles(items, function (files) {
 					if (!files.length) {
 						// for pasted text
