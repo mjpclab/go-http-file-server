@@ -211,7 +211,6 @@ html.dragging::before {
 	pointer-events: none;
 }
 
-.upload-status > *,
 .upload-status.uploading,
 .upload-status.failed {
 	visibility: visible;
