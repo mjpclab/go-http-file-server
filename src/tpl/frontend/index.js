@@ -1,5 +1,6 @@
 (function () {
 	var strUndef = 'undefined';
+	var protoHttps = 'https:';
 
 	var classNone = 'none';
 	var classHeader = 'header';
@@ -550,94 +551,159 @@
 			return ts;
 		}
 
-		function entriesToFiles(entries, onDone) {
-			var files = [];
-			var len = entries.length;
-			var cb = 0;
-			if (!len) {
-				onDone(files);
-			}
-
-			function increaseCb() {
-				cb++;
-				if (cb === len) {
-					onDone(files);
-				}
-			}
-
-			entries.forEach(function (entry) {
-				if (entry.isFile) {
-					var relativePath = entry.fullPath;
-					if (relativePath[0] === '/') {
-						relativePath = relativePath.substring(1);
-					}
-					entry.file(function (file) {
-						files.push({file: file, relativePath: relativePath});
-						increaseCb();
-					}, function (err) {
-						increaseCb();
-						typeof console !== strUndef && console.error(err);
-					});
-				} else if (entry.isDirectory) {
-					var reader = entry.createReader();
-					reader.readEntries(function (subEntries) {
-						if (subEntries.length) {
-							entriesToFiles(subEntries, function (subFiles) {
-								Array.prototype.push.apply(files, subFiles);
-								increaseCb();
+		var itemsToFiles;
+		if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && !DataTransferItem.prototype.webkitGetAsEntry) {
+			var handleKindFile = 'file';
+			var handleKindDir = 'directory';
+			var permDescriptor = {mode: 'read'};
+			itemsToFiles = function (dataTransferItems, canMkdir, onDone, onLacksMkdir) {
+				function resultsToFiles(results, files, dirPath) {
+					return Promise.all(results.map(function (result) {
+						var handle = result.value;
+						if (handle.kind === handleKindFile) {
+							return handle.queryPermission(permDescriptor).then(function (queryResult) {
+								if (queryResult === 'prompt') return handle.requestPermission(permDescriptor);
+							}).then(function () {
+								return handle.getFile();
+							}).then(function (file) {
+								var relativePath = dirPath + file.name;
+								files.push({file: file, relativePath: relativePath});
+							})['catch'](function (err) {	// workaround IE8- syntax error for ".catch"(reserved keyword)
+								typeof console !== strUndef && console.error(err);
 							});
-						} else {
-							increaseCb();
+						} else if (handle.kind === handleKindDir) {
+							return new Promise(function (resolve) {
+								var childResults = [];
+								var childIter = handle.values();
+
+								function onLevelDone() {
+									childResults = null;
+									childIter = null;
+									resolve();
+								}
+
+								function addChildResult() {
+									childIter.next().then(function (result) {
+										if (result.done) {
+											if (childResults.length) {
+												resultsToFiles(childResults, files, dirPath + handle.name + '/').then(onLevelDone);
+											} else onLevelDone();
+										} else {
+											childResults.push(result);
+											addChildResult();
+										}
+									});
+								}
+
+								addChildResult();
+							});
+						}
+					}));
+				}
+
+				var files = [];
+				var hasDir = false;
+				if (!dataTransferItems || !dataTransferItems.length) return onDone(files, hasDir);
+
+				var items = Array.prototype.slice.call(dataTransferItems);
+				Promise.all(items.map(function (item) {
+					return item.getAsFileSystemHandle();
+				})).then(function (handles) {
+					handles = handles.filter(Boolean);	// undefined for pasted content
+					hasDir = handles.some(function (handle) {
+						return handle.kind === handleKindDir;
+					});
+					if (hasDir && !canMkdir) {
+						return onLacksMkdir();
+					}
+					var handleResults = handles.map(function (handle) {
+						return {value: handle, done: false};
+					});
+					resultsToFiles(handleResults, files, '').then(function () {
+						onDone(files, hasDir);
+					});
+				});
+			}
+		} else {
+			itemsToFiles = function (dataTransferItems, canMkdir, onDone, onLacksMkdir) {
+				function entriesToFiles(entries, files, onLevelDone) {
+					var len = entries.length;
+					var cb = 0;
+					if (!len) return onLevelDone();
+
+					function increaseCb() {
+						cb++;
+						if (cb === len) {
+							onLevelDone();
+						}
+					}
+
+					entries.forEach(function (entry) {
+						if (entry.isFile) {
+							var relativePath = entry.fullPath;
+							if (relativePath[0] === '/') {
+								relativePath = relativePath.substring(1);
+							}
+							entry.file(function (file) {
+								files.push({file: file, relativePath: relativePath});
+								increaseCb();
+							}, function (err) {
+								increaseCb();
+								typeof console !== strUndef && console.error(err);
+							});
+						} else if (entry.isDirectory) {
+							var reader = entry.createReader();
+							reader.readEntries(function (subEntries) {
+								if (subEntries.length) {
+									entriesToFiles(subEntries, files, increaseCb);
+								} else {
+									increaseCb();
+								}
+							});
 						}
 					});
 				}
-			});
-		}
 
-		function itemsToFiles(dataTransferItems, onDone) {
-			var files = [];
-			var len = dataTransferItems.length;
-			if (!len) {
-				onDone(files);
-			}
+				var files = [];
+				var hasDir = false;
+				if (!dataTransferItems || !dataTransferItems.length || !dataTransferItems[0].webkitGetAsEntry) return onDone(files, hasDir);
 
-			var entries = [];
-			for (var i = 0; i < len; i++) {
-				var item = dataTransferItems[i];
-				var entry = item.webkitGetAsEntry();
-				if (!entry) {
-					continue;
-				}
-				if (entry.isFile) {
-					// Safari cannot get file from entry by entry.file(), if it is a pasted image
-					// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
-					var file = item.getAsFile();
-					files.push({file: file, relativePath: file.name});
-				} else if (entry.isDirectory) {
-					entries.push(entry);
-				}
-			}
-
-			entriesToFiles(entries, function (entryFiles) {
-				files.push.apply(files, entryFiles);
-				onDone(files);
-			});
-		}
-
-		function itemsHasDir(dataTransferItems) {
-			if (!dataTransferItems) {
-				return false;
-			}
-			var items = Array.prototype.slice.call(dataTransferItems);
-			if (items.length && items[0].webkitGetAsEntry) {
-				for (var i = 0, len = items.length; i < len; i++) {
-					var entry = items[i].webkitGetAsEntry();
-					if (entry && entry.isDirectory) {
-						return true;
+				var entries = [];
+				for (var i = 0, len = dataTransferItems.length; i < len; i++) {
+					var item = dataTransferItems[i];
+					var entry = item.webkitGetAsEntry();
+					if (!entry) {	// undefined for pasted text
+						continue;
+					}
+					if (entry.isFile) {
+						// Safari cannot get file from entry by entry.file(), if it is a pasted image
+						// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
+						var file = item.getAsFile();
+						files.push({file: file, relativePath: file.name});
+					} else if (entry.isDirectory) {
+						hasDir = true;
+						if (canMkdir) {
+							entries.push(entry);
+						} else {
+							return onLacksMkdir();
+						}
 					}
 				}
+
+				entriesToFiles(entries, files, function () {
+					onDone(files, hasDir);
+				});
 			}
-			return false;
+		}
+
+		function dataTransferToFiles(dataTransfer, canMkdir, onDone, onLacksMkdir) {
+			itemsToFiles(dataTransfer.items, canMkdir, function (files, hasDir) {
+				// ancient Browser
+				if (files.length === 0 && dataTransfer.files && dataTransfer.files.length) {
+					files = Array.prototype.slice.call(dataTransfer.files);
+				}
+				onDone(files, hasDir);
+			}, onLacksMkdir);
 		}
 
 		function switchToFileMode() {
@@ -934,28 +1000,22 @@
 					return;
 				}
 
-				var items = e.dataTransfer.items;
-				if (itemsHasDir(items)) {
-					// must use progressive upload by JS if has directory
-					if (!canMkdir || !uploadProgressively) {
-						typeof showUploadDirFailMessage !== strUndef && showUploadDirFailMessage();
-						return;
-					}
-					itemsToFiles(items, function (files) {
+				dataTransferToFiles(e.dataTransfer, canMkdir && Boolean(uploadProgressively), function (files, hasDir) {
+					if (hasDir) {
 						switchToDirMode();
 						uploadProgressively(files);
-					});
-				} else {
-					switchToFileMode();
-
-					if (uploadProgressively) {
-						var files = Array.prototype.slice.call(e.dataTransfer.files);
-						uploadProgressively(files);
 					} else {
-						fileInput.files = e.dataTransfer.files;
-						form.submit();
+						switchToFileMode();
+						if (uploadProgressively) {
+							uploadProgressively(files);
+						} else {
+							fileInput.files = files;
+							form.submit();
+						}
 					}
-				}
+				}, function () {
+					typeof showUploadDirFailMessage !== strUndef && showUploadDirFailMessage();
+				});
 			}
 
 			document.body.addEventListener('dragstart', onSelfDragStart);
@@ -1066,32 +1126,32 @@
 					generatePastedFiles(data);
 					return;
 				}
-				var hasDir = itemsHasDir(items);
-				if (hasDir && !canMkdir) {
-					typeof showUploadDirFailMessage !== strUndef && showUploadDirFailMessage();
-					return;
-				}
-				itemsToFiles(items, function (files) {
+
+				itemsToFiles(items, canMkdir, function (files, hasDir) {
+					// for pasted text
 					if (!files.length) {
-						// for pasted text
 						generatePastedFiles(data);
 						return;
 					}
+
+					// suppose for pasted image data
 					if (files.length === 1 && files[0].file.type === 'image/png') {
-						// suppose for pasted image
 						files = files.map(function (fileInfo) {
 							return fileInfo && fileInfo.file;
 						});
 						generatePastedFiles({files: files});
 						return;
 					}
-					// pasted real files, not image binary
+
+					// pasted real files
 					if (hasDir) {
 						switchToDirMode();
 					} else {
 						switchToFileMode();
 					}
 					uploadProgressively(files);
+				}, function () {
+					typeof showUploadDirFailMessage !== strUndef && showUploadDirFailMessage();
 				});
 			});
 		}
