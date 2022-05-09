@@ -544,7 +544,7 @@
 			var ms = String(now.getMilliseconds());
 			date = padStart(date, 8, '0');
 			time = padStart(time, 6, '0');
-			var ms = padStart(ms, 3, '0');
+			ms = padStart(ms, 3, '0');
 			var ts = '-' + date + '-' + time + '-' + ms;
 			return ts;
 		}
