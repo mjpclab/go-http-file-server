@@ -835,7 +835,7 @@
 				}
 
 				var nodir = Array.prototype.slice.call(files).every(function (file) {
-					return !file.webkitRelativePath;
+					return !file.webkitRelativePath || file.webkitRelativePath.indexOf('/') < 0;
 				});
 				if (nodir) {
 					onClickOptFile();	// prevent clear input files
