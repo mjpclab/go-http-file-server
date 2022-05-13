@@ -48,13 +48,13 @@ func compareIgnoreAsciiCase(prev, next []byte) (less, ok bool) {
 		prevByte := prev[i]
 		prevChar := prevByte
 		if prevChar >= 'A' && prevChar <= 'Z' {
-			prevChar += 'a' - 'A'
+			prevChar += upperLowerDistance
 		}
 
 		nextByte := next[i]
 		nextChar := nextByte
 		if nextChar >= 'A' && nextChar <= 'Z' {
-			nextChar += 'a' - 'A'
+			nextChar += upperLowerDistance
 		}
 
 		if prevChar != nextChar {

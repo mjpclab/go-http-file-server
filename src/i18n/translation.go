@@ -13,6 +13,7 @@ type Translation struct {
 	UploadingLabel         string
 	UploadSuccessLabel     string
 	UploadFailLabel        string
+	UploadDirFailMessage   string
 
 	ListDirLabel  string
 	ListNameLabel string
@@ -49,6 +50,7 @@ var translationEnUs = Translation{
 	UploadingLabel:         "Uploading...",
 	UploadSuccessLabel:     "Upload success",
 	UploadFailLabel:        "Upload failed",
+	UploadDirFailMessage:   "Cannot upload directory. Make sure mkdir is enabled, and using a supported browser.",
 
 	ListDirLabel:  "Dir",
 	ListNameLabel: "Name",
@@ -85,6 +87,7 @@ var translationZhSimp = Translation{
 	UploadingLabel:         "上传中……",
 	UploadSuccessLabel:     "上传成功",
 	UploadFailLabel:        "上传失败",
+	UploadDirFailMessage:   "无法上传目录。 请确保mkdir已启用，并使用受支持的浏览器。",
 
 	ListDirLabel:  "目录",
 	ListNameLabel: "名称",
@@ -121,6 +124,7 @@ var translationZhTrad = Translation{
 	UploadingLabel:         "上傳中……",
 	UploadSuccessLabel:     "上傳成功",
 	UploadFailLabel:        "上傳失敗",
+	UploadDirFailMessage:   "無法上傳目錄。 請確保mkdir已啟用，並使用受支援的流覽器。",
 
 	ListDirLabel:  "目錄",
 	ListNameLabel: "名稱",

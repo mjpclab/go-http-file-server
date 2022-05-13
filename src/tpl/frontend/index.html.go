@@ -48,10 +48,15 @@ const DefaultTplStr = `
 {{end}}
 
 {{if .CanUpload}}
+<script type="text/javascript">
+	function showUploadDirFailMessage() {
+		alert('{{.Trans.UploadDirFailMessage}}');
+	}
+</script>
 <div class="tab upload-type">
 	<label class="file active" tabindex="0" role="button" title="{{.Trans.UploadFilesHint}}">{{.Trans.UploadFilesLabel}}</label>
-	{{if .CanMkdir}}<label class="dirfile hidden" tabindex="0" role="button" title="{{.Trans.UploadDirHint}}">{{.Trans.UploadDirLabel}}</label>{{end}}
-	<label class="innerdirfile hidden" tabindex="0" role="button" title="{{.Trans.UploadDirContentsHint}}">{{.Trans.UploadDirContentsLabel}}</label>
+	{{if .CanMkdir}}<label class="dirfile hidden" tabindex="0" role="button" title="{{.Trans.UploadDirHint}}">{{.Trans.UploadDirLabel}}</label>
+	<label class="innerdirfile hidden" tabindex="0" role="button" title="{{.Trans.UploadDirContentsHint}}">{{.Trans.UploadDirContentsLabel}}</label>{{end}}
 </div>
 <div class="panel upload">
 	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
