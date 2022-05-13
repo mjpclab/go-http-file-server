@@ -850,7 +850,7 @@
 		}
 
 		function enableUploadProgress() {	// also fix Safari upload filename has no path info
-			if (!FormData) {
+			if (typeof FormData === strUndef) {
 				return;
 			}
 
