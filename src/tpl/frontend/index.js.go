@@ -3,6 +3,7 @@ package frontend
 const DefaultJs = `
 (function () {
 	var strUndef = 'undefined';
+	var protoHttps = 'https:';
 
 	var classNone = 'none';
 	var classHeader = 'header';
@@ -12,6 +13,9 @@ const DefaultJs = `
 	var Escape = 'Escape';
 	var Esc = 'Esc';
 	var Space = ' ';
+
+	var noop = function () {
+	};
 
 	var hasClass, addClass, removeClass;
 	if (document.body.classList) {
@@ -514,6 +518,7 @@ const DefaultJs = `
 		var optDirFile = uploadType.querySelector('.' + dirFile);
 		var optInnerDirFile = uploadType.querySelector('.' + innerDirFile);
 		var optActive = optFile;
+		var canMkdir = Boolean(optDirFile);
 
 		var padStart = String.prototype.padStart ? function (sourceString, targetLength, padTemplate) {
 			return sourceString.padStart(targetLength, padTemplate);
@@ -547,135 +552,168 @@ const DefaultJs = `
 			var ms = String(now.getMilliseconds());
 			date = padStart(date, 8, '0');
 			time = padStart(time, 6, '0');
-			var ms = padStart(ms, 3, '0');
+			ms = padStart(ms, 3, '0');
 			var ts = '-' + date + '-' + time + '-' + ms;
 			return ts;
 		}
 
-		function entriesToFiles(entries, onDone) {
-			var files = [];
-			var len = entries.length;
-			var cb = 0;
-			if (!len) {
-				onDone(files);
-			}
-
-			function increaseCb() {
-				cb++;
-				if (cb === len) {
-					onDone(files);
-				}
-			}
-
-			entries.forEach(function (entry) {
-				if (entry.isFile) {
-					var relativePath = entry.fullPath;
-					if (relativePath[0] === '/') {
-						relativePath = relativePath.substring(1);
-					}
-					entry.file(function (file) {
-						files.push({file: file, relativePath: relativePath});
-						increaseCb();
-					}, function (err) {
-						increaseCb();
-						typeof console !== strUndef && console.error(err);
-					});
-				} else if (entry.isDirectory) {
-					var reader = entry.createReader();
-					reader.readEntries(function (subEntries) {
-						if (subEntries.length) {
-							entriesToFiles(subEntries, function (subFiles) {
-								Array.prototype.push.apply(files, subFiles);
-								increaseCb();
+		var itemsToFiles;
+		if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && !DataTransferItem.prototype.webkitGetAsEntry) {
+			var handleKindFile = 'file';
+			var handleKindDir = 'directory';
+			var permDescriptor = {mode: 'read'};
+			itemsToFiles = function (dataTransferItems, canMkdir, onDone, onLacksMkdir) {
+				function resultsToFiles(results, files, dirPath) {
+					return Promise.all(results.map(function (result) {
+						var handle = result.value;
+						if (handle.kind === handleKindFile) {
+							return handle.queryPermission(permDescriptor).then(function (queryResult) {
+								if (queryResult === 'prompt') return handle.requestPermission(permDescriptor);
+							}).then(function () {
+								return handle.getFile();
+							}).then(function (file) {
+								var relativePath = dirPath + file.name;
+								files.push({file: file, relativePath: relativePath});
+							})['catch'](function (err) {	// workaround IE8- syntax error for ".catch"(reserved keyword)
+								typeof console !== strUndef && console.error(err);
 							});
-						} else {
-							increaseCb();
+						} else if (handle.kind === handleKindDir) {
+							return new Promise(function (resolve) {
+								var childResults = [];
+								var childIter = handle.values();
+
+								function onLevelDone() {
+									childResults = null;
+									childIter = null;
+									resolve();
+								}
+
+								function addChildResult() {
+									childIter.next().then(function (result) {
+										if (result.done) {
+											if (childResults.length) {
+												resultsToFiles(childResults, files, dirPath + handle.name + '/').then(onLevelDone);
+											} else onLevelDone();
+										} else {
+											childResults.push(result);
+											addChildResult();
+										}
+									});
+								}
+
+								addChildResult();
+							});
+						}
+					}));
+				}
+
+				var files = [];
+				var hasDir = false;
+				if (!dataTransferItems || !dataTransferItems.length) return onDone(files, hasDir);
+
+				var items = Array.prototype.slice.call(dataTransferItems);
+				Promise.all(items.map(function (item) {
+					return item.getAsFileSystemHandle();
+				})).then(function (handles) {
+					handles = handles.filter(Boolean);	// undefined for pasted content
+					hasDir = handles.some(function (handle) {
+						return handle.kind === handleKindDir;
+					});
+					if (hasDir && !canMkdir) {
+						return onLacksMkdir();
+					}
+					var handleResults = handles.map(function (handle) {
+						return {value: handle, done: false};
+					});
+					resultsToFiles(handleResults, files, '').then(function () {
+						onDone(files, hasDir);
+					});
+				});
+			}
+		} else {
+			itemsToFiles = function (dataTransferItems, canMkdir, onDone, onLacksMkdir) {
+				function entriesToFiles(entries, files, onLevelDone) {
+					var len = entries.length;
+					var cb = 0;
+					if (!len) return onLevelDone();
+
+					function increaseCb() {
+						cb++;
+						if (cb === len) {
+							onLevelDone();
+						}
+					}
+
+					entries.forEach(function (entry) {
+						if (entry.isFile) {
+							var relativePath = entry.fullPath;
+							if (relativePath[0] === '/') {
+								relativePath = relativePath.substring(1);
+							}
+							entry.file(function (file) {
+								files.push({file: file, relativePath: relativePath});
+								increaseCb();
+							}, function (err) {
+								increaseCb();
+								typeof console !== strUndef && console.error(err);
+							});
+						} else if (entry.isDirectory) {
+							var reader = entry.createReader();
+							reader.readEntries(function (subEntries) {
+								if (subEntries.length) {
+									entriesToFiles(subEntries, files, increaseCb);
+								} else {
+									increaseCb();
+								}
+							});
 						}
 					});
 				}
-			});
-		}
 
-		function itemsToFiles(dataTransferItems, onDone) {
-			var files = [];
-			var len = dataTransferItems.length;
-			if (!len) {
-				onDone(files);
-			}
+				var files = [];
+				var hasDir = false;
+				if (!dataTransferItems || !dataTransferItems.length || !dataTransferItems[0].webkitGetAsEntry) return onDone(files, hasDir);
 
-			var entries = [];
-			for (var i = 0; i < len; i++) {
-				var item = dataTransferItems[i];
-				var entry = item.webkitGetAsEntry();
-				if (!entry) {
-					continue;
-				}
-				if (entry.isFile) {
-					// Safari cannot get file from entry by entry.file(), if it is a pasted image
-					// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
-					var file = item.getAsFile();
-					files.push({file: file, relativePath: file.name});
-				} else if (entry.isDirectory) {
-					entries.push(entry);
-				}
-			}
-
-			entriesToFiles(entries, function (entryFiles) {
-				files.push.apply(files, entryFiles);
-				onDone(files);
-			});
-		}
-
-		function itemsHasDir(dataTransferItems) {
-			if (!dataTransferItems) {
-				return false;
-			}
-			var hasDir = false;
-			var items = Array.prototype.slice.call(dataTransferItems);
-			if (items.length && items[0].webkitGetAsEntry) {
-				for (var i = 0, len = items.length; i < len; i++) {
-					var entry = items[i].webkitGetAsEntry();
-					if (entry && entry.isDirectory) {
+				var entries = [];
+				for (var i = 0, len = dataTransferItems.length; i < len; i++) {
+					var item = dataTransferItems[i];
+					var entry = item.webkitGetAsEntry();
+					if (!entry) {	// undefined for pasted text
+						continue;
+					}
+					if (entry.isFile) {
+						// Safari cannot get file from entry by entry.file(), if it is a pasted image
+						// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
+						var file = item.getAsFile();
+						files.push({file: file, relativePath: file.name});
+					} else if (entry.isDirectory) {
 						hasDir = true;
-						break;
+						if (canMkdir) {
+							entries.push(entry);
+						} else {
+							return onLacksMkdir();
+						}
 					}
 				}
-			}
-			return hasDir;
-		}
 
-		function switchToFileMode() {
-			if (optFile && optActive !== optFile) {
-				optFile.focus();
-				optFile.click();
+				entriesToFiles(entries, files, function () {
+					onDone(files, hasDir);
+				});
 			}
 		}
 
-		function switchToDirMode() {
-			if (optDirFile) {
-				if (optActive !== optDirFile) {
-					optDirFile.focus();
-					optDirFile.click();
+		function dataTransferToFiles(dataTransfer, canMkdir, onDone, onLacksMkdir) {
+			itemsToFiles(dataTransfer.items, canMkdir, function (files, hasDir) {
+				// ancient Browser
+				if (files.length === 0 && dataTransfer.files && dataTransfer.files.length) {
+					files = Array.prototype.slice.call(dataTransfer.files);
 				}
-			} else if (optInnerDirFile) {
-				if (optActive !== optInnerDirFile) {
-					optInnerDirFile.focus();
-					optInnerDirFile.click();
-				}
-			}
+				onDone(files, hasDir);
+			}, onLacksMkdir);
 		}
 
-		function switchToAnyDirMode() {
-			if (optActive === optFile) {
-				if (optDirFile) {
-					optDirFile.focus();
-					optDirFile.click();
-				} else if (optInnerDirFile) {
-					optInnerDirFile.focus();
-					optInnerDirFile.click();
-				}
-			}
-		}
+		var switchToFileMode = noop;
+		var switchToDirMode = noop;
 
 		function enableAddDirFile() {
 			var classHidden = 'hidden';
@@ -785,16 +823,37 @@ const DefaultJs = `
 				}
 
 				var nodir = Array.prototype.slice.call(files).every(function (file) {
-					return !file.webkitRelativePath;
+					return !file.webkitRelativePath || file.webkitRelativePath.indexOf('/') < 0;
 				});
 				if (nodir) {
 					onClickOptFile();	// prevent clear input files
 				}
 			});
+
+			switchToFileMode = function () {
+				if (optFile && optActive !== optFile) {
+					optFile.focus();
+					onClickOptFile(true);
+				}
+			}
+
+			switchToDirMode = function () {
+				if (optDirFile) {
+					if (optActive !== optDirFile) {
+						optDirFile.focus();
+						onClickOptDirFile();
+					}
+				} else if (optInnerDirFile) {
+					if (optActive !== optInnerDirFile) {
+						optInnerDirFile.focus();
+						onClickOptInnerDirFile();
+					}
+				}
+			}
 		}
 
 		function enableUploadProgress() {	// also fix Safari upload filename has no path info
-			if (!FormData) {
+			if (typeof FormData === strUndef) {
 				return;
 			}
 
@@ -950,28 +1009,22 @@ const DefaultJs = `
 					return;
 				}
 
-				var items = e.dataTransfer.items;
-				if (itemsHasDir(items)) {
-					if (!uploadProgressively) {
-						// must use progressive upload by JS if has directory
-						return;
-					}
-					var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
-					itemsToFiles(items, function (files) {
-						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();
-						uploadProgressively(files);
-					});
-				} else {
-					switchToFileMode();
-
-					if (uploadProgressively) {
-						var files = Array.prototype.slice.call(e.dataTransfer.files);
+				dataTransferToFiles(e.dataTransfer, canMkdir && Boolean(uploadProgressively), function (files, hasDir) {
+					if (hasDir) {
+						switchToDirMode();
 						uploadProgressively(files);
 					} else {
-						fileInput.files = e.dataTransfer.files;
-						form.submit();
+						switchToFileMode();
+						if (uploadProgressively) {
+							uploadProgressively(files);
+						} else {
+							fileInput.files = files;
+							form.submit();
+						}
 					}
-				}
+				}, function () {
+					typeof showUploadDirFailMessage !== strUndef && showUploadDirFailMessage();
+				});
 			}
 
 			document.body.addEventListener('dragstart', onSelfDragStart);
@@ -983,19 +1036,7 @@ const DefaultJs = `
 			dragDropEl.addEventListener('drop', onDrop);
 		}
 
-		function enableAddPaste(uploadProgressively) {
-			if (!uploadProgressively) {
-				document.documentElement.addEventListener('paste', function (e) {
-					var data = e.clipboardData;
-					if (data && data.files && data.files.length) {
-						switchToFileMode();
-						fileInput.files = data.files;
-						form.submit();
-					}
-				});
-				return;
-			}
-
+		function enableAddPasteProgressively(uploadProgressively) {
 			var typeTextPlain = 'text/plain';
 			var createTextFile;
 			var textFilename = 'text.txt';
@@ -1090,42 +1131,60 @@ const DefaultJs = `
 				}
 
 				var items = data.items;
-				var itemsCount = items.length;	// save items count earlier, items will be lost after calling FileSystemFileEntry.file()
-				if (!items || !itemsCount) {
+				if (!items || !items.length) {
 					generatePastedFiles(data);
 					return;
 				}
-				var hasDir = itemsHasDir(items);
-				itemsToFiles(items, function (files) {
+
+				itemsToFiles(items, canMkdir, function (files, hasDir) {
+					// for pasted text
 					if (!files.length) {
-						// for pasted text
 						generatePastedFiles(data);
 						return;
 					}
+
+					// suppose for pasted image data
 					if (files.length === 1 && files[0].file.type === 'image/png') {
-						// suppose for pasted image
 						files = files.map(function (fileInfo) {
 							return fileInfo && fileInfo.file;
 						});
 						generatePastedFiles({files: files});
 						return;
 					}
-					// pasted real files, not image binary
+
+					// pasted real files
 					if (hasDir) {
-						itemsCount > 1 ? switchToDirMode() : switchToAnyDirMode();
+						switchToDirMode();
 					} else {
 						switchToFileMode();
 					}
 					uploadProgressively(files);
+				}, function () {
+					typeof showUploadDirFailMessage !== strUndef && showUploadDirFailMessage();
 				});
+			});
+		}
+
+		function enableAddPasteFormSubmit() {
+			document.documentElement.addEventListener('paste', function (e) {
+				var data = e.clipboardData;
+				if (data && data.files && data.files.length) {
+					switchToFileMode();
+					fileInput.files = data.files;
+					form.submit();
+				}
 			});
 		}
 
 		enableAddDirFile();
 		var uploadProgressively = enableUploadProgress();
-		enableFormUploadProgress(uploadProgressively);
+		if (uploadProgressively) {
+			enableFormUploadProgress(uploadProgressively);
+			enableAddPasteProgressively(uploadProgressively);
+		} else {
+			enableAddPasteFormSubmit();
+		}
 		enableAddDragDrop(uploadProgressively);
-		enableAddPaste(uploadProgressively);
 	}
 
 	function enableNonRefreshDelete() {

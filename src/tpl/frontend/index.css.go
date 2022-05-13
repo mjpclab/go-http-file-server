@@ -120,6 +120,7 @@ html.dragging::before {
 
 .path-list {
 	font-size: 1.5em;
+	line-height: 1.2;
 	overflow: hidden;
 	border-bottom: 1px #999 solid;
 	zoom: 1;
@@ -213,7 +214,6 @@ html.dragging::before {
 	pointer-events: none;
 }
 
-.upload-status > *,
 .upload-status.uploading,
 .upload-status.failed {
 	visibility: visible;
@@ -283,6 +283,7 @@ html.dragging::before {
 .upload-status.uploading .info,
 .upload-status.failed .warn {
 	opacity: 1;
+	-webkit-transform: translateY(25%);
 	transform: translateY(25%);
 }
 
@@ -361,6 +362,7 @@ html.dragging::before {
 
 .mkdir form {
 	display: flex;
+	align-items: center;
 }
 
 .mkdir .name {
@@ -405,6 +407,7 @@ html.dragging::before {
 
 .item-list {
 	margin: 1em;
+	line-height: 1.2;
 }
 
 .item-list li {
