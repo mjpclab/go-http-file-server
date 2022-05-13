@@ -11,6 +11,9 @@
 	var Esc = 'Esc';
 	var Space = ' ';
 
+	var noop = function () {
+	};
+
 	var hasClass, addClass, removeClass;
 	if (document.body.classList) {
 		hasClass = function (el, className) {
@@ -706,26 +709,8 @@
 			}, onLacksMkdir);
 		}
 
-		function switchToFileMode() {
-			if (optFile && optActive !== optFile) {
-				optFile.focus();
-				optFile.click();
-			}
-		}
-
-		function switchToDirMode() {
-			if (optDirFile) {
-				if (optActive !== optDirFile) {
-					optDirFile.focus();
-					optDirFile.click();
-				}
-			} else if (optInnerDirFile) {
-				if (optActive !== optInnerDirFile) {
-					optInnerDirFile.focus();
-					optInnerDirFile.click();
-				}
-			}
-		}
+		var switchToFileMode = noop;
+		var switchToDirMode = noop;
 
 		function enableAddDirFile() {
 			var classHidden = 'hidden';
@@ -841,6 +826,27 @@
 					onClickOptFile();	// prevent clear input files
 				}
 			});
+
+			switchToFileMode = function () {
+				if (optFile && optActive !== optFile) {
+					optFile.focus();
+					onClickOptFile(true);
+				}
+			}
+
+			switchToDirMode = function () {
+				if (optDirFile) {
+					if (optActive !== optDirFile) {
+						optDirFile.focus();
+						onClickOptDirFile();
+					}
+				} else if (optInnerDirFile) {
+					if (optActive !== optInnerDirFile) {
+						optInnerDirFile.focus();
+						onClickOptInnerDirFile();
+					}
+				}
+			}
 		}
 
 		function enableUploadProgress() {	// also fix Safari upload filename has no path info
