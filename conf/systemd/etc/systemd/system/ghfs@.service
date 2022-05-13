@@ -4,7 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/ghfs --config=/etc/ghfs_%I.conf
+ExecStartPre=setcap CAP_NET_BIND_SERVICE=+ep
+ExecStart=runuser -u nobody -- /usr/local/bin/ghfs --config=/etc/ghfs_%I.conf
 ExecReload=/bin/kill -s HUP $MAINPID
 KillSignal=SIGTERM
 KillMode=process
