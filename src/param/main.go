@@ -80,8 +80,7 @@ func normalize(p *Param) {
 	_, hasRootBind := p.Binds["/"]
 	if hasRootAlias || hasRootBind {
 		p.EmptyRoot = false
-	}
-	if p.EmptyRoot {
+	} else if p.EmptyRoot {
 		p.Root = os.DevNull
 		p.Aliases["/"] = os.DevNull
 	} else {

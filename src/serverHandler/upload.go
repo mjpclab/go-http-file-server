@@ -98,14 +98,16 @@ func (h *handler) saveUploadFiles(authUserName, fsPrefix string, createDir, over
 				continue
 			}
 
-			fsInfixPart1 := fsInfix
-			fsInfixSlashIndex := strings.IndexByte(fsInfixPart1, '/')
-			if fsInfixSlashIndex > 0 {
-				fsInfixPart1 = fsInfixPart1[0:fsInfixSlashIndex]
-			}
-			if containsItem(aliasSubItems, fsInfixPart1) {
-				errs = append(errs, errors.New("upload: ignore path shadowed by alias "+fsInfix))
-				continue
+			if len(aliasSubItems) > 0 {
+				fsInfixPart1 := fsInfix
+				fsInfixSlashIndex := strings.IndexByte(fsInfixPart1, '/')
+				if fsInfixSlashIndex > 0 {
+					fsInfixPart1 = fsInfixPart1[0:fsInfixSlashIndex]
+				}
+				if containsItem(aliasSubItems, fsInfixPart1) {
+					errs = append(errs, errors.New("upload: ignore path shadowed by alias "+fsInfix))
+					continue
+				}
 			}
 
 			filePrefix += "/" + fsInfix
