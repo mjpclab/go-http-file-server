@@ -5,7 +5,6 @@ import (
 	"../serverErrHandler"
 	"../util"
 	"../version"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -119,10 +118,10 @@ func init() {
 	err = options.AddFlag("usermatchcase", "--user-match-case", "GHFS_USER_MATCH_CASE", "username should be case sensitive")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagsValue("key", []string{"-k", "--key"}, "GHFS_KEY", "", "TLS certificate key path")
+	err = options.AddFlagsValues("certs", []string{"-c", "--cert"}, "GHFS_CERT", nil, "TLS certificate path")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagsValue("cert", []string{"-c", "--cert"}, "GHFS_CERT", "", "TLS certificate path")
+	err = options.AddFlagsValues("keys", []string{"-k", "--key"}, "GHFS_KEY", nil, "TLS certificate key path")
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlagsValues("listens", []string{"-l", "--listen"}, "GHFS_LISTEN", nil, "address and port to listen")
@@ -276,18 +275,13 @@ func doParseCli() []*Param {
 		param.GlobalHeaders = entriesToHeaders(globalHeaders)
 
 		// certificate
-		key, _ := result.GetString("key")
-		cert, _ := result.GetString("cert")
-		if len(key) > 0 && len(cert) > 0 {
-			var err error
-			param.Certificate, err = LoadCertificate(cert, key)
-			if err != nil {
-				serverErrHandler.CheckFatal(err)
-			}
-		} else if len(key) > 0 && len(cert) == 0 {
-			serverErrHandler.CheckFatal(errors.New("missing certificate file"))
-		} else if len(key) == 0 && len(cert) > 0 {
-			serverErrHandler.CheckFatal(errors.New("missing certificate key file"))
+		certFiles, _ := result.GetStrings("certs")
+		keyFiles, _ := result.GetStrings("keys")
+		certs, errs := LoadCertificates(certFiles, keyFiles)
+		if len(errs) > 0 {
+			serverErrHandler.CheckFatal(errs...)
+		} else {
+			param.Certificates = certs
 		}
 
 		// normalize aliases

@@ -73,7 +73,7 @@ func NewApp(params []*param.Param) *App {
 		// init vhost
 		listens := p.Listens
 		if len(listens) == 0 && len(p.ListensPlain) == 0 && len(p.ListensTLS) == 0 {
-			if p.Certificate == nil {
+			if len(p.Certificates) == 0 {
 				listens = []string{":80"}
 			} else {
 				listens = []string{":443"}
@@ -84,7 +84,7 @@ func NewApp(params []*param.Param) *App {
 			Listens:      listens,
 			ListensPlain: p.ListensPlain,
 			ListensTLS:   p.ListensTLS,
-			Cert:         p.Certificate,
+			Certs:        p.Certificates,
 			HostNames:    p.HostNames,
 			Handler:      vhHandler.Handler,
 		})

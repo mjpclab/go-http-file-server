@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func LoadCertificate(certFile, keyFile string) (*tls.Certificate, error) {
-	return goVirtualHost.LoadCertificate(certFile, keyFile)
+func LoadCertificates(certFiles, keyFiles []string) ([]tls.Certificate, []error) {
+	return goVirtualHost.LoadCertificates(certFiles, keyFiles)
 }
 
 func EntriesToUsers(entries []string) []*user {
