@@ -17,7 +17,7 @@ func TestParamValidate(t *testing.T) {
 	}
 	errs = p.validate()
 	if len(errs) > 0 {
-		t.Error()
+		t.Error(errs)
 	}
 
 	p.useTLS = true
@@ -25,12 +25,24 @@ func TestParamValidate(t *testing.T) {
 	if len(errs) == 0 {
 		t.Error()
 	} else if !errors.Is(errs[0], CertificateNotFound) {
-		t.Error()
+		t.Error(errs)
 	}
 
-	p.cert = &tls.Certificate{}
+	p.certs = nil
+	errs = p.validate()
+	if len(errs) == 0 {
+		t.Error(errs)
+	}
+
+	p.certs = []tls.Certificate{}
+	errs = p.validate()
+	if len(errs) == 0 {
+		t.Error(errs)
+	}
+
+	p.certs = append(p.certs, tls.Certificate{})
 	errs = p.validate()
 	if len(errs) > 0 {
-		t.Error()
+		t.Error(errs)
 	}
 }

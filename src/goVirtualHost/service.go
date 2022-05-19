@@ -50,7 +50,7 @@ func (svc *Service) Add(info *HostInfo) (errs []error) {
 		return
 	}
 
-	hostNames, vhostParams := info.parse()
+	hostNames, vhostParams, certs := info.parse()
 
 	errs = svc.params.validate(vhostParams)
 	if len(errs) > 0 {
@@ -58,7 +58,7 @@ func (svc *Service) Add(info *HostInfo) (errs []error) {
 	}
 	svc.params = append(svc.params, vhostParams...)
 
-	vhost := newVhost(info.Cert, hostNames, info.Handler)
+	vhost := newVhost(certs, hostNames, info.Handler)
 	svc.vhosts = append(svc.vhosts, vhost)
 
 	svc.addVhostToServers(vhost, vhostParams)
@@ -113,6 +113,8 @@ func (svc *Service) Open() (errs []error) {
 	}
 	svc.state = stateOpened
 	svc.mu.Unlock()
+
+	svc.params = nil // release unused data
 
 	for _, s := range svc.servers {
 		s.updateDefaultVhost()

@@ -54,7 +54,7 @@ func (server *server) updateHttpServerTLSConfig() {
 		certs := []tls.Certificate{}
 
 		for _, vhost := range server.vhosts {
-			certs = append(certs, *vhost.cert)
+			certs = append(certs, vhost.certs...)
 		}
 
 		tlsConfig = &tls.Config{
