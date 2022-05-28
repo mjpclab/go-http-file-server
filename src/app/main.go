@@ -4,10 +4,12 @@ import (
 	"../goVirtualHost"
 	"../param"
 	"../serverErrHandler"
+	"../serverHandler"
 	"../serverLog"
 	"../tpl"
 	"../util"
 	"../vhostHandler"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -34,6 +36,14 @@ func (app *App) ReOpenLog() {
 }
 
 func NewApp(params []*param.Param) *App {
+	verbose := !util.GetBoolEnv("GHFS_QUIET")
+
+	if serverHandler.TryEnableWSL1Fix() && verbose {
+		ttyFile, teardownTtyFile := util.GetTTYFile()
+		fmt.Fprintln(ttyFile, "WSL 1 compatible mode enabled")
+		teardownTtyFile()
+	}
+
 	vhSvc := goVirtualHost.NewService()
 	vhHandlers := make([]*vhostHandler.VhostHandler, 0, len(params))
 	logFileMan := serverLog.NewFileMan()
@@ -95,7 +105,7 @@ func NewApp(params []*param.Param) *App {
 		}
 	}
 
-	if !util.GetBoolEnv("GHFS_QUIET") {
+	if verbose {
 		go printAccessibleURLs(vhSvc)
 	}
 
