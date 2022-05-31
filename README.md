@@ -212,10 +212,10 @@ ghfs [options]
 --user-match-case
     Username is case sensitive.
 
--c|--cert <file>
+-c|--cert <file> ...
     Specify TLS certificate file.
 
--k|--key <file>
+-k|--key <file> ...
     Specify key file of TLS certificate.
 
 --theme <file>
