@@ -4,9 +4,9 @@ import "crypto/tls"
 
 func (info *HostInfo) toParam(listen string, useTLS bool) *param {
 	proto, ip, port := splitListen(listen, false)
-	var cert *tls.Certificate
+	var certs []tls.Certificate
 	if useTLS {
-		cert = info.Cert
+		certs = info.Certs
 	}
 
 	param := &param{
@@ -14,17 +14,18 @@ func (info *HostInfo) toParam(listen string, useTLS bool) *param {
 		ip:     ip,
 		port:   port,
 		useTLS: useTLS,
-		cert:   cert,
+		certs:  certs,
 	}
 
 	return param
 }
 
-func (info *HostInfo) parse() (hostNames []string, params params) {
+func (info *HostInfo) parse() (hostNames []string, params params, certs certs) {
 	hostNames = normalizeHostNames(info.HostNames)
 
+	useTLSForListen := len(info.Certs) > 0
 	for _, listen := range info.Listens {
-		param := info.toParam(listen, info.Cert != nil)
+		param := info.toParam(listen, useTLSForListen)
 		param.hostNames = hostNames
 		params = append(params, param)
 	}
@@ -39,6 +40,10 @@ func (info *HostInfo) parse() (hostNames []string, params params) {
 		param := info.toParam(listen, true)
 		param.hostNames = hostNames
 		params = append(params, param)
+	}
+
+	if (useTLSForListen && len(info.Listens) > 0) || len(info.ListensTLS) > 0 {
+		certs = append(info.Certs)
 	}
 
 	return

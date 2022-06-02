@@ -4,10 +4,12 @@ import (
 	"../goVirtualHost"
 	"../param"
 	"../serverErrHandler"
+	"../serverHandler"
 	"../serverLog"
 	"../tpl"
 	"../util"
 	"../vhostHandler"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -34,6 +36,14 @@ func (app *App) ReOpenLog() {
 }
 
 func NewApp(params []*param.Param) *App {
+	verbose := !util.GetBoolEnv("GHFS_QUIET")
+
+	if serverHandler.TryEnableWSL1Fix() && verbose {
+		ttyFile, teardownTtyFile := util.GetTTYFile()
+		fmt.Fprintln(ttyFile, "WSL 1 compatible mode enabled")
+		teardownTtyFile()
+	}
+
 	vhSvc := goVirtualHost.NewService()
 	vhHandlers := make([]*vhostHandler.VhostHandler, 0, len(params))
 	logFileMan := serverLog.NewFileMan()
@@ -73,7 +83,7 @@ func NewApp(params []*param.Param) *App {
 		// init vhost
 		listens := p.Listens
 		if len(listens) == 0 && len(p.ListensPlain) == 0 && len(p.ListensTLS) == 0 {
-			if p.Certificate == nil {
+			if len(p.Certificates) == 0 {
 				listens = []string{":80"}
 			} else {
 				listens = []string{":443"}
@@ -84,7 +94,7 @@ func NewApp(params []*param.Param) *App {
 			Listens:      listens,
 			ListensPlain: p.ListensPlain,
 			ListensTLS:   p.ListensTLS,
-			Cert:         p.Certificate,
+			Certs:        p.Certificates,
 			HostNames:    p.HostNames,
 			Handler:      vhHandler.Handler,
 		})
@@ -95,7 +105,7 @@ func NewApp(params []*param.Param) *App {
 		}
 	}
 
-	if !util.GetBoolEnv("GHFS_QUIET") {
+	if verbose {
 		go printAccessibleURLs(vhSvc)
 	}
 

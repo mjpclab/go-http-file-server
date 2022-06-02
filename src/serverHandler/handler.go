@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+var createFileServer func(root string) http.Handler
+
 type handler struct {
 	root        string
 	emptyRoot   bool
@@ -57,6 +59,8 @@ type handler struct {
 	hideDirs  *regexp.Regexp
 	hideFiles *regexp.Regexp
 	theme     tpl.Theme
+
+	fileServer http.Handler
 
 	logger     *serverLog.Logger
 	errHandler *serverErrHandler.ErrHandler
@@ -156,6 +160,11 @@ func newHandler(
 		}
 	}
 
+	var fileServer http.Handler
+	if !emptyRoot && createFileServer != nil { // for WSL 1 fix
+		fileServer = createFileServer(root)
+	}
+
 	h := &handler{
 		root:        root,
 		emptyRoot:   emptyRoot,
@@ -202,6 +211,8 @@ func newHandler(
 		hideDirs:  p.HideDirs,
 		hideFiles: p.HideFiles,
 		theme:     theme,
+
+		fileServer: fileServer,
 
 		logger:     logger,
 		errHandler: errHandler,

@@ -12,10 +12,12 @@ type HostInfo struct {
 	Listens      []string
 	ListensPlain []string
 	ListensTLS   []string
-	Cert         *tls.Certificate
+	Certs        []tls.Certificate
 	HostNames    []string
 	Handler      http.Handler
 }
+
+type certs []tls.Certificate
 
 // normalized HostInfo Param
 type param struct {
@@ -23,7 +25,7 @@ type param struct {
 	ip        string
 	port      string
 	useTLS    bool
-	cert      *tls.Certificate
+	certs     certs
 	hostNames []string
 }
 
@@ -52,7 +54,7 @@ type servers []*server
 
 // virtual host
 type vhost struct {
-	cert      *tls.Certificate
+	certs     certs
 	hostNames []string
 	handler   http.Handler
 }

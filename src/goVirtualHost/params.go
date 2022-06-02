@@ -33,9 +33,7 @@ func (params params) validateParam(param *param) (errs []error) {
 		}
 
 		if ownParam.proto == param.proto && ownParam.ip == param.ip && ownParam.port == param.port {
-			ownUseTLS := ownParam.cert != nil
-			useTLS := param.cert != nil
-			if ownUseTLS != useTLS {
+			if ownParam.useTLS != param.useTLS {
 				err := wrapError(ConflictTLSMode, fmt.Sprintf("cannot serve for both Plain and TLS mode: %+v, %+v", ownParam, param))
 				errs = append(errs, err)
 			}
