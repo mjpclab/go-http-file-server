@@ -49,7 +49,7 @@ func getCompressWriter(w http.ResponseWriter, r *http.Request) (wr io.WriteClose
 	var err error
 	switch encoding {
 	case contentEncGzip:
-		wr, err = gzip.NewWriterLevel(w, flate.BestSpeed)
+		wr, err = gzip.NewWriterLevel(w, gzip.BestSpeed)
 	case contentEncDeflate:
 		wr, err = flate.NewWriter(w, flate.BestSpeed)
 	default:

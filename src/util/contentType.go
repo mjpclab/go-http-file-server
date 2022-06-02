@@ -14,8 +14,8 @@ func GetContentType(filename string, rd io.Reader) (string, error) {
 		return ctype, nil
 	}
 
-	var buf [512]byte
-	n, err := rd.Read(buf[:])
+	buf := make([]byte, 512)
+	n, err := rd.Read(buf)
 	if err != nil {
 		return ctype, err
 	}

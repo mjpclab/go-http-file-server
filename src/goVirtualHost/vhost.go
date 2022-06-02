@@ -1,14 +1,13 @@
 package goVirtualHost
 
 import (
-	"crypto/tls"
 	"net/http"
 	"strings"
 )
 
-func newVhost(cert *tls.Certificate, hostNames []string, handler http.Handler) *vhost {
+func newVhost(certs certs, hostNames []string, handler http.Handler) *vhost {
 	vhost := &vhost{
-		cert:      cert,
+		certs:     certs,
 		hostNames: hostNames,
 		handler:   handler,
 	}

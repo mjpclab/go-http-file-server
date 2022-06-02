@@ -52,7 +52,7 @@ type Param struct {
 	UsersSha512   []*user
 	UserMatchCase bool
 
-	Certificate  *tls.Certificate
+	Certificates []tls.Certificate
 	Listens      []string
 	ListensPlain []string
 	ListensTLS   []string

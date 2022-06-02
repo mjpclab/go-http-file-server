@@ -23,7 +23,7 @@ func (param *param) hasHostNames(checkHostNames []string) bool {
 }
 
 func (param *param) validate() (errs []error) {
-	if param.useTLS && param.cert == nil {
+	if param.useTLS && len(param.certs) == 0 {
 		err := wrapError(CertificateNotFound, fmt.Sprintf("certificate not found for TLS listens: %+v", param))
 		errs = append(errs, err)
 	}

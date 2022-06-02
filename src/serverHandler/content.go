@@ -3,9 +3,14 @@ package serverHandler
 import (
 	"../util"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
+
+var serveContent = func(h *handler, w http.ResponseWriter, r *http.Request, info os.FileInfo, file *os.File) {
+	http.ServeContent(w, r, info.Name(), info.ModTime(), file)
+}
 
 func (h *handler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
@@ -18,7 +23,7 @@ func (h *handler) content(w http.ResponseWriter, r *http.Request, data *response
 	file := data.File
 
 	if needResponseBody(r.Method) {
-		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
+		serveContent(h, w, r, item, file)
 		return
 	}
 
