@@ -2,6 +2,7 @@ package serverHandler
 
 import (
 	"net/http"
+	"net/url"
 )
 
 const LOG_BUF_SIZE = 80
@@ -10,8 +11,12 @@ func (h *handler) logRequest(r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
+	uri, err := url.QueryUnescape(r.RequestURI)
+	if err != nil {
+		uri = r.RequestURI
+	}
 
-	payload := []byte(r.RemoteAddr + " " + r.Method + " " + r.RequestURI)
+	payload := []byte(r.RemoteAddr + " " + r.Method + " " + uri)
 
 	h.logger.LogAccess(payload)
 }
