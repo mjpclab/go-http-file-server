@@ -67,7 +67,7 @@ type handler struct {
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	go h.logRequest(r)
+	h.logRequest(r)
 
 	// hsts redirect
 	if h.globalHsts && h.hsts(w, r) {

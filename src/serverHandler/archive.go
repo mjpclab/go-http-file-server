@@ -152,7 +152,7 @@ func (h *handler) archive(
 		pageData.Item != nil, // not empty root
 		selections,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
-			go h.logArchive(targetFilename, relPath, r)
+			h.logArchive(targetFilename, relPath, r)
 			err := cbWriteFile(f, fInfo, relPath)
 			h.errHandler.LogError(err)
 			return err

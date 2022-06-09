@@ -164,7 +164,7 @@ func (h *handler) saveUploadFiles(authUserName, fsPrefix string, createDir, over
 		}
 
 		fsPath := path.Clean(filePrefix + "/" + fsFilename)
-		go h.logUpload(authUserName, filename, fsPath, r)
+		h.logUpload(authUserName, filename, fsPath, r)
 		file, err := os.OpenFile(fsPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
 			errs = append(errs, err)

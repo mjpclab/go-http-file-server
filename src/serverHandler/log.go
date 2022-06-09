@@ -17,7 +17,7 @@ func (h *handler) logRequest(r *http.Request) {
 	buf = append(buf, ' ')                     // 1 byte
 	buf = append(buf, []byte(r.RequestURI)...)
 
-	h.logger.LogAccess(buf)
+	go h.logger.LogAccess(buf)
 }
 
 func (h *handler) logMutate(username, action, detail string, r *http.Request) {
@@ -38,7 +38,7 @@ func (h *handler) logMutate(username, action, detail string, r *http.Request) {
 	buf = append(buf, ':', ' ')          // 2 bytes
 	buf = append(buf, []byte(detail)...)
 
-	h.logger.LogAccess(buf)
+	go h.logger.LogAccess(buf)
 }
 
 func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) {
@@ -59,7 +59,7 @@ func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) 
 	buf = append(buf, []byte(" -> ")...) // 4 bytes
 	buf = append(buf, []byte(fsPath)...)
 
-	h.logger.LogAccess(buf)
+	go h.logger.LogAccess(buf)
 }
 
 func (h *handler) logArchive(filename, relPath string, r *http.Request) {
@@ -75,5 +75,5 @@ func (h *handler) logArchive(filename, relPath string, r *http.Request) {
 	buf = append(buf, []byte(" <- ")...) // 4 bytes
 	buf = append(buf, []byte(relPath)...)
 
-	h.logger.LogAccess(buf)
+	go h.logger.LogAccess(buf)
 }
