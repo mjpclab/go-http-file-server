@@ -135,10 +135,11 @@ func (h *handler) mergeAlias(
 	rawRequestPath string,
 	item os.FileInfo,
 	subItems []os.FileInfo,
+	doMerge bool,
 ) (mergedSubItems, aliasSubItems []os.FileInfo, errs []error) {
 	errs = []error{}
 
-	if (item != nil && !item.IsDir()) || len(h.aliases) == 0 {
+	if !doMerge || (item != nil && !item.IsDir()) || len(h.aliases) == 0 {
 		return subItems, nil, errs
 	}
 
@@ -223,8 +224,8 @@ func getStatusByErr(err error) int {
 	}
 }
 
-func (h *handler) stateIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo) (file *os.File, item os.FileInfo, err error) {
-	if len(h.dirIndexes) == 0 {
+func (h *handler) statIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo, doStat bool) (file *os.File, item os.FileInfo, err error) {
+	if !doStat || len(h.dirIndexes) == 0 {
 		return
 	}
 
@@ -326,7 +327,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		status = getStatusByErr(_statErr)
 	}
 
-	indexFile, indexItem, _statIdxErr := h.stateIndexFile(rawReqPath, reqFsPath, item)
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -348,7 +349,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, authSuccess)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError

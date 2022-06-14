@@ -96,7 +96,7 @@ func (h *handler) visitTreeNode(
 	}
 
 	if fInfo.IsDir() {
-		childInfos, _, _ := h.mergeAlias(rawReqPath, fInfo, childInfos)
+		childInfos, _, _ := h.mergeAlias(rawReqPath, fInfo, childInfos, true)
 		childInfos = h.FilterItems(childInfos)
 
 		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
