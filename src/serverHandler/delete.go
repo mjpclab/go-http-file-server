@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 func (h *handler) deleteItems(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
@@ -23,7 +24,7 @@ func (h *handler) deleteItems(authUserName, fsPrefix string, files []string, ali
 		if containsItem(aliasSubItems, filename) {
 			continue
 		}
-		fsPath := fsPrefix + "/" + filename
+		fsPath := filepath.Join(fsPrefix, filename)
 		h.logMutate(authUserName, "delete", fsPath, r)
 		err := os.RemoveAll(fsPath)
 		if err != nil {
