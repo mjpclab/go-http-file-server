@@ -14,6 +14,15 @@
 	var noop = function () {
 	};
 
+	var logError;
+	if (typeof console !== strUndef) {
+		logError = function (err) {
+			console.error(err);
+		}
+	} else {
+		logError = noop;
+	}
+
 	var hasClass, addClass, removeClass;
 	if (document.body.classList) {
 		hasClass = function (el, className) {
@@ -572,7 +581,7 @@
 								var relativePath = dirPath + file.name;
 								files.push({file: file, relativePath: relativePath});
 							})['catch'](function (err) {	// workaround IE8- syntax error for ".catch"(reserved keyword)
-								typeof console !== strUndef && console.error(err);
+								logError(err);
 							});
 						} else if (handle.kind === handleKindDir) {
 							return new Promise(function (resolve) {
@@ -652,7 +661,7 @@
 								increaseCb();
 							}, function (err) {
 								increaseCb();
-								typeof console !== strUndef && console.error(err);
+								logError(err);
 							});
 						} else if (entry.isDirectory) {
 							var reader = entry.createReader();
@@ -1215,7 +1224,7 @@
 					var elItemParent = elItem.parentNode;
 					elItemParent && elItemParent.removeChild(elItem);
 				} else {
-					typeof console != strUndef && console.error('delete failed', status, this.statusText)
+					logError('delete failed: ' + status + ' ' + this.statusText);
 				}
 			}
 
