@@ -95,3 +95,16 @@ func (h *handler) logArchive(filename, relPath string, r *http.Request) {
 
 	go h.logger.LogAccess(buf)
 }
+
+func (h *handler) logErrors(errs ...error) {
+	if !h.logger.CanLogError() {
+		return
+	}
+
+	go func(errs []error) {
+		for i := range errs {
+			errBytes := util.EscapeControllingRune(errs[i].Error())
+			h.logger.LogError(errBytes)
+		}
+	}(errs)
+}

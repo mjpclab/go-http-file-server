@@ -183,7 +183,7 @@ func (h *handler) saveUploadFiles(authUserName, fsPrefix string, createDir, over
 	}
 
 	if len(errs) > 0 {
-		go h.logger.LogErrors(errs...)
+		h.logErrors(errs...)
 		return false
 	}
 
