@@ -137,8 +137,6 @@ func (h *handler) mergeAlias(
 	subItems []os.FileInfo,
 	doMerge bool,
 ) (mergedSubItems, aliasSubItems []os.FileInfo, errs []error) {
-	errs = []error{}
-
 	if !doMerge || (item != nil && !item.IsDir()) || len(h.aliases) == 0 {
 		return subItems, nil, errs
 	}

@@ -54,7 +54,7 @@ func getPartFilePath(part *multipart.Part) string {
 }
 
 func (h *handler) saveUploadFiles(authUserName, fsPrefix string, createDir, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
-	errs := []error{}
+	var errs []error
 
 	reader, err := r.MultipartReader()
 	if err != nil {

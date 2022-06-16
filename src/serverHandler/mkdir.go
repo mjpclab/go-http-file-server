@@ -9,7 +9,7 @@ import (
 )
 
 func (h *handler) mkdirs(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
-	errs := []error{}
+	var errs []error
 
 	for _, inputFilename := range files {
 		if len(inputFilename) == 0 {
