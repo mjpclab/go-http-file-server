@@ -1,7 +1,9 @@
 package serverHandler
 
 import (
+	"../util"
 	"net/http"
+	"net/url"
 )
 
 func (h *handler) logRequest(r *http.Request) {
@@ -9,13 +11,29 @@ func (h *handler) logRequest(r *http.Request) {
 		return
 	}
 
-	buf := make([]byte, 0, 2+len(r.RemoteAddr)+len(r.Method)+len(r.RequestURI))
+	var unescapedUri []byte
+	unescapedLen := 0
+	unescapedStr, err := url.QueryUnescape(r.RequestURI)
+	if err == nil && unescapedStr != r.RequestURI {
+		unescapedUri = util.EscapeControllingRune(unescapedStr)
+		if len(unescapedUri) > 0 {
+			unescapedLen = len(unescapedUri) + 5 // " <=> "
+		}
+	}
+
+	uri := util.EscapeControllingRune(r.RequestURI)
+
+	buf := make([]byte, 0, 2+len(r.RemoteAddr)+len(r.Method)+unescapedLen+len(uri))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
 	buf = append(buf, ' ')                     // 1 byte
 	buf = append(buf, []byte(r.Method)...)     // ~ 3-4 bytes
 	buf = append(buf, ' ')                     // 1 byte
-	buf = append(buf, []byte(r.RequestURI)...)
+	if unescapedLen > 0 {
+		buf = append(buf, unescapedUri...)
+		buf = append(buf, ' ', '<', '=', '>', ' ') // 5 bytes
+	}
+	buf = append(buf, uri...)
 
 	go h.logger.LogAccess(buf)
 }
