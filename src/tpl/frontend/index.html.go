@@ -88,7 +88,12 @@ const DefaultTplStr = `
 <script type="text/javascript">
 	function confirmDelete(form) {
 		var name = form.name.value;
-		return confirm('{{.Trans.DeleteConfirm}}\n' + name);
+		var proceed = confirm('{{.Trans.DeleteConfirm}}\n' + name);
+		if (!proceed) {
+			var e = event || window.event;
+			if (e && !('defaultPrevented' in e)) e.defaultPrevented = true;
+		}
+		return proceed;
 	}
 </script>
 {{end}}
