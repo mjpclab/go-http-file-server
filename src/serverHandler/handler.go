@@ -67,7 +67,7 @@ type handler struct {
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	go h.logRequest(r)
+	h.logRequest(r)
 
 	// hsts redirect
 	if h.globalHsts && h.hsts(w, r) {
@@ -90,7 +90,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// data
 	data := h.getResponseData(r)
 	if len(data.errors) > 0 {
-		go h.logger.LogErrors(data.errors...)
+		h.logErrors(data.errors...)
 	}
 	file := data.File
 	if file != nil {

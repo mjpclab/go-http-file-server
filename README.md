@@ -14,7 +14,7 @@ Simple command line based HTTP file server to share local file system.
 
 ## Compile
 Minimal required Go version is 1.9.
-```bash
+```sh
 GO111MODULE=auto go build src/main.go
 ```
 Will generate executable file "main" in current directory.
@@ -293,6 +293,9 @@ ghfs [options]
 ### GHFS_QUIET
 To prevent outputting additional information on console, like accessible URLs, etc,
 set value to "1".
+
+### GHFS_PID_FILE
+Specify PID file. PID will be written into the file on application startup.
 
 ## Shortcut key for default theme
 - `←`, `→`: move focus between path items
