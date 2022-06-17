@@ -53,7 +53,8 @@ func EscapeControllingRune(str string) []byte {
 				buf = append(buf, '\\', 'x', h, l)
 			}
 		} else {
-			buf = utf8.AppendRune(buf, r)
+			nBytes := utf8.EncodeRune(runeBytes, r)
+			buf = append(buf, runeBytes[:nBytes]...)
 		}
 	}
 
