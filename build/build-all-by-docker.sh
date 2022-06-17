@@ -1,8 +1,11 @@
 #!/bin/bash
 
-prefix=$(dirname "$0")/../
-absPrefix=$(realpath "$prefix")
+cd $(dirname "$0")
 
+# init variable `builds`
+source ./build-all.inc.sh
+
+prefix=$(realpath ../)
 rm -rf "$prefix/output/"
 
 buildByDocker() {
@@ -12,7 +15,7 @@ buildByDocker() {
 
   docker run \
     --rm \
-    -v "$absPrefix":/mnt \
+    -v "$prefix":/mnt \
     -e EX_UID="$(id -u)" \
     -e EX_GID="$(id -g)" \
     golang:"$gover" \
@@ -21,9 +24,9 @@ buildByDocker() {
       apt-get update;
       apt-get install -yq --force-yes git zip;
       /bin/bash /mnt/build/build.sh "$@";
-      chown -R $EX_UID:$EX_GID /mnt/output
+      chown -R $EX_UID:$EX_GID /mnt/output;
     ' \
-    'container-script' \
+    'argv_0_placeholder' \
     "$@"
 }
 

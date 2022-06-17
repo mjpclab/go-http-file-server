@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -42,7 +42,7 @@ func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) stri
 }
 
 func (h *handler) saveUploadFiles(authUserName, fsPrefix string, createDir, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
-	errs := []error{}
+	var errs []error
 
 	reader, err := r.MultipartReader()
 	if err != nil {
@@ -151,8 +151,8 @@ func (h *handler) saveUploadFiles(authUserName, fsPrefix string, createDir, over
 			continue
 		}
 
-		fsPath := path.Clean(filePrefix + "/" + fsFilename)
-		go h.logUpload(authUserName, filename, fsPath, r)
+		fsPath := filepath.Join(filePrefix, fsFilename)
+		h.logUpload(authUserName, filename, fsPath, r)
 		file, err := os.OpenFile(fsPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
 			errs = append(errs, err)
@@ -171,7 +171,7 @@ func (h *handler) saveUploadFiles(authUserName, fsPrefix string, createDir, over
 	}
 
 	if len(errs) > 0 {
-		go h.logger.LogErrors(errs...)
+		h.logErrors(errs...)
 		return false
 	}
 

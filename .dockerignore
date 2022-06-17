@@ -1,0 +1,5 @@
+*
+!.git
+!src/
+!build/
+!conf/docker-image

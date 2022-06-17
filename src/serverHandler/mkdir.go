@@ -4,11 +4,12 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 func (h *handler) mkdirs(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
-	errs := []error{}
+	var errs []error
 
 	for _, inputFilename := range files {
 		if len(inputFilename) == 0 {
@@ -30,7 +31,7 @@ func (h *handler) mkdirs(authUserName, fsPrefix string, files []string, aliasSub
 			errs = append(errs, errors.New("mkdir: ignore path shadowed by alias "+filename))
 			continue
 		}
-		fsPath := fsPrefix + "/" + filename
+		fsPath := filepath.Join(fsPrefix, filename)
 		h.logMutate(authUserName, "mkdir", fsPath, r)
 		err := os.MkdirAll(fsPath, 0755)
 		if err != nil {
@@ -39,7 +40,7 @@ func (h *handler) mkdirs(authUserName, fsPrefix string, files []string, aliasSub
 	}
 
 	if len(errs) > 0 {
-		go h.logger.LogErrors(errs...)
+		h.logErrors(errs...)
 		return false
 	}
 

@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 type App struct {
@@ -36,6 +37,8 @@ func (app *App) ReOpenLog() {
 }
 
 func NewApp(params []*param.Param) *App {
+	writePidFile()
+
 	verbose := !util.GetBoolEnv("GHFS_QUIET")
 
 	if serverHandler.TryEnableWSL1Fix() && verbose {
@@ -113,5 +116,20 @@ func NewApp(params []*param.Param) *App {
 		vhostSvc:      vhSvc,
 		vhostHandlers: vhHandlers,
 		logFileMan:    logFileMan,
+	}
+}
+
+func writePidFile() {
+	pidFilename := os.Getenv("GHFS_PID_FILE")
+	if len(pidFilename) == 0 {
+		return
+	}
+
+	pidContent := strconv.Itoa(os.Getpid())
+	pidFile, err := os.OpenFile(pidFilename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if !serverErrHandler.CheckFatal(err) {
+		_, err := pidFile.WriteString(pidContent)
+		err2 := pidFile.Close()
+		serverErrHandler.CheckFatal(err, err2)
 	}
 }

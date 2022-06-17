@@ -4,10 +4,11 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 func (h *handler) deleteItems(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
-	errs := []error{}
+	var errs []error
 
 	for _, inputFilename := range files {
 		if len(inputFilename) == 0 {
@@ -23,7 +24,7 @@ func (h *handler) deleteItems(authUserName, fsPrefix string, files []string, ali
 		if containsItem(aliasSubItems, filename) {
 			continue
 		}
-		fsPath := fsPrefix + "/" + filename
+		fsPath := filepath.Join(fsPrefix, filename)
 		h.logMutate(authUserName, "delete", fsPath, r)
 		err := os.RemoveAll(fsPath)
 		if err != nil {
@@ -32,7 +33,7 @@ func (h *handler) deleteItems(authUserName, fsPrefix string, files []string, ali
 	}
 
 	if len(errs) > 0 {
-		go h.logger.LogErrors(errs...)
+		h.logErrors(errs...)
 		return false
 	}
 

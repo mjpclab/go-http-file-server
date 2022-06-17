@@ -14,6 +14,15 @@
 	var noop = function () {
 	};
 
+	var logError;
+	if (typeof console !== strUndef) {
+		logError = function (err) {
+			console.error(err);
+		}
+	} else {
+		logError = noop;
+	}
+
 	var hasClass, addClass, removeClass;
 	if (document.body.classList) {
 		hasClass = function (el, className) {
@@ -572,7 +581,7 @@
 								var relativePath = dirPath + file.name;
 								files.push({file: file, relativePath: relativePath});
 							})['catch'](function (err) {	// workaround IE8- syntax error for ".catch"(reserved keyword)
-								typeof console !== strUndef && console.error(err);
+								logError(err);
 							});
 						} else if (handle.kind === handleKindDir) {
 							return new Promise(function (resolve) {
@@ -652,7 +661,7 @@
 								increaseCb();
 							}, function (err) {
 								increaseCb();
-								typeof console !== strUndef && console.error(err);
+								logError(err);
 							});
 						} else if (entry.isDirectory) {
 							var reader = entry.createReader();
@@ -891,7 +900,7 @@
 				if (status >= 200 && status <= 299) {
 					!uploading && location.reload();
 				} else {
-					onFail({type: this.statusText || this.status});
+					onFail({type: this.statusText || status});
 				}
 			}
 
@@ -1200,21 +1209,27 @@
 				return;
 			}
 
+			var form = e.target;
+
 			function onLoad() {
-				var elItem = e.target;
-				while (elItem && elItem.nodeName !== 'LI') {
-					elItem = elItem.parentNode;
+				var status = this.status;
+				if (status >= 200 && status <= 299) {
+					var elItem = form;
+					while (elItem && elItem.nodeName !== 'LI') {
+						elItem = elItem.parentNode;
+					}
+					if (!elItem) {
+						return;
+					}
+					var elItemParent = elItem.parentNode;
+					elItemParent && elItemParent.removeChild(elItem);
+				} else {
+					logError('delete failed: ' + status + ' ' + this.statusText);
 				}
-				if (!elItem) {
-					return;
-				}
-				var elItemParent = elItem.parentNode;
-				elItemParent && elItemParent.removeChild(elItem);
 			}
 
 			var params = '';
-			var els = [];
-			Array.prototype.push.apply(els, e.target.elements)
+			var els = Array.prototype.slice.call(form.elements);
 			for (var i = 0, len = els.length; i < len; i++) {
 				if (!els[i].name) {
 					continue
@@ -1224,7 +1239,7 @@
 				}
 				params += els[i].name + '=' + encodeURIComponent(els[i].value)
 			}
-			var url = e.target.action + '?' + params
+			var url = form.action + '?' + params;
 
 			var xhr = new XMLHttpRequest();
 			xhr.open('POST', url);	// will retrieve deleted result into bfcache
