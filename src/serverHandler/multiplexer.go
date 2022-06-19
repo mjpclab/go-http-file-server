@@ -10,8 +10,6 @@ import (
 	"net/http"
 )
 
-var defaultHandler = http.NotFoundHandler()
-
 type aliasHandler struct {
 	alias   alias
 	handler http.Handler

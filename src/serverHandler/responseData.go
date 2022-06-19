@@ -49,10 +49,11 @@ type responseData struct {
 	errors []error
 	Status int
 
-	IsRoot        bool
-	Path          string
-	Paths         []pathEntry
-	RootRelPath   string
+	IsRoot      bool
+	Path        string
+	Paths       []pathEntry
+	RootRelPath string
+
 	File          *os.File
 	Item          os.FileInfo
 	ItemName      string
@@ -71,34 +72,34 @@ func isSlash(c rune) bool {
 	return c == '/'
 }
 
-func getPathEntries(path string, tailSlash bool) []pathEntry {
+func getPathEntries(currDirRelPath, path string, tailSlash bool) []pathEntry {
 	restPaths := strings.FieldsFunc(path, isSlash)
-	paths := make([]string, 1, len(restPaths)+1)
+	paths := make([]string, len(restPaths)+1)
 	paths[0] = "/"
-	paths = append(paths, restPaths...)
+	copy(paths[1:], restPaths)
 
-	displayPathsCount := len(paths)
+	pathFrags := len(paths)
 
-	pathsCount := displayPathsCount
+	pathDepth := pathFrags
 	if !tailSlash {
-		pathsCount--
+		pathDepth--
 	}
 
-	pathEntries := make([]pathEntry, displayPathsCount)
-	for i := 0; i < displayPathsCount; i++ {
-		var rPath string
-		switch {
-		case i < pathsCount-1:
-			rPath = strings.Repeat("../", pathsCount-1-i)
-		case i == pathsCount-1:
-			rPath = "./"
-		default:
-			rPath = "./" + strings.Join(paths[pathsCount:], "/") + "/"
+	pathEntries := make([]pathEntry, pathFrags)
+	for n := 1; n <= pathFrags; n++ {
+		var relPath string
+		if n < pathDepth {
+			relPath = strings.Repeat("../", pathDepth-n)
+		} else if n == pathDepth {
+			relPath = currDirRelPath
+		} else /*if n == pathDepth+1*/ {
+			relPath = currDirRelPath + paths[pathDepth] + "/"
 		}
 
+		i := n - 1
 		pathEntries[i] = pathEntry{
 			Name: paths[i],
-			Path: rPath,
+			Path: relPath,
 		}
 	}
 
@@ -191,11 +192,19 @@ func (h *handler) mergeAlias(
 	return subItems, aliasSubItems, errs
 }
 
-func getSubItemPrefix(rawRequestPath string, tailSlash bool) string {
-	if tailSlash {
-		return "./"
+func getCurrDirRelPath(reqPath, rawReqPath string) string {
+	if len(reqPath) == 1 && len(rawReqPath) > 1 && rawReqPath[len(rawReqPath)-1] != '/' {
+		return "./" + path.Base(rawReqPath) + "/"
 	} else {
-		return "./" + path.Base(rawRequestPath) + "/"
+		return "./"
+	}
+}
+
+func getSubItemPrefix(currDirRelPath, rawRequestPath string, tailSlash bool) string {
+	if tailSlash {
+		return currDirRelPath
+	} else {
+		return currDirRelPath + path.Base(rawRequestPath) + "/"
 	}
 }
 
@@ -266,13 +275,9 @@ func (h *handler) statIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo
 func (h *handler) getResponseData(r *http.Request) *responseData {
 	var errs []error
 
-	requestUri := r.URL.Path
-	if len(requestUri) == 0 {
-		requestUri = "/"
-	}
-	tailSlash := requestUri[len(requestUri)-1] == '/'
+	rawReqPath := r.URL.Path
+	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 
-	rawReqPath := util.CleanUrlPath(requestUri)
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
 	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
 
@@ -311,12 +316,13 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
-	pathEntries := getPathEntries(rawReqPath, tailSlash)
+	currDirRelPath := getCurrDirRelPath(rawReqPath, r.URL.RawPath)
+	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
 	var rootRelPath string
 	if len(pathEntries) > 0 {
 		rootRelPath = pathEntries[0].Path
 	} else {
-		rootRelPath = "./"
+		rootRelPath = currDirRelPath
 	}
 
 	file, item, _statErr := stat(reqFsPath, authSuccess && !h.emptyRoot)
@@ -356,11 +362,11 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	subItems = h.FilterItems(subItems)
 	rawSortBy, sortState := sortInfos(subItems, rawQuery, h.defaultSort)
 
-	if h.emptyRoot && status == http.StatusOK && r.RequestURI != "/" {
+	if h.emptyRoot && status == http.StatusOK && len(rawReqPath) > 1 {
 		status = http.StatusNotFound
 	}
 
-	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
+	subItemPrefix := getSubItemPrefix(currDirRelPath, rawReqPath, tailSlash)
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
@@ -400,10 +406,11 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		errors: errs,
 		Status: status,
 
-		IsRoot:        isRoot,
-		Path:          rawReqPath,
-		Paths:         pathEntries,
-		RootRelPath:   rootRelPath,
+		IsRoot:      isRoot,
+		Path:        rawReqPath,
+		Paths:       pathEntries,
+		RootRelPath: rootRelPath,
+
 		File:          file,
 		Item:          item,
 		ItemName:      itemName,

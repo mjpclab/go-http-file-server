@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+var defaultHandler = http.NotFoundHandler()
+
 var createFileServer func(root string) http.Handler
 
 type handler struct {
