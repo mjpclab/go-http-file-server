@@ -278,7 +278,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	rawReqPath := r.URL.Path
 	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 
-	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
+	reqPath := util.CleanUrlPath(rawReqPath[len(h.aliasPrefix):])
 	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
 
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
