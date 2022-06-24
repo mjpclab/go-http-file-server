@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"../util"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -16,7 +17,7 @@ func (h *handler) content(w http.ResponseWriter, r *http.Request, data *response
 	header := w.Header()
 	header.Set("X-Content-Type-Options", "nosniff")
 	if data.IsDownload {
-		header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+data.ItemName)
+		header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+url.PathEscape(data.ItemName))
 	}
 
 	item := data.Item
