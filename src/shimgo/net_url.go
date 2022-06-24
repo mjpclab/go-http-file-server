@@ -1,5 +1,22 @@
 package shimgo
 
+import (
+	"strconv"
+	"strings"
+)
+
+type Net_Url_EscapeError string
+
+func (e Net_Url_EscapeError) Error() string {
+	return "invalid URL escape " + strconv.Quote(string(e))
+}
+
+type Net_Url_InvalidHostError string
+
+func (e Net_Url_InvalidHostError) Error() string {
+	return "invalid character " + strconv.Quote(string(e)) + " in host name"
+}
+
 type net_url_encoding int
 
 const (
@@ -12,6 +29,30 @@ const (
 	net_url_encodeFragment
 )
 const net_url_upperhex = "0123456789ABCDEF"
+
+func net_url_ishex(c byte) bool {
+	switch {
+	case '0' <= c && c <= '9':
+		return true
+	case 'a' <= c && c <= 'f':
+		return true
+	case 'A' <= c && c <= 'F':
+		return true
+	}
+	return false
+}
+
+func net_url_unhex(c byte) byte {
+	switch {
+	case '0' <= c && c <= '9':
+		return c - '0'
+	case 'a' <= c && c <= 'f':
+		return c - 'a' + 10
+	case 'A' <= c && c <= 'F':
+		return c - 'A' + 10
+	}
+	return 0
+}
 
 func Net_Url_PathEscape(s string) string {
 	return net_url_escape(s, net_url_encodePathSegment)
@@ -153,4 +194,90 @@ func net_url_shouldEscape(c byte, mode net_url_encoding) bool {
 
 	// Everything else must be escaped.
 	return true
+}
+
+// PathUnescape does the inverse transformation of PathEscape,
+// converting each 3-byte encoded substring of the form "%AB" into the
+// hex-decoded byte 0xAB. It returns an error if any % is not followed
+// by two hexadecimal digits.
+//
+// PathUnescape is identical to QueryUnescape except that it does not
+// unescape '+' to ' ' (space).
+func Net_Url_PathUnescape(s string) (string, error) {
+	return unescape(s, net_url_encodePathSegment)
+}
+
+// unescape unescapes a string; the mode specifies
+// which section of the URL string is being unescaped.
+func unescape(s string, mode net_url_encoding) (string, error) {
+	// Count %, check that they're well-formed.
+	n := 0
+	hasPlus := false
+	for i := 0; i < len(s); {
+		switch s[i] {
+		case '%':
+			n++
+			if i+2 >= len(s) || !net_url_ishex(s[i+1]) || !net_url_ishex(s[i+2]) {
+				s = s[i:]
+				if len(s) > 3 {
+					s = s[:3]
+				}
+				return "", Net_Url_EscapeError(s)
+			}
+			// Per https://tools.ietf.org/html/rfc3986#page-21
+			// in the host component %-encoding can only be used
+			// for non-ASCII bytes.
+			// But https://tools.ietf.org/html/rfc6874#section-2
+			// introduces %25 being allowed to escape a percent sign
+			// in IPv6 scoped-address literals. Yay.
+			if mode == net_url_encodeHost && net_url_unhex(s[i+1]) < 8 && s[i:i+3] != "%25" {
+				return "", Net_Url_EscapeError(s[i : i+3])
+			}
+			if mode == net_url_encodeZone {
+				// RFC 6874 says basically "anything goes" for zone identifiers
+				// and that even non-ASCII can be redundantly escaped,
+				// but it seems prudent to restrict %-escaped bytes here to those
+				// that are valid host name bytes in their unescaped form.
+				// That is, you can use escaping in the zone identifier but not
+				// to introduce bytes you couldn't just write directly.
+				// But Windows puts spaces here! Yay.
+				v := net_url_unhex(s[i+1])<<4 | net_url_unhex(s[i+2])
+				if s[i:i+3] != "%25" && v != ' ' && net_url_shouldEscape(v, net_url_encodeHost) {
+					return "", Net_Url_EscapeError(s[i : i+3])
+				}
+			}
+			i += 3
+		case '+':
+			hasPlus = mode == net_url_encodeQueryComponent
+			i++
+		default:
+			if (mode == net_url_encodeHost || mode == net_url_encodeZone) && s[i] < 0x80 && net_url_shouldEscape(s[i], mode) {
+				return "", Net_Url_InvalidHostError(s[i : i+1])
+			}
+			i++
+		}
+	}
+
+	if n == 0 && !hasPlus {
+		return s, nil
+	}
+
+	var t strings.Builder
+	t.Grow(len(s) - 2*n)
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '%':
+			t.WriteByte(net_url_unhex(s[i+1])<<4 | net_url_unhex(s[i+2]))
+			i += 2
+		case '+':
+			if mode == net_url_encodeQueryComponent {
+				t.WriteByte(' ')
+			} else {
+				t.WriteByte('+')
+			}
+		default:
+			t.WriteByte(s[i])
+		}
+	}
+	return t.String(), nil
 }
