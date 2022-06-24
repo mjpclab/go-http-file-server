@@ -13,7 +13,7 @@ func (h *handler) logRequest(r *http.Request) {
 
 	var unescapedUri []byte
 	unescapedLen := 0
-	unescapedStr, err := url.QueryUnescape(r.RequestURI)
+	unescapedStr, err := url.PathUnescape(r.RequestURI)
 	if err == nil && unescapedStr != r.RequestURI {
 		unescapedUri = util.EscapeControllingRune(unescapedStr)
 		if len(unescapedUri) > 0 {
