@@ -1,7 +1,7 @@
 package goNixArgParser
 
 import (
-	"bytes"
+	"io"
 	"strings"
 )
 
@@ -25,75 +25,17 @@ func (opt *Option) filterValues(values []string) []string {
 	if opt.UniqueValues {
 		uniqueValues := make([]string, 0, len(values))
 		uniqueValues = appendUnique(uniqueValues, values...)
-		values = uniqueValues
+		return uniqueValues
 	}
 
 	return values
-}
-
-func (opt *Option) GetHelp() []byte {
-	buffer := &bytes.Buffer{}
-
-	for i, flag := range opt.Flags {
-		if i > 0 {
-			buffer.WriteString("|")
-		}
-		buffer.WriteString(flag.Name)
-	}
-
-	if opt.AcceptValue {
-		buffer.WriteString(" <value>")
-		if opt.MultiValues {
-			buffer.WriteString(" ...")
-		}
-	}
-
-	buffer.WriteByte('\n')
-
-	if len(opt.EnvVars) > 0 {
-		buffer.WriteString("EnvVar: ")
-
-		for i, envVar := range opt.EnvVars {
-			if i > 0 {
-				buffer.WriteString(", ")
-			}
-			buffer.WriteString(envVar)
-		}
-
-		buffer.WriteByte('\n')
-	}
-
-	if len(opt.DefaultValues) > 0 {
-		buffer.WriteString("Default: ")
-
-		for i, d := range opt.DefaultValues {
-			if i > 0 {
-				buffer.WriteString(", ")
-			}
-			buffer.WriteString(d)
-		}
-
-		buffer.WriteByte('\n')
-	}
-
-	if len(opt.Summary) > 0 {
-		buffer.WriteString(opt.Summary)
-		buffer.WriteByte('\n')
-	}
-
-	if len(opt.Description) > 0 {
-		buffer.WriteString(opt.Description)
-		buffer.WriteByte('\n')
-	}
-
-	return buffer.Bytes()
 }
 
 func NewFlagOption(key, flag, envVar, summary string) Option {
 	return Option{
 		Key:     key,
 		Flags:   []*Flag{NewSimpleFlag(flag)},
-		EnvVars: StringToSlice(envVar),
+		EnvVars: stringToSlice(envVar),
 		Summary: summary,
 	}
 }
@@ -102,7 +44,7 @@ func NewFlagsOption(key string, flags []string, envVar, summary string) Option {
 	return Option{
 		Key:     key,
 		Flags:   NewSimpleFlags(flags),
-		EnvVars: StringToSlice(envVar),
+		EnvVars: stringToSlice(envVar),
 		Summary: summary,
 	}
 }
@@ -113,8 +55,8 @@ func NewFlagValueOption(key, flag, envVar, defaultValue, summary string) Option 
 		Flags:         []*Flag{NewSimpleFlag(flag)},
 		AcceptValue:   true,
 		OverridePrev:  true,
-		EnvVars:       StringToSlice(envVar),
-		DefaultValues: StringToSlice(defaultValue),
+		EnvVars:       stringToSlice(envVar),
+		DefaultValues: stringToSlice(defaultValue),
 		Summary:       summary,
 	}
 }
@@ -126,7 +68,7 @@ func NewFlagValuesOption(key, flag, envVar string, defaultValues []string, summa
 		AcceptValue:   true,
 		MultiValues:   true,
 		UniqueValues:  true,
-		EnvVars:       StringToSlice(envVar),
+		EnvVars:       stringToSlice(envVar),
 		DefaultValues: defaultValues,
 		Summary:       summary,
 	}
@@ -138,8 +80,8 @@ func NewFlagsValueOption(key string, flags []string, envVar, defaultValue, summa
 		Flags:         NewSimpleFlags(flags),
 		AcceptValue:   true,
 		OverridePrev:  true,
-		EnvVars:       StringToSlice(envVar),
-		DefaultValues: StringToSlice(defaultValue),
+		EnvVars:       stringToSlice(envVar),
+		DefaultValues: stringToSlice(defaultValue),
 		Summary:       summary,
 	}
 }
@@ -151,8 +93,68 @@ func NewFlagsValuesOption(key string, flags []string, envVar string, defaultValu
 		AcceptValue:   true,
 		MultiValues:   true,
 		UniqueValues:  true,
-		EnvVars:       StringToSlice(envVar),
+		EnvVars:       stringToSlice(envVar),
 		DefaultValues: defaultValues,
 		Summary:       summary,
+	}
+}
+
+func (opt *Option) OutputHelp(w io.Writer) {
+	if opt.Hidden {
+		return
+	}
+
+	newline := []byte{'\n'}
+
+	for i, flag := range opt.Flags {
+		if i > 0 {
+			w.Write([]byte{'|'})
+		}
+		io.WriteString(w, flag.Name)
+	}
+
+	if opt.AcceptValue {
+		io.WriteString(w, " <value>")
+		if opt.MultiValues {
+			io.WriteString(w, " ...")
+		}
+	}
+
+	w.Write(newline)
+
+	if len(opt.EnvVars) > 0 {
+		io.WriteString(w, "EnvVar: ")
+
+		for i, envVar := range opt.EnvVars {
+			if i > 0 {
+				io.WriteString(w, ", ")
+			}
+			io.WriteString(w, envVar)
+		}
+
+		w.Write(newline)
+	}
+
+	if len(opt.DefaultValues) > 0 {
+		io.WriteString(w, "Default: ")
+
+		for i, d := range opt.DefaultValues {
+			if i > 0 {
+				io.WriteString(w, ", ")
+			}
+			io.WriteString(w, d)
+		}
+
+		w.Write(newline)
+	}
+
+	if len(opt.Summary) > 0 {
+		io.WriteString(w, opt.Summary)
+		w.Write(newline)
+	}
+
+	if len(opt.Description) > 0 {
+		io.WriteString(w, opt.Description)
+		w.Write(newline)
 	}
 }

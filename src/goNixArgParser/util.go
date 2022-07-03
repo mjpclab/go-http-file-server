@@ -32,6 +32,14 @@ func copys(input []string) []string {
 	return output
 }
 
+func stringToSlice(input string) []string {
+	if len(input) == 0 {
+		return nil
+	}
+
+	return []string{input}
+}
+
 func toBool(input string) (bool, error) {
 	if len(input) == 0 {
 		return false, nil

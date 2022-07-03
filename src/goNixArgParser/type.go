@@ -11,18 +11,18 @@ type OptionSet struct {
 	mergeFlagPrefix   string
 	restsSigns        []string
 	groupSeps         []string
+	assignSigns       []string
 	undefFlagPrefixes []string
 
 	options []*Option
 
 	hasCanMerge        bool
 	hasCanConcatAssign bool
-	hasAssignSigns     bool
 	hasPrefixMatch     bool
 
 	keyOptionMap  map[string]*Option
 	flagOptionMap map[string]*Option
-	flagMap       map[string]*Flag
+	nameFlagMap   map[string]*Flag
 	keyEnvMap     map[string][]string
 	keyDefaultMap map[string][]string
 }
@@ -39,6 +39,7 @@ type Option struct {
 	UniqueValues  bool
 	EnvVars       []string
 	DefaultValues []string
+	Hidden        bool
 }
 
 type Flag struct {
@@ -47,45 +48,44 @@ type Flag struct {
 	canMerge        bool
 	canFollowAssign bool
 	canConcatAssign bool
-	assignSigns     []string
 }
 
-type ArgType int
+type argKind int
 
 const (
-	UndetermArg ArgType = iota
-	CommandArg
-	FlagArg
-	ValueArg
-	UndefFlagArg
-	UndefFlagValueArg
-	AmbiguousFlagArg
-	AmbiguousFlagValueArg
-	RestSignArg
-	RestArg
-	GroupSepArg
+	undetermArg argKind = iota
+	commandArg
+	flagArg
+	valueArg
+	undefFlagArg
+	undefFlagValueArg
+	ambiguousFlagArg
+	ambiguousFlagValueArg
+	restSignArg
+	restArg
+	groupSepArg
 )
 
-type Arg struct {
-	Text string
-	Type ArgType
+type argToken struct {
+	text string
+	kind argKind
 }
 
 type ParseResult struct {
 	keyOptionMap map[string]*Option
 
-	commands []string
-	args     map[string][]string
-	envs     map[string][]string
-	configs  map[string][]string
-	defaults map[string][]string
+	commands         []string
+	specifiedOptions map[string][]string
+	envs             map[string][]string
+	configOptions    map[string][]string
+	defaults         map[string][]string
 
-	argRests    []string
-	configRests []string
+	specifiedRests []string
+	configRests    []string
 
-	argAmbigus    []string
-	configAmbigus []string
+	specifiedAmbigus []string
+	configAmbigus    []string
 
-	argUndefs    []string
-	configUndefs []string
+	specifiedUndefs []string
+	configUndefs    []string
 }

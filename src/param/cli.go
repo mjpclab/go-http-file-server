@@ -197,7 +197,7 @@ func doParseCli() []*Param {
 		// undefined flags
 		undefs := result.GetUndefs()
 		if len(undefs) > 0 {
-			fmt.Println("unknown options:", strings.Join(undefs, " "))
+			fmt.Println("unknown option:", strings.Join(undefs, " "))
 			os.Exit(0)
 		}
 
@@ -209,7 +209,7 @@ func doParseCli() []*Param {
 
 		// help
 		if result.HasFlagKey("help") {
-			cliCmd.PrintHelp()
+			cliCmd.OutputHelp(os.Stdout)
 			os.Exit(0)
 		}
 	}
