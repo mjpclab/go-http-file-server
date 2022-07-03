@@ -276,6 +276,23 @@ func (h *handler) statIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo
 	return nil, nil, nil
 }
 
+func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []error) {
+	baseFsPath := reqFsPath + "/"
+
+	for i := range subItems {
+		if subItems[i].Mode()&os.ModeSymlink != 0 {
+			dereferencedItem, err := os.Stat(baseFsPath + subItems[i].Name())
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				subItems[i] = dereferencedItem
+			}
+		}
+	}
+
+	return
+}
+
 func (h *handler) getResponseData(r *http.Request) *responseData {
 	var errs []error
 
@@ -361,6 +378,11 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
+	}
+
+	_dereferenceErrs := dereferenceSymbolLinks(reqFsPath, subItems)
+	if len(_dereferenceErrs) > 0 {
+		errs = append(errs, _dereferenceErrs...)
 	}
 
 	subItems = h.FilterItems(subItems)
