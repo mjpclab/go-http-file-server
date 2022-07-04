@@ -171,13 +171,7 @@ func (h *handler) mergeAlias(
 			if isVirtual(subItem) {
 				continue
 			}
-			var baseItem os.FileInfo
-			if fsItem != nil {
-				baseItem = fsItem
-			} else {
-				baseItem = subItem
-			}
-			aliasSubItem := createVirtualFileInfo(subItem.Name(), baseItem, aliasCaseSensitive)
+			aliasSubItem := createVirtualFileInfo(subItem.Name(), fsItem, aliasCaseSensitive)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems[i] = aliasSubItem
 			if aliasCaseSensitive {
