@@ -68,37 +68,41 @@ type responseData struct {
 	Trans *i18n.Translation
 }
 
-func isSlash(c rune) bool {
-	return c == '/'
-}
-
 func getPathEntries(currDirRelPath, path string, tailSlash bool) []pathEntry {
-	restPaths := strings.FieldsFunc(path, isSlash)
-	paths := make([]string, len(restPaths)+1)
-	paths[0] = "/"
-	copy(paths[1:], restPaths)
+	pathSegs := make([]string, 1, 12)
+	pathSegs[0] = "/"
+	for refPath := path[1:]; len(refPath) > 0; {
+		slashIndex := strings.IndexByte(refPath, '/')
+		if slashIndex < 0 {
+			pathSegs = append(pathSegs, refPath)
+			break
+		} else {
+			pathSegs = append(pathSegs, refPath[:slashIndex])
+			refPath = refPath[slashIndex+1:]
+		}
+	}
 
-	pathFrags := len(paths)
+	pathCount := len(pathSegs)
 
-	pathDepth := pathFrags
+	pathDepth := pathCount
 	if !tailSlash {
 		pathDepth--
 	}
 
-	pathEntries := make([]pathEntry, pathFrags)
-	for n := 1; n <= pathFrags; n++ {
+	pathEntries := make([]pathEntry, pathCount)
+	for n := 1; n <= pathCount; n++ {
 		var relPath string
 		if n < pathDepth {
 			relPath = strings.Repeat("../", pathDepth-n)
 		} else if n == pathDepth {
 			relPath = currDirRelPath
 		} else /*if n == pathDepth+1*/ {
-			relPath = currDirRelPath + paths[pathDepth] + "/"
+			relPath = currDirRelPath + pathSegs[pathDepth] + "/"
 		}
 
 		i := n - 1
 		pathEntries[i] = pathEntry{
-			Name: paths[i],
+			Name: pathSegs[i],
 			Path: relPath,
 		}
 	}

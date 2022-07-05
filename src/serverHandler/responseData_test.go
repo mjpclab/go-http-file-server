@@ -7,7 +7,7 @@ func TestGetPathEntries(t *testing.T) {
 
 	result = getPathEntries("./", "/", true)
 	if len(result) != 1 {
-		t.Error(len(result))
+		t.Errorf("%#v\n", result)
 	}
 	if result[0].Path != "./" || result[0].Name != "/" {
 		t.Error(result[0])
