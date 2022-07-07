@@ -1,8 +1,8 @@
 package shimgo
 
 import (
+	"bytes"
 	"strconv"
-	"strings"
 )
 
 type Net_Url_EscapeError string
@@ -262,7 +262,7 @@ func unescape(s string, mode net_url_encoding) (string, error) {
 		return s, nil
 	}
 
-	var t strings.Builder
+	var t bytes.Buffer
 	t.Grow(len(s) - 2*n)
 	for i := 0; i < len(s); i++ {
 		switch s[i] {

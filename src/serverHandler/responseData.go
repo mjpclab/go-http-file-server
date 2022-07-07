@@ -332,7 +332,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
-	currDirRelPath := getCurrDirRelPath(rawReqPath, r.URL.RawPath)
+	currDirRelPath := getCurrDirRelPath(rawReqPath, r.RequestURI)
 	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
 	var rootRelPath string
 	if len(pathEntries) > 0 {

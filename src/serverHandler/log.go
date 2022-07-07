@@ -1,9 +1,9 @@
 package serverHandler
 
 import (
+	"../shimgo"
 	"../util"
 	"net/http"
-	"net/url"
 )
 
 func (h *handler) logRequest(r *http.Request) {
@@ -13,7 +13,7 @@ func (h *handler) logRequest(r *http.Request) {
 
 	var unescapedUri []byte
 	unescapedLen := 0
-	unescapedStr, err := url.PathUnescape(r.RequestURI)
+	unescapedStr, err := shimgo.Net_Url_PathUnescape(r.RequestURI)
 	if err == nil && unescapedStr != r.RequestURI {
 		unescapedUri = util.EscapeControllingRune(unescapedStr)
 		if len(unescapedUri) > 0 {

@@ -29,7 +29,7 @@ func (transformer pathTransformer) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	} else {
 		urlPathDir = urlPath
 	}
-	r.URL.RawPath = urlPathDir
+	r.RequestURI = urlPathDir
 
 	if len(transformer.prefixesAccurate) == 0 && len(transformer.prefixesNoCase) == 0 {
 		r.URL.Path = urlPathDir
