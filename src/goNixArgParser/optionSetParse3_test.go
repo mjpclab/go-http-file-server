@@ -7,7 +7,7 @@ import (
 func TestParse3(t *testing.T) {
 	var err error
 
-	s := NewOptionSet("-", nil, []string{",,"}, []string{"-"})
+	s := NewOptionSet("-", nil, []string{",,"}, []string{"="}, []string{"-"})
 
 	err = s.Add(Option{
 		Key:         "bool",
@@ -20,7 +20,7 @@ func TestParse3(t *testing.T) {
 
 	err = s.Add(Option{
 		Key:         "port",
-		Flags:       []*Flag{{Name: "-p", canMerge: true, canFollowAssign: true, assignSigns: []string{"="}}, {Name: "--port", canFollowAssign: true}},
+		Flags:       []*Flag{{Name: "-p", canMerge: true, canFollowAssign: true}, {Name: "--port", canFollowAssign: true}},
 		AcceptValue: true,
 	})
 	if err != nil {
@@ -47,7 +47,7 @@ func TestParse3(t *testing.T) {
 
 	err = s.Add(Option{
 		Key:         "password",
-		Flags:       []*Flag{{Name: "--password", prefixMatchLen: 1, assignSigns: []string{"="}}},
+		Flags:       []*Flag{{Name: "--password", prefixMatchLen: 1}},
 		AcceptValue: true,
 	})
 	if err != nil {

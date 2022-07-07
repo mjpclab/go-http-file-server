@@ -1,7 +1,6 @@
 package goNixArgParser
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -25,14 +24,16 @@ func getGitCommand() *Command {
 	return cmdGit
 }
 
-func TestNormalizeCmdArgs(t *testing.T) {
+/*
+func TestGetLeafCmd(t *testing.T) {
 	cmd := getGitCommand()
 	args := []string{"git", "rmt", "set-url", "--push", "origin", "https://github.com/mjpclab/goNixArgParser.git"}
-	_, normalizedArgs := cmd.getNormalizedArgs(args)
+	_, normalizedArgs := cmd.getLeafCmd(args)
 	for i, arg := range normalizedArgs {
 		fmt.Printf("%d %+v\n", i, arg)
 	}
 }
+*/
 
 func TestParseCommand1(t *testing.T) {
 	cmd := getGitCommand()
@@ -49,12 +50,10 @@ func TestParseCommand1(t *testing.T) {
 		t.Error("push")
 	}
 
-	if result.argRests[0] != "origin" ||
-		result.argRests[1] != "https://github.com/mjpclab/goNixArgParser.git" {
-		t.Error("rests", result.argRests)
+	if result.specifiedRests[0] != "origin" ||
+		result.specifiedRests[1] != "https://github.com/mjpclab/goNixArgParser.git" {
+		t.Error("rests", result.specifiedRests)
 	}
-
-	cmd.PrintHelp()
 }
 
 func TestParseCommand2(t *testing.T) {
@@ -67,11 +66,11 @@ func TestParseCommand2(t *testing.T) {
 		t.Error("commands", result.commands)
 	}
 
-	if result.argRests[0] != "xxx" ||
-		result.argRests[1] != "set-url" ||
-		result.argRests[2] != "origin" ||
-		result.argRests[3] != "https://github.com/mjpclab/goNixArgParser.git" {
-		t.Error("rests", result.argRests)
+	if result.specifiedRests[0] != "xxx" ||
+		result.specifiedRests[1] != "set-url" ||
+		result.specifiedRests[2] != "origin" ||
+		result.specifiedRests[3] != "https://github.com/mjpclab/goNixArgParser.git" {
+		t.Error("rests", result.specifiedRests)
 	}
 }
 
@@ -83,8 +82,7 @@ func TestParseCommand3(t *testing.T) {
 
 	dummy, _ := result.GetString("dummy")
 	if dummy != "dummyconfigvalue" {
-		fmt.Println("dummy:", dummy)
-		t.Error("dummy config value error")
+		t.Error("dummy config value error", dummy)
 	}
 
 	configArgs = configArgs[1:]
@@ -92,8 +90,7 @@ func TestParseCommand3(t *testing.T) {
 
 	dummy, _ = result.GetString("dummy")
 	if dummy != "dummyconfigvalue" {
-		fmt.Println("dummy:", dummy)
-		t.Error("dummy config value error")
+		t.Error("dummy config value error", dummy)
 	}
 }
 
@@ -158,5 +155,32 @@ func TestParseCommand6(t *testing.T) {
 	dummy1, _ = results[1].GetString("dummy")
 	if dummy1 != "dummy1" {
 		t.Error(results[1].GetStrings("dummy"))
+	}
+}
+
+func TestParseCommand7(t *testing.T) {
+	cmd := getGitCommand()
+	args := []string{"git", "remote", "set-url", "github", "https://github.com/mjpclab/goNixArgParser.git"}
+	configArgs := []string{"--dummy", "dummy0"}
+
+	result := cmd.Parse(args, configArgs)
+
+	cmdPaths := result.GetCommands()
+	if len(cmdPaths) != 3 {
+		t.Error(len(cmdPaths))
+	}
+	if cmdPaths[0] != "git" {
+		t.Error(cmdPaths[0])
+	}
+	if cmdPaths[1] != "remote" {
+		t.Error(cmdPaths[1])
+	}
+	if cmdPaths[2] != "set-url" {
+		t.Error(cmdPaths[2])
+	}
+
+	dummy, _ := result.GetString("dummy")
+	if dummy != "dummy0" {
+		t.Error(dummy)
 	}
 }

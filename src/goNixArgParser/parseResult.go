@@ -1,13 +1,13 @@
 package goNixArgParser
 
 ///////////////////////////////
-// set configs
+// set configOptions
 //////////////////////////////
-func (r *ParseResult) SetConfig(key, value string) {
-	r.configs[key] = []string{value}
+func (r *ParseResult) SetConfigOption(key, value string) {
+	r.configOptions[key] = []string{value}
 }
 
-func (r *ParseResult) SetConfigs(key string, values []string) {
+func (r *ParseResult) SetConfigOptions(key string, values []string) {
 	var configValues []string
 
 	if opt := r.keyOptionMap[key]; opt != nil {
@@ -16,7 +16,7 @@ func (r *ParseResult) SetConfigs(key string, values []string) {
 		configValues = copys(values)
 	}
 
-	r.configs[key] = configValues
+	r.configOptions[key] = configValues
 }
 
 ///////////////////////////////
@@ -24,12 +24,12 @@ func (r *ParseResult) SetConfigs(key string, values []string) {
 //////////////////////////////
 
 func (r *ParseResult) HasFlagKey(key string) bool {
-	_, found := r.args[key]
+	_, found := r.specifiedOptions[key]
 	return found
 }
 
 func (r *ParseResult) HasFlagValue(key string) bool {
-	return len(r.args[key]) > 0
+	return len(r.specifiedOptions[key]) > 0
 }
 
 func (r *ParseResult) HasEnvKey(key string) bool {
@@ -42,12 +42,12 @@ func (r *ParseResult) HasEnvValue(key string) bool {
 }
 
 func (r *ParseResult) HasConfigKey(key string) bool {
-	_, found := r.configs[key]
+	_, found := r.configOptions[key]
 	return found
 }
 
 func (r *ParseResult) HasConfigValue(key string) bool {
-	return len(r.configs[key]) > 0
+	return len(r.configOptions[key]) > 0
 }
 
 func (r *ParseResult) HasDefaultKey(key string) bool {
@@ -72,7 +72,7 @@ func (r *ParseResult) HasValue(key string) bool {
 //////////////////////////////
 
 func (r *ParseResult) GetString(key string) (value string, found bool) {
-	value, found = getValue(r.args, key)
+	value, found = getValue(r.specifiedOptions, key)
 	if found {
 		return
 	}
@@ -82,7 +82,7 @@ func (r *ParseResult) GetString(key string) (value string, found bool) {
 		return
 	}
 
-	value, found = getValue(r.configs, key)
+	value, found = getValue(r.configOptions, key)
 	if found {
 		return
 	}
@@ -154,7 +154,7 @@ func (r *ParseResult) GetFloat64(key string) (value float64, found bool) {
 // get multi values
 //////////////////////////////
 func (r *ParseResult) GetStrings(key string) (values []string, found bool) {
-	values, found = getValues(r.args, key)
+	values, found = getValues(r.specifiedOptions, key)
 	if found {
 		return
 	}
@@ -164,7 +164,7 @@ func (r *ParseResult) GetStrings(key string) (values []string, found bool) {
 		return
 	}
 
-	values, found = getValues(r.configs, key)
+	values, found = getValues(r.configOptions, key)
 	if found {
 		return
 	}
@@ -233,8 +233,8 @@ func (r *ParseResult) GetFloat64s(key string) (values []float64, found bool) {
 }
 
 func (r *ParseResult) GetRests() (rests []string) {
-	if len(r.argRests) > 0 {
-		return copys(r.argRests)
+	if len(r.specifiedRests) > 0 {
+		return copys(r.specifiedRests)
 	} else if len(r.configRests) > 0 {
 		return copys(r.configRests)
 	}
@@ -253,13 +253,13 @@ func (r *ParseResult) GetCommands() []string {
 // ambigus
 //////////////////////////////
 func (r *ParseResult) HasAmbigu() bool {
-	return len(r.argAmbigus) > 0 || len(r.configAmbigus) > 0
+	return len(r.specifiedAmbigus) > 0 || len(r.configAmbigus) > 0
 }
 
 func (r *ParseResult) GetAmbigus() []string {
-	flags := make([]string, 0, len(r.argAmbigus)+len(r.configAmbigus))
+	flags := make([]string, 0, len(r.specifiedAmbigus)+len(r.configAmbigus))
 
-	for _, flag := range r.argAmbigus {
+	for _, flag := range r.specifiedAmbigus {
 		if !contains(flags, flag) {
 			flags = append(flags, flag)
 		}
@@ -278,13 +278,13 @@ func (r *ParseResult) GetAmbigus() []string {
 // undefs
 //////////////////////////////
 func (r *ParseResult) HasUndef() bool {
-	return len(r.argUndefs) > 0 || len(r.configUndefs) > 0
+	return len(r.specifiedUndefs) > 0 || len(r.configUndefs) > 0
 }
 
 func (r *ParseResult) GetUndefs() []string {
-	flags := make([]string, 0, len(r.argUndefs)+len(r.configUndefs))
+	flags := make([]string, 0, len(r.specifiedUndefs)+len(r.configUndefs))
 
-	for _, flag := range r.argUndefs {
+	for _, flag := range r.specifiedUndefs {
 		if !contains(flags, flag) {
 			flags = append(flags, flag)
 		}

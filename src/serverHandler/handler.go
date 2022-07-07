@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+var defaultHandler = http.NotFoundHandler()
+
 var createFileServer func(root string) http.Handler
 
 type handler struct {
@@ -20,7 +22,7 @@ type handler struct {
 	globalHttps bool
 	httpsPort   string // with prefix ":"
 	defaultSort string
-	urlPrefix   string
+	aliasPrefix string
 
 	dirIndexes []string
 	aliases    aliases
@@ -144,18 +146,18 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func newHandler(
 	p *param.Param,
 	root string,
-	urlPrefix string,
+	aliasPrefix string,
 	allAliases aliases,
 	users user.List,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
 ) http.Handler {
-	emptyRoot := p.EmptyRoot && urlPrefix == "/"
+	emptyRoot := p.EmptyRoot && aliasPrefix == "/"
 
 	aliases := aliases{}
 	for _, alias := range allAliases {
-		if alias.isSuccessorOf(urlPrefix) {
+		if alias.isSuccessorOf(aliasPrefix) {
 			aliases = append(aliases, alias)
 		}
 	}
@@ -172,7 +174,7 @@ func newHandler(
 		globalHttps: p.GlobalHttps,
 		httpsPort:   p.HttpsPort,
 		defaultSort: p.DefaultSort,
-		urlPrefix:   urlPrefix,
+		aliasPrefix: aliasPrefix,
 		aliases:     aliases,
 
 		dirIndexes: p.DirIndexes,

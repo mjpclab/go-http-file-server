@@ -27,6 +27,12 @@ func init() {
 	err = options.AddFlags("emptyroot", []string{"-R", "--empty-root"}, "GHFS_EMPTY_ROOT", "use virtual empty root directory")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlagValues("prefixurls", "--prefix", "", nil, "serve files under URL path instead of /")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("baseurls", "--base", "", nil, "serve files under case-insensitive URL path instead of /")
+	serverErrHandler.CheckFatal(err)
+
 	opt = goNixArgParser.NewFlagValueOption("defaultsort", "--default-sort", "GHFS_DEFAULT_SORT", "/n", "default sort for files and directories")
 	opt.Description = "Available sort key:\n- `n` sort by name ascending\n- `N` sort by name descending\n- `e` sort by type(suffix) ascending\n- `E` sort by type(suffix) descending\n- `s` sort by size ascending\n- `S` sort by size descending\n- `t` sort by modify time ascending\n- `T` sort by modify time descending\n- `_` no sort\nDirectory sort:\n- `/<key>` directories before files\n- `<key>/` directories after files\n- `<key>` directories mixed with files\n"
 	err = options.Add(opt)
@@ -192,8 +198,8 @@ func doParseCli() []*Param {
 		// undefined flags
 		undefs := result.GetUndefs()
 		if len(undefs) > 0 {
-			fmt.Println("unknown options:", strings.Join(undefs, " "))
-			os.Exit(0)
+			fmt.Println("unknown option:", strings.Join(undefs, " "))
+			os.Exit(1)
 		}
 
 		// version
@@ -204,7 +210,7 @@ func doParseCli() []*Param {
 
 		// help
 		if result.HasFlagKey("help") {
-			cliCmd.PrintHelp()
+			cliCmd.OutputHelp(os.Stdout)
 			os.Exit(0)
 		}
 	}
@@ -213,11 +219,11 @@ func doParseCli() []*Param {
 	configs := []string{}
 	groupSeps := cliCmd.Options().GroupSeps()[0]
 	foundConfig := false
-	for _, result := range results {
+	for i := range results {
 		configs = append(configs, groupSeps)
 
 		// config file
-		config, _ := result.GetString("config")
+		config, _ := results[i].GetString("config")
 		if len(config) == 0 {
 			continue
 		}
@@ -239,6 +245,13 @@ func doParseCli() []*Param {
 	if foundConfig {
 		configs = configs[1:]
 		results = cliCmd.ParseGroups(args, configs)
+		for i := range results {
+			undefs := results[i].GetUndefs()
+			if len(undefs) > 0 {
+				fmt.Println("unknown option from config:", strings.Join(undefs, " "))
+				os.Exit(1)
+			}
+		}
 	}
 
 	// init param data
@@ -266,6 +279,14 @@ func doParseCli() []*Param {
 		root, _ := result.GetString("root")
 		root, _ = util.NormalizeFsPath(root)
 		param.Root = root
+
+		// normalize url prefixes
+		prefixurls, _ := result.GetStrings("prefixurls")
+		param.PrefixUrls = normalizeUrlPaths(prefixurls)
+
+		// normalize url bases
+		baseurls, _ := result.GetStrings("baseurls")
+		param.BaseUrls = normalizeUrlPaths(baseurls)
 
 		// dir indexes
 		dirIndexes, _ := result.GetStrings("dirindexes")

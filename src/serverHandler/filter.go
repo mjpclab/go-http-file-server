@@ -15,31 +15,33 @@ func (h *handler) FilterItems(items []os.FileInfo) []os.FileInfo {
 	filtered := make([]os.FileInfo, 0, len(items))
 
 	for _, item := range items {
-		shouldShow := true
-		if h.shows != nil {
-			shouldShow = shouldShow && h.shows.MatchString(item.Name())
-		}
-		if h.showDirs != nil && item.IsDir() {
-			shouldShow = shouldShow && h.showDirs.MatchString(item.Name())
-		}
-		if h.showFiles != nil && !item.IsDir() {
-			shouldShow = shouldShow && h.showFiles.MatchString(item.Name())
+		name := item.Name()
+
+		if h.hides != nil && h.hides.MatchString(name) {
+			continue
 		}
 
-		shouldHide := false
-		if h.hides != nil {
-			shouldHide = shouldHide || h.hides.MatchString(item.Name())
-		}
-		if h.hideDirs != nil && item.IsDir() {
-			shouldHide = shouldHide || h.hideDirs.MatchString(item.Name())
-		}
-		if h.hideFiles != nil && !item.IsDir() {
-			shouldHide = shouldHide || h.hideFiles.MatchString(item.Name())
+		if h.hideDirs != nil && item.IsDir() && h.hideDirs.MatchString(name) {
+			continue
 		}
 
-		if shouldShow && !shouldHide {
-			filtered = append(filtered, item)
+		if h.hideFiles != nil && !item.IsDir() && h.hideFiles.MatchString(name) {
+			continue
 		}
+
+		if h.shows != nil && !h.shows.MatchString(name) {
+			continue
+		}
+
+		if h.showDirs != nil && item.IsDir() && !h.showDirs.MatchString(name) {
+			continue
+		}
+
+		if h.showFiles != nil && !item.IsDir() && !h.showFiles.MatchString(name) {
+			continue
+		}
+
+		filtered = append(filtered, item)
 	}
 
 	return filtered

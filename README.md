@@ -118,6 +118,13 @@ ghfs [options]
     Use virtual empty directory as root directory.
     Useful to share alias directories only.
 
+--prefix <path> ...
+    Serve files under a specific sub url path.
+    Could be useful if server is behind a reverse proxy and
+    received the request without proxying path stripped.
+--base <path> ...
+    Similar to --prefix, but the path is case-insensitive.
+
 --default-sort <sortBy>
     Default sort rule for files and directories.
     Available sort key:

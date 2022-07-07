@@ -44,13 +44,14 @@ func NewHandler(
 		errorHandler.LogError(users.AddSha512(u.Username, u.Password))
 	}
 
-	handler := serverHandler.NewMultiplexer(p, *users, theme, logger, errorHandler)
+	muxHandler := serverHandler.NewMultiplexer(p, *users, theme, logger, errorHandler)
+	pathTransformHandler := serverHandler.NewPathTransformer(p.PrefixUrls, p.BaseUrls, muxHandler)
 
 	vhostHandler := &VhostHandler{
 		p:            p,
 		logger:       logger,
 		errorHandler: errorHandler,
-		Handler:      handler,
+		Handler:      pathTransformHandler,
 	}
 
 	return vhostHandler

@@ -1,14 +1,13 @@
 package goNixArgParser
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestParse1(t *testing.T) {
 	var err error
 
-	s := NewOptionSet("-", []string{"--"}, []string{",,"}, []string{"-"})
+	s := NewOptionSet("-", []string{"--"}, []string{",,"}, []string{"="}, []string{"-"})
 	err = s.Add(Option{
 		Key:         "tag",
 		Summary:     "tag summary",
@@ -80,10 +79,8 @@ func TestParse1(t *testing.T) {
 	}
 
 	err = s.Add(Option{
-		Key: "withEqual",
-		Flags: []*Flag{
-			{Name: "--with-equal", assignSigns: []string{"="}},
-		},
+		Key:         "withEqual",
+		Flags:       []*Flag{{Name: "--with-equal"}},
 		AcceptValue: true,
 	})
 	if err != nil {
@@ -102,10 +99,8 @@ func TestParse1(t *testing.T) {
 	}
 
 	err = s.Add(Option{
-		Key: "fromenv",
-		Flags: []*Flag{
-			{Name: "--from-env", assignSigns: []string{"="}},
-		},
+		Key:           "fromenv",
+		Flags:         []*Flag{{Name: "--from-env"}},
 		AcceptValue:   true,
 		MultiValues:   true,
 		Delimiters:    []rune{','},
@@ -137,7 +132,6 @@ func TestParse1(t *testing.T) {
 		"--with-equal=notwork",
 	}
 	r := s.Parse(args, nil)
-	fmt.Printf("%+v\n", r)
 
 	if r.HasFlagKey("deft") {
 		t.Error("deft")
@@ -147,13 +141,12 @@ func TestParse1(t *testing.T) {
 		t.Error("default")
 	}
 
-	r.SetConfig("deft", "cfgDefault")
+	r.SetConfigOption("deft", "cfgDefault")
 	if deftValue, _ := r.GetString("deft"); deftValue != "cfgDefault" {
 		t.Error(deftValue)
 	}
 
 	single, _ := r.GetString("single")
-	fmt.Println("single:", single)
 	if single != "false" {
 		t.Error("single")
 	}
@@ -163,19 +156,17 @@ func TestParse1(t *testing.T) {
 		t.Error(singleBool)
 	}
 
-	r.SetConfig("single", "cfg")
+	r.SetConfigOption("single", "cfg")
 	if singleValue, _ := r.GetString("single"); singleValue != "false" {
 		t.Error(singleValue)
 	}
 
 	multi, _ := r.GetStrings("multi")
-	fmt.Println("multi:", multi)
 	if len(multi) != 4 {
 		t.Error("multi should have 4 values")
 	}
 	multiInts, _ := r.GetInts("multi")
-	fmt.Println("multiInts:", multiInts)
-	if len(multi) != 4 {
+	if len(multiInts) != 4 {
 		t.Error("multiInts should have 4 values")
 	}
 
@@ -198,14 +189,17 @@ func TestParse1(t *testing.T) {
 	}
 
 	// undefs: [-un1 --without-equal=bcdef -Wcannotconcat]
-	if undefs := r.GetUndefs(); len(undefs) != 3 {
+	undefs := r.GetUndefs()
+	if len(undefs) != 3 {
 		t.Error("undefs:", undefs)
 	}
-
-	fmt.Print("fromenv: ")
-	fmt.Println(r.GetStrings("fromenv"))
-
-	fmt.Println("rests:", r.GetRests())
-
-	fmt.Println("undefs:", r.GetUndefs())
+	if undefs[0] != "-un1" {
+		t.Error(undefs[0])
+	}
+	if undefs[1] != "--without-equal" {
+		t.Error(undefs[1])
+	}
+	if undefs[2] != "-Wcannotconcat" {
+		t.Error(undefs[2])
+	}
 }
