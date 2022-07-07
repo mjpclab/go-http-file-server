@@ -49,10 +49,11 @@ type responseData struct {
 	errors []error
 	Status int
 
-	IsRoot        bool
-	Path          string
-	Paths         []pathEntry
-	RootRelPath   string
+	IsRoot      bool
+	Path        string
+	Paths       []pathEntry
+	RootRelPath string
+
 	File          *os.File
 	Item          os.FileInfo
 	ItemName      string
@@ -67,38 +68,42 @@ type responseData struct {
 	Trans *i18n.Translation
 }
 
-func isSlash(c rune) bool {
-	return c == '/'
-}
-
-func getPathEntries(path string, tailSlash bool) []pathEntry {
-	restPaths := strings.FieldsFunc(path, isSlash)
-	paths := make([]string, 1, len(restPaths)+1)
-	paths[0] = "/"
-	paths = append(paths, restPaths...)
-
-	displayPathsCount := len(paths)
-
-	pathsCount := displayPathsCount
-	if !tailSlash {
-		pathsCount--
+func getPathEntries(currDirRelPath, path string, tailSlash bool) []pathEntry {
+	pathSegs := make([]string, 1, 12)
+	pathSegs[0] = "/"
+	for refPath := path[1:]; len(refPath) > 0; {
+		slashIndex := strings.IndexByte(refPath, '/')
+		if slashIndex < 0 {
+			pathSegs = append(pathSegs, refPath)
+			break
+		} else {
+			pathSegs = append(pathSegs, refPath[:slashIndex])
+			refPath = refPath[slashIndex+1:]
+		}
 	}
 
-	pathEntries := make([]pathEntry, displayPathsCount)
-	for i := 0; i < displayPathsCount; i++ {
-		var rPath string
-		switch {
-		case i < pathsCount-1:
-			rPath = strings.Repeat("../", pathsCount-1-i)
-		case i == pathsCount-1:
-			rPath = "./"
-		default:
-			rPath = "./" + strings.Join(paths[pathsCount:], "/") + "/"
+	pathCount := len(pathSegs)
+
+	pathDepth := pathCount
+	if !tailSlash {
+		pathDepth--
+	}
+
+	pathEntries := make([]pathEntry, pathCount)
+	for n := 1; n <= pathCount; n++ {
+		var relPath string
+		if n < pathDepth {
+			relPath = strings.Repeat("../", pathDepth-n)
+		} else if n == pathDepth {
+			relPath = currDirRelPath
+		} else /*if n == pathDepth+1*/ {
+			relPath = currDirRelPath + pathSegs[pathDepth] + "/"
 		}
 
+		i := n - 1
 		pathEntries[i] = pathEntry{
-			Name: paths[i],
-			Path: rPath,
+			Name: pathSegs[i],
+			Path: relPath,
 		}
 	}
 
@@ -166,13 +171,7 @@ func (h *handler) mergeAlias(
 			if isVirtual(subItem) {
 				continue
 			}
-			var baseItem os.FileInfo
-			if fsItem != nil {
-				baseItem = fsItem
-			} else {
-				baseItem = subItem
-			}
-			aliasSubItem := createVirtualFileInfo(subItem.Name(), baseItem, aliasCaseSensitive)
+			aliasSubItem := createVirtualFileInfo(subItem.Name(), fsItem, aliasCaseSensitive)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems[i] = aliasSubItem
 			if aliasCaseSensitive {
@@ -191,11 +190,19 @@ func (h *handler) mergeAlias(
 	return subItems, aliasSubItems, errs
 }
 
-func getSubItemPrefix(rawRequestPath string, tailSlash bool) string {
-	if tailSlash {
-		return "./"
+func getCurrDirRelPath(reqPath, rawReqPath string) string {
+	if len(reqPath) == 1 && len(rawReqPath) > 1 && rawReqPath[len(rawReqPath)-1] != '/' {
+		return "./" + path.Base(rawReqPath) + "/"
 	} else {
-		return "./" + path.Base(rawRequestPath) + "/"
+		return "./"
+	}
+}
+
+func getSubItemPrefix(currDirRelPath, rawRequestPath string, tailSlash bool) string {
+	if tailSlash {
+		return currDirRelPath
+	} else {
+		return currDirRelPath + path.Base(rawRequestPath) + "/"
 	}
 }
 
@@ -263,17 +270,30 @@ func (h *handler) statIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo
 	return nil, nil, nil
 }
 
+func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []error) {
+	baseFsPath := reqFsPath + "/"
+
+	for i := range subItems {
+		if subItems[i].Mode()&os.ModeSymlink != 0 {
+			dereferencedItem, err := os.Stat(baseFsPath + subItems[i].Name())
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				subItems[i] = dereferencedItem
+			}
+		}
+	}
+
+	return
+}
+
 func (h *handler) getResponseData(r *http.Request) *responseData {
 	var errs []error
 
-	requestUri := r.URL.Path
-	if len(requestUri) == 0 {
-		requestUri = "/"
-	}
-	tailSlash := requestUri[len(requestUri)-1] == '/'
+	rawReqPath := r.URL.Path
+	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 
-	rawReqPath := util.CleanUrlPath(requestUri)
-	reqPath := util.CleanUrlPath(rawReqPath[len(h.urlPrefix):]) // strip url prefix path
+	reqPath := util.CleanUrlPath(rawReqPath[len(h.aliasPrefix):])
 	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
 
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
@@ -311,12 +331,13 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
-	pathEntries := getPathEntries(rawReqPath, tailSlash)
+	currDirRelPath := getCurrDirRelPath(rawReqPath, r.URL.RawPath)
+	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
 	var rootRelPath string
 	if len(pathEntries) > 0 {
 		rootRelPath = pathEntries[0].Path
 	} else {
-		rootRelPath = "./"
+		rootRelPath = currDirRelPath
 	}
 
 	file, item, _statErr := stat(reqFsPath, authSuccess && !h.emptyRoot)
@@ -353,14 +374,19 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		status = http.StatusInternalServerError
 	}
 
+	_dereferenceErrs := dereferenceSymbolLinks(reqFsPath, subItems)
+	if len(_dereferenceErrs) > 0 {
+		errs = append(errs, _dereferenceErrs...)
+	}
+
 	subItems = h.FilterItems(subItems)
 	rawSortBy, sortState := sortInfos(subItems, rawQuery, h.defaultSort)
 
-	if h.emptyRoot && status == http.StatusOK && r.RequestURI != "/" {
+	if h.emptyRoot && status == http.StatusOK && len(rawReqPath) > 1 {
 		status = http.StatusNotFound
 	}
 
-	subItemPrefix := getSubItemPrefix(rawReqPath, tailSlash)
+	subItemPrefix := getSubItemPrefix(currDirRelPath, rawReqPath, tailSlash)
 
 	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
 	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
@@ -400,10 +426,11 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		errors: errs,
 		Status: status,
 
-		IsRoot:        isRoot,
-		Path:          rawReqPath,
-		Paths:         pathEntries,
-		RootRelPath:   rootRelPath,
+		IsRoot:      isRoot,
+		Path:        rawReqPath,
+		Paths:       pathEntries,
+		RootRelPath: rootRelPath,
+
 		File:          file,
 		Item:          item,
 		ItemName:      itemName,

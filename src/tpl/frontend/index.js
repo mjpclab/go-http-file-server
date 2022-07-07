@@ -650,6 +650,15 @@
 						}
 					}
 
+					function dirReaderToFiles(dirReader, files, onAllRead) {
+						dirReader.readEntries(function (subEntries) {
+							if (!subEntries.length) return onAllRead();
+							entriesToFiles(subEntries, files, function () {
+								dirReaderToFiles(dirReader, files, onAllRead);
+							});
+						}, onAllRead);
+					}
+
 					entries.forEach(function (entry) {
 						if (entry.isFile) {
 							var relativePath = entry.fullPath;
@@ -664,14 +673,8 @@
 								logError(err);
 							});
 						} else if (entry.isDirectory) {
-							var reader = entry.createReader();
-							reader.readEntries(function (subEntries) {
-								if (subEntries.length) {
-									entriesToFiles(subEntries, files, increaseCb);
-								} else {
-									increaseCb();
-								}
-							});
+							var dirReader = entry.createReader();
+							dirReaderToFiles(dirReader, files, increaseCb);
 						}
 					});
 				}

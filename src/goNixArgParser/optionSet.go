@@ -1,37 +1,31 @@
 package goNixArgParser
 
 import (
-	"bytes"
 	"errors"
+	"io"
 	"os"
 	"strings"
 )
-
-func StringToSlice(input string) []string {
-	if len(input) == 0 {
-		return nil
-	}
-
-	return []string{input}
-}
 
 func NewOptionSet(
 	mergeFlagPrefix string,
 	restsSigns []string,
 	groupSeps []string,
+	assignSigns []string,
 	undefFlagPrefixes []string,
 ) *OptionSet {
 	s := &OptionSet{
 		mergeFlagPrefix:   mergeFlagPrefix,
 		restsSigns:        restsSigns,
 		groupSeps:         groupSeps,
+		assignSigns:       assignSigns,
 		undefFlagPrefixes: undefFlagPrefixes,
 
 		options: []*Option{},
 
 		keyOptionMap:  map[string]*Option{},
 		flagOptionMap: map[string]*Option{},
-		flagMap:       map[string]*Flag{},
+		nameFlagMap:   map[string]*Flag{},
 		keyEnvMap:     map[string][]string{},
 		keyDefaultMap: map[string][]string{},
 	}
@@ -55,7 +49,7 @@ func (s *OptionSet) UndefFlagPrefixes() []string {
 }
 
 func NewSimpleOptionSet() *OptionSet {
-	return NewOptionSet("-", []string{"--"}, []string{",,"}, []string{"-"})
+	return NewOptionSet("-", []string{"--"}, []string{",,"}, []string{"="}, []string{"-"})
 }
 
 func (s *OptionSet) isRestSign(input string) bool {
@@ -128,7 +122,7 @@ func (s *OptionSet) Add(opt Option) error {
 		if len(flagName) == 0 {
 			return errors.New("flag name is empty")
 		}
-		if s.flagMap[flagName] != nil {
+		if s.nameFlagMap[flagName] != nil {
 			return errors.New("flag '" + flagName + "' already exists")
 		}
 	}
@@ -147,16 +141,13 @@ func (s *OptionSet) Add(opt Option) error {
 		if flag.canConcatAssign {
 			s.hasCanConcatAssign = true
 		}
-		if len(flag.assignSigns) > 0 {
-			s.hasAssignSigns = true
-		}
 		if flag.prefixMatchLen > 0 {
 			s.hasPrefixMatch = true
 		}
 
 		flagName := flag.Name
 		s.flagOptionMap[flagName] = option
-		s.flagMap[flagName] = flag
+		s.nameFlagMap[flagName] = flag
 	}
 
 	// redundant - env maps
@@ -209,12 +200,12 @@ func (s *OptionSet) AddFlagsValues(key string, flags []string, envVar string, de
 	return s.Add(NewFlagsValuesOption(key, flags, envVar, defaultValues, summary))
 }
 
-func (s *OptionSet) GetHelp() []byte {
-	buffer := &bytes.Buffer{}
+func (s *OptionSet) OutputHelp(w io.Writer) {
+	newline := []byte{'\n'}
 	for _, opt := range s.options {
-		buffer.Write(opt.GetHelp())
-		buffer.WriteByte('\n')
+		if !opt.Hidden {
+			opt.OutputHelp(w)
+			w.Write(newline)
+		}
 	}
-
-	return buffer.Bytes()
 }
