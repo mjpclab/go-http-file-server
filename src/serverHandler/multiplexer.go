@@ -38,16 +38,16 @@ func NewMultiplexer(
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
 ) http.Handler {
-	aliases := newAliases(p.Aliases, p.Binds)
-
-	if len(aliases) == 0 {
+	if len(p.Aliases) == 0 {
 		return defaultHandler
 	}
+
+	aliases := newAliases(p.Aliases)
 
 	if len(aliases) == 1 {
 		alias, hasRootAlias := aliases.byUrlPath("/")
 		if hasRootAlias {
-			return newHandler(p, alias.fsPath(), alias.urlPath(), aliases, users, theme, logger, errHandler)
+			return newHandler(p, alias.fs, alias.url, aliases, users, theme, logger, errHandler)
 		}
 	}
 
@@ -55,7 +55,7 @@ func NewMultiplexer(
 	for i, alias := range aliases {
 		aliasHandlers[i] = aliasHandler{
 			alias:   alias,
-			handler: newHandler(p, alias.fsPath(), alias.urlPath(), aliases, users, theme, logger, errHandler),
+			handler: newHandler(p, alias.fs, alias.url, aliases, users, theme, logger, errHandler),
 		}
 	}
 	return multiplexer{aliasHandlers}

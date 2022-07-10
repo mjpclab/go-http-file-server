@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"../acceptHeaders"
-	"../util"
 	"compress/flate"
 	"compress/gzip"
 	"io"
@@ -61,49 +60,24 @@ func getCompressWriter(w http.ResponseWriter, r *http.Request) (wr io.WriteClose
 	return wr, encoding, true
 }
 
-func createVirtualFileInfo(name string, refItem os.FileInfo, caseSensitive bool) os.FileInfo {
+func createVirtualFileInfo(name string, refItem os.FileInfo) os.FileInfo {
 	if refItem != nil {
-		if caseSensitive {
-			return createRenamedFileInfo(name, refItem)
-		} else {
-			return createRenamedFileInfoNoCase(name, refItem)
-		}
+		return createRenamedFileInfo(name, refItem)
 	} else {
-		if caseSensitive {
-			return createPlaceholderFileInfo(name, true)
-		} else {
-			return createPlaceholderFileInfoNoCase(name, true)
-		}
+		return createPlaceholderFileInfo(name, true)
 	}
 }
 
 func isVirtual(info os.FileInfo) bool {
 	switch info.(type) {
-	case placeholderFileInfo, renamedFileInfo, placeholderFileInfoNoCase, renamedFileInfoNoCase:
+	case placeholderFileInfoAccurate, renamedFileInfoAccurate, placeholderFileInfoNoCase, renamedFileInfoNoCase:
 		return true
 	}
 	return false
 }
 
-func isNameCaseSensitive(info os.FileInfo) bool {
-	switch info.(type) {
-	case placeholderFileInfoNoCase, renamedFileInfoNoCase:
-		return false
-	}
-	return true
-}
-
-func getIsNameEqualFunc(info os.FileInfo) func(a, b string) bool {
-	if isNameCaseSensitive(info) {
-		return util.IsStrEqualAccurate
-	} else {
-		return util.IsStrEqualNoCase
-	}
-}
-
 func containsItem(infos []os.FileInfo, name string) bool {
 	for i := range infos {
-		isNameEqual := getIsNameEqualFunc(infos[i])
 		if isNameEqual(infos[i].Name(), name) {
 			return true
 		}

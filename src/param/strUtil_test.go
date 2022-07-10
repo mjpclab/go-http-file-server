@@ -38,15 +38,15 @@ func TestSplitMapping(t *testing.T) {
 	}
 }
 
-func TestNormalizePathMaps(t *testing.T) {
+func TestNormalizePathMapsAccurate(t *testing.T) {
 	var maps map[string]string
 
-	maps = normalizePathMaps([]string{":/data/lib://usr/lib"})
+	maps = normalizePathMapsAccurate([]string{":/data/lib://usr/lib"})
 	if maps["/data/lib"] != "/usr/lib" {
 		t.Error(maps)
 	}
 
-	maps = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
+	maps = normalizePathMapsAccurate([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
 	if len(maps) != 2 {
 		t.Error(maps)
 	}

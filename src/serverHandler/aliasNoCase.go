@@ -13,18 +13,6 @@ func createAliasNoCase(urlPath, fsPath string) aliasNoCase {
 	return aliasNoCase{urlPath, fsPath}
 }
 
-func (alias aliasNoCase) urlPath() string {
-	return alias.url
-}
-
-func (alias aliasNoCase) fsPath() string {
-	return alias.fs
-}
-
-func (alias aliasNoCase) caseSensitive() bool {
-	return false
-}
-
 func (alias aliasNoCase) isMatch(rawReqPath string) bool {
 	return util.IsStrEqualNoCase(alias.url, rawReqPath)
 }
@@ -39,4 +27,13 @@ func (alias aliasNoCase) isPredecessorOf(rawReqPath string) bool {
 
 func (alias aliasNoCase) namesEqual(a, b string) bool {
 	return util.IsStrEqualNoCase(a, b)
+}
+
+func (alias aliasNoCase) subPart(rawReqPath string) (subName string, isLastPart, ok bool) {
+	if !alias.isSuccessorOf(rawReqPath) {
+		return
+	}
+	subName, isLastPart = getAliasSubPart(alias.url, rawReqPath)
+	ok = true
+	return
 }

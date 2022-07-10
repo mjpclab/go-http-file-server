@@ -21,7 +21,6 @@ type Param struct {
 	DefaultSort   string
 	DirIndexes    []string
 	Aliases       map[string]string
-	Binds         map[string]string
 	GlobalHeaders [][2]string
 
 	GlobalUpload bool
@@ -80,8 +79,7 @@ type Param struct {
 
 func normalize(p *Param) {
 	_, hasRootAlias := p.Aliases["/"]
-	_, hasRootBind := p.Binds["/"]
-	if hasRootAlias || hasRootBind {
+	if hasRootAlias {
 		p.EmptyRoot = false
 	} else if p.EmptyRoot {
 		p.Root = os.DevNull

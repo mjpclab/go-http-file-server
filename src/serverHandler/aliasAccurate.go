@@ -13,18 +13,6 @@ func createAliasAccurate(urlPath, fsPath string) aliasAccurate {
 	return aliasAccurate{urlPath, fsPath}
 }
 
-func (alias aliasAccurate) urlPath() string {
-	return alias.url
-}
-
-func (alias aliasAccurate) fsPath() string {
-	return alias.fs
-}
-
-func (alias aliasAccurate) caseSensitive() bool {
-	return true
-}
-
 func (alias aliasAccurate) isMatch(rawReqPath string) bool {
 	return util.IsStrEqualAccurate(alias.url, rawReqPath)
 }
@@ -39,4 +27,13 @@ func (alias aliasAccurate) isPredecessorOf(rawReqPath string) bool {
 
 func (alias aliasAccurate) namesEqual(a, b string) bool {
 	return util.IsStrEqualAccurate(a, b)
+}
+
+func (alias aliasAccurate) subPart(rawReqPath string) (subName string, isLastPart, ok bool) {
+	if !alias.isSuccessorOf(rawReqPath) {
+		return
+	}
+	subName, isLastPart = getAliasSubPart(alias.url, rawReqPath)
+	ok = true
+	return
 }

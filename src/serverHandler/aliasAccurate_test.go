@@ -80,3 +80,95 @@ func TestAliasAccurate(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestAliasSubPartAccurate(t *testing.T) {
+	var subName string
+	var isLastPart, ok bool
+
+	aliasAccurate := createAliasAccurate("/hello/world/foo", "/tmp")
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/")
+	if !ok {
+		t.Error()
+	}
+	if subName != "hello" {
+		t.Error()
+	}
+	if isLastPart {
+		t.Error()
+	}
+
+	_, _, ok = aliasAccurate.subPart("/test")
+	if ok {
+		t.Error()
+	}
+
+	_, _, ok = aliasAccurate.subPart("/HELLO")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/hello")
+	if !ok {
+		t.Error()
+	}
+	if subName != "world" {
+		t.Error()
+	}
+	if isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/hello/")
+	if !ok {
+		t.Error()
+	}
+	if subName != "world" {
+		t.Error()
+	}
+	if isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world")
+	if !ok {
+		t.Error()
+	}
+	if subName != "foo" {
+		t.Error()
+	}
+	if !isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/")
+	if !ok {
+		t.Error()
+	}
+	if subName != "foo" {
+		t.Error()
+	}
+	if !isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/foo")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/foo/")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/foo/bar")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/foo/bar/")
+	if ok {
+		t.Error()
+	}
+}

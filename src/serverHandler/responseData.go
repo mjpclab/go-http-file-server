@@ -147,16 +147,15 @@ func (h *handler) mergeAlias(
 	}
 
 	for _, alias := range h.aliases {
-		subName, isChildAlias, ok := getAliasSubPart(alias, rawRequestPath)
+		subName, isChildAlias, ok := alias.subPart(rawRequestPath)
 		if !ok {
 			continue
 		}
-		aliasCaseSensitive := alias.caseSensitive()
 
 		var fsItem os.FileInfo
 		if isChildAlias { // reached second-deepest path of alias
 			var err error
-			fsItem, err = os.Stat(alias.fsPath())
+			fsItem, err = os.Stat(alias.fs)
 			if err != nil {
 				errs = append(errs, err)
 			}
@@ -171,17 +170,15 @@ func (h *handler) mergeAlias(
 			if isVirtual(subItem) {
 				continue
 			}
-			aliasSubItem := createVirtualFileInfo(subItem.Name(), fsItem, aliasCaseSensitive)
+			aliasSubItem := createVirtualFileInfo(subItem.Name(), fsItem)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems[i] = aliasSubItem
-			if aliasCaseSensitive {
-				break
-			}
+			break
 		}
 
 		if !matchExisted {
 			// fsItem could be nil
-			aliasSubItem := createVirtualFileInfo(subName, fsItem, aliasCaseSensitive)
+			aliasSubItem := createVirtualFileInfo(subName, fsItem)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems = append(subItems, aliasSubItem)
 		}
@@ -239,7 +236,7 @@ func (h *handler) statIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo
 			if !alias.isMatch(path.Clean(rawReqPath + "/" + index)) {
 				continue
 			}
-			file, item, err = stat(alias.fsPath(), true)
+			file, item, err = stat(alias.fs, true)
 			if err != nil && file != nil {
 				file.Close()
 			}

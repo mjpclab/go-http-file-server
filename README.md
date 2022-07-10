@@ -142,8 +142,6 @@ ghfs [options]
     Set path alias.
     Mount a file system path to URL path.
     e.g. ":/doc:/usr/share/doc"
--b|--bind <separator><url-path><separator><fs-path> ...
-    Similar to --alias, but the url path is case-insensitive.
 
 --header <name>:<value> ...
     Set custom HTTP response header.

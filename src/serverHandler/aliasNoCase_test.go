@@ -87,3 +87,132 @@ func TestAliasNoCase(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestAliasSubPartNoCase(t *testing.T) {
+	var subName string
+	var isLastPart, ok bool
+
+	aliasNoCase := createAliasNoCase("/hello/world/foo", "/tmp")
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/")
+	if !ok {
+		t.Error()
+	}
+	if subName != "hello" {
+		t.Error()
+	}
+	if isLastPart {
+		t.Error()
+	}
+
+	_, _, ok = aliasNoCase.subPart("/test")
+	if ok {
+		t.Error()
+	}
+
+	_, _, ok = aliasNoCase.subPart("/Test")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/HELLO")
+	if !ok {
+		t.Error()
+	}
+	if subName != "world" {
+		t.Error()
+	}
+	if isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello")
+	if !ok {
+		t.Error()
+	}
+	if subName != "world" {
+		t.Error()
+	}
+	if isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello/")
+	if !ok {
+		t.Error()
+	}
+	if subName != "world" {
+		t.Error()
+	}
+	if isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/HELLO/")
+	if !ok {
+		t.Error()
+	}
+	if subName != "world" {
+		t.Error()
+	}
+	if isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello/world")
+	if !ok {
+		t.Error()
+	}
+	if subName != "foo" {
+		t.Error()
+	}
+	if !isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/Hello/World/")
+	if !ok {
+		t.Error()
+	}
+	if subName != "foo" {
+		t.Error()
+	}
+	if !isLastPart {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello/world/foo")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/Hello/world/foo")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello/world/foo/")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello/World/foo/")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello/world/foo/bar")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello/World/foo/bar")
+	if ok {
+		t.Error()
+	}
+
+	subName, isLastPart, ok = aliasNoCase.subPart("/hello/World/Foo/Bar/")
+	if ok {
+		t.Error()
+	}
+}

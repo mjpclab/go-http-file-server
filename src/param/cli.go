@@ -43,9 +43,6 @@ func init() {
 	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagsValues("binds", []string{"-b", "--bind"}, "", nil, "set url-case-insensitive alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
-	serverErrHandler.CheckFatal(err)
-
 	err = options.AddFlagValues("globalheaders", "--header", "GHFS_HEADER", []string{}, "custom headers, e.g. <key>:<value>")
 	serverErrHandler.CheckFatal(err)
 
@@ -308,9 +305,6 @@ func doParseCli() []*Param {
 		// normalize aliases
 		arrAlias, _ := result.GetStrings("aliases")
 		param.Aliases = normalizePathMaps(arrAlias)
-
-		arrBinds, _ := result.GetStrings("binds")
-		param.Binds = normalizePathMapsNoCase(arrBinds)
 
 		// normalize upload urls
 		arrUploadUrls, _ := result.GetStrings("uploadurls")

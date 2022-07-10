@@ -78,7 +78,7 @@ func TestGetCleanDirFilePath(t *testing.T) {
 func TestIsVirtual(t *testing.T) {
 	var info os.FileInfo
 
-	info = createPlaceholderFileInfo("foo", true)
+	info = createPlaceholderFileInfoAccurate("foo", true)
 	if !isVirtual(info) {
 		t.Error()
 	}
@@ -92,36 +92,12 @@ func TestIsVirtual(t *testing.T) {
 		t.Error()
 	}
 
-	info = createRenamedFileInfo("bar", baseInfo)
+	info = createRenamedFileInfoAccurate("bar", baseInfo)
 	if !isVirtual(info) {
 		t.Error()
 	}
 	info = createRenamedFileInfoNoCase("bar", baseInfo)
 	if !isVirtual(info) {
-		t.Error()
-	}
-}
-
-func TestIsNameCaseSensitive(t *testing.T) {
-	var info os.FileInfo
-
-	info = createPlaceholderFileInfo("foo", true)
-	if !isNameCaseSensitive(info) {
-		t.Error()
-	}
-	info = createPlaceholderFileInfoNoCase("foo", true)
-	if isNameCaseSensitive(info) {
-		t.Error()
-	}
-
-	baseInfo := dummyFileInfo{name: "foo"}
-
-	info = createRenamedFileInfo("bar", baseInfo)
-	if !isNameCaseSensitive(info) {
-		t.Error()
-	}
-	info = createRenamedFileInfoNoCase("bar", baseInfo)
-	if isNameCaseSensitive(info) {
 		t.Error()
 	}
 }

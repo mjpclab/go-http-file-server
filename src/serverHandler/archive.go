@@ -17,7 +17,6 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 	}
 
 	name := info.Name()
-	isNameEqual := getIsNameEqualFunc(info)
 	for _, selName := range selections {
 		if isNameEqual(selName, name) {
 			matchName = true
@@ -112,7 +111,7 @@ func (h *handler) visitTreeNode(
 			childRelPath := relPath + childPath
 
 			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
-				h.visitTreeNode(childAlias.fsPath(), childRawReqPath, childRelPath, true, childChildSelections, archiveCallback)
+				h.visitTreeNode(childAlias.fs, childRawReqPath, childRelPath, true, childChildSelections, archiveCallback)
 			} else {
 				h.visitTreeNode(childFsPath, childRawReqPath, childRelPath, statNode, childChildSelections, archiveCallback)
 			}

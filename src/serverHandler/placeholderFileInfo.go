@@ -7,43 +7,43 @@ import (
 
 var initTime = time.Now()
 
-type placeholderFileInfo struct {
+type placeholderFileInfoAccurate struct {
 	name  string
 	isDir bool
 }
 
-func (info placeholderFileInfo) Name() string {
+func (info placeholderFileInfoAccurate) Name() string {
 	return info.name
 }
 
-func (info placeholderFileInfo) Size() int64 {
+func (info placeholderFileInfoAccurate) Size() int64 {
 	return 0
 }
 
-func (info placeholderFileInfo) Mode() os.FileMode {
+func (info placeholderFileInfoAccurate) Mode() os.FileMode {
 	return 0
 }
 
-func (info placeholderFileInfo) ModTime() time.Time {
+func (info placeholderFileInfoAccurate) ModTime() time.Time {
 	return initTime
 }
 
-func (info placeholderFileInfo) IsDir() bool {
+func (info placeholderFileInfoAccurate) IsDir() bool {
 	return info.isDir
 }
 
-func (info placeholderFileInfo) Sys() interface{} {
+func (info placeholderFileInfoAccurate) Sys() interface{} {
 	return nil
 }
 
-func createPlaceholderFileInfo(name string, isDir bool) placeholderFileInfo {
-	return placeholderFileInfo{name, isDir}
+func createPlaceholderFileInfoAccurate(name string, isDir bool) placeholderFileInfoAccurate {
+	return placeholderFileInfoAccurate{name, isDir}
 }
 
 type placeholderFileInfoNoCase struct {
-	placeholderFileInfo
+	placeholderFileInfoAccurate
 }
 
 func createPlaceholderFileInfoNoCase(name string, isDir bool) placeholderFileInfoNoCase {
-	return placeholderFileInfoNoCase{placeholderFileInfo{name, isDir}}
+	return placeholderFileInfoNoCase{placeholderFileInfoAccurate{name, isDir}}
 }

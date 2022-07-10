@@ -27,7 +27,7 @@ func splitMapping(input string) (k, v string, ok bool) {
 	return k, v, true
 }
 
-func normalizePathMaps(inputs []string) map[string]string {
+func normalizePathMapsAccurate(inputs []string) map[string]string {
 	maps := make(map[string]string, len(inputs))
 
 	for _, input := range inputs {
