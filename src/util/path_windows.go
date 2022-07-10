@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+var HasUrlPrefixDir = HasUrlPrefixDirNoCase
+var HasFsPrefixDir = HasFsPrefixDirNoCase
+
 func NormalizeFsPath(input string) (string, error) {
 	abs, err := filepath.Abs(input)
 	if err != nil {

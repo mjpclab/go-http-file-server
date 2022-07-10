@@ -38,7 +38,7 @@ func (transformer pathTransformer) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	}
 
 	for _, prefix := range transformer.prefixesAccurate {
-		if !util.HasUrlPrefixDir(urlPath, prefix) {
+		if !util.HasUrlPrefixDirAccurate(urlPath, prefix) {
 			continue
 		}
 		r.URL.Path = stripUrlPrefix(urlPathDir, urlPath, prefix)

@@ -7,61 +7,61 @@ func TestHasUrlPrefixDir(t *testing.T) {
 
 	full = "/hello"
 	prefix = "/"
-	if !HasUrlPrefixDir(full, prefix) {
+	if !HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/c"
 	prefix = "/a/b"
-	if !HasUrlPrefixDir(full, prefix) {
+	if !HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/c"
 	prefix = "/a/b/"
-	if !HasUrlPrefixDir(full, prefix) {
+	if !HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/c"
 	prefix = "/a/b/c"
-	if !HasUrlPrefixDir(full, prefix) {
+	if !HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/c"
 	prefix = "/a/e"
-	if HasUrlPrefixDir(full, prefix) {
+	if HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/c"
 	prefix = "/a/e/"
-	if HasUrlPrefixDir(full, prefix) {
+	if HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/cd"
 	prefix = "/a/b/c"
-	if HasUrlPrefixDir(full, prefix) {
+	if HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/c"
 	prefix = "/a/b/c/"
-	if !HasUrlPrefixDir(full, prefix) {
+	if !HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/c"
 	prefix = "/a/b/d"
-	if HasUrlPrefixDir(full, prefix) {
+	if HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 
 	full = "/a/b/c"
 	prefix = "/a/b/de"
-	if HasUrlPrefixDir(full, prefix) {
+	if HasUrlPrefixDirAccurate(full, prefix) {
 		t.Error(full, prefix)
 	}
 }

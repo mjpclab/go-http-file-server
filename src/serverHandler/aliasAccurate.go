@@ -18,11 +18,11 @@ func (alias aliasAccurate) isMatch(rawReqPath string) bool {
 }
 
 func (alias aliasAccurate) isSuccessorOf(rawReqPath string) bool {
-	return len(alias.url) > len(rawReqPath) && util.HasUrlPrefixDir(alias.url, rawReqPath)
+	return len(alias.url) > len(rawReqPath) && util.HasUrlPrefixDirAccurate(alias.url, rawReqPath)
 }
 
 func (alias aliasAccurate) isPredecessorOf(rawReqPath string) bool {
-	return len(rawReqPath) > len(alias.url) && util.HasUrlPrefixDir(rawReqPath, alias.url)
+	return len(rawReqPath) > len(alias.url) && util.HasUrlPrefixDirAccurate(rawReqPath, alias.url)
 }
 
 func (alias aliasAccurate) namesEqual(a, b string) bool {
