@@ -13,7 +13,7 @@ Simple command line based HTTP file server to share local file system.
 - Support location alias(mount another directory to url location)
 
 ## Compile
-Minimal required Go version is 1.16.
+Minimal required Go version is 1.18.
 ```sh
 GO111MODULE=auto go build src/main.go
 ```
