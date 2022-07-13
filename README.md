@@ -141,7 +141,7 @@ ghfs [options]
     Mount a file system path to URL path.
     e.g. ":/doc:/usr/share/doc"
 
---header <name>:<value> ...
+--global-header <name>:<value> ...
     Set custom HTTP response header.
 
 -U|--global-upload

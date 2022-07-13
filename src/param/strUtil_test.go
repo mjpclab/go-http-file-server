@@ -2,31 +2,31 @@ package param
 
 import "testing"
 
-func TestSplitMapping(t *testing.T) {
+func TestSplitKeyValue(t *testing.T) {
 	var k, v string
 	var ok bool
 
-	k, v, ok = splitMapping("")
+	k, v, ok = splitKeyValue("")
 	if ok {
 		t.Error("empty string should not OK")
 	}
 
-	k, v, ok = splitMapping(":")
+	k, v, ok = splitKeyValue(":")
 	if ok {
 		t.Error("separator-only string should not OK")
 	}
 
-	k, v, ok = splitMapping("::world")
+	k, v, ok = splitKeyValue("::world")
 	if ok {
 		t.Error("empty key should not OK")
 	}
 
-	k, v, ok = splitMapping(":hello:")
+	k, v, ok = splitKeyValue(":hello:")
 	if ok {
 		t.Error("empty value should not OK")
 	}
 
-	k, v, ok = splitMapping(":key:value")
+	k, v, ok = splitKeyValue(":key:value")
 	if !ok {
 		t.Fail()
 	}
@@ -34,6 +34,17 @@ func TestSplitMapping(t *testing.T) {
 		t.Fail()
 	}
 	if v != "value" {
+		t.Fail()
+	}
+
+	k, v, ok = splitKeyValue("@KEY@VALUE")
+	if !ok {
+		t.Fail()
+	}
+	if k != "KEY" {
+		t.Fail()
+	}
+	if v != "VALUE" {
 		t.Fail()
 	}
 }

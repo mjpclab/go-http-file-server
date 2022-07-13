@@ -3,11 +3,9 @@ package serverHandler
 import "net/http"
 
 func (h *handler) header(w http.ResponseWriter) {
-	if len(h.globalHeaders) == 0 {
-		return
-	}
 	header := w.Header()
-	for _, headerPair := range h.globalHeaders {
-		header.Add(headerPair[0], headerPair[1])
+
+	for i := range h.globalHeaders {
+		header.Add(h.globalHeaders[i][0], h.globalHeaders[i][1])
 	}
 }

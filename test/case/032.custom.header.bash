@@ -2,7 +2,7 @@
 
 source "$root"/lib.bash
 
-"$ghfs" -l 3003 -r "$fs"/vhost1 --header foo:bar --header 'set-cookie:name1=value1' --header 'set-cookie:name2=value2' &
+"$ghfs" -l 3003 -r "$fs"/vhost1 --global-header foo:bar --global-header 'set-cookie:name1=value1' --global-header 'set-cookie:name2=value2' &
 sleep 0.05 # wait server ready
 
 (curl_get_header http://127.0.0.1:3003/ | grep -q -i 'foo:\s*bar') ||

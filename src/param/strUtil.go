@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 )
 
-func splitMapping(input string) (k, v string, ok bool) {
+func splitKeyValue(input string) (k, v string, ok bool) {
 	sep, sepLen := utf8.DecodeRuneInString(input)
 	if sepLen == 0 {
 		return
@@ -31,7 +31,7 @@ func normalizePathMapsAccurate(inputs []string) map[string]string {
 	maps := make(map[string]string, len(inputs))
 
 	for _, input := range inputs {
-		urlPath, fsPath, ok := splitMapping(input)
+		urlPath, fsPath, ok := splitKeyValue(input)
 		if !ok {
 			continue
 		}
@@ -48,7 +48,7 @@ func normalizePathMapsNoCase(inputs []string) map[string]string {
 	maps := make(map[string]string, len(inputs))
 
 	for _, input := range inputs {
-		urlPath, fsPath, ok := splitMapping(input)
+		urlPath, fsPath, ok := splitKeyValue(input)
 		if !ok {
 			continue
 		}
