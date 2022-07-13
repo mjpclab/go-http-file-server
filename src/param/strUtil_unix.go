@@ -4,3 +4,4 @@
 package param
 
 var normalizePathMaps = normalizePathMapsAccurate
+var normalizePathHeadersMap = normalizePathHeadersMapAccurate

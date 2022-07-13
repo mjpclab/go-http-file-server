@@ -43,11 +43,13 @@ func NewMultiplexer(
 	}
 
 	aliases := newAliases(p.Aliases)
+	headersUrls := newPathHeaders(p.HeadersUrls)
+	headersDirs := newPathHeaders(p.HeadersDirs)
 
 	if len(aliases) == 1 {
 		alias, hasRootAlias := aliases.byUrlPath("/")
 		if hasRootAlias {
-			return newHandler(p, alias.fs, alias.url, aliases, users, theme, logger, errHandler)
+			return newHandler(p, alias.fs, alias.url, aliases, headersUrls, headersDirs, users, theme, logger, errHandler)
 		}
 	}
 
@@ -55,7 +57,7 @@ func NewMultiplexer(
 	for i, alias := range aliases {
 		aliasHandlers[i] = aliasHandler{
 			alias:   alias,
-			handler: newHandler(p, alias.fs, alias.url, aliases, users, theme, logger, errHandler),
+			handler: newHandler(p, alias.fs, alias.url, aliases, headersUrls, headersDirs, users, theme, logger, errHandler),
 		}
 	}
 	return multiplexer{aliasHandlers}

@@ -4,3 +4,4 @@
 package param
 
 var normalizePathMaps = normalizePathMapsNoCase
+var normalizePathHeadersMap = normalizePathHeadersMapNoCase

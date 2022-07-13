@@ -7,8 +7,8 @@ import (
 	"unicode/utf8"
 )
 
-func splitKeyValue(input string) (k, v string, ok bool) {
-	sep, sepLen := utf8.DecodeRuneInString(input)
+func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
+	sep, sepLen = utf8.DecodeRuneInString(input)
 	if sepLen == 0 {
 		return
 	}
@@ -24,14 +24,66 @@ func splitKeyValue(input string) (k, v string, ok bool) {
 
 	k = entry[:sepIndex]
 	v = entry[sepIndex+sepLen:]
-	return k, v, true
+	return sep, sepLen, k, v, true
+}
+
+func normalizePathHeadersMapAccurate(inputs []string, normalizePath func(string) string) map[string][][2]string {
+	maps := make(map[string][][2]string, len(inputs))
+
+	for _, input := range inputs {
+		sep, sepLen, reqPath, header, ok := splitKeyValue(input)
+		if !ok {
+			continue
+		}
+		sepIndex := strings.IndexRune(header, sep)
+		if sepIndex <= 0 || sepIndex+sepLen == len(header) {
+			continue
+		}
+
+		normalizedPath := normalizePath(reqPath)
+		headerName := header[:sepIndex]
+		headerValue := header[sepIndex+1:]
+		maps[normalizedPath] = append(maps[normalizedPath], [2]string{headerName, headerValue})
+	}
+
+	return maps
+}
+
+func normalizePathHeadersMapNoCase(inputs []string, normalizePath func(string) string) map[string][][2]string {
+	maps := make(map[string][][2]string, len(inputs))
+
+	for _, input := range inputs {
+		sep, sepLen, reqPath, header, ok := splitKeyValue(input)
+		if !ok {
+			continue
+		}
+		sepIndex := strings.IndexRune(header, sep)
+		if sepIndex <= 0 || sepIndex+sepLen == len(header) {
+			continue
+		}
+
+		normalizedPath := normalizePath(reqPath)
+		headerName := header[:sepIndex]
+		headerValue := header[sepIndex+1:]
+
+		for existingPath := range maps {
+			if strings.EqualFold(existingPath, normalizedPath) {
+				normalizedPath = existingPath
+				break
+			}
+		}
+
+		maps[normalizedPath] = append(maps[normalizedPath], [2]string{headerName, headerValue})
+	}
+
+	return maps
 }
 
 func normalizePathMapsAccurate(inputs []string) map[string]string {
 	maps := make(map[string]string, len(inputs))
 
 	for _, input := range inputs {
-		urlPath, fsPath, ok := splitKeyValue(input)
+		_, _, urlPath, fsPath, ok := splitKeyValue(input)
 		if !ok {
 			continue
 		}
@@ -48,7 +100,7 @@ func normalizePathMapsNoCase(inputs []string) map[string]string {
 	maps := make(map[string]string, len(inputs))
 
 	for _, input := range inputs {
-		urlPath, fsPath, ok := splitKeyValue(input)
+		_, _, urlPath, fsPath, ok := splitKeyValue(input)
 		if !ok {
 			continue
 		}

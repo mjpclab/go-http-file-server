@@ -1,32 +1,35 @@
 package param
 
-import "testing"
+import (
+	"path"
+	"testing"
+)
 
 func TestSplitKeyValue(t *testing.T) {
 	var k, v string
 	var ok bool
 
-	k, v, ok = splitKeyValue("")
+	_, _, k, v, ok = splitKeyValue("")
 	if ok {
 		t.Error("empty string should not OK")
 	}
 
-	k, v, ok = splitKeyValue(":")
+	_, _, k, v, ok = splitKeyValue(":")
 	if ok {
 		t.Error("separator-only string should not OK")
 	}
 
-	k, v, ok = splitKeyValue("::world")
+	_, _, k, v, ok = splitKeyValue("::world")
 	if ok {
 		t.Error("empty key should not OK")
 	}
 
-	k, v, ok = splitKeyValue(":hello:")
+	_, _, k, v, ok = splitKeyValue(":hello:")
 	if ok {
 		t.Error("empty value should not OK")
 	}
 
-	k, v, ok = splitKeyValue(":key:value")
+	_, _, k, v, ok = splitKeyValue(":key:value")
 	if !ok {
 		t.Fail()
 	}
@@ -37,7 +40,7 @@ func TestSplitKeyValue(t *testing.T) {
 		t.Fail()
 	}
 
-	k, v, ok = splitKeyValue("@KEY@VALUE")
+	_, _, k, v, ok = splitKeyValue("@KEY@VALUE")
 	if !ok {
 		t.Fail()
 	}
@@ -46,6 +49,76 @@ func TestSplitKeyValue(t *testing.T) {
 	}
 	if v != "VALUE" {
 		t.Fail()
+	}
+}
+
+func TestNormalizePathHeadersMapAccurate(t *testing.T) {
+	var result map[string][][2]string
+
+	result = normalizePathHeadersMapAccurate([]string{
+		":/foo:X-header1:X-Value1",
+		":/foo/:X-header2:X-Value2",
+		":/bar:X-header3:X-Value3",
+		":baz",
+		":baz:",
+		":baz:X-Not-Valid",
+		":baz:X-Not-Valid:",
+	}, path.Clean)
+
+	if len(result) != 2 {
+		t.Error(result)
+	}
+
+	if len(result["/foo"]) != 2 {
+		t.Error(result["/foo"])
+	}
+	if result["/foo"][0][0] != "X-header1" || result["/foo"][0][1] != "X-Value1" {
+		t.Error(result["/foo"][0])
+	}
+	if result["/foo"][1][0] != "X-header2" || result["/foo"][1][1] != "X-Value2" {
+		t.Error(result["/foo"][0])
+	}
+
+	if len(result["/bar"]) != 1 {
+		t.Error(result["/foo"])
+	}
+	if result["/bar"][0][0] != "X-header3" || result["/bar"][0][1] != "X-Value3" {
+		t.Error(result["/foo"][0])
+	}
+}
+
+func TestNormalizePathHeadersMapNoCase(t *testing.T) {
+	var result map[string][][2]string
+
+	result = normalizePathHeadersMapNoCase([]string{
+		":/foo:X-header1:X-Value1",
+		":/FOO/:X-header2:X-Value2",
+		":/bar:X-header3:X-Value3",
+		":baz",
+		":baz:",
+		":baz:X-Not-Valid",
+		":baz:X-Not-Valid:",
+	}, path.Clean)
+
+	if len(result) != 2 {
+		t.Error(result)
+	}
+
+	if len(result["/foo"]) != 2 {
+		t.Error(result["/foo"])
+	}
+	if result["/foo"][0][0] != "X-header1" || result["/foo"][0][1] != "X-Value1" {
+		t.Error(result["/foo"][0])
+	}
+	if result["/foo"][1][0] != "X-header2" || result["/foo"][1][1] != "X-Value2" {
+		t.Error(result["/foo"][0])
+	}
+
+	if len(result["/bar"]) != 1 {
+		t.Error(result["/foo"])
+	}
+	if result["/bar"][0][0] != "X-header3" || result["/bar"][0][1] != "X-Value3" {
+		t.Error(result["/foo"][0])
 	}
 }
 

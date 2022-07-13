@@ -7,6 +7,7 @@ import (
 	"../version"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -41,6 +42,12 @@ func init() {
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlagValues("globalheaders", "--global-header", "GHFS_GLOBAL_HEADER", []string{}, "custom headers for all url paths, e.g. <name>:<value>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("headersurls", "--header", "", []string{}, "url path for custom headers, <sep><url><sep><name><sep><value>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("headersdirs", "--header-dir", "", []string{}, "file system path for custom headers, <sep><dir><sep><name><sep><value>")
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
@@ -284,6 +291,14 @@ func doParseCli() []*Param {
 		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")
 		param.GlobalHeaders = entriesToHeaders(globalHeaders)
+
+		// headers urls
+		arrHeadersUrls, _ := result.GetStrings("headersurls")
+		param.HeadersUrls = normalizePathHeadersMap(arrHeadersUrls, util.CleanUrlPath)
+
+		// headers dirs
+		arrHeadersDirs, _ := result.GetStrings("headersdirs")
+		param.HeadersDirs = normalizePathHeadersMap(arrHeadersDirs, filepath.Clean)
 
 		// certificate
 		certFiles, _ := result.GetStrings("certs")

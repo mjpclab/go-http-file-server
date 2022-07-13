@@ -142,7 +142,11 @@ ghfs [options]
     e.g. ":/doc:/usr/share/doc"
 
 --global-header <name>:<value> ...
-    Set custom HTTP response header.
+    Add custom HTTP response header.
+--header <separator><url-path><separator><name><separator><value> ...
+    Add custom HTTP response header for a specific URL path(and sub path).
+--header-dir <separator><fs-path><separator><name><separator><value> ...
+    Similar to --header, but use file system path instead of url path.
 
 -U|--global-upload
     Allow upload files for all url paths.

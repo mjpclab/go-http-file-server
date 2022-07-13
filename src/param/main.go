@@ -17,10 +17,13 @@ type Param struct {
 
 	PrefixUrls []string
 
-	DefaultSort   string
-	DirIndexes    []string
-	Aliases       map[string]string
+	DefaultSort string
+	DirIndexes  []string
+	Aliases     map[string]string
+
 	GlobalHeaders [][2]string
+	HeadersUrls   map[string][][2]string
+	HeadersDirs   map[string][][2]string
 
 	GlobalUpload bool
 	UploadUrls   []string

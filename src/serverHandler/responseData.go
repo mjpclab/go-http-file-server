@@ -32,6 +32,8 @@ type responseData struct {
 	AuthUserName string
 	AuthSuccess  bool
 
+	Headers [][2]string
+
 	IsDownload bool
 	IsUpload   bool
 	IsMkdir    bool
@@ -304,6 +306,8 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		}
 	}
 
+	headers := h.getHeaders(rawReqPath, reqFsPath, authSuccess)
+
 	rawQuery := r.URL.RawQuery
 	isDownload := false
 	isUpload := false
@@ -405,6 +409,8 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		NeedAuth:     needAuth,
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
+
+		Headers: headers,
 
 		IsDownload: isDownload,
 		IsUpload:   isUpload,

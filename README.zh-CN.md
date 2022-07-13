@@ -140,7 +140,11 @@ ghfs [选项]
     例如：“:/doc:/usr/share/doc”。
 
 --global-header <名称>:<值> ...
-    设置自定义HTTP响应头。
+    添加自定义HTTP响应头。
+--header <separator><url-path><separator><name><separator><value> ...
+    为指定的URL路径（及子路径）添加自定义HTTP响应头。
+--header-dir <separator><fs-path><separator><name><separator><value> ...
+    与--header类似，但指定的是文件系统路径，而不是URL路径。
 
 -U|--global-upload
     对所有URL路径开启上传权限。
