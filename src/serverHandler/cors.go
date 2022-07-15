@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (h *handler) cors(w http.ResponseWriter) {
+func cors(w http.ResponseWriter) {
 	header := w.Header()
 
 	header.Set("Access-Control-Allow-Origin", "*")
