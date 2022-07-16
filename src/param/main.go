@@ -21,6 +21,10 @@ type Param struct {
 	DirIndexes  []string
 	Aliases     map[string]string
 
+	GlobalRestrictAccess []string
+	RestrictAccessUrls   map[string][]string
+	RestrictAccessDirs   map[string][]string
+
 	GlobalHeaders [][2]string
 	HeadersUrls   map[string][][2]string
 	HeadersDirs   map[string][][2]string

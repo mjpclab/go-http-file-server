@@ -139,6 +139,19 @@ ghfs [选项]
     将某个文件系统路径挂载到URL路径下。
     例如：“:/doc:/usr/share/doc”。
 
+--global-restrict-access [<允许的主机> ...]
+    限制第三方主机对所有URL路径的访问，它是通过检测请求头中的`Referer`或`Origin`实现的。
+    如果该请求头为空，仍然能够访问目录列表。
+    如果未指定允许的第三方主机，文件内容仅可被当前主机访问。注意这样无法限制把域名指向你的
+    主机且能匹配当前虚拟主机的人，除非明确指定允许的主机。
+    “主机”可以是主机名，即使用默认端口，也可以是“主机:端口”的形式。
+--restrict-access <分隔符><URL路径>[<分隔符><允许的主机>...]
+    与--global-restrict-access类似，但仅限于指定的URL路径（及子路径）。
+    例如"#/url/path#example1.com#example2.com"。
+--restrict-access-dir <分隔符><文件系统路径>[<分隔符><允许的主机>...]
+    与--global-restrict-access类似，但仅限于指定的文件系统路径（及子路径）。
+    例如"#/fs/path#example1.com#example2.com"。
+
 --global-header <名称>:<值> ...
     添加自定义HTTP响应头。
 --header <separator><url-path><separator><name><separator><value> ...

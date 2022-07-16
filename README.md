@@ -141,6 +141,24 @@ ghfs [options]
     Mount a file system path to URL path.
     e.g. ":/doc:/usr/share/doc"
 
+--global-restrict-access [<allowed-host> ...]
+    Restrict access from third party host for all url paths, by detecting
+    request header `Referer` or `Origin`.
+    If the request header is empty, directory list page is still allowed
+    to access.
+    If allowed host is not specified, file content can only be accessed from
+    current host. Note this will not help to restrict access from other one
+    who point a domain to your host and could be matched to current virtual host,
+    unless specify the allowed host explicitly.
+    The "host" could be a hostname which means using a default port, or the form
+    of "host:port".
+--restrict-access <separator><url-path>[<separator><allowed-host>...] ...
+    Similar to --global-restrict-access, but for a specific URL path(and sub paths).
+    e.g. "#/url/path#example1.com#example2.com".
+--restrict-access-dir <separator><fs-path>[<separator><allowed-host>...] ...
+    Similar to --global-restrict-access, but for a file system path(and sub paths).
+    e.g. "#/fs/path#example1.com#example2.com".
+
 --global-header <name>:<value> ...
     Add custom HTTP response header.
 --header <separator><url-path><separator><name><separator><value> ...

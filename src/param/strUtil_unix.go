@@ -3,5 +3,6 @@
 
 package param
 
-var normalizePathMaps = normalizePathMapsAccurate
+var normalizePathRestrictAccesses = normalizePathRestrictAccessesAccurate
 var normalizePathHeadersMap = normalizePathHeadersMapAccurate
+var normalizePathMaps = normalizePathMapsAccurate

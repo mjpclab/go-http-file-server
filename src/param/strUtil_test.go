@@ -5,6 +5,69 @@ import (
 	"testing"
 )
 
+func expectStrings(actuals []string, expects ...string) bool {
+	if len(actuals) != len(expects) {
+		return false
+	}
+
+	for i := range actuals {
+		if actuals[i] != expects[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func TestSplitKeyValues(t *testing.T) {
+	var key string
+	var values []string
+	var ok bool
+
+	key, values, ok = splitKeyValues("")
+	if ok {
+		t.Error()
+	}
+
+	key, values, ok = splitKeyValues(":")
+	if ok {
+		t.Error()
+	}
+
+	key, values, ok = splitKeyValues(":abc")
+	if !ok {
+		t.Error()
+	}
+	if key != "abc" {
+		t.Error(key)
+	}
+	if len(values) != 0 {
+		t.Error(values)
+	}
+
+	key, values, ok = splitKeyValues(":foo:")
+	if !ok {
+		t.Error()
+	}
+	if key != "foo" {
+		t.Error(key)
+	}
+	if len(values) != 0 {
+		t.Errorf("%#v\n", values)
+	}
+
+	key, values, ok = splitKeyValues(":foo:lorem:ipsum")
+	if !ok {
+		t.Error()
+	}
+	if key != "foo" {
+		t.Error(key)
+	}
+	if !expectStrings(values, "lorem", "ipsum") {
+		t.Error(values)
+	}
+}
+
 func TestSplitKeyValue(t *testing.T) {
 	var k, v string
 	var ok bool
@@ -49,6 +112,42 @@ func TestSplitKeyValue(t *testing.T) {
 	}
 	if v != "VALUE" {
 		t.Fail()
+	}
+}
+
+func TestNormalizePathRestrictAccessesAccurate(t *testing.T) {
+	results := normalizePathRestrictAccessesAccurate([]string{
+		":/foo:host1:host2",
+		":/foo/:host3:host4",
+		":/bar",
+	}, path.Clean)
+
+	if len(results) != 2 {
+		t.Error()
+	}
+	if !expectStrings(results["/foo"], "host1", "host2", "host3", "host4") {
+		t.Error()
+	}
+	if len(results["/bar"]) != 0 {
+		t.Error()
+	}
+}
+
+func TestNormalizePathRestrictAccessesNoCase(t *testing.T) {
+	results := normalizePathRestrictAccessesNoCase([]string{
+		":/foo:host1:host2",
+		":/FOO/:host3:host4",
+		":/bar",
+	}, path.Clean)
+
+	if len(results) != 2 {
+		t.Error()
+	}
+	if !expectStrings(results["/foo"], "host1", "host2", "host3", "host4") {
+		t.Error()
+	}
+	if len(results["/bar"]) != 0 {
+		t.Error()
 	}
 }
 

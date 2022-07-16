@@ -32,6 +32,8 @@ type responseData struct {
 	AuthUserName string
 	AuthSuccess  bool
 
+	AllowAccess bool
+
 	Headers [][2]string
 
 	IsDownload bool
@@ -361,15 +363,17 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		}
 	}
 
+	allowAccess := h.isAllowAccess(r, rawReqPath, reqFsPath, file, item)
+
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && allowAccess && needResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, authSuccess)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, authSuccess && allowAccess)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -409,6 +413,8 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		NeedAuth:     needAuth,
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
+
+		AllowAccess: allowAccess,
 
 		Headers: headers,
 

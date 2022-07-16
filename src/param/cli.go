@@ -41,6 +41,15 @@ func init() {
 	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverErrHandler.CheckFatal(err)
 
+	err = options.AddFlagValues("globalrestrictaccess", "--global-restrict-access", "GHFS_GLOBAL_RESTRICT_ACCESS", []string{}, "restrict access to all url paths from current host, with optional extra allow list")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("restrictaccessurls", "--restrict-access", "", []string{}, "restrict access to specific url paths from current host, with optional extra allow list")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("restrictaccessdirs", "--restrict-access-dir", "", []string{}, "restrict access to specific file system paths from current host, with optional extra allow list")
+	serverErrHandler.CheckFatal(err)
+
 	err = options.AddFlagValues("globalheaders", "--global-header", "GHFS_GLOBAL_HEADER", []string{}, "custom headers for all url paths, e.g. <name>:<value>")
 	serverErrHandler.CheckFatal(err)
 
@@ -287,6 +296,20 @@ func doParseCli() []*Param {
 		// dir indexes
 		dirIndexes, _ := result.GetStrings("dirindexes")
 		param.DirIndexes = normalizeFilenames(dirIndexes)
+
+		// global restrict access
+		if result.HasKey("globalrestrictaccess") {
+			globalRestrictAccesses, _ := result.GetStrings("globalrestrictaccess")
+			param.GlobalRestrictAccess = util.ExtractHostsFromUrls(globalRestrictAccesses)
+		}
+
+		// restrict access urls
+		restrictAccessUrls, _ := result.GetStrings("restrictaccessurls")
+		param.RestrictAccessUrls = normalizePathRestrictAccesses(restrictAccessUrls, util.CleanUrlPath)
+
+		// restrict access dirs
+		restrictAccessDirs, _ := result.GetStrings("restrictaccessdirs")
+		param.RestrictAccessDirs = normalizePathRestrictAccesses(restrictAccessDirs, filepath.Clean)
 
 		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")

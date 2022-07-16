@@ -7,6 +7,31 @@ import (
 	"unicode/utf8"
 )
 
+func splitKeyValues(input string) (key string, values []string, ok bool) {
+	sep, sepLen := utf8.DecodeRuneInString(input)
+	if sepLen == 0 {
+		return
+	}
+	entry := input[sepLen:]
+	if len(entry) == 0 {
+		return
+	}
+
+	sepIndex := strings.IndexRune(entry, sep)
+	if sepIndex == 0 { // no key
+		return
+	} else if sepIndex > 0 {
+		key = entry[:sepIndex]
+		values = strings.FieldsFunc(entry[sepIndex+sepLen:], func(r rune) bool {
+			return r == sep
+		})
+	} else { // only key
+		key = entry
+	}
+
+	return key, values, true
+}
+
 func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
 	sep, sepLen = utf8.DecodeRuneInString(input)
 	if sepLen == 0 {
@@ -25,6 +50,48 @@ func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
 	k = entry[:sepIndex]
 	v = entry[sepIndex+sepLen:]
 	return sep, sepLen, k, v, true
+}
+
+func normalizePathRestrictAccessesAccurate(inputs []string, normalizePath func(string) string) map[string][]string {
+	maps := make(map[string][]string, len(inputs))
+
+	for i := range inputs {
+		reqPath, hosts, ok := splitKeyValues(inputs[i])
+		if !ok {
+			continue
+		}
+
+		normalizedPath := normalizePath(reqPath)
+		normalizedHosts := util.ExtractHostsFromUrls(hosts)
+		maps[normalizedPath] = append(maps[normalizedPath], normalizedHosts...)
+	}
+
+	return maps
+}
+
+func normalizePathRestrictAccessesNoCase(inputs []string, normalizePath func(string) string) map[string][]string {
+	maps := make(map[string][]string, len(inputs))
+
+	for i := range inputs {
+		reqPath, hosts, ok := splitKeyValues(inputs[i])
+		if !ok {
+			continue
+		}
+
+		normalizedPath := normalizePath(reqPath)
+		normalizedHosts := util.ExtractHostsFromUrls(hosts)
+
+		for existingPath := range maps {
+			if strings.EqualFold(existingPath, normalizedPath) {
+				normalizedPath = existingPath
+				break
+			}
+		}
+
+		maps[normalizedPath] = append(maps[normalizedPath], normalizedHosts...)
+	}
+
+	return maps
 }
 
 func normalizePathHeadersMapAccurate(inputs []string, normalizePath func(string) string) map[string][][2]string {

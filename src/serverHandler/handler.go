@@ -15,6 +15,11 @@ var defaultHandler = http.NotFoundHandler()
 
 var createFileServer func(root string) http.Handler
 
+type pathStrings struct {
+	path    string
+	strings []string
+}
+
 type handler struct {
 	root        string
 	emptyRoot   bool
@@ -26,6 +31,10 @@ type handler struct {
 
 	dirIndexes []string
 	aliases    aliases
+
+	globalRestrictAccess []string
+	restrictAccessUrls   []pathStrings
+	restrictAccessDirs   []pathStrings
 
 	globalHeaders [][2]string
 	headersUrls   []pathHeaders
@@ -68,6 +77,12 @@ type handler struct {
 
 	logger     *serverLog.Logger
 	errHandler *serverErrHandler.ErrHandler
+
+	restrictAccess bool
+	pageVaryV1     string
+	pageVary       string
+	contentVaryV1  string
+	contentVary    string
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -109,6 +124,11 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !data.AllowAccess {
+		restrictAccess(w)
+		return
+	}
+
 	header(w, data.Headers)
 
 	if data.CanCors {
@@ -138,7 +158,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	item := data.Item
 	if data.WantJson {
 		h.json(w, r, data)
-	} else if file != nil && item != nil && !item.IsDir() {
+	} else if shouldServeAsContent(file, item) {
 		h.content(w, r, data)
 	} else {
 		h.page(w, r, data)
@@ -150,11 +170,14 @@ func newHandler(
 	root string,
 	aliasPrefix string,
 	allAliases aliases,
+	restrictAccessUrls, restrictAccessDirs []pathStrings,
 	headersUrls, headersDirs []pathHeaders,
 	users user.List,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
 	errHandler *serverErrHandler.ErrHandler,
+	restrictAccess bool,
+	pageVaryV1, pageVary, contentVaryV1, contentVary string,
 ) http.Handler {
 	emptyRoot := p.EmptyRoot && aliasPrefix == "/"
 
@@ -181,6 +204,10 @@ func newHandler(
 		aliases:     aliases,
 
 		dirIndexes: p.DirIndexes,
+
+		globalRestrictAccess: p.GlobalRestrictAccess,
+		restrictAccessUrls:   restrictAccessUrls,
+		restrictAccessDirs:   restrictAccessDirs,
 
 		globalHeaders: p.GlobalHeaders,
 		headersUrls:   headersUrls,
@@ -223,6 +250,12 @@ func newHandler(
 
 		logger:     logger,
 		errHandler: errHandler,
+
+		restrictAccess: restrictAccess,
+		pageVaryV1:     pageVaryV1,
+		pageVary:       pageVary,
+		contentVaryV1:  contentVaryV1,
+		contentVary:    contentVary,
 	}
 	return h
 }

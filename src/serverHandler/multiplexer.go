@@ -8,6 +8,7 @@ import (
 	"../user"
 	"../util"
 	"net/http"
+	"strings"
 )
 
 type aliasHandler struct {
@@ -43,21 +44,47 @@ func NewMultiplexer(
 	}
 
 	aliases := newAliases(p.Aliases)
+	restrictAccessUrls := newRestrictAccesses(p.RestrictAccessUrls)
+	restrictAccessDirs := newRestrictAccesses(p.RestrictAccessDirs)
 	headersUrls := newPathHeaders(p.HeadersUrls)
 	headersDirs := newPathHeaders(p.HeadersDirs)
+
+	restrictAccess := hasRestrictAccess(p.GlobalRestrictAccess, restrictAccessUrls, restrictAccessDirs)
+	pageVaryV1 := "Accept-Encoding"
+	contentVaryV1 := ""
+	if restrictAccess {
+		pageVaryV1 += ", Referer"
+		contentVaryV1 = "Referer"
+	}
+	pageVary := strings.ToLower(pageVaryV1)
+	contentVary := strings.ToLower(contentVaryV1)
 
 	if len(aliases) == 1 {
 		alias, hasRootAlias := aliases.byUrlPath("/")
 		if hasRootAlias {
-			return newHandler(p, alias.fs, alias.url, aliases, headersUrls, headersDirs, users, theme, logger, errHandler)
+			return newHandler(
+				p, alias.fs, alias.url, aliases,
+				restrictAccessUrls, restrictAccessDirs,
+				headersUrls, headersDirs,
+				users, theme, logger, errHandler,
+				restrictAccess,
+				pageVaryV1, pageVary, contentVaryV1, contentVary,
+			)
 		}
 	}
 
 	aliasHandlers := make([]aliasHandler, len(aliases))
 	for i, alias := range aliases {
 		aliasHandlers[i] = aliasHandler{
-			alias:   alias,
-			handler: newHandler(p, alias.fs, alias.url, aliases, headersUrls, headersDirs, users, theme, logger, errHandler),
+			alias: alias,
+			handler: newHandler(
+				p, alias.fs, alias.url, aliases,
+				restrictAccessUrls, restrictAccessDirs,
+				headersUrls, headersDirs,
+				users, theme, logger, errHandler,
+				restrictAccess,
+				pageVaryV1, pageVary, contentVaryV1, contentVary,
+			),
 		}
 	}
 	return multiplexer{aliasHandlers}

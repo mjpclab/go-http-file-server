@@ -84,3 +84,7 @@ func containsItem(infos []os.FileInfo, name string) bool {
 	}
 	return false
 }
+
+func shouldServeAsContent(file *os.File, item os.FileInfo) bool {
+	return file != nil && item != nil && !item.IsDir()
+}

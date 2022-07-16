@@ -3,5 +3,6 @@
 
 package param
 
-var normalizePathMaps = normalizePathMapsNoCase
+var normalizePathRestrictAccesses = normalizePathRestrictAccessesNoCase
 var normalizePathHeadersMap = normalizePathHeadersMapNoCase
+var normalizePathMaps = normalizePathMapsNoCase
