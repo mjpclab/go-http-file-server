@@ -3,6 +3,7 @@ package param
 import (
 	"../util"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -294,4 +295,12 @@ func normalizeHttpsPort(httpsPort string, ListensTLS []string) (string, bool) {
 	}
 
 	return "", false
+}
+
+func normalizeRedirectCode(input string) int {
+	code, _ := strconv.Atoi(input)
+	if code <= 300 || code > 399 {
+		return 301
+	}
+	return code
 }

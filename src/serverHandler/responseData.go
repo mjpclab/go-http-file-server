@@ -25,6 +25,7 @@ type itemHtml struct {
 }
 
 type responseData struct {
+	prefixReqPath  string
 	rawReqPath     string
 	handlerReqPath string
 
@@ -67,6 +68,8 @@ type responseData struct {
 	SubItemPrefix string
 	SortState     SortState
 	Context       *pathContext
+
+	NeedDirSlashRedirect bool
 
 	Lang  string
 	Trans *i18n.Translation
@@ -191,9 +194,9 @@ func (h *handler) mergeAlias(
 	return subItems, aliasSubItems, errs
 }
 
-func getCurrDirRelPath(reqPath, rawReqPath string) string {
-	if len(reqPath) == 1 && len(rawReqPath) > 1 && rawReqPath[len(rawReqPath)-1] != '/' {
-		return "./" + path.Base(rawReqPath) + "/"
+func getCurrDirRelPath(reqPath, prefixReqPath string) string {
+	if len(reqPath) == 1 && len(prefixReqPath) > 1 && prefixReqPath[len(prefixReqPath)-1] != '/' {
+		return "./" + path.Base(prefixReqPath) + "/"
 	} else {
 		return "./"
 	}
@@ -291,6 +294,7 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 func (h *handler) getResponseData(r *http.Request) *responseData {
 	var errs []error
 
+	prefixReqPath := r.URL.RawPath
 	rawReqPath := r.URL.Path
 	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 
@@ -334,7 +338,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
-	currDirRelPath := getCurrDirRelPath(rawReqPath, r.URL.RawPath)
+	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
 	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
 	var rootRelPath string
 	if len(pathEntries) > 0 {
@@ -349,7 +353,9 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		status = getStatusByErr(_statErr)
 	}
 
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess)
+	needDirSlashRedirect := h.forceDirSlash > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' && !shouldServeAsContent(file, item)
+
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess && !needDirSlashRedirect)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -367,13 +373,13 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && allowAccess && needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && !needDirSlashRedirect && allowAccess && needResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, authSuccess && allowAccess)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, authSuccess && !needDirSlashRedirect && allowAccess)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -407,6 +413,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	}
 
 	return &responseData{
+		prefixReqPath:  prefixReqPath,
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 
@@ -449,5 +456,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		SubItemPrefix: subItemPrefix,
 		SortState:     sortState,
 		Context:       context,
+
+		NeedDirSlashRedirect: needDirSlashRedirect,
 	}
 }

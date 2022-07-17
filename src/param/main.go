@@ -15,7 +15,8 @@ type Param struct {
 	Root      string
 	EmptyRoot bool
 
-	PrefixUrls []string
+	PrefixUrls    []string
+	ForceDirSlash int
 
 	DefaultSort string
 	DirIndexes  []string

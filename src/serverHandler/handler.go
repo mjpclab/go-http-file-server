@@ -21,13 +21,14 @@ type pathStrings struct {
 }
 
 type handler struct {
-	root        string
-	emptyRoot   bool
-	globalHsts  bool
-	globalHttps bool
-	httpsPort   string // with prefix ":"
-	defaultSort string
-	aliasPrefix string
+	root          string
+	emptyRoot     bool
+	forceDirSlash int
+	globalHsts    bool
+	globalHttps   bool
+	httpsPort     string // with prefix ":"
+	defaultSort   string
+	aliasPrefix   string
 
 	dirIndexes []string
 	aliases    aliases
@@ -129,6 +130,11 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if data.NeedDirSlashRedirect {
+		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
+		return
+	}
+
 	header(w, data.Headers)
 
 	if data.CanCors {
@@ -194,14 +200,15 @@ func newHandler(
 	}
 
 	h := &handler{
-		root:        root,
-		emptyRoot:   emptyRoot,
-		globalHsts:  p.GlobalHsts,
-		globalHttps: p.GlobalHttps,
-		httpsPort:   p.HttpsPort,
-		defaultSort: p.DefaultSort,
-		aliasPrefix: aliasPrefix,
-		aliases:     aliases,
+		root:          root,
+		emptyRoot:     emptyRoot,
+		forceDirSlash: p.ForceDirSlash,
+		globalHsts:    p.GlobalHsts,
+		globalHttps:   p.GlobalHttps,
+		httpsPort:     p.HttpsPort,
+		defaultSort:   p.DefaultSort,
+		aliasPrefix:   aliasPrefix,
+		aliases:       aliases,
 
 		dirIndexes: p.DirIndexes,
 

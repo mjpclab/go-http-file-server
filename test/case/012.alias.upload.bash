@@ -7,7 +7,7 @@ cleanup() {
 
 source "$root"/lib.bash
 
-"$ghfs" -l 3003 -r "$fs"/vhost1 --alias :/my/upload:"$fs"/uploaded/2 --upload / --mkdir / &> /dev/null &
+"$ghfs" -l 3003 -r "$fs"/vhost1 --alias :/my/upload:"$fs"/uploaded/2 --upload / --mkdir / -E '' &
 sleep 0.05 # wait server ready
 cleanup
 

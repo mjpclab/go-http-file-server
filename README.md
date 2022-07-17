@@ -116,6 +116,10 @@ ghfs [options]
     Could be useful if server is behind a reverse proxy and
     received the request without proxying path stripped.
 
+-/|--force-dir-slash [<status-code>=301]
+    If a directory list page is requested without tailing "/" in the URL,
+    redirect to the URL with the suffix.
+
 --default-sort <sortBy>
     Default sort rule for files and directories.
     Available sort key:
