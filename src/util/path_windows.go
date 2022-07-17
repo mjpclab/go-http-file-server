@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var IsPathEqual = IsStrEqualNoCase
+
 var HasUrlPrefixDir = HasUrlPrefixDirNoCase
 var HasFsPrefixDir = HasFsPrefixDirNoCase
 

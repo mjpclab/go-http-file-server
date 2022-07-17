@@ -115,8 +115,8 @@ func TestSplitKeyValue(t *testing.T) {
 	}
 }
 
-func TestNormalizePathRestrictAccessesAccurate(t *testing.T) {
-	results := normalizePathRestrictAccessesAccurate([]string{
+func TestNormalizePathRestrictAccesses(t *testing.T) {
+	results := normalizePathRestrictAccesses([]string{
 		":/foo:host1:host2",
 		":/foo/:host3:host4",
 		":/bar",
@@ -133,28 +133,10 @@ func TestNormalizePathRestrictAccessesAccurate(t *testing.T) {
 	}
 }
 
-func TestNormalizePathRestrictAccessesNoCase(t *testing.T) {
-	results := normalizePathRestrictAccessesNoCase([]string{
-		":/foo:host1:host2",
-		":/FOO/:host3:host4",
-		":/bar",
-	}, path.Clean)
-
-	if len(results) != 2 {
-		t.Error()
-	}
-	if !expectStrings(results["/foo"], "host1", "host2", "host3", "host4") {
-		t.Error()
-	}
-	if len(results["/bar"]) != 0 {
-		t.Error()
-	}
-}
-
-func TestNormalizePathHeadersMapAccurate(t *testing.T) {
+func TestNormalizePathHeadersMap(t *testing.T) {
 	var result map[string][][2]string
 
-	result = normalizePathHeadersMapAccurate([]string{
+	result = normalizePathHeadersMap([]string{
 		":/foo:X-header1:X-Value1",
 		":/foo/:X-header2:X-Value2",
 		":/bar:X-header3:X-Value3",
@@ -186,50 +168,15 @@ func TestNormalizePathHeadersMapAccurate(t *testing.T) {
 	}
 }
 
-func TestNormalizePathHeadersMapNoCase(t *testing.T) {
-	var result map[string][][2]string
-
-	result = normalizePathHeadersMapNoCase([]string{
-		":/foo:X-header1:X-Value1",
-		":/FOO/:X-header2:X-Value2",
-		":/bar:X-header3:X-Value3",
-		":baz",
-		":baz:",
-		":baz:X-Not-Valid",
-		":baz:X-Not-Valid:",
-	}, path.Clean)
-
-	if len(result) != 2 {
-		t.Error(result)
-	}
-
-	if len(result["/foo"]) != 2 {
-		t.Error(result["/foo"])
-	}
-	if result["/foo"][0][0] != "X-header1" || result["/foo"][0][1] != "X-Value1" {
-		t.Error(result["/foo"][0])
-	}
-	if result["/foo"][1][0] != "X-header2" || result["/foo"][1][1] != "X-Value2" {
-		t.Error(result["/foo"][0])
-	}
-
-	if len(result["/bar"]) != 1 {
-		t.Error(result["/foo"])
-	}
-	if result["/bar"][0][0] != "X-header3" || result["/bar"][0][1] != "X-Value3" {
-		t.Error(result["/foo"][0])
-	}
-}
-
-func TestNormalizePathMapsAccurate(t *testing.T) {
+func TestNormalizePathMaps(t *testing.T) {
 	var maps map[string]string
 
-	maps = normalizePathMapsAccurate([]string{":/data/lib://usr/lib"})
+	maps = normalizePathMaps([]string{":/data/lib://usr/lib"})
 	if maps["/data/lib"] != "/usr/lib" {
 		t.Error(maps)
 	}
 
-	maps = normalizePathMapsAccurate([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
+	maps = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
 	if len(maps) != 2 {
 		t.Error(maps)
 	}
@@ -237,22 +184,6 @@ func TestNormalizePathMapsAccurate(t *testing.T) {
 		t.Error(maps)
 	}
 	if maps["/foo"] != "bar/baz" {
-		t.Error(maps)
-	}
-}
-
-func TestNormalizePathMapsNoCase(t *testing.T) {
-	var maps map[string]string
-	maps = normalizePathMapsNoCase([]string{":/data/lib://usr/lib"})
-	if maps["/data/lib"] != "/usr/lib" {
-		t.Error(maps)
-	}
-
-	maps = normalizePathMapsNoCase([]string{":/data/lib://usr/lib", "#/Data/Lib#/tmp/"})
-	if len(maps) != 1 {
-		t.Error(maps)
-	}
-	if maps["/Data/Lib"] != "/tmp" {
 		t.Error(maps)
 	}
 }

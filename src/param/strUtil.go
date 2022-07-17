@@ -53,24 +53,7 @@ func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
 	return sep, sepLen, k, v, true
 }
 
-func normalizePathRestrictAccessesAccurate(inputs []string, normalizePath func(string) string) map[string][]string {
-	maps := make(map[string][]string, len(inputs))
-
-	for i := range inputs {
-		reqPath, hosts, ok := splitKeyValues(inputs[i])
-		if !ok {
-			continue
-		}
-
-		normalizedPath := normalizePath(reqPath)
-		normalizedHosts := util.ExtractHostsFromUrls(hosts)
-		maps[normalizedPath] = append(maps[normalizedPath], normalizedHosts...)
-	}
-
-	return maps
-}
-
-func normalizePathRestrictAccessesNoCase(inputs []string, normalizePath func(string) string) map[string][]string {
+func normalizePathRestrictAccesses(inputs []string, normalizePath func(string) string) map[string][]string {
 	maps := make(map[string][]string, len(inputs))
 
 	for i := range inputs {
@@ -83,7 +66,7 @@ func normalizePathRestrictAccessesNoCase(inputs []string, normalizePath func(str
 		normalizedHosts := util.ExtractHostsFromUrls(hosts)
 
 		for existingPath := range maps {
-			if strings.EqualFold(existingPath, normalizedPath) {
+			if util.IsPathEqual(existingPath, normalizedPath) {
 				normalizedPath = existingPath
 				break
 			}
@@ -95,29 +78,7 @@ func normalizePathRestrictAccessesNoCase(inputs []string, normalizePath func(str
 	return maps
 }
 
-func normalizePathHeadersMapAccurate(inputs []string, normalizePath func(string) string) map[string][][2]string {
-	maps := make(map[string][][2]string, len(inputs))
-
-	for _, input := range inputs {
-		sep, sepLen, reqPath, header, ok := splitKeyValue(input)
-		if !ok {
-			continue
-		}
-		sepIndex := strings.IndexRune(header, sep)
-		if sepIndex <= 0 || sepIndex+sepLen == len(header) {
-			continue
-		}
-
-		normalizedPath := normalizePath(reqPath)
-		headerName := header[:sepIndex]
-		headerValue := header[sepIndex+1:]
-		maps[normalizedPath] = append(maps[normalizedPath], [2]string{headerName, headerValue})
-	}
-
-	return maps
-}
-
-func normalizePathHeadersMapNoCase(inputs []string, normalizePath func(string) string) map[string][][2]string {
+func normalizePathHeadersMap(inputs []string, normalizePath func(string) string) map[string][][2]string {
 	maps := make(map[string][][2]string, len(inputs))
 
 	for _, input := range inputs {
@@ -135,7 +96,7 @@ func normalizePathHeadersMapNoCase(inputs []string, normalizePath func(string) s
 		headerValue := header[sepIndex+1:]
 
 		for existingPath := range maps {
-			if strings.EqualFold(existingPath, normalizedPath) {
+			if util.IsPathEqual(existingPath, normalizedPath) {
 				normalizedPath = existingPath
 				break
 			}
@@ -147,24 +108,7 @@ func normalizePathHeadersMapNoCase(inputs []string, normalizePath func(string) s
 	return maps
 }
 
-func normalizePathMapsAccurate(inputs []string) map[string]string {
-	maps := make(map[string]string, len(inputs))
-
-	for _, input := range inputs {
-		_, _, urlPath, fsPath, ok := splitKeyValue(input)
-		if !ok {
-			continue
-		}
-
-		urlPath = util.CleanUrlPath(urlPath)
-		fsPath = filepath.Clean(fsPath)
-		maps[urlPath] = fsPath
-	}
-
-	return maps
-}
-
-func normalizePathMapsNoCase(inputs []string) map[string]string {
+func normalizePathMaps(inputs []string) map[string]string {
 	maps := make(map[string]string, len(inputs))
 
 	for _, input := range inputs {
@@ -177,7 +121,7 @@ func normalizePathMapsNoCase(inputs []string) map[string]string {
 		fsPath = filepath.Clean(fsPath)
 
 		for existingUrl := range maps {
-			if strings.EqualFold(existingUrl, urlPath) {
+			if util.IsPathEqual(existingUrl, urlPath) {
 				urlPath = existingUrl
 				break
 			}

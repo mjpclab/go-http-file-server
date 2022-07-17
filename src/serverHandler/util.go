@@ -2,6 +2,7 @@ package serverHandler
 
 import (
 	"../acceptHeaders"
+	"../util"
 	"compress/flate"
 	"compress/gzip"
 	"io"
@@ -78,7 +79,7 @@ func isVirtual(info os.FileInfo) bool {
 
 func containsItem(infos []os.FileInfo, name string) bool {
 	for i := range infos {
-		if isNameEqual(infos[i].Name(), name) {
+		if util.IsPathEqual(infos[i].Name(), name) {
 			return true
 		}
 	}

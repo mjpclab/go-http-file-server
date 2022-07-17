@@ -18,7 +18,7 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 
 	name := info.Name()
 	for _, selName := range selections {
-		if isNameEqual(selName, name) {
+		if util.IsPathEqual(selName, name) {
 			matchName = true
 			continue
 		}
@@ -29,7 +29,7 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 		}
 
 		selNamePart1 := selName[:slashIndex]
-		if isNameEqual(selNamePart1, name) {
+		if util.IsPathEqual(selNamePart1, name) {
 			childSel := selName[slashIndex+1:]
 			if len(childSel) > 0 {
 				matchPrefix = true

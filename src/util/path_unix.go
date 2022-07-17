@@ -5,6 +5,8 @@ package util
 
 import "path/filepath"
 
+var IsPathEqual = IsStrEqualAccurate
+
 var HasUrlPrefixDir = HasUrlPrefixDirAccurate
 var HasFsPrefixDir = HasFsPrefixDirAccurate
 
