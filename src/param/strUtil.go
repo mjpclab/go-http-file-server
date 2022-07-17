@@ -176,9 +176,10 @@ func normalizePathMapsNoCase(inputs []string) map[string]string {
 		urlPath = util.CleanUrlPath(urlPath)
 		fsPath = filepath.Clean(fsPath)
 
-		for url := range maps {
-			if strings.EqualFold(url, urlPath) {
-				delete(maps, url)
+		for existingUrl := range maps {
+			if strings.EqualFold(existingUrl, urlPath) {
+				urlPath = existingUrl
+				break
 			}
 		}
 
