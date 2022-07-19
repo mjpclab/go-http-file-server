@@ -426,13 +426,11 @@ func doParseCli() []*Param {
 
 		// hsts & https
 		if len(param.ListensTLS) > 0 {
-			param.GlobalHsts = result.HasKey("globalhsts")
-			if param.GlobalHsts {
+			if result.HasKey("globalhsts") {
 				param.GlobalHsts = validateHstsPort(param.ListensPlain, param.ListensTLS)
 			}
 
-			param.GlobalHttps = result.HasKey("globalhttps")
-			if param.GlobalHttps {
+			if result.HasKey("globalhttps") {
 				httpsPort, _ := result.GetString("globalhttps")
 				param.HttpsPort, param.GlobalHttps = normalizeHttpsPort(httpsPort, param.ListensTLS)
 			}

@@ -220,6 +220,26 @@ func TestNormalizeHttpsPort(t *testing.T) {
 		t.Error("4")
 	}
 
+	httpsPort, ok = normalizeHttpsPort("", nil)
+	if ok {
+		t.Error("5")
+	}
+
+	httpsPort, ok = normalizeHttpsPort("", []string{})
+	if ok {
+		t.Error("5")
+	}
+
+	httpsPort, ok = normalizeHttpsPort("123", nil)
+	if ok {
+		t.Error("5")
+	}
+
+	httpsPort, ok = normalizeHttpsPort("123", []string{})
+	if ok {
+		t.Error("5")
+	}
+
 	httpsPort, ok = normalizeHttpsPort("", []string{""})
 	if !ok || httpsPort != "" {
 		t.Error("5")

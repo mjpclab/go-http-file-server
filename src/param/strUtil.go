@@ -187,7 +187,7 @@ func normalizeFilenames(inputs []string) []string {
 	return outputs
 }
 
-func validateHstsPort(listensPlain, ListensTLS []string) bool {
+func validateHstsPort(listensPlain, listensTLS []string) bool {
 	var fromOK, toOK bool
 
 	for _, listen := range listensPlain {
@@ -198,7 +198,7 @@ func validateHstsPort(listensPlain, ListensTLS []string) bool {
 		}
 	}
 
-	for _, listen := range ListensTLS {
+	for _, listen := range listensTLS {
 		port := util.ExtractListenPort(listen)
 		if len(port) == 0 || port == "443" {
 			toOK = true
@@ -209,29 +209,23 @@ func validateHstsPort(listensPlain, ListensTLS []string) bool {
 	return fromOK && toOK
 }
 
-func normalizeHttpsPort(httpsPort string, ListensTLS []string) (string, bool) {
+func normalizeHttpsPort(httpsPort string, listensTLS []string) (string, bool) {
 	if len(httpsPort) > 0 {
 		httpsPort = util.ExtractListenPort(httpsPort)
 		if len(httpsPort) == 0 {
 			return "", false
 		}
-	} else if len(ListensTLS) > 0 {
-		httpsPort = util.ExtractListenPort(ListensTLS[0])
+	} else if len(listensTLS) > 0 {
+		httpsPort = util.ExtractListenPort(listensTLS[0])
 	}
 
-	lenHttpsPort := len(httpsPort)
-	httpsColonPort := ":" + httpsPort
-	for _, listen := range ListensTLS {
-		if lenHttpsPort == 0 && len(listen) == 0 {
-			return "", true
-		}
-
+	for _, listen := range listensTLS {
 		port := util.ExtractListenPort(listen)
-		if lenHttpsPort == 0 && len(port) == 0 {
+		if len(httpsPort) == 0 && len(port) == 0 {
 			return "", true
 		}
 		if httpsPort == port {
-			return httpsColonPort, true
+			return ":" + httpsPort, true
 		}
 
 		if httpsPort == "443" && port == "" {
