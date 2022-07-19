@@ -30,6 +30,9 @@ func (transformer pathTransformer) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		urlPathDir = urlPath
 	}
 	r.RequestURI = urlPathDir
+	if len(r.URL.RawQuery) > 0 {
+		r.RequestURI += "?" + r.URL.RawQuery
+	}
 
 	if len(transformer.prefixesAccurate) == 0 && len(transformer.prefixesNoCase) == 0 {
 		r.URL.Path = urlPathDir

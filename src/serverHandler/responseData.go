@@ -291,6 +291,11 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 func (h *handler) getResponseData(r *http.Request) *responseData {
 	var errs []error
 
+	prefixReqPath := r.RequestURI
+	if qsIndex := strings.IndexByte(prefixReqPath, '?'); qsIndex >= 0 {
+		prefixReqPath = prefixReqPath[:qsIndex]
+	}
+
 	rawReqPath := r.URL.Path
 	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 
@@ -332,7 +337,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
-	currDirRelPath := getCurrDirRelPath(rawReqPath, r.RequestURI)
+	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
 	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
 	var rootRelPath string
 	if len(pathEntries) > 0 {
