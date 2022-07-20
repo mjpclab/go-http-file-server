@@ -78,11 +78,7 @@ func TestGetCleanDirFilePath(t *testing.T) {
 func TestIsVirtual(t *testing.T) {
 	var info os.FileInfo
 
-	info = createPlaceholderFileInfoAccurate("foo", true)
-	if !isVirtual(info) {
-		t.Error()
-	}
-	info = createPlaceholderFileInfoNoCase("foo", true)
+	info = createPlaceholderFileInfo("foo", true)
 	if !isVirtual(info) {
 		t.Error()
 	}
@@ -92,11 +88,7 @@ func TestIsVirtual(t *testing.T) {
 		t.Error()
 	}
 
-	info = createRenamedFileInfoAccurate("bar", baseInfo)
-	if !isVirtual(info) {
-		t.Error()
-	}
-	info = createRenamedFileInfoNoCase("bar", baseInfo)
+	info = createRenamedFileInfo("bar", baseInfo)
 	if !isVirtual(info) {
 		t.Error()
 	}

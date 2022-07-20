@@ -2,8 +2,8 @@ package serverHandler
 
 import "testing"
 
-func TestAliasAccurate(t *testing.T) {
-	alias := createAliasAccurate("/hello/world/foo", "/tmp")
+func TestAlias(t *testing.T) {
+	alias := createAlias("/hello/world/foo", "/tmp")
 
 	// isMatch
 	if !alias.isMatch("/hello/world/foo") {
@@ -81,93 +81,88 @@ func TestAliasAccurate(t *testing.T) {
 	}
 }
 
-func TestAliasSubPartAccurate(t *testing.T) {
+func TestAliasNextPartOf(t *testing.T) {
 	var subName string
-	var isLastPart, ok bool
+	var noMore, ok bool
 
-	aliasAccurate := createAliasAccurate("/hello/world/foo", "/tmp")
+	aliasAccurate := createAlias("/hello/world/foo", "/tmp")
 
-	subName, isLastPart, ok = aliasAccurate.subPart("/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/")
 	if !ok {
 		t.Error()
 	}
 	if subName != "hello" {
 		t.Error()
 	}
-	if isLastPart {
+	if noMore {
 		t.Error()
 	}
 
-	_, _, ok = aliasAccurate.subPart("/test")
+	_, _, ok = aliasAccurate.nextPartOf("/test")
 	if ok {
 		t.Error()
 	}
 
-	_, _, ok = aliasAccurate.subPart("/HELLO")
-	if ok {
-		t.Error()
-	}
-
-	subName, isLastPart, ok = aliasAccurate.subPart("/hello")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello")
 	if !ok {
 		t.Error()
 	}
 	if subName != "world" {
 		t.Error()
 	}
-	if isLastPart {
+	if noMore {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = aliasAccurate.subPart("/hello/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/")
 	if !ok {
 		t.Error()
 	}
 	if subName != "world" {
 		t.Error()
 	}
-	if isLastPart {
+	if noMore {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world")
 	if !ok {
 		t.Error()
 	}
 	if subName != "foo" {
 		t.Error()
 	}
-	if !isLastPart {
+	if !noMore {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/")
 	if !ok {
 		t.Error()
 	}
 	if subName != "foo" {
 		t.Error()
 	}
-	if !isLastPart {
+	if !noMore {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/foo")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/foo")
 	if ok {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/foo/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/foo/")
 	if ok {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/foo/bar")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/foo/bar")
 	if ok {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = aliasAccurate.subPart("/hello/world/foo/bar/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/foo/bar/")
 	if ok {
 		t.Error()
 	}

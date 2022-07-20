@@ -71,7 +71,7 @@ func createVirtualFileInfo(name string, refItem os.FileInfo) os.FileInfo {
 
 func isVirtual(info os.FileInfo) bool {
 	switch info.(type) {
-	case placeholderFileInfoAccurate, renamedFileInfoAccurate, placeholderFileInfoNoCase, renamedFileInfoNoCase:
+	case placeholderFileInfo, renamedFileInfo:
 		return true
 	}
 	return false

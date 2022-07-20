@@ -154,13 +154,13 @@ func (h *handler) mergeAlias(
 	}
 
 	for _, alias := range h.aliases {
-		subName, isChildAlias, ok := alias.subPart(rawRequestPath)
+		subName, noMore, ok := alias.nextPartOf(rawRequestPath)
 		if !ok {
 			continue
 		}
 
 		var fsItem os.FileInfo
-		if isChildAlias { // reached second-deepest path of alias
+		if noMore { // reached second-deepest path of alias
 			var err error
 			fsItem, err = os.Stat(alias.fs)
 			if err != nil {
@@ -170,7 +170,7 @@ func (h *handler) mergeAlias(
 
 		matchExisted := false
 		for i, subItem := range subItems {
-			if !alias.namesEqual(subItem.Name(), subName) {
+			if !util.IsPathEqual(subItem.Name(), subName) {
 				continue
 			}
 			matchExisted = true
