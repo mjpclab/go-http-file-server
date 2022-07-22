@@ -1,7 +1,8 @@
 package param
 
 import (
-	"path"
+	"../util"
+	"path/filepath"
 	"testing"
 )
 
@@ -116,11 +117,11 @@ func TestSplitKeyValue(t *testing.T) {
 }
 
 func TestNormalizePathRestrictAccesses(t *testing.T) {
-	results := normalizePathRestrictAccesses([]string{
+	results, _ := normalizePathRestrictAccesses([]string{
 		":/foo:host1:host2",
 		":/foo/:host3:host4",
 		":/bar",
-	}, path.Clean)
+	}, util.NormalizeUrlPath)
 
 	if len(results) != 2 {
 		t.Error()
@@ -136,7 +137,7 @@ func TestNormalizePathRestrictAccesses(t *testing.T) {
 func TestNormalizePathHeadersMap(t *testing.T) {
 	var result map[string][][2]string
 
-	result = normalizePathHeadersMap([]string{
+	result, _ = normalizePathHeadersMap([]string{
 		":/foo:X-header1:X-Value1",
 		":/foo/:X-header2:X-Value2",
 		":/bar:X-header3:X-Value3",
@@ -144,7 +145,7 @@ func TestNormalizePathHeadersMap(t *testing.T) {
 		":baz:",
 		":baz:X-Not-Valid",
 		":baz:X-Not-Valid:",
-	}, path.Clean)
+	}, util.NormalizeUrlPath)
 
 	if len(result) != 2 {
 		t.Error(result)
@@ -170,20 +171,23 @@ func TestNormalizePathHeadersMap(t *testing.T) {
 
 func TestNormalizePathMaps(t *testing.T) {
 	var maps map[string]string
+	var fsPath string
 
-	maps = normalizePathMaps([]string{":/data/lib://usr/lib"})
-	if maps["/data/lib"] != "/usr/lib" {
+	maps, _ = normalizePathMaps([]string{":/data/lib://usr/lib"})
+	fsPath, _ = filepath.Abs("/usr/lib")
+	if maps["/data/lib"] != fsPath {
 		t.Error(maps)
 	}
 
-	maps = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
+	maps, _ = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
 	if len(maps) != 2 {
 		t.Error(maps)
 	}
 	if maps["/data/lib"] != "/usr/lib" {
 		t.Error(maps)
 	}
-	if maps["/foo"] != "bar/baz" {
+	fsPath, _ = filepath.Abs("bar/baz")
+	if maps["/foo"] != fsPath {
 		t.Error(maps)
 	}
 }

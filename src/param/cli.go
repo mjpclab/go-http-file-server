@@ -7,7 +7,6 @@ import (
 	"../version"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -267,6 +266,8 @@ func doParseCli() []*Param {
 	}
 
 	// init param data
+	var err error
+	var errs []error
 	for _, result := range results {
 		param := &Param{}
 
@@ -289,7 +290,8 @@ func doParseCli() []*Param {
 
 		// root
 		root, _ := result.GetString("root")
-		root, _ = util.NormalizeFsPath(root)
+		root, err = util.NormalizeFsPath(root)
+		serverErrHandler.CheckFatal(err)
 		param.Root = root
 
 		// normalize url prefixes
@@ -314,11 +316,13 @@ func doParseCli() []*Param {
 
 		// restrict access urls
 		restrictAccessUrls, _ := result.GetStrings("restrictaccessurls")
-		param.RestrictAccessUrls = normalizePathRestrictAccesses(restrictAccessUrls, util.CleanUrlPath)
+		param.RestrictAccessUrls, errs = normalizePathRestrictAccesses(restrictAccessUrls, util.NormalizeUrlPath)
+		serverErrHandler.CheckFatal(errs...)
 
 		// restrict access dirs
 		restrictAccessDirs, _ := result.GetStrings("restrictaccessdirs")
-		param.RestrictAccessDirs = normalizePathRestrictAccesses(restrictAccessDirs, filepath.Clean)
+		param.RestrictAccessDirs, errs = normalizePathRestrictAccesses(restrictAccessDirs, util.NormalizeFsPath)
+		serverErrHandler.CheckFatal(errs...)
 
 		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")
@@ -326,25 +330,25 @@ func doParseCli() []*Param {
 
 		// headers urls
 		arrHeadersUrls, _ := result.GetStrings("headersurls")
-		param.HeadersUrls = normalizePathHeadersMap(arrHeadersUrls, util.CleanUrlPath)
+		param.HeadersUrls, errs = normalizePathHeadersMap(arrHeadersUrls, util.NormalizeUrlPath)
+		serverErrHandler.CheckFatal(errs...)
 
 		// headers dirs
 		arrHeadersDirs, _ := result.GetStrings("headersdirs")
-		param.HeadersDirs = normalizePathHeadersMap(arrHeadersDirs, filepath.Clean)
+		param.HeadersDirs, errs = normalizePathHeadersMap(arrHeadersDirs, util.NormalizeFsPath)
+		serverErrHandler.CheckFatal(errs...)
 
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
 		certs, errs := LoadCertificates(certFiles, keyFiles)
-		if len(errs) > 0 {
-			serverErrHandler.CheckFatal(errs...)
-		} else {
-			param.Certificates = certs
-		}
+		serverErrHandler.CheckFatal(errs...)
+		param.Certificates = certs
 
 		// normalize aliases
 		arrAlias, _ := result.GetStrings("aliases")
-		param.Aliases = normalizePathMaps(arrAlias)
+		param.Aliases, errs = normalizePathMaps(arrAlias)
+		serverErrHandler.CheckFatal(errs...)
 
 		// normalize upload urls
 		arrUploadUrls, _ := result.GetStrings("uploadurls")
