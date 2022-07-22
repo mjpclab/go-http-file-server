@@ -15,14 +15,20 @@ type Param struct {
 	Root      string
 	EmptyRoot bool
 
-	PrefixUrls []string
-	BaseUrls   []string
+	PrefixUrls    []string
+	ForceDirSlash int
 
-	DefaultSort   string
-	DirIndexes    []string
-	Aliases       map[string]string
-	Binds         map[string]string
+	DefaultSort string
+	DirIndexes  []string
+	Aliases     map[string]string
+
+	GlobalRestrictAccess []string
+	RestrictAccessUrls   map[string][]string
+	RestrictAccessDirs   map[string][]string
+
 	GlobalHeaders [][2]string
+	HeadersUrls   map[string][][2]string
+	HeadersDirs   map[string][][2]string
 
 	GlobalUpload bool
 	UploadUrls   []string
@@ -80,8 +86,7 @@ type Param struct {
 
 func normalize(p *Param) {
 	_, hasRootAlias := p.Aliases["/"]
-	_, hasRootBind := p.Binds["/"]
-	if hasRootAlias || hasRootBind {
+	if hasRootAlias {
 		p.EmptyRoot = false
 	} else if p.EmptyRoot {
 		p.Root = os.DevNull

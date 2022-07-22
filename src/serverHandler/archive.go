@@ -17,9 +17,8 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 	}
 
 	name := info.Name()
-	isNameEqual := getIsNameEqualFunc(info)
 	for _, selName := range selections {
-		if isNameEqual(selName, name) {
+		if util.IsPathEqual(selName, name) {
 			matchName = true
 			continue
 		}
@@ -30,7 +29,7 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 		}
 
 		selNamePart1 := selName[:slashIndex]
-		if isNameEqual(selNamePart1, name) {
+		if util.IsPathEqual(selNamePart1, name) {
 			childSel := selName[slashIndex+1:]
 			if len(childSel) > 0 {
 				matchPrefix = true
@@ -112,7 +111,7 @@ func (h *handler) visitTreeNode(
 			childRelPath := relPath + childPath
 
 			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
-				h.visitTreeNode(childAlias.fsPath(), childRawReqPath, childRelPath, true, childChildSelections, archiveCallback)
+				h.visitTreeNode(childAlias.fs, childRawReqPath, childRelPath, true, childChildSelections, archiveCallback)
 			} else {
 				h.visitTreeNode(childFsPath, childRawReqPath, childRelPath, statNode, childChildSelections, archiveCallback)
 			}

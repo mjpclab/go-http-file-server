@@ -1,32 +1,99 @@
 package param
 
-import "testing"
+import (
+	"../util"
+	"path/filepath"
+	"testing"
+)
 
-func TestSplitMapping(t *testing.T) {
+func expectStrings(actuals []string, expects ...string) bool {
+	if len(actuals) != len(expects) {
+		return false
+	}
+
+	for i := range actuals {
+		if actuals[i] != expects[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func TestSplitKeyValues(t *testing.T) {
+	var key string
+	var values []string
+	var ok bool
+
+	key, values, ok = splitKeyValues("")
+	if ok {
+		t.Error()
+	}
+
+	key, values, ok = splitKeyValues(":")
+	if ok {
+		t.Error()
+	}
+
+	key, values, ok = splitKeyValues(":abc")
+	if !ok {
+		t.Error()
+	}
+	if key != "abc" {
+		t.Error(key)
+	}
+	if len(values) != 0 {
+		t.Error(values)
+	}
+
+	key, values, ok = splitKeyValues(":foo:")
+	if !ok {
+		t.Error()
+	}
+	if key != "foo" {
+		t.Error(key)
+	}
+	if len(values) != 0 {
+		t.Errorf("%#v\n", values)
+	}
+
+	key, values, ok = splitKeyValues(":foo:lorem:ipsum")
+	if !ok {
+		t.Error()
+	}
+	if key != "foo" {
+		t.Error(key)
+	}
+	if !expectStrings(values, "lorem", "ipsum") {
+		t.Error(values)
+	}
+}
+
+func TestSplitKeyValue(t *testing.T) {
 	var k, v string
 	var ok bool
 
-	k, v, ok = splitMapping("")
+	_, _, k, v, ok = splitKeyValue("")
 	if ok {
 		t.Error("empty string should not OK")
 	}
 
-	k, v, ok = splitMapping(":")
+	_, _, k, v, ok = splitKeyValue(":")
 	if ok {
 		t.Error("separator-only string should not OK")
 	}
 
-	k, v, ok = splitMapping("::world")
+	_, _, k, v, ok = splitKeyValue("::world")
 	if ok {
 		t.Error("empty key should not OK")
 	}
 
-	k, v, ok = splitMapping(":hello:")
+	_, _, k, v, ok = splitKeyValue(":hello:")
 	if ok {
 		t.Error("empty value should not OK")
 	}
 
-	k, v, ok = splitMapping(":key:value")
+	_, _, k, v, ok = splitKeyValue(":key:value")
 	if !ok {
 		t.Fail()
 	}
@@ -36,40 +103,91 @@ func TestSplitMapping(t *testing.T) {
 	if v != "value" {
 		t.Fail()
 	}
+
+	_, _, k, v, ok = splitKeyValue("@KEY@VALUE")
+	if !ok {
+		t.Fail()
+	}
+	if k != "KEY" {
+		t.Fail()
+	}
+	if v != "VALUE" {
+		t.Fail()
+	}
+}
+
+func TestNormalizePathRestrictAccesses(t *testing.T) {
+	results, _ := normalizePathRestrictAccesses([]string{
+		":/foo:host1:host2",
+		":/foo/:host3:host4",
+		":/bar",
+	}, util.NormalizeUrlPath)
+
+	if len(results) != 2 {
+		t.Error()
+	}
+	if !expectStrings(results["/foo"], "host1", "host2", "host3", "host4") {
+		t.Error()
+	}
+	if len(results["/bar"]) != 0 {
+		t.Error()
+	}
+}
+
+func TestNormalizePathHeadersMap(t *testing.T) {
+	var result map[string][][2]string
+
+	result, _ = normalizePathHeadersMap([]string{
+		":/foo:X-header1:X-Value1",
+		":/foo/:X-header2:X-Value2",
+		":/bar:X-header3:X-Value3",
+		":baz",
+		":baz:",
+		":baz:X-Not-Valid",
+		":baz:X-Not-Valid:",
+	}, util.NormalizeUrlPath)
+
+	if len(result) != 2 {
+		t.Error(result)
+	}
+
+	if len(result["/foo"]) != 2 {
+		t.Error(result["/foo"])
+	}
+	if result["/foo"][0][0] != "X-header1" || result["/foo"][0][1] != "X-Value1" {
+		t.Error(result["/foo"][0])
+	}
+	if result["/foo"][1][0] != "X-header2" || result["/foo"][1][1] != "X-Value2" {
+		t.Error(result["/foo"][0])
+	}
+
+	if len(result["/bar"]) != 1 {
+		t.Error(result["/foo"])
+	}
+	if result["/bar"][0][0] != "X-header3" || result["/bar"][0][1] != "X-Value3" {
+		t.Error(result["/foo"][0])
+	}
 }
 
 func TestNormalizePathMaps(t *testing.T) {
 	var maps map[string]string
+	var fsPath string
 
-	maps = normalizePathMaps([]string{":/data/lib://usr/lib"})
-	if maps["/data/lib"] != "/usr/lib" {
+	maps, _ = normalizePathMaps([]string{":/data/lib://usr/lib"})
+	fsPath, _ = filepath.Abs("/usr/lib")
+	if maps["/data/lib"] != fsPath {
 		t.Error(maps)
 	}
 
-	maps = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
+	maps, _ = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
 	if len(maps) != 2 {
 		t.Error(maps)
 	}
 	if maps["/data/lib"] != "/usr/lib" {
 		t.Error(maps)
 	}
-	if maps["/foo"] != "bar/baz" {
-		t.Error(maps)
-	}
-}
-
-func TestNormalizePathMapsNoCase(t *testing.T) {
-	var maps map[string]string
-	maps = normalizePathMapsNoCase([]string{":/data/lib://usr/lib"})
-	if maps["/data/lib"] != "/usr/lib" {
-		t.Error(maps)
-	}
-
-	maps = normalizePathMapsNoCase([]string{":/data/lib://usr/lib", "#/Data/Lib#/tmp/"})
-	if len(maps) != 1 {
-		t.Error(maps)
-	}
-	if maps["/Data/Lib"] != "/tmp" {
+	fsPath, _ = filepath.Abs("bar/baz")
+	if maps["/foo"] != fsPath {
 		t.Error(maps)
 	}
 }
@@ -104,6 +222,26 @@ func TestNormalizeHttpsPort(t *testing.T) {
 	httpsPort, ok = normalizeHttpsPort(":456", []string{":456"})
 	if !ok || httpsPort != ":456" {
 		t.Error("4")
+	}
+
+	httpsPort, ok = normalizeHttpsPort("", nil)
+	if ok {
+		t.Error("5")
+	}
+
+	httpsPort, ok = normalizeHttpsPort("", []string{})
+	if ok {
+		t.Error("5")
+	}
+
+	httpsPort, ok = normalizeHttpsPort("123", nil)
+	if ok {
+		t.Error("5")
+	}
+
+	httpsPort, ok = normalizeHttpsPort("123", []string{})
+	if ok {
+		t.Error("5")
 	}
 
 	httpsPort, ok = normalizeHttpsPort("", []string{""})

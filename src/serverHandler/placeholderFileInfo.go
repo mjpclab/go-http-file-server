@@ -39,11 +39,3 @@ func (info placeholderFileInfo) Sys() interface{} {
 func createPlaceholderFileInfo(name string, isDir bool) placeholderFileInfo {
 	return placeholderFileInfo{name, isDir}
 }
-
-type placeholderFileInfoNoCase struct {
-	placeholderFileInfo
-}
-
-func createPlaceholderFileInfoNoCase(name string, isDir bool) placeholderFileInfoNoCase {
-	return placeholderFileInfoNoCase{placeholderFileInfo{name, isDir}}
-}

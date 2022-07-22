@@ -88,6 +88,16 @@
 		if (!input) {
 			return;
 		}
+
+		var trim = String.prototype.trim ? function (input) {
+			return input.trim();
+		} : function () {
+			var reEdgeSpaces = /^\s+|\s+$/g
+			return function (input) {
+				return input.replace(reEdgeSpaces, '');
+			}
+		}();
+
 		var clear = filter.querySelector('button');
 
 		var selectorNone = '.' + classNone;
@@ -100,7 +110,7 @@
 		var timeoutId;
 		var lastFilterText = '';
 		var doFilter = function () {
-			var filterText = input.value.trim().toLowerCase();
+			var filterText = trim(input.value).toLowerCase();
 			if (filterText === lastFilterText) {
 				return;
 			}

@@ -25,12 +25,17 @@ type itemHtml struct {
 }
 
 type responseData struct {
+	prefixReqPath  string
 	rawReqPath     string
 	handlerReqPath string
 
 	NeedAuth     bool
 	AuthUserName string
 	AuthSuccess  bool
+
+	AllowAccess bool
+
+	Headers [][2]string
 
 	IsDownload bool
 	IsUpload   bool
@@ -63,6 +68,8 @@ type responseData struct {
 	SubItemPrefix string
 	SortState     SortState
 	Context       *pathContext
+
+	NeedDirSlashRedirect bool
 
 	Lang  string
 	Trans *i18n.Translation
@@ -147,16 +154,15 @@ func (h *handler) mergeAlias(
 	}
 
 	for _, alias := range h.aliases {
-		subName, isChildAlias, ok := getAliasSubPart(alias, rawRequestPath)
+		subName, noMore, ok := alias.nextPartOf(rawRequestPath)
 		if !ok {
 			continue
 		}
-		aliasCaseSensitive := alias.caseSensitive()
 
 		var fsItem os.FileInfo
-		if isChildAlias { // reached second-deepest path of alias
+		if noMore { // reached second-deepest path of alias
 			var err error
-			fsItem, err = os.Stat(alias.fsPath())
+			fsItem, err = os.Stat(alias.fs)
 			if err != nil {
 				errs = append(errs, err)
 			}
@@ -164,24 +170,22 @@ func (h *handler) mergeAlias(
 
 		matchExisted := false
 		for i, subItem := range subItems {
-			if !alias.namesEqual(subItem.Name(), subName) {
+			if !util.IsPathEqual(subItem.Name(), subName) {
 				continue
 			}
 			matchExisted = true
 			if isVirtual(subItem) {
 				continue
 			}
-			aliasSubItem := createVirtualFileInfo(subItem.Name(), fsItem, aliasCaseSensitive)
+			aliasSubItem := createVirtualFileInfo(subItem.Name(), fsItem)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems[i] = aliasSubItem
-			if aliasCaseSensitive {
-				break
-			}
+			break
 		}
 
 		if !matchExisted {
 			// fsItem could be nil
-			aliasSubItem := createVirtualFileInfo(subName, fsItem, aliasCaseSensitive)
+			aliasSubItem := createVirtualFileInfo(subName, fsItem)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
 			subItems = append(subItems, aliasSubItem)
 		}
@@ -190,9 +194,9 @@ func (h *handler) mergeAlias(
 	return subItems, aliasSubItems, errs
 }
 
-func getCurrDirRelPath(reqPath, rawReqPath string) string {
-	if len(reqPath) == 1 && len(rawReqPath) > 1 && rawReqPath[len(rawReqPath)-1] != '/' {
-		return "./" + path.Base(rawReqPath) + "/"
+func getCurrDirRelPath(reqPath, prefixReqPath string) string {
+	if len(reqPath) == 1 && len(prefixReqPath) > 1 && prefixReqPath[len(prefixReqPath)-1] != '/' {
+		return "./" + path.Base(prefixReqPath) + "/"
 	} else {
 		return "./"
 	}
@@ -239,7 +243,7 @@ func (h *handler) statIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo
 			if !alias.isMatch(path.Clean(rawReqPath + "/" + index)) {
 				continue
 			}
-			file, item, err = stat(alias.fsPath(), true)
+			file, item, err = stat(alias.fs, true)
 			if err != nil && file != nil {
 				file.Close()
 			}
@@ -290,6 +294,7 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 func (h *handler) getResponseData(r *http.Request) *responseData {
 	var errs []error
 
+	prefixReqPath := r.URL.RawPath
 	rawReqPath := r.URL.Path
 	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 
@@ -306,6 +311,8 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 			errs = append(errs, _authErr)
 		}
 	}
+
+	headers := h.getHeaders(rawReqPath, reqFsPath, authSuccess)
 
 	rawQuery := r.URL.RawQuery
 	isDownload := false
@@ -331,7 +338,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
-	currDirRelPath := getCurrDirRelPath(rawReqPath, r.URL.RawPath)
+	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
 	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
 	var rootRelPath string
 	if len(pathEntries) > 0 {
@@ -346,7 +353,9 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		status = getStatusByErr(_statErr)
 	}
 
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess)
+	needDirSlashRedirect := h.forceDirSlash > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' && !shouldServeAsContent(file, item)
+
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess && !needDirSlashRedirect)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -360,15 +369,17 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		}
 	}
 
+	allowAccess := h.isAllowAccess(r, rawReqPath, reqFsPath, file, item)
+
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && !needDirSlashRedirect && allowAccess && needResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, authSuccess)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, authSuccess && !needDirSlashRedirect && allowAccess)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -402,12 +413,17 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 	}
 
 	return &responseData{
+		prefixReqPath:  prefixReqPath,
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 
 		NeedAuth:     needAuth,
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
+
+		AllowAccess: allowAccess,
+
+		Headers: headers,
 
 		IsDownload: isDownload,
 		IsUpload:   isUpload,
@@ -440,5 +456,7 @@ func (h *handler) getResponseData(r *http.Request) *responseData {
 		SubItemPrefix: subItemPrefix,
 		SortState:     sortState,
 		Context:       context,
+
+		NeedDirSlashRedirect: needDirSlashRedirect,
 	}
 }

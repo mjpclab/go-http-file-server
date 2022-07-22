@@ -72,3 +72,36 @@ func TestExtractListenPort(t *testing.T) {
 		t.Error(1)
 	}
 }
+
+func TestExtractHostFromUrl(t *testing.T) {
+	if ExtractHostFromUrl("/") != "" {
+		t.Error()
+	}
+	if ExtractHostFromUrl("http://") != "" {
+		t.Error()
+	}
+
+	if ExtractHostFromUrl("abcde") != "abcde" {
+		t.Error()
+	}
+
+	if ExtractHostFromUrl("https://abcde") != "abcde" {
+		t.Error()
+	}
+
+	if ExtractHostFromUrl("https://abcde/") != "abcde" {
+		t.Error()
+	}
+
+	if ExtractHostFromUrl("abcde/sub/dir") != "abcde" {
+		t.Error()
+	}
+
+	if ExtractHostFromUrl("http://abcde/sub/dir") != "abcde" {
+		t.Error()
+	}
+
+	if ExtractHostFromUrl("http://ABCDE:8080/sub/dir") != "abcde:8080" {
+		t.Error()
+	}
+}

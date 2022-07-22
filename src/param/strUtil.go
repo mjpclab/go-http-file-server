@@ -3,12 +3,38 @@ package param
 import (
 	"../util"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
 
-func splitMapping(input string) (k, v string, ok bool) {
+func splitKeyValues(input string) (key string, values []string, ok bool) {
 	sep, sepLen := utf8.DecodeRuneInString(input)
+	if sepLen == 0 {
+		return
+	}
+	entry := input[sepLen:]
+	if len(entry) == 0 {
+		return
+	}
+
+	sepIndex := strings.IndexRune(entry, sep)
+	if sepIndex == 0 { // no key
+		return
+	} else if sepIndex > 0 {
+		key = entry[:sepIndex]
+		values = strings.FieldsFunc(entry[sepIndex+sepLen:], func(r rune) bool {
+			return r == sep
+		})
+	} else { // only key
+		key = entry
+	}
+
+	return key, values, true
+}
+
+func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
+	sep, sepLen = utf8.DecodeRuneInString(input)
 	if sepLen == 0 {
 		return
 	}
@@ -24,48 +50,103 @@ func splitMapping(input string) (k, v string, ok bool) {
 
 	k = entry[:sepIndex]
 	v = entry[sepIndex+sepLen:]
-	return k, v, true
+	return sep, sepLen, k, v, true
 }
 
-func normalizePathMaps(inputs []string) map[string]string {
-	maps := make(map[string]string, len(inputs))
+func normalizePathRestrictAccesses(
+	inputs []string,
+	normalizePath func(string) (string, error),
+) (maps map[string][]string, errs []error) {
+	maps = make(map[string][]string, len(inputs))
 
-	for _, input := range inputs {
-		urlPath, fsPath, ok := splitMapping(input)
+	for i := range inputs {
+		reqPath, hosts, ok := splitKeyValues(inputs[i])
 		if !ok {
 			continue
 		}
 
-		urlPath = util.CleanUrlPath(urlPath)
-		fsPath = filepath.Clean(fsPath)
-		maps[urlPath] = fsPath
+		normalizedPath, err := normalizePath(reqPath)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		normalizedHosts := util.ExtractHostsFromUrls(hosts)
+
+		for existingPath := range maps {
+			if util.IsPathEqual(existingPath, normalizedPath) {
+				normalizedPath = existingPath
+				break
+			}
+		}
+
+		maps[normalizedPath] = append(maps[normalizedPath], normalizedHosts...)
 	}
 
-	return maps
+	return
 }
 
-func normalizePathMapsNoCase(inputs []string) map[string]string {
-	maps := make(map[string]string, len(inputs))
+func normalizePathHeadersMap(
+	inputs []string,
+	normalizePath func(string) (string, error),
+) (maps map[string][][2]string, errs []error) {
+	maps = make(map[string][][2]string, len(inputs))
 
 	for _, input := range inputs {
-		urlPath, fsPath, ok := splitMapping(input)
+		sep, sepLen, reqPath, header, ok := splitKeyValue(input)
+		if !ok {
+			continue
+		}
+		sepIndex := strings.IndexRune(header, sep)
+		if sepIndex <= 0 || sepIndex+sepLen == len(header) {
+			continue
+		}
+
+		normalizedPath, err := normalizePath(reqPath)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		headerName := header[:sepIndex]
+		headerValue := header[sepIndex+1:]
+
+		for existingPath := range maps {
+			if util.IsPathEqual(existingPath, normalizedPath) {
+				normalizedPath = existingPath
+				break
+			}
+		}
+
+		maps[normalizedPath] = append(maps[normalizedPath], [2]string{headerName, headerValue})
+	}
+
+	return
+}
+
+func normalizePathMaps(inputs []string) (maps map[string]string, errs []error) {
+	maps = make(map[string]string, len(inputs))
+	var err error
+
+	for _, input := range inputs {
+		_, _, urlPath, fsPath, ok := splitKeyValue(input)
 		if !ok {
 			continue
 		}
 
 		urlPath = util.CleanUrlPath(urlPath)
-		fsPath = filepath.Clean(fsPath)
+		fsPath, err = util.NormalizeFsPath(fsPath)
+		if err != nil {
+			errs = append(errs, err)
+		}
 
-		for url := range maps {
-			if strings.EqualFold(url, urlPath) {
-				delete(maps, url)
+		for existingUrl := range maps {
+			if util.IsPathEqual(existingUrl, urlPath) {
+				urlPath = existingUrl
+				break
 			}
 		}
 
 		maps[urlPath] = fsPath
 	}
 
-	return maps
+	return
 }
 
 func normalizeUrlPaths(inputs []string) []string {
@@ -122,7 +203,7 @@ func normalizeFilenames(inputs []string) []string {
 	return outputs
 }
 
-func validateHstsPort(listensPlain, ListensTLS []string) bool {
+func validateHstsPort(listensPlain, listensTLS []string) bool {
 	var fromOK, toOK bool
 
 	for _, listen := range listensPlain {
@@ -133,7 +214,7 @@ func validateHstsPort(listensPlain, ListensTLS []string) bool {
 		}
 	}
 
-	for _, listen := range ListensTLS {
+	for _, listen := range listensTLS {
 		port := util.ExtractListenPort(listen)
 		if len(port) == 0 || port == "443" {
 			toOK = true
@@ -144,29 +225,23 @@ func validateHstsPort(listensPlain, ListensTLS []string) bool {
 	return fromOK && toOK
 }
 
-func normalizeHttpsPort(httpsPort string, ListensTLS []string) (string, bool) {
+func normalizeHttpsPort(httpsPort string, listensTLS []string) (string, bool) {
 	if len(httpsPort) > 0 {
 		httpsPort = util.ExtractListenPort(httpsPort)
 		if len(httpsPort) == 0 {
 			return "", false
 		}
-	} else if len(ListensTLS) > 0 {
-		httpsPort = util.ExtractListenPort(ListensTLS[0])
+	} else if len(listensTLS) > 0 {
+		httpsPort = util.ExtractListenPort(listensTLS[0])
 	}
 
-	lenHttpsPort := len(httpsPort)
-	httpsColonPort := ":" + httpsPort
-	for _, listen := range ListensTLS {
-		if lenHttpsPort == 0 && len(listen) == 0 {
-			return "", true
-		}
-
+	for _, listen := range listensTLS {
 		port := util.ExtractListenPort(listen)
-		if lenHttpsPort == 0 && len(port) == 0 {
+		if len(httpsPort) == 0 && len(port) == 0 {
 			return "", true
 		}
 		if httpsPort == port {
-			return httpsColonPort, true
+			return ":" + httpsPort, true
 		}
 
 		if httpsPort == "443" && port == "" {
@@ -175,4 +250,12 @@ func normalizeHttpsPort(httpsPort string, ListensTLS []string) (string, bool) {
 	}
 
 	return "", false
+}
+
+func normalizeRedirectCode(input string) int {
+	code, _ := strconv.Atoi(input)
+	if code <= 300 || code > 399 {
+		return 301
+	}
+	return code
 }

@@ -84,16 +84,4 @@ func TestGetMatchInfo(t *testing.T) {
 	if !expect(false, true, "dir-a1", "dir-a2", "dir-a1/dir-a11") {
 		t.Error(matchName, matchPrefix, childList)
 	}
-
-	info = createPlaceholderFileInfoNoCase("dir-a", true)
-	matchName, matchPrefix, childList = matchSelection(info, []string{"Dir-a/dir-a1"})
-	if !expect(false, true, "dir-a1") {
-		t.Error(matchName, matchPrefix, childList)
-	}
-
-	info = createPlaceholderFileInfoNoCase("dir-a", true)
-	matchName, matchPrefix, childList = matchSelection(info, []string{"Dir-a/dir-a1", "dir-a/dir-a2", "dir-a/dir-a1/dir-a11", "dir-b"})
-	if !expect(false, true, "dir-a1", "dir-a2", "dir-a1/dir-a11") {
-		t.Error(matchName, matchPrefix, childList)
-	}
 }

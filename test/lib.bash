@@ -14,23 +14,39 @@ fail() {
 }
 
 curl_head_status() {
-	url="$1"
-	curl -s -k -I "$url" | head -n 1 | cut -d ' ' -f 2
+	args=($@)
+	urlindex=$[ ${#args[@]} - 1 ]
+	opts="${args[@]:0:urlindex}"
+	url="${args[urlindex]}"
+
+	curl -s -k -I $opts "$url" | head -n 1 | cut -d ' ' -f 2
 }
 
 curl_get_status() {
-	url="$1"
-	curl -s -k -i "$url" | head -n 1 | cut -d ' ' -f 2
+	args=($@)
+	urlindex=$[ ${#args[@]} - 1 ]
+	opts="${args[@]:0:urlindex}"
+	url="${args[urlindex]}"
+
+	curl -s -k -i $opts "$url" | head -n 1 | cut -d ' ' -f 2
 }
 
 curl_get_header() {
-	url="$1"
-	curl -s -k -i "$url" | sed -e '/^$/q'
+	args=($@)
+	urlindex=$[ ${#args[@]} - 1 ]
+	opts="${args[@]:0:urlindex}"
+	url="${args[urlindex]}"
+
+	curl -s -k -i $opts "$url" | sed -e '/^$/q'
 }
 
 curl_get_body() {
-	url="$1"
-	curl -s -k "$url"
+	args=($@)
+	urlindex=$[ ${#args[@]} - 1 ]
+	opts="${args[@]:0:urlindex}"
+	url="${args[urlindex]}"
+
+	curl -s -k $opts "$url"
 }
 
 curl_upload_content() {

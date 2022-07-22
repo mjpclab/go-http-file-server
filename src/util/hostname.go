@@ -42,3 +42,35 @@ func ExtractListenPort(listen string) string {
 
 	return ""
 }
+
+const protoSuffix string = "://"
+const protoSuffixLen = len(protoSuffix)
+
+func ExtractHostFromUrl(url string) string {
+	protoIndex := strings.Index(url, protoSuffix)
+	if protoIndex >= 0 {
+		url = url[protoIndex+protoSuffixLen:]
+	}
+
+	slashIndex := strings.IndexByte(url, '/')
+	if slashIndex >= 0 {
+		url = url[:slashIndex]
+	}
+
+	url = strings.ToLower(url)
+
+	return url
+}
+
+func ExtractHostsFromUrls(urls []string) []string {
+	hosts := make([]string, 0, len(urls))
+
+	for i := range urls {
+		host := ExtractHostFromUrl(urls[i])
+		if len(host) > 0 {
+			hosts = append(hosts, host)
+		}
+	}
+
+	return hosts
+}

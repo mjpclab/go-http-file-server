@@ -2,222 +2,167 @@ package serverHandler
 
 import "testing"
 
-func TestGetAliasSubPartAccurate(t *testing.T) {
-	var subName string
-	var isLastPart, ok bool
+func TestAlias(t *testing.T) {
+	alias := createAlias("/hello/world/foo", "/tmp")
 
-	aliasAccurate := createAliasAccurate("/hello/world/foo", "/tmp")
-
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/")
-	if !ok {
-		t.Error()
-	}
-	if subName != "hello" {
-		t.Error()
-	}
-	if isLastPart {
+	// isMatch
+	if !alias.isMatch("/hello/world/foo") {
 		t.Error()
 	}
 
-	_, _, ok = getAliasSubPart(aliasAccurate, "/test")
-	if ok {
+	if alias.isMatch("/Hello/world/foo") {
 		t.Error()
 	}
 
-	_, _, ok = getAliasSubPart(aliasAccurate, "/HELLO")
-	if ok {
+	// isSuccessorOf
+	if !alias.isSuccessorOf("/") {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/hello")
-	if !ok {
-		t.Error()
-	}
-	if subName != "world" {
-		t.Error()
-	}
-	if isLastPart {
+	if !alias.isSuccessorOf("/hello") {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/hello/")
-	if !ok {
-		t.Error()
-	}
-	if subName != "world" {
-		t.Error()
-	}
-	if isLastPart {
+	if !alias.isSuccessorOf("/hello/") {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/hello/world")
-	if !ok {
-		t.Error()
-	}
-	if subName != "foo" {
-		t.Error()
-	}
-	if !isLastPart {
+	if !alias.isSuccessorOf("/hello/world") {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/hello/world/")
-	if !ok {
-		t.Error()
-	}
-	if subName != "foo" {
-		t.Error()
-	}
-	if !isLastPart {
+	if !alias.isSuccessorOf("/hello/world/") {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/hello/world/foo")
-	if ok {
+	if alias.isSuccessorOf("/HELLO/world/") {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/hello/world/foo/")
-	if ok {
+	if alias.isSuccessorOf("/hello/world/foo") {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/hello/world/foo/bar")
-	if ok {
+	if alias.isSuccessorOf("/hello/world/foo/") {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasAccurate, "/hello/world/foo/bar/")
-	if ok {
+	if alias.isSuccessorOf("/hello/world/foo/bar") {
+		t.Error()
+	}
+
+	if alias.isSuccessorOf("/hello/world/foo/bar/") {
+		t.Error()
+	}
+
+	if alias.isSuccessorOf("/hi") {
+		t.Error()
+	}
+
+	if alias.isSuccessorOf("/hi/") {
+		t.Error()
+	}
+
+	if alias.isSuccessorOf("/hi/there") {
+		t.Error()
+	}
+
+	// isPredecessorOf
+	if !alias.isPredecessorOf("/hello/world/foo/bar") {
+		t.Error()
+	}
+
+	if !alias.isPredecessorOf("/hello/world/foo/bar/") {
+		t.Error()
+	}
+
+	if alias.isPredecessorOf("/hi/world/foo/bar") {
 		t.Error()
 	}
 }
 
-func TestGetAliasSubPartNoCase(t *testing.T) {
+func TestAliasNextPartOf(t *testing.T) {
 	var subName string
-	var isLastPart, ok bool
+	var noMore, ok bool
 
-	aliasNoCase := createAliasNoCase("/hello/world/foo", "/tmp")
+	aliasAccurate := createAlias("/hello/world/foo", "/tmp")
 
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/")
 	if !ok {
 		t.Error()
 	}
 	if subName != "hello" {
 		t.Error()
 	}
-	if isLastPart {
+	if noMore {
 		t.Error()
 	}
 
-	_, _, ok = getAliasSubPart(aliasNoCase, "/test")
+	_, _, ok = aliasAccurate.nextPartOf("/test")
 	if ok {
 		t.Error()
 	}
 
-	_, _, ok = getAliasSubPart(aliasNoCase, "/Test")
-	if ok {
-		t.Error()
-	}
-
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/HELLO")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello")
 	if !ok {
 		t.Error()
 	}
 	if subName != "world" {
 		t.Error()
 	}
-	if isLastPart {
+	if noMore {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/")
 	if !ok {
 		t.Error()
 	}
 	if subName != "world" {
 		t.Error()
 	}
-	if isLastPart {
+	if noMore {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello/")
-	if !ok {
-		t.Error()
-	}
-	if subName != "world" {
-		t.Error()
-	}
-	if isLastPart {
-		t.Error()
-	}
-
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/HELLO/")
-	if !ok {
-		t.Error()
-	}
-	if subName != "world" {
-		t.Error()
-	}
-	if isLastPart {
-		t.Error()
-	}
-
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello/world")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world")
 	if !ok {
 		t.Error()
 	}
 	if subName != "foo" {
 		t.Error()
 	}
-	if !isLastPart {
+	if !noMore {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/Hello/World/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/")
 	if !ok {
 		t.Error()
 	}
 	if subName != "foo" {
 		t.Error()
 	}
-	if !isLastPart {
+	if !noMore {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello/world/foo")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/foo")
 	if ok {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/Hello/world/foo")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/foo/")
 	if ok {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello/world/foo/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/foo/bar")
 	if ok {
 		t.Error()
 	}
 
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello/World/foo/")
-	if ok {
-		t.Error()
-	}
-
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello/world/foo/bar")
-	if ok {
-		t.Error()
-	}
-
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello/World/foo/bar")
-	if ok {
-		t.Error()
-	}
-
-	subName, isLastPart, ok = getAliasSubPart(aliasNoCase, "/hello/World/Foo/Bar/")
+	subName, noMore, ok = aliasAccurate.nextPartOf("/hello/world/foo/bar/")
 	if ok {
 		t.Error()
 	}

@@ -36,9 +36,7 @@ func (h *handler) https(w http.ResponseWriter, r *http.Request) (needRedirect bo
 		targetPort = h.httpsPort
 	}
 
-	targetHost := hostname + targetPort
-
-	location := "https://" + targetHost + r.RequestURI
+	location := "https://" + hostname + targetPort + r.RequestURI
 	http.Redirect(w, r, location, http.StatusMovedPermanently)
 	return true
 }
