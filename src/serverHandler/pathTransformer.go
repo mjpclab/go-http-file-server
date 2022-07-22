@@ -6,9 +6,8 @@ import (
 )
 
 type pathTransformer struct {
-	prefixesAccurate []string
-	prefixesNoCase   []string
-	nextHandler      http.Handler
+	prefixes    []string
+	nextHandler http.Handler
 }
 
 func stripUrlPrefix(urlPathDir, urlPath, prefix string) string {
@@ -34,23 +33,14 @@ func (transformer pathTransformer) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		r.RequestURI += "?" + r.URL.RawQuery
 	}
 
-	if len(transformer.prefixesAccurate) == 0 && len(transformer.prefixesNoCase) == 0 {
+	if len(transformer.prefixes) == 0 {
 		r.URL.Path = urlPathDir
 		transformer.nextHandler.ServeHTTP(w, r)
 		return
 	}
 
-	for _, prefix := range transformer.prefixesAccurate {
+	for _, prefix := range transformer.prefixes {
 		if !util.HasUrlPrefixDir(urlPath, prefix) {
-			continue
-		}
-		r.URL.Path = stripUrlPrefix(urlPathDir, urlPath, prefix)
-		transformer.nextHandler.ServeHTTP(w, r)
-		return
-	}
-
-	for _, prefix := range transformer.prefixesNoCase {
-		if !util.HasUrlPrefixDirNoCase(urlPath, prefix) {
 			continue
 		}
 		r.URL.Path = stripUrlPrefix(urlPathDir, urlPath, prefix)
@@ -61,6 +51,6 @@ func (transformer pathTransformer) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	defaultHandler.ServeHTTP(w, r)
 }
 
-func NewPathTransformer(prefixesAccurate, prefixesNoCase []string, handler http.Handler) http.Handler {
-	return pathTransformer{prefixesAccurate, prefixesNoCase, handler}
+func NewPathTransformer(prefixes []string, handler http.Handler) http.Handler {
+	return pathTransformer{prefixes, handler}
 }

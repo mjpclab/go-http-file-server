@@ -6,7 +6,7 @@ cleanup() {
 
 source "$root"/lib.bash
 
-"$ghfs" -l 3003 -r "$fs"/uploaded --upload /1 --upload-dir "$fs"/uploaded/2 --mkdir /2 2>/dev/null &
+"$ghfs" -l 3003 -r "$fs"/uploaded --upload /1 --upload-dir "$fs"/uploaded/2 --mkdir /2 -E '' &
 sleep 0.05 # wait server ready
 cleanup
 

@@ -1,88 +1,49 @@
 package serverHandler
 
 import (
-	"sort"
+	"../util"
 	"strings"
 )
 
-type alias interface {
-	urlPath() string
-	fsPath() string
-	caseSensitive() bool
-	isMatch(rawReqPath string) bool
-	isSuccessorOf(rawReqPath string) bool
-	isPredecessorOf(rawReqPath string) bool
-	namesEqual(a, b string) bool
+type alias struct {
+	url string
+	fs  string
 }
 
-type aliases []alias
-
-func newAliases(entriesAccurate, entriesNoCase map[string]string) aliases {
-	aliases := make(aliases, 0, len(entriesAccurate)+len(entriesNoCase))
-	for urlPath, fsPath := range entriesAccurate {
-		aliases = append(aliases, createAliasAccurate(urlPath, fsPath))
-	}
-	for urlPath, fsPath := range entriesNoCase {
-		aliases = append(aliases, createAliasNoCase(urlPath, fsPath))
-	}
-	sort.Sort(aliases)
-
-	return aliases
+func createAlias(urlPath, fsPath string) alias {
+	return alias{urlPath, fsPath}
 }
 
-func (aliases aliases) byUrlPath(urlPath string) (alias alias, ok bool) {
-	for _, alias := range aliases {
-		if alias.isMatch(urlPath) {
-			return alias, true
-		}
-	}
-	return nil, false
+func (alias alias) isMatch(rawReqPath string) bool {
+	return util.IsPathEqual(alias.url, rawReqPath)
 }
 
-func getAliasSubPart(alias alias, rawReqPath string) (subName string, isLastPart, ok bool) {
+func (alias alias) isSuccessorOf(rawReqPath string) bool {
+	return len(alias.url) > len(rawReqPath) && util.HasUrlPrefixDir(alias.url, rawReqPath)
+}
+
+func (alias alias) isPredecessorOf(rawReqPath string) bool {
+	return len(rawReqPath) > len(alias.url) && util.HasUrlPrefixDir(rawReqPath, alias.url)
+}
+
+func (alias alias) nextPartOf(rawReqPath string) (subName string, noMore, ok bool) {
 	if !alias.isSuccessorOf(rawReqPath) {
 		return
 	}
 
-	subName = alias.urlPath()[len(rawReqPath):]
+	subName = alias.url[len(rawReqPath):]
 	if len(subName) > 0 && subName[0] == '/' {
 		subName = subName[1:]
 	}
 
-	slashIndex := strings.Index(subName, "/")
+	slashIndex := strings.IndexByte(subName, '/')
 	if slashIndex > 0 {
 		subName = subName[:slashIndex]
 	} else {
-		isLastPart = true
+		noMore = true
 	}
 
 	ok = true
 
 	return
-}
-
-func (aliases aliases) Len() int {
-	return len(aliases)
-}
-
-func (aliases aliases) Less(i, j int) bool {
-	iLen := len(aliases[i].urlPath())
-	jLen := len(aliases[j].urlPath())
-	if iLen != jLen {
-		// longer is prior
-		return iLen > jLen
-	}
-
-	_, isIAccurate := aliases[i].(aliasAccurate)
-	_, isJAccurate := aliases[j].(aliasAccurate)
-	if isIAccurate != isJAccurate {
-		// accurate is prior
-		return isIAccurate
-	}
-
-	return i < j
-}
-
-func (aliases aliases) Swap(i, j int) {
-	aliases[i], aliases[j] = aliases[j], aliases[i]
 }

@@ -157,7 +157,7 @@ func (s *OptionSet) Add(opt Option) error {
 				continue
 			}
 			envValue, hasEnv := shimgo.Os_LookupEnv(envVar)
-			if !hasEnv || len(envValue) == 0 {
+			if !hasEnv {
 				continue
 			}
 

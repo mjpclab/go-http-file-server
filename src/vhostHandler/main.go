@@ -45,7 +45,7 @@ func NewHandler(
 	}
 
 	muxHandler := serverHandler.NewMultiplexer(p, *users, theme, logger, errorHandler)
-	pathTransformHandler := serverHandler.NewPathTransformer(p.PrefixUrls, p.BaseUrls, muxHandler)
+	pathTransformHandler := serverHandler.NewPathTransformer(p.PrefixUrls, muxHandler)
 
 	vhostHandler := &VhostHandler{
 		p:            p,

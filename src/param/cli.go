@@ -30,7 +30,7 @@ func init() {
 	err = options.AddFlagValues("prefixurls", "--prefix", "", nil, "serve files under URL path instead of /")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagValues("baseurls", "--base", "", nil, "serve files under case-insensitive URL path instead of /")
+	err = options.AddFlagsValue("forcedirslash", []string{"-/", "--force-dir-slash"}, "GHFS_FORCE_DIR_SLASH", "", "auto redirect directory with \"/\" suffix")
 	serverErrHandler.CheckFatal(err)
 
 	opt = goNixArgParser.NewFlagValueOption("defaultsort", "--default-sort", "GHFS_DEFAULT_SORT", "/n", "default sort for files and directories")
@@ -44,10 +44,22 @@ func init() {
 	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagsValues("binds", []string{"-b", "--bind"}, "", nil, "set url-case-insensitive alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
+	err = options.AddFlagValues("globalrestrictaccess", "--global-restrict-access", "GHFS_GLOBAL_RESTRICT_ACCESS", []string{}, "restrict access to all url paths from current host, with optional extra allow list")
 	serverErrHandler.CheckFatal(err)
 
-	err = options.AddFlagValues("globalheaders", "--header", "GHFS_HEADER", []string{}, "custom headers, e.g. <key>:<value>")
+	err = options.AddFlagValues("restrictaccessurls", "--restrict-access", "", []string{}, "restrict access to specific url paths from current host, with optional extra allow list")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("restrictaccessdirs", "--restrict-access-dir", "", []string{}, "restrict access to specific file system paths from current host, with optional extra allow list")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("globalheaders", "--global-header", "GHFS_GLOBAL_HEADER", []string{}, "custom headers for all url paths, e.g. <name>:<value>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("headersurls", "--header", "", []string{}, "url path for custom headers, <sep><url><sep><name><sep><value>")
+	serverErrHandler.CheckFatal(err)
+
+	err = options.AddFlagValues("headersdirs", "--header-dir", "", []string{}, "file system path for custom headers, <sep><dir><sep><name><sep><value>")
 	serverErrHandler.CheckFatal(err)
 
 	err = options.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
@@ -255,6 +267,8 @@ func doParseCli() []*Param {
 	}
 
 	// init param data
+	var err error
+	var errs []error
 	for _, result := range results {
 		param := &Param{}
 
@@ -277,41 +291,65 @@ func doParseCli() []*Param {
 
 		// root
 		root, _ := result.GetString("root")
-		root, _ = util.NormalizeFsPath(root)
+		root, err = util.NormalizeFsPath(root)
+		serverErrHandler.CheckFatal(err)
 		param.Root = root
 
 		// normalize url prefixes
 		prefixurls, _ := result.GetStrings("prefixurls")
 		param.PrefixUrls = normalizeUrlPaths(prefixurls)
 
-		// normalize url bases
-		baseurls, _ := result.GetStrings("baseurls")
-		param.BaseUrls = normalizeUrlPaths(baseurls)
+		// force dir slash
+		if result.HasKey("forcedirslash") {
+			forceDirSlash, _ := result.GetString("forcedirslash")
+			param.ForceDirSlash = normalizeRedirectCode(forceDirSlash)
+		}
 
 		// dir indexes
 		dirIndexes, _ := result.GetStrings("dirindexes")
 		param.DirIndexes = normalizeFilenames(dirIndexes)
 
-		// headers
+		// global restrict access
+		if result.HasKey("globalrestrictaccess") {
+			globalRestrictAccesses, _ := result.GetStrings("globalrestrictaccess")
+			param.GlobalRestrictAccess = util.ExtractHostsFromUrls(globalRestrictAccesses)
+		}
+
+		// restrict access urls
+		restrictAccessUrls, _ := result.GetStrings("restrictaccessurls")
+		param.RestrictAccessUrls, errs = normalizePathRestrictAccesses(restrictAccessUrls, util.NormalizeUrlPath)
+		serverErrHandler.CheckFatal(errs...)
+
+		// restrict access dirs
+		restrictAccessDirs, _ := result.GetStrings("restrictaccessdirs")
+		param.RestrictAccessDirs, errs = normalizePathRestrictAccesses(restrictAccessDirs, util.NormalizeFsPath)
+		serverErrHandler.CheckFatal(errs...)
+
+		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")
 		param.GlobalHeaders = entriesToHeaders(globalHeaders)
+
+		// headers urls
+		arrHeadersUrls, _ := result.GetStrings("headersurls")
+		param.HeadersUrls, errs = normalizePathHeadersMap(arrHeadersUrls, util.NormalizeUrlPath)
+		serverErrHandler.CheckFatal(errs...)
+
+		// headers dirs
+		arrHeadersDirs, _ := result.GetStrings("headersdirs")
+		param.HeadersDirs, errs = normalizePathHeadersMap(arrHeadersDirs, util.NormalizeFsPath)
+		serverErrHandler.CheckFatal(errs...)
 
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
 		certs, errs := LoadCertificates(certFiles, keyFiles)
-		if len(errs) > 0 {
-			serverErrHandler.CheckFatal(errs...)
-		} else {
-			param.Certificates = certs
-		}
+		serverErrHandler.CheckFatal(errs...)
+		param.Certificates = certs
 
 		// normalize aliases
 		arrAlias, _ := result.GetStrings("aliases")
-		param.Aliases = normalizePathMaps(arrAlias)
-
-		arrBinds, _ := result.GetStrings("binds")
-		param.Binds = normalizePathMapsNoCase(arrBinds)
+		param.Aliases, errs = normalizePathMaps(arrAlias)
+		serverErrHandler.CheckFatal(errs...)
 
 		// normalize upload urls
 		arrUploadUrls, _ := result.GetStrings("uploadurls")
@@ -393,13 +431,11 @@ func doParseCli() []*Param {
 
 		// hsts & https
 		if len(param.ListensTLS) > 0 {
-			param.GlobalHsts = result.HasKey("globalhsts")
-			if param.GlobalHsts {
+			if result.HasKey("globalhsts") {
 				param.GlobalHsts = validateHstsPort(param.ListensPlain, param.ListensTLS)
 			}
 
-			param.GlobalHttps = result.HasKey("globalhttps")
-			if param.GlobalHttps {
+			if result.HasKey("globalhttps") {
 				httpsPort, _ := result.GetString("globalhttps")
 				param.HttpsPort, param.GlobalHttps = normalizeHttpsPort(httpsPort, param.ListensTLS)
 			}

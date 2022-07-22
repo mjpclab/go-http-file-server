@@ -82,10 +82,6 @@ func TestIsVirtual(t *testing.T) {
 	if !isVirtual(info) {
 		t.Error()
 	}
-	info = createPlaceholderFileInfoNoCase("foo", true)
-	if !isVirtual(info) {
-		t.Error()
-	}
 
 	baseInfo := dummyFileInfo{name: "foo"}
 	if isVirtual(baseInfo) {
@@ -94,34 +90,6 @@ func TestIsVirtual(t *testing.T) {
 
 	info = createRenamedFileInfo("bar", baseInfo)
 	if !isVirtual(info) {
-		t.Error()
-	}
-	info = createRenamedFileInfoNoCase("bar", baseInfo)
-	if !isVirtual(info) {
-		t.Error()
-	}
-}
-
-func TestIsNameCaseSensitive(t *testing.T) {
-	var info os.FileInfo
-
-	info = createPlaceholderFileInfo("foo", true)
-	if !isNameCaseSensitive(info) {
-		t.Error()
-	}
-	info = createPlaceholderFileInfoNoCase("foo", true)
-	if isNameCaseSensitive(info) {
-		t.Error()
-	}
-
-	baseInfo := dummyFileInfo{name: "foo"}
-
-	info = createRenamedFileInfo("bar", baseInfo)
-	if !isNameCaseSensitive(info) {
-		t.Error()
-	}
-	info = createRenamedFileInfoNoCase("bar", baseInfo)
-	if isNameCaseSensitive(info) {
 		t.Error()
 	}
 }

@@ -19,19 +19,23 @@ func CleanUrlPath(urlPath string) string {
 	return urlPath
 }
 
-func HasUrlPrefixDir(urlPath, prefix string) bool {
-	return hasPrefixDir(urlPath, prefix, '/')
+func HasUrlPrefixDirAccurate(urlPath, prefix string) bool {
+	return hasPrefixDirAccurate(urlPath, prefix, '/')
 }
 
 func HasUrlPrefixDirNoCase(urlPath, prefix string) bool {
 	return hasPrefixDirNoCase(urlPath, prefix, '/')
 }
 
-func HasFsPrefixDir(fsPath, prefix string) bool {
-	return hasPrefixDir(fsPath, prefix, filepath.Separator)
+func HasFsPrefixDirAccurate(fsPath, prefix string) bool {
+	return hasPrefixDirAccurate(fsPath, prefix, filepath.Separator)
 }
 
-func hasPrefixDir(absPath, prefix string, separator byte) bool {
+func HasFsPrefixDirNoCase(fsPath, prefix string) bool {
+	return hasPrefixDirNoCase(fsPath, prefix, filepath.Separator)
+}
+
+func hasPrefixDirAccurate(absPath, prefix string, separator byte) bool {
 	if absPath == prefix {
 		return true
 	}
@@ -87,4 +91,9 @@ func hasPrefixDirNoCase(absPath, prefix string, separator byte) bool {
 	}
 
 	return false
+}
+
+func NormalizeUrlPath(input string) (string, error) { // keep same func signature as `NormalizeFsPath`
+	result := CleanUrlPath(input)
+	return result, nil
 }

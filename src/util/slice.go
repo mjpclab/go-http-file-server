@@ -1,8 +1,8 @@
 package util
 
 func Contains(collection []string, find string) bool {
-	for _, item := range collection {
-		if item == find {
+	for i := range collection {
+		if collection[i] == find {
 			return true
 		}
 	}

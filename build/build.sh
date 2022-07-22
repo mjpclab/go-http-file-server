@@ -22,14 +22,11 @@ for build in "$@"; do
 	cp -r ../src/ /tmp/
 	sed -i -e '/var appVer/s/"dev"/"'$VERSION'"/' /tmp/src/version/main.go
 
-	BIN="$TMP"/"$MAINNAME"
-	if [ "$GOOS" == 'windows' ]; then
-	  BIN="${BIN}.exe"
-	fi;
+	BIN="$TMP/$MAINNAME$(go env GOEXE)"
 	rm -f "$BIN"
 	echo "Building: $GOOS$OS_SUFFIX $GOARCH"
 	go build -ldflags "$LDFLAGS" -o "$BIN" /tmp/src/main.go
 
-	OUT="$OUTDIR"/"$MAINNAME"-"$VERSION"-"$GOOS""$OS_SUFFIX"-"$GOARCH".zip
+	OUT="$OUTDIR/$MAINNAME-$VERSION-$GOOS$OS_SUFFIX-$GOARCH".zip
 	zip -j "$OUT" "$BIN" "$LICENSE" "$LICENSE_GO"
 done
