@@ -291,7 +291,7 @@ ghfs [options]
     Defaults to "-".
 
 --config <file>
-    External config file to load for current virtual host.
+    Specify options from external file.
 
     Its content is option list of any other options,
     same as the form specified on command line,

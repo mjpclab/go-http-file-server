@@ -157,9 +157,9 @@ ghfs [选项]
 
 --global-header <名称>:<值> ...
     添加自定义HTTP响应头。
---header <separator><url-path><separator><name><separator><value> ...
+--header <分隔符><URL路径><分隔符><名称><分隔符><值> ...
     为指定的URL路径（及子路径）添加自定义HTTP响应头。
---header-dir <separator><fs-path><separator><name><separator><value> ...
+--header-dir <分隔符><文件系统路径><分隔符><名称><分隔符><值> ...
     与--header类似，但指定的是文件系统路径，而不是URL路径。
 
 -U|--global-upload
@@ -282,7 +282,7 @@ ghfs [选项]
     默认为“-”。
 
 --config <文件>
-    为当前虚拟主机指定外部配置文件。
+    指定外部配置文件。
 
     其内容为任何其他选项，
     与在命令行指定的形式相同，
