@@ -16,9 +16,8 @@ import (
 )
 
 type App struct {
-	vhostSvc      *goVirtualHost.Service
-	vhostHandlers []*vhost.Handler
-	logFileMan    *serverLog.FileMan
+	vhostSvc   *goVirtualHost.Service
+	logFileMan *serverLog.FileMan
 }
 
 func (app *App) Open() {
@@ -48,7 +47,6 @@ func NewApp(params []*param.Param) *App {
 	}
 
 	vhSvc := goVirtualHost.NewService()
-	vhHandlers := make([]*vhost.Handler, 0, len(params))
 	logFileMan := serverLog.NewFileMan()
 	themes := make(map[string]tpl.Theme)
 
@@ -79,9 +77,8 @@ func NewApp(params []*param.Param) *App {
 			}
 		}
 
-		// vHostMux
+		// vHost Handler
 		vhHandler := vhost.NewHandler(p, logger, errHandler, theme)
-		vhHandlers = append(vhHandlers, vhHandler)
 
 		// init vhost
 		listens := p.Listens
@@ -99,7 +96,7 @@ func NewApp(params []*param.Param) *App {
 			ListensTLS:   p.ListensTLS,
 			Certs:        p.Certificates,
 			HostNames:    p.HostNames,
-			Handler:      vhHandler.Handler,
+			Handler:      vhHandler,
 		})
 		if len(errors) > 0 {
 			serverErrHandler.CheckFatal(errors...)
@@ -113,9 +110,8 @@ func NewApp(params []*param.Param) *App {
 	}
 
 	return &App{
-		vhostSvc:      vhSvc,
-		vhostHandlers: vhHandlers,
-		logFileMan:    logFileMan,
+		vhostSvc:   vhSvc,
+		logFileMan: logFileMan,
 	}
 }
 

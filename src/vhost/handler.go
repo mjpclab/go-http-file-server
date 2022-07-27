@@ -10,20 +10,12 @@ import (
 	"net/http"
 )
 
-type Handler struct {
-	p            *param.Param
-	logger       *serverLog.Logger
-	errorHandler *serverErrHandler.ErrHandler
-	theme        tpl.Theme
-	Handler      http.Handler
-}
-
 func NewHandler(
 	p *param.Param,
 	logger *serverLog.Logger,
 	errorHandler *serverErrHandler.ErrHandler,
 	theme tpl.Theme,
-) *Handler {
+) http.Handler {
 	users := user.NewList(p.UserMatchCase)
 	for _, u := range p.UsersPlain {
 		errorHandler.LogError(users.AddPlain(u.Username, u.Password))
@@ -47,12 +39,5 @@ func NewHandler(
 	muxHandler := serverHandler.NewMultiplexer(p, *users, theme, logger, errorHandler)
 	pathTransformHandler := serverHandler.NewPathTransformer(p.PrefixUrls, muxHandler)
 
-	vhostHandler := &Handler{
-		p:            p,
-		logger:       logger,
-		errorHandler: errorHandler,
-		Handler:      pathTransformHandler,
-	}
-
-	return vhostHandler
+	return pathTransformHandler
 }
