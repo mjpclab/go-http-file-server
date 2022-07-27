@@ -1,4 +1,4 @@
-package vhostHandler
+package vhost
 
 import (
 	"../param"
@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type VhostHandler struct {
+type Handler struct {
 	p            *param.Param
 	logger       *serverLog.Logger
 	errorHandler *serverErrHandler.ErrHandler
@@ -23,7 +23,7 @@ func NewHandler(
 	logger *serverLog.Logger,
 	errorHandler *serverErrHandler.ErrHandler,
 	theme tpl.Theme,
-) *VhostHandler {
+) *Handler {
 	users := user.NewList(p.UserMatchCase)
 	for _, u := range p.UsersPlain {
 		errorHandler.LogError(users.AddPlain(u.Username, u.Password))
@@ -47,7 +47,7 @@ func NewHandler(
 	muxHandler := serverHandler.NewMultiplexer(p, *users, theme, logger, errorHandler)
 	pathTransformHandler := serverHandler.NewPathTransformer(p.PrefixUrls, muxHandler)
 
-	vhostHandler := &VhostHandler{
+	vhostHandler := &Handler{
 		p:            p,
 		logger:       logger,
 		errorHandler: errorHandler,

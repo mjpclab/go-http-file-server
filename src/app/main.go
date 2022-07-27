@@ -8,7 +8,7 @@ import (
 	"../serverLog"
 	"../tpl"
 	"../util"
-	"../vhostHandler"
+	"../vhost"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,7 +17,7 @@ import (
 
 type App struct {
 	vhostSvc      *goVirtualHost.Service
-	vhostHandlers []*vhostHandler.VhostHandler
+	vhostHandlers []*vhost.Handler
 	logFileMan    *serverLog.FileMan
 }
 
@@ -48,7 +48,7 @@ func NewApp(params []*param.Param) *App {
 	}
 
 	vhSvc := goVirtualHost.NewService()
-	vhHandlers := make([]*vhostHandler.VhostHandler, 0, len(params))
+	vhHandlers := make([]*vhost.Handler, 0, len(params))
 	logFileMan := serverLog.NewFileMan()
 	themes := make(map[string]tpl.Theme)
 
@@ -80,7 +80,7 @@ func NewApp(params []*param.Param) *App {
 		}
 
 		// vHostMux
-		vhHandler := vhostHandler.NewHandler(p, logger, errHandler, theme)
+		vhHandler := vhost.NewHandler(p, logger, errHandler, theme)
 		vhHandlers = append(vhHandlers, vhHandler)
 
 		// init vhost
