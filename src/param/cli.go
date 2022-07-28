@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-var cliParams []*Param
 var cliCmd *goNixArgParser.Command
 
 func init() {
@@ -196,9 +195,7 @@ func init() {
 	serverErrHandler.CheckFatal(err)
 }
 
-func doParseCli() []*Param {
-	params := []*Param{}
-
+func ParseCli() []*Param {
 	args := os.Args
 
 	// parse option
@@ -266,6 +263,7 @@ func doParseCli() []*Param {
 	}
 
 	// init param data
+	params := make([]*Param, 0, len(results))
 	var err error
 	var errs []error
 	for _, result := range results {
@@ -471,12 +469,4 @@ func doParseCli() []*Param {
 	}
 
 	return params
-}
-
-func ParseCli() []*Param {
-	if cliParams == nil {
-		cliParams = doParseCli()
-	}
-
-	return cliParams
 }
