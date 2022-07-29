@@ -3,14 +3,14 @@ package main
 import (
 	"./app"
 	"./param"
+	"./serverErrHandler"
+	"errors"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-var appInst *app.App
-
-func cleanupOnInterrupt() {
+func cleanupOnInterrupt(appInst *app.App) {
 	chSignal := make(chan os.Signal)
 	signal.Notify(chSignal, syscall.SIGINT)
 
@@ -21,26 +21,31 @@ func cleanupOnInterrupt() {
 	}()
 }
 
-func reOpenLogOnHup() {
+func reOpenLogOnHup(appInst *app.App) {
 	chSignal := make(chan os.Signal)
 	signal.Notify(chSignal, syscall.SIGHUP)
 
 	go func() {
 		for range chSignal {
-			appInst.ReOpenLog()
+			errs := appInst.ReOpenLog()
+			serverErrHandler.CheckFatal(errs...)
 		}
 	}()
 }
 
 func main() {
-	cleanupOnInterrupt()
-
 	params := param.ParseCli()
-	appInst = app.NewApp(params)
+	appInst, errs := app.NewApp(params)
+	serverErrHandler.CheckFatal(errs...)
 
-	if appInst != nil {
-		reOpenLogOnHup()
-		appInst.Open()
-		defer appInst.Close()
+	if appInst == nil {
+		serverErrHandler.CheckFatal(errors.New("failed to create application instance"))
 	}
+
+	cleanupOnInterrupt(appInst)
+	reOpenLogOnHup(appInst)
+	errs = appInst.Open()
+	serverErrHandler.CheckFatal(errs...)
+
+	appInst.Close()
 }

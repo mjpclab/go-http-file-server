@@ -20,9 +20,8 @@ type App struct {
 	logFileMan *serverLog.FileMan
 }
 
-func (app *App) Open() {
-	errors := app.vhostSvc.Open()
-	serverErrHandler.CheckError(errors...)
+func (app *App) Open() []error {
+	return app.vhostSvc.Open()
 }
 
 func (app *App) Close() {
@@ -30,13 +29,15 @@ func (app *App) Close() {
 	app.logFileMan.Close()
 }
 
-func (app *App) ReOpenLog() {
-	errors := app.logFileMan.Reopen()
-	serverErrHandler.CheckFatal(errors...)
+func (app *App) ReOpenLog() []error {
+	return app.logFileMan.Reopen()
 }
 
-func NewApp(params []*param.Param) *App {
-	writePidFile()
+func NewApp(params []*param.Param) (*App, []error) {
+	errs := writePidFile()
+	if len(errs) > 0 {
+		return nil, errs
+	}
 
 	verbose := !util.GetBoolEnv("GHFS_QUIET")
 
@@ -52,8 +53,10 @@ func NewApp(params []*param.Param) *App {
 
 	for _, p := range params {
 		// logger
-		logger, errors := logFileMan.NewLogger(p.AccessLog, p.ErrorLog)
-		serverErrHandler.CheckFatal(errors...)
+		logger, errs := logFileMan.NewLogger(p.AccessLog, p.ErrorLog)
+		if len(errs) > 0 {
+			return nil, errs
+		}
 
 		// ErrHandler
 		errHandler := serverErrHandler.NewErrHandler(logger)
@@ -66,13 +69,17 @@ func NewApp(params []*param.Param) *App {
 			theme = tpl.DefaultTheme
 		} else {
 			themeKey, err := filepath.Abs(p.Theme)
-			serverErrHandler.CheckFatal(err)
+			if err != nil {
+				return nil, []error{err}
+			}
 
 			var themeExists bool
 			theme, themeExists = themes[themeKey]
 			if !themeExists {
 				theme, err = tpl.LoadMemTheme(p.Theme)
-				serverErrHandler.CheckFatal(err)
+				if err != nil {
+					return nil, []error{err}
+				}
 				themes[themeKey] = theme
 			}
 		}
@@ -90,7 +97,7 @@ func NewApp(params []*param.Param) *App {
 			}
 		}
 
-		errors = vhSvc.Add(&goVirtualHost.HostInfo{
+		errs = vhSvc.Add(&goVirtualHost.HostInfo{
 			Listens:      listens,
 			ListensPlain: p.ListensPlain,
 			ListensTLS:   p.ListensTLS,
@@ -98,10 +105,9 @@ func NewApp(params []*param.Param) *App {
 			HostNames:    p.HostNames,
 			Handler:      vhHandler,
 		})
-		if len(errors) > 0 {
-			serverErrHandler.CheckFatal(errors...)
-			logger.LogErrors(errors...)
-			os.Exit(1)
+		if len(errs) > 0 {
+			logger.LogErrors(errs...)
+			return nil, errs
 		}
 	}
 
@@ -112,20 +118,29 @@ func NewApp(params []*param.Param) *App {
 	return &App{
 		vhostSvc:   vhSvc,
 		logFileMan: logFileMan,
-	}
+	}, nil
 }
 
-func writePidFile() {
+func writePidFile() (errs []error) {
 	pidFilename := os.Getenv("GHFS_PID_FILE")
 	if len(pidFilename) == 0 {
-		return
+		return nil
 	}
 
 	pidContent := strconv.Itoa(os.Getpid())
 	pidFile, err := os.OpenFile(pidFilename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-	if !serverErrHandler.CheckFatal(err) {
-		_, err := pidFile.WriteString(pidContent)
-		err2 := pidFile.Close()
-		serverErrHandler.CheckFatal(err, err2)
+	if err != nil {
+		return []error{err}
 	}
+
+	_, err = pidFile.WriteString(pidContent)
+	err2 := pidFile.Close()
+
+	if err != nil {
+		errs = append(errs, err)
+	}
+	if err2 != nil {
+		errs = append(errs, err2)
+	}
+	return
 }
