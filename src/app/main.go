@@ -3,7 +3,6 @@ package app
 import (
 	"../goVirtualHost"
 	"../param"
-	"../serverErrHandler"
 	"../serverHandler"
 	"../serverLog"
 	"../tpl"
@@ -58,9 +57,6 @@ func NewApp(params []*param.Param) (*App, []error) {
 			return nil, errs
 		}
 
-		// ErrHandler
-		errHandler := serverErrHandler.NewErrHandler(logger)
-
 		// theme
 		var theme tpl.Theme
 		if len(p.ThemeDir) > 0 {
@@ -85,7 +81,7 @@ func NewApp(params []*param.Param) (*App, []error) {
 		}
 
 		// vHost Handler
-		vhHandler := vhost.NewHandler(p, logger, errHandler, theme)
+		vhHandler := vhost.NewHandler(p, logger, theme)
 
 		// init vhost
 		listens := p.Listens

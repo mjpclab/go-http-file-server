@@ -13,9 +13,12 @@ import (
 func NewHandler(
 	p *param.Param,
 	logger *serverLog.Logger,
-	errorHandler *serverErrHandler.ErrHandler,
 	theme tpl.Theme,
 ) http.Handler {
+	// Error Handler
+	errorHandler := serverErrHandler.NewErrHandler(logger)
+
+	// users
 	users := user.NewList(p.UserMatchCase)
 	for _, u := range p.UsersPlain {
 		errorHandler.LogError(users.AddPlain(u.Username, u.Password))
