@@ -1,6 +1,7 @@
 package serverHandler
 
 import (
+	"../serverLog"
 	"../util"
 	"net/http"
 	"net/url"
@@ -23,7 +24,7 @@ func (h *aliasHandler) logRequest(r *http.Request) {
 
 	uri := util.EscapeControllingRune(r.RequestURI)
 
-	buf := make([]byte, 0, 2+len(r.RemoteAddr)+len(r.Method)+unescapedLen+len(uri))
+	buf := serverLog.NewBuffer(2 + len(r.RemoteAddr) + len(r.Method) + unescapedLen + len(uri))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
 	buf = append(buf, ' ')                     // 1 byte
@@ -43,7 +44,7 @@ func (h *aliasHandler) logMutate(username, action, detail string, r *http.Reques
 		return
 	}
 
-	buf := make([]byte, 0, 6+len(r.RemoteAddr)+len(username)+len(action)+len(detail))
+	buf := serverLog.NewBuffer(6 + len(r.RemoteAddr) + len(username) + len(action) + len(detail))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
 	if len(username) > 0 {
@@ -64,7 +65,7 @@ func (h *aliasHandler) logUpload(username, filename, fsPath string, r *http.Requ
 		return
 	}
 
-	buf := make([]byte, 0, 16+len(r.RemoteAddr)+len(username)+len(filename)+len(fsPath))
+	buf := serverLog.NewBuffer(16 + len(r.RemoteAddr) + len(username) + len(filename) + len(fsPath))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
 	if len(username) > 0 {
@@ -85,7 +86,7 @@ func (h *aliasHandler) logArchive(filename, relPath string, r *http.Request) {
 		return
 	}
 
-	buf := make([]byte, 0, 19+len(r.RemoteAddr)+len(filename)+len(relPath))
+	buf := serverLog.NewBuffer(19 + len(r.RemoteAddr) + len(filename) + len(relPath))
 
 	buf = append(buf, []byte(r.RemoteAddr)...)      // ~ 9-47 bytes, mainly 21 bytes
 	buf = append(buf, []byte(" archive file: ")...) // 15 bytes
@@ -105,7 +106,9 @@ func (h *aliasHandler) logErrors(errs []error) (hasError bool) {
 		go func(errs []error) {
 			for i := range errs {
 				errBytes := util.EscapeControllingRune(errs[i].Error())
-				h.logger.LogError(errBytes)
+				buf := serverLog.NewBuffer(len(errBytes))
+				buf = append(buf, errBytes...)
+				h.logger.LogError(buf)
 			}
 		}(errs)
 	}
@@ -121,7 +124,9 @@ func (h *aliasHandler) logError(err error) (hasError bool) {
 	if h.logger.CanLogError() {
 		go func(err error) {
 			errBytes := util.EscapeControllingRune(err.Error())
-			h.logger.LogError(errBytes)
+			buf := serverLog.NewBuffer(len(errBytes))
+			buf = append(buf, errBytes...)
+			h.logger.LogError(buf)
 		}(err)
 	}
 
