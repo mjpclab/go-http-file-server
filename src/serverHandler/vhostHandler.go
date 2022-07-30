@@ -59,8 +59,8 @@ func NewVhostHandler(
 	pageVaryV1 := "Accept-Encoding"
 	contentVaryV1 := ""
 	if restrictAccess {
-		pageVaryV1 += ", Referer"
-		contentVaryV1 = "Referer"
+		pageVaryV1 += ", Referer, Origin"
+		contentVaryV1 = "Referer, Origin"
 	}
 	pageVary := strings.ToLower(pageVaryV1)
 	contentVary := strings.ToLower(contentVaryV1)
