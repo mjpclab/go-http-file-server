@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const chanBuffer = 15
+const chanBuffer = 31
 const fileMode = 0660
 
 type fileEntry struct {
