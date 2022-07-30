@@ -94,7 +94,5 @@ func (h *handler) page(w http.ResponseWriter, r *http.Request, data *responseDat
 
 	updateSubItemsHtml(data)
 	err := h.theme.RenderPage(bodyW, data)
-	if err != nil {
-		go h.errHandler.LogError(err)
-	}
+	h.logError(err)
 }

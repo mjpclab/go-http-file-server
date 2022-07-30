@@ -2,7 +2,7 @@ package param
 
 import (
 	"../goNixArgParser"
-	"../serverErrHandler"
+	"../serverError"
 	"../util"
 	"../version"
 	"fmt"
@@ -20,179 +20,179 @@ func init() {
 	// define option
 	var err error
 	err = options.AddFlagsValue("root", []string{"-r", "--root"}, "GHFS_ROOT", ".", "root directory of server")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlags("emptyroot", []string{"-R", "--empty-root"}, "GHFS_EMPTY_ROOT", "use virtual empty root directory")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("prefixurls", "--prefix", "", nil, "serve files under URL path instead of /")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValue("forcedirslash", []string{"-/", "--force-dir-slash"}, "GHFS_FORCE_DIR_SLASH", "", "auto redirect directory with \"/\" suffix")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	opt = goNixArgParser.NewFlagValueOption("defaultsort", "--default-sort", "GHFS_DEFAULT_SORT", "/n", "default sort for files and directories")
 	opt.Description = "Available sort key:\n- `n` sort by name ascending\n- `N` sort by name descending\n- `e` sort by type(suffix) ascending\n- `E` sort by type(suffix) descending\n- `s` sort by size ascending\n- `S` sort by size descending\n- `t` sort by modify time ascending\n- `T` sort by modify time descending\n- `_` no sort\nDirectory sort:\n- `/<key>` directories before files\n- `<key>/` directories after files\n- `<key>` directories mixed with files\n"
 	err = options.Add(opt)
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("dirindexes", []string{"-I", "--dir-index"}, "GHFS_DIR_INDEX", nil, "default index page for directory")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("globalrestrictaccess", "--global-restrict-access", "GHFS_GLOBAL_RESTRICT_ACCESS", []string{}, "restrict access to all url paths from current host, with optional extra allow list")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("restrictaccessurls", "--restrict-access", "", []string{}, "restrict access to specific url paths from current host, with optional extra allow list")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("restrictaccessdirs", "--restrict-access-dir", "", []string{}, "restrict access to specific file system paths from current host, with optional extra allow list")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("globalheaders", "--global-header", "GHFS_GLOBAL_HEADER", []string{}, "custom headers for all url paths, e.g. <name>:<value>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("headersurls", "--header", "", []string{}, "url path for custom headers, <sep><url><sep><name><sep><value>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("headersdirs", "--header-dir", "", []string{}, "file system path for custom headers, <sep><dir><sep><name><sep><value>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("uploadurls", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("uploaddirs", []string{"-p", "--upload-dir"}, "", nil, "file system path that allow upload files")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globalmkdir", "--global-mkdir", "", "allow mkdir files for all url paths")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("mkdirurls", "--mkdir", "", nil, "url path that allow mkdir files")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("mkdirdirs", "--mkdir-dir", "", nil, "file system path that allow mkdir files")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globaldelete", "--global-delete", "", "allow delete files for all url paths")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("deleteurls", "--delete", "", nil, "url path that allow delete files")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("deletedirs", "--delete-dir", "", nil, "file system path that allow delete files")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlags("globalarchive", []string{"-A", "--global-archive"}, "GHFS_GLOBAL_ARCHIVE", "enable download archive for all directories")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("archiveurls", "--archive", "", nil, "url path that enable download as archive for specific directories")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("archivedirs", "--archive-dir", "", nil, "file system path that enable download as archive for specific directories")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globalcors", "--global-cors", "GHFS_GLOBAL_CORS", "enable CORS headers for all directories")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("corsurls", "--cors", "", nil, "url path that enable CORS headers")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("corsdirs", "--cors-dir", "", nil, "file system path that enable CORS headers")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globalauth", "--global-auth", "GHFS_GLOBAL_AUTH", "require Basic Auth for all directories")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("authurls", "--auth", "", nil, "url path that require Basic Auth")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("authdirs", "--auth-dir", "", nil, "file system path that require Basic Auth")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("users", "--user", "", nil, "user info: <username>:<password>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("usersbase64", "--user-base64", "", nil, "user info: <username>:<base64-password>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("usersmd5", "--user-md5", "", nil, "user info: <username>:<md5-password>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("userssha1", "--user-sha1", "", nil, "user info: <username>:<sha1-password>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("userssha256", "--user-sha256", "", nil, "user info: <username>:<sha256-password>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("userssha512", "--user-sha512", "", nil, "user info: <username>:<sha512-password>")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlag("usermatchcase", "--user-match-case", "GHFS_USER_MATCH_CASE", "username should be case sensitive")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("certs", []string{"-c", "--cert"}, "GHFS_CERT", nil, "TLS certificate path")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("keys", []string{"-k", "--key"}, "GHFS_KEY", nil, "TLS certificate key path")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("listens", []string{"-l", "--listen"}, "GHFS_LISTEN", nil, "address and port to listen")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("listensplain", "--listen-plain", "GHFS_LISTEN_PLAIN", nil, "address and port to listen, force plain http protocol")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("listenstls", "--listen-tls", "GHFS_LISTEN_TLS", nil, "address and port to listen, force https protocol")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("hostnames", "--hostname", "", nil, "hostname for the virtual host")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValue("theme", "--theme", "GHFS_THEME", "", "external theme file")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValue("themedir", "--theme-dir", "GHFS_THEME_DIR", "", "external theme directory")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globalhsts", "--hsts", "GHFS_HSTS", "enable HSTS(HTTP Strict Transport Security)")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValue("globalhttps", "--to-https", "GHFS_TO_HTTPS", "", "redirect http:// to https://, with optional target port")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("shows", []string{"-S", "--show"}, "GHFS_SHOW", nil, "show directories or files match wildcard")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 	err = options.AddFlagsValues("showdirs", []string{"-SD", "--show-dir"}, "GHFS_SHOW_DIR", nil, "show directories match wildcard")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 	err = options.AddFlagsValues("showfiles", []string{"-SF", "--show-file"}, "GHFS_SHOW_FILE", nil, "show files match wildcard")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("hides", []string{"-H", "--hide"}, "GHFS_HIDE", nil, "hide directories or files match wildcard")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 	err = options.AddFlagsValues("hidedirs", []string{"-HD", "--hide-dir"}, "GHFS_HIDE_DIR", nil, "hide directories match wildcard")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 	err = options.AddFlagsValues("hidefiles", []string{"-HF", "--hide-file"}, "GHFS_HIDE_FILE", nil, "hide files match wildcard")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "GHFS_ACCESS_LOG", "", "access log file, use \"-\" for stdout")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlagValue("config", "--config", "GHFS_CONFIG", "", "external config file")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlag("version", "--version", "", "print version")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 
 	err = options.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
-	serverErrHandler.CheckFatal(err)
+	serverError.CheckFatal(err)
 }
 
 func ParseCli() []*Param {
@@ -237,7 +237,7 @@ func ParseCli() []*Param {
 		}
 
 		configStr, err := os.ReadFile(config)
-		if serverErrHandler.CheckError(err) || len(configStr) == 0 {
+		if serverError.CheckError(err) || len(configStr) == 0 {
 			continue
 		}
 
@@ -289,7 +289,7 @@ func ParseCli() []*Param {
 		// root
 		root, _ := result.GetString("root")
 		root, err = util.NormalizeFsPath(root)
-		serverErrHandler.CheckFatal(err)
+		serverError.CheckFatal(err)
 		param.Root = root
 
 		// normalize url prefixes
@@ -315,12 +315,12 @@ func ParseCli() []*Param {
 		// restrict access urls
 		restrictAccessUrls, _ := result.GetStrings("restrictaccessurls")
 		param.RestrictAccessUrls, errs = normalizePathRestrictAccesses(restrictAccessUrls, util.NormalizeUrlPath)
-		serverErrHandler.CheckFatal(errs...)
+		serverError.CheckFatal(errs...)
 
 		// restrict access dirs
 		restrictAccessDirs, _ := result.GetStrings("restrictaccessdirs")
 		param.RestrictAccessDirs, errs = normalizePathRestrictAccesses(restrictAccessDirs, util.NormalizeFsPath)
-		serverErrHandler.CheckFatal(errs...)
+		serverError.CheckFatal(errs...)
 
 		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")
@@ -329,24 +329,24 @@ func ParseCli() []*Param {
 		// headers urls
 		arrHeadersUrls, _ := result.GetStrings("headersurls")
 		param.HeadersUrls, errs = normalizePathHeadersMap(arrHeadersUrls, util.NormalizeUrlPath)
-		serverErrHandler.CheckFatal(errs...)
+		serverError.CheckFatal(errs...)
 
 		// headers dirs
 		arrHeadersDirs, _ := result.GetStrings("headersdirs")
 		param.HeadersDirs, errs = normalizePathHeadersMap(arrHeadersDirs, util.NormalizeFsPath)
-		serverErrHandler.CheckFatal(errs...)
+		serverError.CheckFatal(errs...)
 
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
 		certs, errs := LoadCertificates(certFiles, keyFiles)
-		serverErrHandler.CheckFatal(errs...)
+		serverError.CheckFatal(errs...)
 		param.Certificates = certs
 
 		// normalize aliases
 		arrAlias, _ := result.GetStrings("aliases")
 		param.Aliases, errs = normalizePathMaps(arrAlias)
-		serverErrHandler.CheckFatal(errs...)
+		serverError.CheckFatal(errs...)
 
 		// normalize upload urls
 		arrUploadUrls, _ := result.GetStrings("uploadurls")
@@ -412,7 +412,7 @@ func ParseCli() []*Param {
 
 		dupUserNames := param.GetDupUserNames()
 		if len(dupUserNames) > 0 {
-			serverErrHandler.CheckFatal(fmt.Errorf("duplicated usernames: %q", dupUserNames))
+			serverError.CheckFatal(fmt.Errorf("duplicated usernames: %q", dupUserNames))
 		}
 
 		// normalize listen
@@ -440,28 +440,28 @@ func ParseCli() []*Param {
 
 		// shows
 		shows, err := WildcardToRegexp(result.GetStrings("shows"))
-		serverErrHandler.CheckFatal(err)
+		serverError.CheckFatal(err)
 		param.Shows = shows
 
 		showDirs, err := WildcardToRegexp(result.GetStrings("showdirs"))
-		serverErrHandler.CheckFatal(err)
+		serverError.CheckFatal(err)
 		param.ShowDirs = showDirs
 
 		showFiles, err := WildcardToRegexp(result.GetStrings("showfiles"))
-		serverErrHandler.CheckFatal(err)
+		serverError.CheckFatal(err)
 		param.ShowFiles = showFiles
 
 		// hides
 		hides, err := WildcardToRegexp(result.GetStrings("hides"))
-		serverErrHandler.CheckFatal(err)
+		serverError.CheckFatal(err)
 		param.Hides = hides
 
 		hideDirs, err := WildcardToRegexp(result.GetStrings("hidedirs"))
-		serverErrHandler.CheckFatal(err)
+		serverError.CheckFatal(err)
 		param.HideDirs = hideDirs
 
 		hideFiles, err := WildcardToRegexp(result.GetStrings("hidefiles"))
-		serverErrHandler.CheckFatal(err)
+		serverError.CheckFatal(err)
 		param.HideFiles = hideFiles
 
 		normalize(param)

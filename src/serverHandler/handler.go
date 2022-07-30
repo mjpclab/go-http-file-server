@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"../param"
-	"../serverErrHandler"
 	"../serverLog"
 	"../tpl"
 	"../user"
@@ -76,8 +75,7 @@ type handler struct {
 
 	fileServer http.Handler
 
-	logger     *serverLog.Logger
-	errHandler *serverErrHandler.ErrHandler
+	logger *serverLog.Logger
 
 	restrictAccess bool
 	pageVaryV1     string
@@ -109,9 +107,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// data
 	data := h.getResponseData(r)
-	if len(data.errors) > 0 {
-		h.logErrors(data.errors...)
-	}
+	h.logErrors(data.errors)
 	file := data.File
 	if file != nil {
 		defer file.Close()
@@ -181,7 +177,6 @@ func newHandler(
 	users user.List,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
-	errHandler *serverErrHandler.ErrHandler,
 	restrictAccess bool,
 	pageVaryV1, pageVary, contentVaryV1, contentVary string,
 ) http.Handler {
@@ -255,8 +250,7 @@ func newHandler(
 
 		fileServer: fileServer,
 
-		logger:     logger,
-		errHandler: errHandler,
+		logger: logger,
 
 		restrictAccess: restrictAccess,
 		pageVaryV1:     pageVaryV1,

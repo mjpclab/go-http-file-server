@@ -101,7 +101,5 @@ func (h *handler) json(w http.ResponseWriter, r *http.Request, data *responseDat
 	jsonData := getJsonData(data)
 	encoder := json.NewEncoder(bodyW)
 	err := encoder.Encode(jsonData)
-	if err != nil {
-		go h.errHandler.LogError(err)
-	}
+	h.logError(err)
 }

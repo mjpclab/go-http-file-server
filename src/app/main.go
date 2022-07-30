@@ -3,6 +3,7 @@ package app
 import (
 	"../goVirtualHost"
 	"../param"
+	"../serverError"
 	"../serverHandler"
 	"../serverLog"
 	"../tpl"
@@ -65,23 +66,31 @@ func NewApp(params []*param.Param) (*App, []error) {
 			theme = tpl.DefaultTheme
 		} else {
 			themeKey, err := filepath.Abs(p.Theme)
+			errs = serverError.AppendError(errs, err)
 			if err != nil {
-				return nil, []error{err}
+				continue
 			}
 
 			var themeExists bool
 			theme, themeExists = themes[themeKey]
 			if !themeExists {
 				theme, err = tpl.LoadMemTheme(p.Theme)
+				errs = serverError.AppendError(errs, err)
 				if err != nil {
-					return nil, []error{err}
+					continue
 				}
 				themes[themeKey] = theme
 			}
 		}
+		if len(errs) > 0 {
+			return nil, errs
+		}
 
 		// vHost Handler
-		vhHandler := vhost.NewHandler(p, logger, theme)
+		vhHandler, errs := vhost.NewHandler(p, logger, theme)
+		if len(errs) > 0 {
+			return nil, errs
+		}
 
 		// init vhost
 		listens := p.Listens
@@ -130,13 +139,10 @@ func writePidFile() (errs []error) {
 	}
 
 	_, err = pidFile.WriteString(pidContent)
-	err2 := pidFile.Close()
+	errs = serverError.AppendError(errs, err)
 
-	if err != nil {
-		errs = append(errs, err)
-	}
-	if err2 != nil {
-		errs = append(errs, err2)
-	}
+	err = pidFile.Close()
+	errs = serverError.AppendError(errs, err)
+
 	return
 }

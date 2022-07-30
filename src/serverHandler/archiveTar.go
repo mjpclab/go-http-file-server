@@ -61,7 +61,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 	tw := tar.NewWriter(w)
 	defer func() {
 		err := tw.Close()
-		h.errHandler.LogError(err)
+		h.logError(err)
 	}()
 
 	h.archive(
@@ -89,18 +89,18 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *response
 	}
 
 	gzw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
-	if h.errHandler.LogError(err) {
+	if h.logError(err) {
 		return
 	}
 	defer func() {
 		err := gzw.Close()
-		h.errHandler.LogError(err)
+		h.logError(err)
 	}()
 
 	tw := tar.NewWriter(gzw)
 	defer func() {
 		err := tw.Close()
-		h.errHandler.LogError(err)
+		h.logError(err)
 	}()
 
 	h.archive(

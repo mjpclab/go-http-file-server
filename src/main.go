@@ -3,7 +3,7 @@ package main
 import (
 	"./app"
 	"./param"
-	"./serverErrHandler"
+	"./serverError"
 	"errors"
 	"os"
 	"os/signal"
@@ -28,7 +28,7 @@ func reOpenLogOnHup(appInst *app.App) {
 	go func() {
 		for range chSignal {
 			errs := appInst.ReOpenLog()
-			serverErrHandler.CheckFatal(errs...)
+			serverError.CheckFatal(errs...)
 		}
 	}()
 }
@@ -36,16 +36,16 @@ func reOpenLogOnHup(appInst *app.App) {
 func main() {
 	params := param.ParseCli()
 	appInst, errs := app.NewApp(params)
-	serverErrHandler.CheckFatal(errs...)
+	serverError.CheckFatal(errs...)
 
 	if appInst == nil {
-		serverErrHandler.CheckFatal(errors.New("failed to create application instance"))
+		serverError.CheckFatal(errors.New("failed to create application instance"))
 	}
 
 	cleanupOnInterrupt(appInst)
 	reOpenLogOnHup(appInst)
 	errs = appInst.Open()
-	serverErrHandler.CheckFatal(errs...)
+	serverError.CheckFatal(errs...)
 
 	appInst.Close()
 }

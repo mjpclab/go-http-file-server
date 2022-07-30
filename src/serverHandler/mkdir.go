@@ -39,8 +39,7 @@ func (h *handler) mkdirs(authUserName, fsPrefix string, files []string, aliasSub
 		}
 	}
 
-	if len(errs) > 0 {
-		h.logErrors(errs...)
+	if h.logErrors(errs) {
 		return false
 	}
 

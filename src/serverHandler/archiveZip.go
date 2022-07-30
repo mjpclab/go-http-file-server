@@ -51,7 +51,7 @@ func (h *handler) zip(w http.ResponseWriter, r *http.Request, pageData *response
 	zipWriter := zip.NewWriter(w)
 	defer func() {
 		err := zipWriter.Close()
-		h.errHandler.LogError(err)
+		h.logError(err)
 	}()
 
 	h.archive(

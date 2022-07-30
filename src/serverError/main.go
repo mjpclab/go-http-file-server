@@ -1,26 +1,15 @@
-package serverErrHandler
+package serverError
 
 import (
-	"../serverLog"
 	"fmt"
 	"os"
 )
 
-type ErrHandler struct {
-	logger *serverLog.Logger
-}
-
-func NewErrHandler(logger *serverLog.Logger) *ErrHandler {
-	return &ErrHandler{logger}
-}
-
-func (h *ErrHandler) LogError(err error) bool {
-	if err == nil {
-		return false
+func AppendError(errs []error, err error) []error {
+	if err != nil {
+		errs = append(errs, err)
 	}
-
-	h.logger.LogErrorString(err.Error())
-	return true
+	return errs
 }
 
 func CheckError(errs ...error) bool {

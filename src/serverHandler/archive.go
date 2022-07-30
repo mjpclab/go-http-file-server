@@ -60,14 +60,14 @@ func (h *handler) visitTreeNode(
 				defer f.Close()
 			}
 
-			if h.errHandler.LogError(err) {
+			if h.logError(err) {
 				if os.IsExist(err) {
 					return err
 				}
 				fInfo = createPlaceholderFileInfo(path.Base(fsPath), true) // prefix path for alias
 			} else {
 				fInfo, err = f.Stat()
-				if h.errHandler.LogError(err) {
+				if h.logError(err) {
 					return err
 				}
 			}
@@ -83,7 +83,7 @@ func (h *handler) visitTreeNode(
 
 		if f != nil && fInfo.IsDir() {
 			childInfos, err = f.Readdir(0)
-			if h.errHandler.LogError(err) {
+			if h.logError(err) {
 				return err
 			}
 		}
@@ -153,7 +153,7 @@ func (h *handler) archive(
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			h.logArchive(targetFilename, relPath, r)
 			err := cbWriteFile(f, fInfo, relPath)
-			h.errHandler.LogError(err)
+			h.logError(err)
 			return err
 		},
 	)
@@ -170,7 +170,7 @@ func writeArchiveHeader(w http.ResponseWriter, contentType, filename string) {
 }
 
 func (h *handler) normalizeArchiveSelections(r *http.Request) ([]string, bool) {
-	if h.errHandler.LogError(r.ParseForm()) {
+	if h.logError(r.ParseForm()) {
 		return nil, false
 	}
 	inputs := r.Form["name"]

@@ -32,8 +32,7 @@ func (h *handler) deleteItems(authUserName, fsPrefix string, files []string, ali
 		}
 	}
 
-	if len(errs) > 0 {
-		h.logErrors(errs...)
+	if h.logErrors(errs) {
 		return false
 	}
 

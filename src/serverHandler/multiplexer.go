@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"../param"
-	"../serverErrHandler"
 	"../serverLog"
 	"../tpl"
 	"../user"
@@ -37,7 +36,6 @@ func NewMultiplexer(
 	users user.List,
 	theme tpl.Theme,
 	logger *serverLog.Logger,
-	errHandler *serverErrHandler.ErrHandler,
 ) http.Handler {
 	if len(p.Aliases) == 0 {
 		return defaultHandler
@@ -66,7 +64,7 @@ func NewMultiplexer(
 				p, alias.fs, alias.url, aliases,
 				restrictAccessUrls, restrictAccessDirs,
 				headersUrls, headersDirs,
-				users, theme, logger, errHandler,
+				users, theme, logger,
 				restrictAccess,
 				pageVaryV1, pageVary, contentVaryV1, contentVary,
 			)
@@ -81,7 +79,7 @@ func NewMultiplexer(
 				p, alias.fs, alias.url, aliases,
 				restrictAccessUrls, restrictAccessDirs,
 				headersUrls, headersDirs,
-				users, theme, logger, errHandler,
+				users, theme, logger,
 				restrictAccess,
 				pageVaryV1, pageVary, contentVaryV1, contentVary,
 			),
