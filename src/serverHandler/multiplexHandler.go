@@ -5,7 +5,6 @@ import (
 	"../serverLog"
 	"../tpl"
 	"../user"
-	"../util"
 	"net/http"
 	"strings"
 )
@@ -20,9 +19,8 @@ type multiplexHandler struct {
 }
 
 func (mux multiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	rawReqPath := util.CleanUrlPath(r.URL.Path)
 	for _, aAndH := range mux.aliasWithHandlers {
-		if aAndH.alias.isMatch(rawReqPath) || aAndH.alias.isPredecessorOf(rawReqPath) {
+		if aAndH.alias.isMatch(r.URL.Path) || aAndH.alias.isPredecessorOf(r.URL.Path) {
 			aAndH.handler.ServeHTTP(w, r)
 			return
 		}
