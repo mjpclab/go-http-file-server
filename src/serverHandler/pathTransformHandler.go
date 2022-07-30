@@ -48,6 +48,6 @@ func (transformer pathTransformHandler) ServeHTTP(w http.ResponseWriter, r *http
 	defaultHandler.ServeHTTP(w, r)
 }
 
-func NewPathTransformHandler(prefixes []string, handler http.Handler) http.Handler {
+func newPathTransformHandler(prefixes []string, handler http.Handler) http.Handler {
 	return pathTransformHandler{prefixes, handler}
 }

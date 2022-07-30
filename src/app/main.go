@@ -8,7 +8,6 @@ import (
 	"../serverLog"
 	"../tpl"
 	"../util"
-	"../vhost"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -87,7 +86,7 @@ func NewApp(params []*param.Param) (*App, []error) {
 		}
 
 		// vHost Handler
-		vhHandler, errs := vhost.NewHandler(p, logger, theme)
+		vhHandler, errs := serverHandler.NewVhostHandler(p, logger, theme)
 		if len(errs) > 0 {
 			return nil, errs
 		}

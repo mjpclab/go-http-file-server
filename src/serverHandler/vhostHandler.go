@@ -1,16 +1,15 @@
-package vhost
+package serverHandler
 
 import (
 	"../param"
 	"../serverError"
-	"../serverHandler"
 	"../serverLog"
 	"../tpl"
 	"../user"
 	"net/http"
 )
 
-func NewHandler(
+func NewVhostHandler(
 	p *param.Param,
 	logger *serverLog.Logger,
 	theme tpl.Theme,
@@ -40,8 +39,8 @@ func NewHandler(
 		return nil, errs
 	}
 
-	muxHandler := serverHandler.NewMultiplexHandler(p, *users, theme, logger)
-	pathTransformHandler := serverHandler.NewPathTransformHandler(p.PrefixUrls, muxHandler)
+	muxHandler := newMultiplexHandler(p, *users, theme, logger)
+	pathTransformHandler := newPathTransformHandler(p.PrefixUrls, muxHandler)
 
 	return pathTransformHandler, nil
 }

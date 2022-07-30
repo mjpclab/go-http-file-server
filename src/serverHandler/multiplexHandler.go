@@ -29,7 +29,7 @@ func (mux multiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defaultHandler.ServeHTTP(w, r)
 }
 
-func NewMultiplexHandler(
+func newMultiplexHandler(
 	p *param.Param,
 	users user.List,
 	theme tpl.Theme,
