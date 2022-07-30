@@ -206,7 +206,7 @@ func ParseCli() []*Param {
 		// undefined flags
 		undefs := result.GetUndefs()
 		if len(undefs) > 0 {
-			fmt.Println("unknown option:", strings.Join(undefs, " "))
+			os.Stderr.WriteString("unknown option: " + strings.Join(undefs, " ") + "\n")
 			os.Exit(1)
 		}
 
@@ -256,7 +256,7 @@ func ParseCli() []*Param {
 		for i := range results {
 			undefs := results[i].GetUndefs()
 			if len(undefs) > 0 {
-				fmt.Println("unknown option from config:", strings.Join(undefs, " "))
+				os.Stderr.WriteString("unknown option from config: " + strings.Join(undefs, " ") + "\n")
 				os.Exit(1)
 			}
 		}

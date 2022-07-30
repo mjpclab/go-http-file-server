@@ -1,7 +1,6 @@
 package serverError
 
 import (
-	"fmt"
 	"os"
 )
 
@@ -20,7 +19,7 @@ func CheckError(errs ...error) bool {
 			continue
 		}
 		hasError = true
-		fmt.Fprintln(os.Stderr, err)
+		os.Stderr.WriteString(err.Error() + "\n")
 	}
 
 	return hasError

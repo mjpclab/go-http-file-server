@@ -8,7 +8,6 @@ import (
 	"../serverLog"
 	"../tpl"
 	"../util"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -42,7 +41,7 @@ func NewApp(params []*param.Param) (*App, []error) {
 
 	if serverHandler.TryEnableWSL1Fix() && verbose {
 		ttyFile, teardownTtyFile := util.GetTTYFile()
-		fmt.Fprintln(ttyFile, "WSL 1 compatible mode enabled")
+		ttyFile.WriteString("WSL 1 compatible mode enabled\n")
 		teardownTtyFile()
 	}
 
