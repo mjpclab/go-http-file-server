@@ -24,6 +24,13 @@ type aliasParam struct {
 	theme  tpl.Theme
 	logger *serverLog.Logger
 
+	shows     *regexp.Regexp
+	showDirs  *regexp.Regexp
+	showFiles *regexp.Regexp
+	hides     *regexp.Regexp
+	hideDirs  *regexp.Regexp
+	hideFiles *regexp.Regexp
+
 	headersUrls []pathHeaders
 	headersDirs []pathHeaders
 
@@ -50,6 +57,13 @@ type aliasHandler struct {
 	users  user.List
 	theme  tpl.Theme
 	logger *serverLog.Logger
+
+	shows     *regexp.Regexp
+	showDirs  *regexp.Regexp
+	showFiles *regexp.Regexp
+	hides     *regexp.Regexp
+	hideDirs  *regexp.Regexp
+	hideFiles *regexp.Regexp
 
 	dirIndexes []string
 	aliases    aliases
@@ -87,19 +101,12 @@ type aliasHandler struct {
 	authUrls   []string
 	authDirs   []string
 
-	shows     *regexp.Regexp
-	showDirs  *regexp.Regexp
-	showFiles *regexp.Regexp
-	hides     *regexp.Regexp
-	hideDirs  *regexp.Regexp
-	hideFiles *regexp.Regexp
-
-	fileServer http.Handler
-
 	pageVaryV1    string
 	pageVary      string
 	contentVaryV1 string
 	contentVary   string
+
+	fileServer http.Handler
 }
 
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -255,12 +262,12 @@ func newAliasHandler(
 		authUrls:   p.AuthUrls,
 		authDirs:   p.AuthDirs,
 
-		shows:     p.Shows,
-		showDirs:  p.ShowDirs,
-		showFiles: p.ShowFiles,
-		hides:     p.Hides,
-		hideDirs:  p.HideDirs,
-		hideFiles: p.HideFiles,
+		shows:     ap.shows,
+		showDirs:  ap.showDirs,
+		showFiles: ap.showFiles,
+		hides:     ap.hides,
+		hideDirs:  ap.hideDirs,
+		hideFiles: ap.hideFiles,
 
 		fileServer: fileServer,
 

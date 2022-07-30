@@ -3,7 +3,6 @@ package param
 import (
 	"crypto/tls"
 	"os"
-	"regexp"
 )
 
 type user struct {
@@ -73,18 +72,18 @@ type Param struct {
 	GlobalHttps bool
 	HttpsPort   string
 
-	Shows     *regexp.Regexp
-	ShowDirs  *regexp.Regexp
-	ShowFiles *regexp.Regexp
-	Hides     *regexp.Regexp
-	HideDirs  *regexp.Regexp
-	HideFiles *regexp.Regexp
+	Shows     []string
+	ShowDirs  []string
+	ShowFiles []string
+	Hides     []string
+	HideDirs  []string
+	HideFiles []string
 
 	AccessLog string
 	ErrorLog  string
 }
 
-func normalize(p *Param) {
+func (p *Param) normalize() {
 	_, hasRootAlias := p.Aliases["/"]
 	if hasRootAlias {
 		p.EmptyRoot = false

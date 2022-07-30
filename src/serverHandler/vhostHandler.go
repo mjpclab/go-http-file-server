@@ -36,6 +36,19 @@ func NewVhostHandler(
 		errs = serverError.AppendError(errs, users.AddSha512(u.Username, u.Password))
 	}
 
+	shows, err := wildcardToRegexp(p.Shows)
+	errs = serverError.AppendError(errs, err)
+	showDirs, err := wildcardToRegexp(p.ShowDirs)
+	errs = serverError.AppendError(errs, err)
+	showFiles, err := wildcardToRegexp(p.ShowFiles)
+	errs = serverError.AppendError(errs, err)
+	hides, err := wildcardToRegexp(p.Hides)
+	errs = serverError.AppendError(errs, err)
+	hideDirs, err := wildcardToRegexp(p.HideDirs)
+	errs = serverError.AppendError(errs, err)
+	hideFiles, err := wildcardToRegexp(p.HideFiles)
+	errs = serverError.AppendError(errs, err)
+
 	if len(errs) > 0 {
 		return nil, errs
 	}
@@ -56,6 +69,13 @@ func NewVhostHandler(
 		users:  *users,
 		theme:  theme,
 		logger: logger,
+
+		shows:     shows,
+		showDirs:  showDirs,
+		showFiles: showFiles,
+		hides:     hides,
+		hideDirs:  hideDirs,
+		hideFiles: hideFiles,
 
 		headersUrls: newPathHeaders(p.HeadersUrls),
 		headersDirs: newPathHeaders(p.HeadersDirs),

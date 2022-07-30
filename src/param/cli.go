@@ -433,32 +433,26 @@ func ParseCli() []*Param {
 		}
 
 		// shows
-		shows, err := WildcardToRegexp(result.GetStrings("shows"))
-		serverError.CheckFatal(err)
+		shows, _ := result.GetStrings("shows")
 		param.Shows = shows
 
-		showDirs, err := WildcardToRegexp(result.GetStrings("showdirs"))
-		serverError.CheckFatal(err)
+		showDirs, _ := result.GetStrings("showdirs")
 		param.ShowDirs = showDirs
 
-		showFiles, err := WildcardToRegexp(result.GetStrings("showfiles"))
-		serverError.CheckFatal(err)
+		showFiles, _ := result.GetStrings("showfiles")
 		param.ShowFiles = showFiles
 
 		// hides
-		hides, err := WildcardToRegexp(result.GetStrings("hides"))
-		serverError.CheckFatal(err)
+		hides, _ := result.GetStrings("hides")
 		param.Hides = hides
 
-		hideDirs, err := WildcardToRegexp(result.GetStrings("hidedirs"))
-		serverError.CheckFatal(err)
+		hideDirs, _ := result.GetStrings("hidedirs")
 		param.HideDirs = hideDirs
 
-		hideFiles, err := WildcardToRegexp(result.GetStrings("hidefiles"))
-		serverError.CheckFatal(err)
+		hideFiles, _ := result.GetStrings("hidefiles")
 		param.HideFiles = hideFiles
 
-		normalize(param)
+		param.normalize()
 		params = append(params, param)
 	}
 
