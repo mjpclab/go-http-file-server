@@ -65,6 +65,11 @@ func WildcardToRegexp(wildcards []string, found bool) (*regexp.Regexp, error) {
 }
 
 func (param *Param) GetDupUserNames() []string {
+	userNameEqual := util.IsStrEqualNoCase
+	if param.UserMatchCase {
+		userNameEqual = util.IsStrEqualAccurate
+	}
+
 	usersGroups := [][]*user{
 		param.UsersPlain,
 		param.UsersBase64,
@@ -74,21 +79,30 @@ func (param *Param) GetDupUserNames() []string {
 		param.UsersSha512,
 	}
 
-	userMap := map[string]bool{}
-	dupUserMap := map[string]bool{}
+	checkedUsernames := make([]string, 0,
+		len(param.UsersPlain)+
+			len(param.UsersBase64)+
+			len(param.UsersMd5)+
+			len(param.UsersSha1)+
+			len(param.UsersSha256)+
+			len(param.UsersSha512),
+	)
+	var dupUserNames []string
 
 	for _, users := range usersGroups {
+	eachUser:
 		for _, user := range users {
-			if userMap[user.Username] {
-				dupUserMap[user.Username] = true
+			for _, existingUsername := range checkedUsernames {
+				if userNameEqual(user.Username, existingUsername) {
+					if !util.Contains(dupUserNames, existingUsername) {
+						dupUserNames = append(dupUserNames, existingUsername)
+					}
+					continue eachUser
+				}
 			}
-			userMap[user.Username] = true
+			checkedUsernames = append(checkedUsernames, user.Username)
 		}
 	}
 
-	dupUserNames := make([]string, 0, len(dupUserMap))
-	for username, _ := range dupUserMap {
-		dupUserNames = append(dupUserNames, username)
-	}
 	return dupUserNames
 }
