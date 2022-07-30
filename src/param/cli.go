@@ -5,7 +5,6 @@ import (
 	"../serverError"
 	"../util"
 	"../version"
-	"fmt"
 	"os"
 	"strings"
 )
@@ -409,11 +408,6 @@ func ParseCli() []*Param {
 		param.UsersSha256 = EntriesToUsers(arrUsersSha256)
 		arrUsersSha512, _ := result.GetStrings("userssha512")
 		param.UsersSha512 = EntriesToUsers(arrUsersSha512)
-
-		dupUserNames := param.GetDupUserNames()
-		if len(dupUserNames) > 0 {
-			serverError.CheckFatal(fmt.Errorf("duplicated usernames: %q", dupUserNames))
-		}
 
 		// normalize listen
 		listens, _ := result.GetStrings("listens")
