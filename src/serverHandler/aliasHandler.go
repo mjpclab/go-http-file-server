@@ -19,7 +19,7 @@ type pathStrings struct {
 	strings []string
 }
 
-type handler struct {
+type aliasHandler struct {
 	root          string
 	emptyRoot     bool
 	forceDirSlash int
@@ -84,7 +84,7 @@ type handler struct {
 	contentVary    string
 }
 
-func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.logRequest(r)
 
 	// hsts redirect
@@ -167,7 +167,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func newHandler(
+func newAliasHandler(
 	p *param.Param,
 	root string,
 	aliasPrefix string,
@@ -194,7 +194,7 @@ func newHandler(
 		fileServer = createFileServer(root)
 	}
 
-	h := &handler{
+	h := &aliasHandler{
 		root:          root,
 		emptyRoot:     emptyRoot,
 		forceDirSlash: p.ForceDirSlash,

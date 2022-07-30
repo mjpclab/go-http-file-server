@@ -21,7 +21,7 @@ func hasUrlOrDirPrefix(urls []string, reqUrl string, dirs []string, reqDir strin
 	return false
 }
 
-func (h *handler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if info == nil || !info.IsDir() {
 		return false
 	}
@@ -33,7 +33,7 @@ func (h *handler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string) b
 	return hasUrlOrDirPrefix(h.uploadUrls, rawReqPath, h.uploadDirs, reqFsPath)
 }
 
-func (h *handler) getCanMkdir(info os.FileInfo, rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanMkdir(info os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if info == nil || !info.IsDir() {
 		return false
 	}
@@ -45,7 +45,7 @@ func (h *handler) getCanMkdir(info os.FileInfo, rawReqPath, reqFsPath string) bo
 	return hasUrlOrDirPrefix(h.mkdirUrls, rawReqPath, h.mkdirDirs, reqFsPath)
 }
 
-func (h *handler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if info == nil || !info.IsDir() {
 		return false
 	}
@@ -57,7 +57,7 @@ func (h *handler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath string) b
 	return hasUrlOrDirPrefix(h.deleteUrls, rawReqPath, h.deleteDirs, reqFsPath)
 }
 
-func (h *handler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if len(subInfos) == 0 {
 		return false
 	}
@@ -69,7 +69,7 @@ func (h *handler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath st
 	return hasUrlOrDirPrefix(h.archiveUrls, rawReqPath, h.archiveDirs, reqFsPath)
 }
 
-func (h *handler) getCanCors(rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanCors(rawReqPath, reqFsPath string) bool {
 	if h.globalCors {
 		return true
 	}
@@ -77,7 +77,7 @@ func (h *handler) getCanCors(rawReqPath, reqFsPath string) bool {
 	return hasUrlOrDirPrefix(h.corsUrls, rawReqPath, h.corsDirs, reqFsPath)
 }
 
-func (h *handler) getNeedAuth(rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getNeedAuth(rawReqPath, reqFsPath string) bool {
 	if h.globalAuth {
 		return true
 	}

@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (h *handler) hsts(w http.ResponseWriter, r *http.Request) (needRedirect bool) {
+func (h *aliasHandler) hsts(w http.ResponseWriter, r *http.Request) (needRedirect bool) {
 	_, port := util.ExtractHostnamePort(r.Host)
 
 	if len(port) > 0 {
@@ -24,7 +24,7 @@ func (h *handler) hsts(w http.ResponseWriter, r *http.Request) (needRedirect boo
 	return true
 }
 
-func (h *handler) https(w http.ResponseWriter, r *http.Request) (needRedirect bool) {
+func (h *aliasHandler) https(w http.ResponseWriter, r *http.Request) (needRedirect bool) {
 	if r.TLS != nil {
 		return
 	}

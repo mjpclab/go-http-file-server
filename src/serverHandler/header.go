@@ -20,7 +20,7 @@ func newPathHeaders(pathHeadersMap map[string][][2]string) []pathHeaders {
 	return results
 }
 
-func (h *handler) getHeaders(reqUrlPath, reqFsPath string, doGetHeaders bool) [][2]string {
+func (h *aliasHandler) getHeaders(reqUrlPath, reqFsPath string, doGetHeaders bool) [][2]string {
 	if !doGetHeaders {
 		return nil
 	}

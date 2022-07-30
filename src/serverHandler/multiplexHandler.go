@@ -10,20 +10,20 @@ import (
 	"strings"
 )
 
-type aliasHandler struct {
+type aliasWithHandler struct {
 	alias   alias
 	handler http.Handler
 }
 
-type multiplexer struct {
-	aliasHandlers []aliasHandler
+type multiplexHandler struct {
+	aliasWithHandlers []aliasWithHandler
 }
 
-func (mux multiplexer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (mux multiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rawReqPath := util.CleanUrlPath(r.URL.Path)
-	for _, aliasHandler := range mux.aliasHandlers {
-		if aliasHandler.alias.isMatch(rawReqPath) || aliasHandler.alias.isPredecessorOf(rawReqPath) {
-			aliasHandler.handler.ServeHTTP(w, r)
+	for _, aAndH := range mux.aliasWithHandlers {
+		if aAndH.alias.isMatch(rawReqPath) || aAndH.alias.isPredecessorOf(rawReqPath) {
+			aAndH.handler.ServeHTTP(w, r)
 			return
 		}
 	}
@@ -31,7 +31,7 @@ func (mux multiplexer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defaultHandler.ServeHTTP(w, r)
 }
 
-func NewMultiplexer(
+func NewMultiplexHandler(
 	p *param.Param,
 	users user.List,
 	theme tpl.Theme,
@@ -60,7 +60,7 @@ func NewMultiplexer(
 	if len(aliases) == 1 {
 		alias, hasRootAlias := aliases.byUrlPath("/")
 		if hasRootAlias {
-			return newHandler(
+			return newAliasHandler(
 				p, alias.fs, alias.url, aliases,
 				restrictAccessUrls, restrictAccessDirs,
 				headersUrls, headersDirs,
@@ -71,11 +71,11 @@ func NewMultiplexer(
 		}
 	}
 
-	aliasHandlers := make([]aliasHandler, len(aliases))
+	aliasHandlers := make([]aliasWithHandler, len(aliases))
 	for i, alias := range aliases {
-		aliasHandlers[i] = aliasHandler{
+		aliasHandlers[i] = aliasWithHandler{
 			alias: alias,
-			handler: newHandler(
+			handler: newAliasHandler(
 				p, alias.fs, alias.url, aliases,
 				restrictAccessUrls, restrictAccessDirs,
 				headersUrls, headersDirs,
@@ -85,5 +85,5 @@ func NewMultiplexer(
 			),
 		}
 	}
-	return multiplexer{aliasHandlers}
+	return multiplexHandler{aliasHandlers}
 }

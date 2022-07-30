@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
 	success := false
 
 	switch {

@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type pathTransformer struct {
+type pathTransformHandler struct {
 	prefixes    []string
 	nextHandler http.Handler
 }
@@ -20,7 +20,7 @@ func stripUrlPrefix(urlPathDir, urlPath, prefix string) string {
 	}
 }
 
-func (transformer pathTransformer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (transformer pathTransformHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	urlPath := util.CleanUrlPath(r.URL.Path)
 	var urlPathDir string
 	if len(urlPath) > 1 && r.URL.Path[len(r.URL.Path)-1] == '/' {
@@ -48,6 +48,6 @@ func (transformer pathTransformer) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	defaultHandler.ServeHTTP(w, r)
 }
 
-func NewPathTransformer(prefixes []string, handler http.Handler) http.Handler {
-	return pathTransformer{prefixes, handler}
+func NewPathTransformHandler(prefixes []string, handler http.Handler) http.Handler {
+	return pathTransformHandler{prefixes, handler}
 }

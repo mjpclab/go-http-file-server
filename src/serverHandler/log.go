@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-func (h *handler) logRequest(r *http.Request) {
+func (h *aliasHandler) logRequest(r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
@@ -38,7 +38,7 @@ func (h *handler) logRequest(r *http.Request) {
 	go h.logger.LogAccess(buf)
 }
 
-func (h *handler) logMutate(username, action, detail string, r *http.Request) {
+func (h *aliasHandler) logMutate(username, action, detail string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
@@ -59,7 +59,7 @@ func (h *handler) logMutate(username, action, detail string, r *http.Request) {
 	go h.logger.LogAccess(buf)
 }
 
-func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) {
+func (h *aliasHandler) logUpload(username, filename, fsPath string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
@@ -80,7 +80,7 @@ func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) 
 	go h.logger.LogAccess(buf)
 }
 
-func (h *handler) logArchive(filename, relPath string, r *http.Request) {
+func (h *aliasHandler) logArchive(filename, relPath string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
@@ -96,7 +96,7 @@ func (h *handler) logArchive(filename, relPath string, r *http.Request) {
 	go h.logger.LogAccess(buf)
 }
 
-func (h *handler) logErrors(errs []error) (hasError bool) {
+func (h *aliasHandler) logErrors(errs []error) (hasError bool) {
 	if len(errs) == 0 {
 		return false
 	}
@@ -113,7 +113,7 @@ func (h *handler) logErrors(errs []error) (hasError bool) {
 	return true
 }
 
-func (h *handler) logError(err error) (hasError bool) {
+func (h *aliasHandler) logError(err error) (hasError bool) {
 	if err == nil {
 		return false
 	}

@@ -21,7 +21,7 @@ func hasRestrictAccess(globalRestrictAccesses []string, restrictAccessUrls, rest
 	return globalRestrictAccesses != nil || len(restrictAccessUrls) > 0 || len(restrictAccessDirs) > 0
 }
 
-func (h *handler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath string, file *os.File, item os.FileInfo) bool {
+func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath string, file *os.File, item os.FileInfo) bool {
 	if !h.restrictAccess {
 		return true
 	}

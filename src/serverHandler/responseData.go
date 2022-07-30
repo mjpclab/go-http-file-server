@@ -143,7 +143,7 @@ func readdir(file *os.File, item os.FileInfo, visitFs bool) (subItems []os.FileI
 	return file.Readdir(0)
 }
 
-func (h *handler) mergeAlias(
+func (h *aliasHandler) mergeAlias(
 	rawRequestPath string,
 	item os.FileInfo,
 	subItems []os.FileInfo,
@@ -233,7 +233,7 @@ func getStatusByErr(err error) int {
 	}
 }
 
-func (h *handler) statIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo, doStat bool) (file *os.File, item os.FileInfo, err error) {
+func (h *aliasHandler) statIndexFile(rawReqPath, baseDir string, baseItem os.FileInfo, doStat bool) (file *os.File, item os.FileInfo, err error) {
 	if !doStat || len(h.dirIndexes) == 0 {
 		return
 	}
@@ -291,7 +291,7 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 	return
 }
 
-func (h *handler) getResponseData(r *http.Request) *responseData {
+func (h *aliasHandler) getResponseData(r *http.Request) *responseData {
 	var errs []error
 
 	prefixReqPath := r.URL.RawPath

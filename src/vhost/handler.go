@@ -40,8 +40,8 @@ func NewHandler(
 		return nil, errs
 	}
 
-	muxHandler := serverHandler.NewMultiplexer(p, *users, theme, logger)
-	pathTransformHandler := serverHandler.NewPathTransformer(p.PrefixUrls, muxHandler)
+	muxHandler := serverHandler.NewMultiplexHandler(p, *users, theme, logger)
+	pathTransformHandler := serverHandler.NewPathTransformHandler(p.PrefixUrls, muxHandler)
 
 	return pathTransformHandler, nil
 }

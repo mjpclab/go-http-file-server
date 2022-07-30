@@ -27,7 +27,7 @@ func createFsFileServer(root string) http.Handler {
 	return http.FileServer(wrappedHttpFileSystem{http.Dir(root)})
 }
 
-func serveFsContent(h *handler, w http.ResponseWriter, r *http.Request, info os.FileInfo, file *os.File) {
+func serveFsContent(h *aliasHandler, w http.ResponseWriter, r *http.Request, info os.FileInfo, file *os.File) {
 	h.fileServer.ServeHTTP(w, r)
 }
 

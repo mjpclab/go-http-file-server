@@ -78,7 +78,7 @@ func getJsonData(data *responseData) *jsonResponseData {
 	}
 }
 
-func (h *handler) json(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) json(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
 	header.Set("Content-Type", "application/json; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")

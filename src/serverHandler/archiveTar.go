@@ -47,7 +47,7 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 	return nil
 }
 
-func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, pageData *responseData) {
 	if !pageData.CanArchive {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -77,7 +77,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 	)
 }
 
-func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, pageData *responseData) {
 	if !pageData.CanArchive {
 		w.WriteHeader(http.StatusBadRequest)
 		return

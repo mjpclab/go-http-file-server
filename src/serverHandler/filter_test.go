@@ -9,7 +9,7 @@ import (
 
 func TestHandler_FilterItems(t *testing.T) {
 	now := time.Now()
-	var h *handler
+	var h *aliasHandler
 	var items []os.FileInfo
 	var ok bool
 
@@ -26,70 +26,70 @@ func TestHandler_FilterItems(t *testing.T) {
 
 	originalItems := []os.FileInfo{dir1, dir2, dir3, file1, file2, file3}
 
-	h = &handler{shows: re2}
+	h = &aliasHandler{shows: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, dir2, file2)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{showDirs: re2}
+	h = &aliasHandler{showDirs: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, dir2, file1, file2, file3)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{showFiles: re2}
+	h = &aliasHandler{showFiles: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, dir1, dir2, dir3, file2)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{hides: re2}
+	h = &aliasHandler{hides: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, dir1, dir3, file1, file3)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{hideDirs: re2}
+	h = &aliasHandler{hideDirs: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, dir1, dir3, file1, file2, file3)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{hideFiles: re2}
+	h = &aliasHandler{hideFiles: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, dir1, dir2, dir3, file1, file3)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{shows: re2, hides: re3}
+	h = &aliasHandler{shows: re2, hides: re3}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, dir2, file2)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{shows: re2, hides: re2}
+	h = &aliasHandler{shows: re2, hides: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{shows: re2, hideDirs: re2}
+	h = &aliasHandler{shows: re2, hideDirs: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, file2)
 	if !ok {
 		t.Errorf("%+v\n", items)
 	}
 
-	h = &handler{shows: re2, hideFiles: re2}
+	h = &aliasHandler{shows: re2, hideFiles: re2}
 	items = h.FilterItems(originalItems)
 	ok = expectItems(items, dir2)
 	if !ok {

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func (h *handler) deleteItems(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
+func (h *aliasHandler) deleteItems(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	var errs []error
 
 	for _, inputFilename := range files {

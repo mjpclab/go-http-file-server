@@ -42,7 +42,7 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 	return
 }
 
-func (h *handler) visitTreeNode(
+func (h *aliasHandler) visitTreeNode(
 	fsPath, rawReqPath, relPath string,
 	statNode bool,
 	childSelections []string,
@@ -119,7 +119,7 @@ func (h *handler) visitTreeNode(
 	}
 }
 
-func (h *handler) archive(
+func (h *aliasHandler) archive(
 	w http.ResponseWriter,
 	r *http.Request,
 	pageData *responseData,
@@ -169,7 +169,7 @@ func writeArchiveHeader(w http.ResponseWriter, contentType, filename string) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *handler) normalizeArchiveSelections(r *http.Request) ([]string, bool) {
+func (h *aliasHandler) normalizeArchiveSelections(r *http.Request) ([]string, bool) {
 	if h.logError(r.ParseForm()) {
 		return nil, false
 	}
