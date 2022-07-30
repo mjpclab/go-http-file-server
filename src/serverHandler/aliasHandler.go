@@ -19,6 +19,24 @@ type pathStrings struct {
 	strings []string
 }
 
+type aliasParam struct {
+	users  user.List
+	theme  tpl.Theme
+	logger *serverLog.Logger
+
+	headersUrls []pathHeaders
+	headersDirs []pathHeaders
+
+	restrictAccess     bool
+	restrictAccessUrls []pathStrings
+	restrictAccessDirs []pathStrings
+
+	pageVaryV1    string
+	pageVary      string
+	contentVaryV1 string
+	contentVary   string
+}
+
 type aliasHandler struct {
 	root          string
 	emptyRoot     bool
@@ -29,9 +47,14 @@ type aliasHandler struct {
 	defaultSort   string
 	aliasPrefix   string
 
+	users  user.List
+	theme  tpl.Theme
+	logger *serverLog.Logger
+
 	dirIndexes []string
 	aliases    aliases
 
+	restrictAccess       bool
 	globalRestrictAccess []string
 	restrictAccessUrls   []pathStrings
 	restrictAccessDirs   []pathStrings
@@ -63,7 +86,6 @@ type aliasHandler struct {
 	globalAuth bool
 	authUrls   []string
 	authDirs   []string
-	users      user.List
 
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
@@ -71,17 +93,13 @@ type aliasHandler struct {
 	hides     *regexp.Regexp
 	hideDirs  *regexp.Regexp
 	hideFiles *regexp.Regexp
-	theme     tpl.Theme
 
 	fileServer http.Handler
 
-	logger *serverLog.Logger
-
-	restrictAccess bool
-	pageVaryV1     string
-	pageVary       string
-	contentVaryV1  string
-	contentVary    string
+	pageVaryV1    string
+	pageVary      string
+	contentVaryV1 string
+	contentVary   string
 }
 
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -169,51 +187,49 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func newAliasHandler(
 	p *param.Param,
-	root string,
-	aliasPrefix string,
+	ap *aliasParam,
+	currentAlias alias,
 	allAliases aliases,
-	restrictAccessUrls, restrictAccessDirs []pathStrings,
-	headersUrls, headersDirs []pathHeaders,
-	users user.List,
-	theme tpl.Theme,
-	logger *serverLog.Logger,
-	restrictAccess bool,
-	pageVaryV1, pageVary, contentVaryV1, contentVary string,
 ) http.Handler {
-	emptyRoot := p.EmptyRoot && aliasPrefix == "/"
+	emptyRoot := p.EmptyRoot && currentAlias.url == "/"
 
 	aliases := aliases{}
 	for _, alias := range allAliases {
-		if alias.isSuccessorOf(aliasPrefix) {
+		if alias.isSuccessorOf(currentAlias.url) {
 			aliases = append(aliases, alias)
 		}
 	}
 
 	var fileServer http.Handler
 	if !emptyRoot && createFileServer != nil { // for WSL 1 fix
-		fileServer = createFileServer(root)
+		fileServer = createFileServer(currentAlias.fs)
 	}
 
 	h := &aliasHandler{
-		root:          root,
+		root:          currentAlias.fs,
 		emptyRoot:     emptyRoot,
 		forceDirSlash: p.ForceDirSlash,
 		globalHsts:    p.GlobalHsts,
 		globalHttps:   p.GlobalHttps,
 		httpsPort:     p.HttpsPort,
 		defaultSort:   p.DefaultSort,
-		aliasPrefix:   aliasPrefix,
-		aliases:       aliases,
+		aliasPrefix:   currentAlias.url,
+
+		users:  ap.users,
+		theme:  ap.theme,
+		logger: ap.logger,
 
 		dirIndexes: p.DirIndexes,
+		aliases:    aliases,
 
+		restrictAccess:       ap.restrictAccess,
 		globalRestrictAccess: p.GlobalRestrictAccess,
-		restrictAccessUrls:   restrictAccessUrls,
-		restrictAccessDirs:   restrictAccessDirs,
+		restrictAccessUrls:   ap.restrictAccessUrls,
+		restrictAccessDirs:   ap.restrictAccessDirs,
 
 		globalHeaders: p.GlobalHeaders,
-		headersUrls:   headersUrls,
-		headersDirs:   headersDirs,
+		headersUrls:   ap.headersUrls,
+		headersDirs:   ap.headersDirs,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
@@ -238,7 +254,6 @@ func newAliasHandler(
 		globalAuth: p.GlobalAuth,
 		authUrls:   p.AuthUrls,
 		authDirs:   p.AuthDirs,
-		users:      users,
 
 		shows:     p.Shows,
 		showDirs:  p.ShowDirs,
@@ -246,17 +261,13 @@ func newAliasHandler(
 		hides:     p.Hides,
 		hideDirs:  p.HideDirs,
 		hideFiles: p.HideFiles,
-		theme:     theme,
 
 		fileServer: fileServer,
 
-		logger: logger,
-
-		restrictAccess: restrictAccess,
-		pageVaryV1:     pageVaryV1,
-		pageVary:       pageVary,
-		contentVaryV1:  contentVaryV1,
-		contentVary:    contentVary,
+		pageVaryV1:    ap.pageVaryV1,
+		pageVary:      ap.pageVary,
+		contentVaryV1: ap.contentVaryV1,
+		contentVary:   ap.contentVary,
 	}
 	return h
 }

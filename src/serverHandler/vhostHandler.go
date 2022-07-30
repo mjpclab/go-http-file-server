@@ -7,6 +7,7 @@ import (
 	"../tpl"
 	"../user"
 	"net/http"
+	"strings"
 )
 
 func NewVhostHandler(
@@ -39,7 +40,37 @@ func NewVhostHandler(
 		return nil, errs
 	}
 
-	muxHandler := newMultiplexHandler(p, *users, theme, logger)
+	restrictAccessUrls := newRestrictAccesses(p.RestrictAccessUrls)
+	restrictAccessDirs := newRestrictAccesses(p.RestrictAccessDirs)
+	restrictAccess := hasRestrictAccess(p.GlobalRestrictAccess, restrictAccessUrls, restrictAccessDirs)
+	pageVaryV1 := "Accept-Encoding"
+	contentVaryV1 := ""
+	if restrictAccess {
+		pageVaryV1 += ", Referer"
+		contentVaryV1 = "Referer"
+	}
+	pageVary := strings.ToLower(pageVaryV1)
+	contentVary := strings.ToLower(contentVaryV1)
+
+	ap := &aliasParam{
+		users:  *users,
+		theme:  theme,
+		logger: logger,
+
+		headersUrls: newPathHeaders(p.HeadersUrls),
+		headersDirs: newPathHeaders(p.HeadersDirs),
+
+		restrictAccess:     restrictAccess,
+		restrictAccessUrls: restrictAccessUrls,
+		restrictAccessDirs: restrictAccessDirs,
+
+		pageVaryV1:    pageVaryV1,
+		pageVary:      pageVary,
+		contentVaryV1: contentVaryV1,
+		contentVary:   contentVary,
+	}
+
+	muxHandler := newMultiplexHandler(p, ap)
 	pathTransformHandler := newPathTransformHandler(p.PrefixUrls, muxHandler)
 
 	return pathTransformHandler, nil
