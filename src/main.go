@@ -4,6 +4,7 @@ import (
 	"./app"
 	"./param"
 	"./serverError"
+	"./version"
 	"errors"
 	"os"
 	"os/signal"
@@ -34,7 +35,17 @@ func reOpenLogOnHup(appInst *app.App) {
 }
 
 func main() {
-	params := param.ParseCli()
+	params, printVersion, printHelp, errs := param.ParseCli()
+	serverError.CheckFatal(errs...)
+	if printVersion {
+		version.PrintVersion()
+		os.Exit(0)
+	}
+	if printHelp {
+		param.PrintHelp()
+		os.Exit(0)
+	}
+
 	appInst, errs := app.NewApp(params)
 	serverError.CheckFatal(errs...)
 

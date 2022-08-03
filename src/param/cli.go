@@ -4,7 +4,7 @@ import (
 	"../goNixArgParser"
 	"../serverError"
 	"../util"
-	"../version"
+	"errors"
 	"os"
 	"strings"
 )
@@ -194,7 +194,7 @@ func init() {
 	serverError.CheckFatal(err)
 }
 
-func ParseCli() []*Param {
+func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 	args := os.Args
 
 	// parse option
@@ -205,21 +205,23 @@ func ParseCli() []*Param {
 		// undefined flags
 		undefs := result.GetUndefs()
 		if len(undefs) > 0 {
-			os.Stderr.WriteString("unknown option: " + strings.Join(undefs, " ") + "\n")
-			os.Exit(1)
+			errs = append(errs,
+				errors.New("unknown option: "+strings.Join(undefs, " ")),
+			)
 		}
 
 		// version
 		if result.HasFlagKey("version") {
-			version.PrintVersion()
-			os.Exit(0)
+			printVersion = true
 		}
 
 		// help
 		if result.HasFlagKey("help") {
-			cliCmd.OutputHelp(os.Stdout)
-			os.Exit(0)
+			printHelp = true
 		}
+	}
+	if printVersion || printHelp || len(errs) > 0 {
+		return
 	}
 
 	// append config and re-parse
@@ -236,7 +238,11 @@ func ParseCli() []*Param {
 		}
 
 		configStr, err := os.ReadFile(config)
-		if serverError.CheckError(err) || len(configStr) == 0 {
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		if len(configStr) == 0 {
 			continue
 		}
 
@@ -248,6 +254,9 @@ func ParseCli() []*Param {
 		foundConfig = true
 		configs = append(configs, configArgs...)
 	}
+	if len(errs) > 0 {
+		return
+	}
 
 	if foundConfig {
 		configs = configs[1:]
@@ -255,21 +264,24 @@ func ParseCli() []*Param {
 		for i := range results {
 			undefs := results[i].GetUndefs()
 			if len(undefs) > 0 {
-				os.Stderr.WriteString("unknown option from config: " + strings.Join(undefs, " ") + "\n")
-				os.Exit(1)
+				errs = append(errs,
+					errors.New("unknown option from config: "+strings.Join(undefs, " ")),
+				)
 			}
+		}
+		if len(errs) > 0 {
+			return
 		}
 	}
 
 	// init param data
-	params := make([]*Param, 0, len(results))
+	params = make([]*Param, 0, len(results))
 	var err error
-	var errs []error
+	var es []error
 	for _, result := range results {
 		param := &Param{}
 
 		// normalize option
-		param.Root, _ = result.GetString("root")
 		param.EmptyRoot = result.HasKey("emptyroot")
 		param.DefaultSort, _ = result.GetString("defaultsort")
 		param.GlobalUpload = result.HasKey("globalupload")
@@ -288,7 +300,7 @@ func ParseCli() []*Param {
 		// root
 		root, _ := result.GetString("root")
 		root, err = util.NormalizeFsPath(root)
-		serverError.CheckFatal(err)
+		errs = serverError.AppendError(errs, err)
 		param.Root = root
 
 		// normalize url prefixes
@@ -313,13 +325,13 @@ func ParseCli() []*Param {
 
 		// restrict access urls
 		restrictAccessUrls, _ := result.GetStrings("restrictaccessurls")
-		param.RestrictAccessUrls, errs = normalizePathRestrictAccesses(restrictAccessUrls, util.NormalizeUrlPath)
-		serverError.CheckFatal(errs...)
+		param.RestrictAccessUrls, es = normalizePathRestrictAccesses(restrictAccessUrls, util.NormalizeUrlPath)
+		errs = append(errs, es...)
 
 		// restrict access dirs
 		restrictAccessDirs, _ := result.GetStrings("restrictaccessdirs")
-		param.RestrictAccessDirs, errs = normalizePathRestrictAccesses(restrictAccessDirs, util.NormalizeFsPath)
-		serverError.CheckFatal(errs...)
+		param.RestrictAccessDirs, es = normalizePathRestrictAccesses(restrictAccessDirs, util.NormalizeFsPath)
+		errs = append(errs, es...)
 
 		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")
@@ -327,25 +339,25 @@ func ParseCli() []*Param {
 
 		// headers urls
 		arrHeadersUrls, _ := result.GetStrings("headersurls")
-		param.HeadersUrls, errs = normalizePathHeadersMap(arrHeadersUrls, util.NormalizeUrlPath)
-		serverError.CheckFatal(errs...)
+		param.HeadersUrls, es = normalizePathHeadersMap(arrHeadersUrls, util.NormalizeUrlPath)
+		errs = append(errs, es...)
 
 		// headers dirs
 		arrHeadersDirs, _ := result.GetStrings("headersdirs")
-		param.HeadersDirs, errs = normalizePathHeadersMap(arrHeadersDirs, util.NormalizeFsPath)
-		serverError.CheckFatal(errs...)
+		param.HeadersDirs, es = normalizePathHeadersMap(arrHeadersDirs, util.NormalizeFsPath)
+		errs = append(errs, es...)
 
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
-		certs, errs := LoadCertificates(certFiles, keyFiles)
-		serverError.CheckFatal(errs...)
+		certs, es := LoadCertificates(certFiles, keyFiles)
+		errs = append(errs, es...)
 		param.Certificates = certs
 
 		// normalize aliases
 		arrAlias, _ := result.GetStrings("aliases")
-		param.Aliases, errs = normalizePathMaps(arrAlias)
-		serverError.CheckFatal(errs...)
+		param.Aliases, es = normalizePathMaps(arrAlias)
+		errs = append(errs, es...)
 
 		// normalize upload urls
 		arrUploadUrls, _ := result.GetStrings("uploadurls")
@@ -456,5 +468,9 @@ func ParseCli() []*Param {
 		params = append(params, param)
 	}
 
-	return params
+	return
+}
+
+func PrintHelp() {
+	cliCmd.OutputHelp(os.Stdout)
 }
