@@ -10,8 +10,8 @@ func loadCertificates(certFiles, keyFiles []string) ([]tls.Certificate, []error)
 	return goVirtualHost.LoadCertificates(certFiles, keyFiles)
 }
 
-func EntriesToUsers(entries []string) []*user {
-	users := make([]*user, 0, len(entries))
+func entriesToUsers(entries []string) [][2]string {
+	users := make([][2]string, 0, len(entries))
 	for _, userEntry := range entries {
 		username := userEntry
 		password := ""
@@ -22,7 +22,7 @@ func EntriesToUsers(entries []string) []*user {
 			password = userEntry[colonIndex+1:]
 		}
 
-		users = append(users, &user{username, password})
+		users = append(users, [2]string{username, password})
 	}
 	return users
 }

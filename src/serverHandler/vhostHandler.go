@@ -18,22 +18,22 @@ func NewVhostHandler(
 	// users
 	users := user.NewList(p.UserMatchCase)
 	for _, u := range p.UsersPlain {
-		errs = serverError.AppendError(errs, users.AddPlain(u.Username, u.Password))
+		errs = serverError.AppendError(errs, users.AddPlain(u[0], u[1]))
 	}
 	for _, u := range p.UsersBase64 {
-		errs = serverError.AppendError(errs, users.AddBase64(u.Username, u.Password))
+		errs = serverError.AppendError(errs, users.AddBase64(u[0], u[1]))
 	}
 	for _, u := range p.UsersMd5 {
-		errs = serverError.AppendError(errs, users.AddMd5(u.Username, u.Password))
+		errs = serverError.AppendError(errs, users.AddMd5(u[0], u[1]))
 	}
 	for _, u := range p.UsersSha1 {
-		errs = serverError.AppendError(errs, users.AddSha1(u.Username, u.Password))
+		errs = serverError.AppendError(errs, users.AddSha1(u[0], u[1]))
 	}
 	for _, u := range p.UsersSha256 {
-		errs = serverError.AppendError(errs, users.AddSha256(u.Username, u.Password))
+		errs = serverError.AppendError(errs, users.AddSha256(u[0], u[1]))
 	}
 	for _, u := range p.UsersSha512 {
-		errs = serverError.AppendError(errs, users.AddSha512(u.Username, u.Password))
+		errs = serverError.AppendError(errs, users.AddSha512(u[0], u[1]))
 	}
 
 	shows, err := wildcardToRegexp(p.Shows)

@@ -7,11 +7,6 @@ import (
 	"os"
 )
 
-type user struct {
-	Username string
-	Password string
-}
-
 type Param struct {
 	Root      string
 	EmptyRoot bool
@@ -52,15 +47,16 @@ type Param struct {
 	CorsUrls   []string
 	CorsDirs   []string
 
-	GlobalAuth    bool
-	AuthUrls      []string
-	AuthDirs      []string
-	UsersPlain    []*user
-	UsersBase64   []*user
-	UsersMd5      []*user
-	UsersSha1     []*user
-	UsersSha256   []*user
-	UsersSha512   []*user
+	GlobalAuth bool
+	AuthUrls   []string
+	AuthDirs   []string
+	// value: [username, password]
+	UsersPlain    [][2]string
+	UsersBase64   [][2]string
+	UsersMd5      [][2]string
+	UsersSha1     [][2]string
+	UsersSha256   [][2]string
+	UsersSha512   [][2]string
 	UserMatchCase bool
 
 	Certificates []tls.Certificate

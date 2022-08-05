@@ -375,17 +375,17 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 
 		// users
 		arrUsersPlain, _ := result.GetStrings("users")
-		param.UsersPlain = EntriesToUsers(arrUsersPlain)
+		param.UsersPlain = entriesToUsers(arrUsersPlain)
 		arrUsersBase64, _ := result.GetStrings("usersbase64")
-		param.UsersBase64 = EntriesToUsers(arrUsersBase64)
+		param.UsersBase64 = entriesToUsers(arrUsersBase64)
 		arrUsersMd5, _ := result.GetStrings("usersmd5")
-		param.UsersMd5 = EntriesToUsers(arrUsersMd5)
+		param.UsersMd5 = entriesToUsers(arrUsersMd5)
 		arrUsersSha1, _ := result.GetStrings("userssha1")
-		param.UsersSha1 = EntriesToUsers(arrUsersSha1)
+		param.UsersSha1 = entriesToUsers(arrUsersSha1)
 		arrUsersSha256, _ := result.GetStrings("userssha256")
-		param.UsersSha256 = EntriesToUsers(arrUsersSha256)
+		param.UsersSha256 = entriesToUsers(arrUsersSha256)
 		arrUsersSha512, _ := result.GetStrings("userssha512")
-		param.UsersSha512 = EntriesToUsers(arrUsersSha512)
+		param.UsersSha512 = entriesToUsers(arrUsersSha512)
 
 		// listen
 		listens, _ := result.GetStrings("listens")
