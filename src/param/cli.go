@@ -5,7 +5,9 @@ import (
 	"../serverError"
 	"../util"
 	"errors"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -276,20 +278,15 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 
 	// init param data
 	params = make([]*Param, 0, len(results))
-	var err error
 	var es []error
 	for _, result := range results {
 		param := &Param{}
 
-		// normalize option
+		// regular option
+		param.Root, _ = result.GetString("root")
 		param.EmptyRoot = result.HasKey("emptyroot")
+		param.PrefixUrls, _ = result.GetStrings("prefixurls")
 		param.DefaultSort, _ = result.GetString("defaultsort")
-		param.GlobalUpload = result.HasKey("globalupload")
-		param.GlobalMkdir = result.HasKey("globalmkdir")
-		param.GlobalDelete = result.HasKey("globaldelete")
-		param.GlobalArchive = result.HasKey("globalarchive")
-		param.GlobalCors = result.HasKey("globalcors")
-		param.GlobalAuth = result.HasKey("globalauth")
 		param.UserMatchCase = result.HasKey("usermatchcase")
 		param.HostNames, _ = result.GetStrings("hostnames")
 		param.Theme, _ = result.GetString("theme")
@@ -297,30 +294,22 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 		param.AccessLog, _ = result.GetString("accesslog")
 		param.ErrorLog, _ = result.GetString("errorlog")
 
-		// root
-		root, _ := result.GetString("root")
-		root, err = util.NormalizeFsPath(root)
-		errs = serverError.AppendError(errs, err)
-		param.Root = root
-
-		// normalize url prefixes
-		prefixurls, _ := result.GetStrings("prefixurls")
-		param.PrefixUrls = normalizeUrlPaths(prefixurls)
-
 		// force dir slash
 		if result.HasKey("forcedirslash") {
-			forceDirSlash, _ := result.GetString("forcedirslash")
-			param.ForceDirSlash = normalizeRedirectCode(forceDirSlash)
+			strRedirectCode, _ := result.GetString("forcedirslash")
+			redirectCode, _ := strconv.Atoi(strRedirectCode)
+			if redirectCode == 0 {
+				redirectCode = http.StatusMovedPermanently
+			}
+			param.ForceDirSlash = redirectCode
 		}
 
 		// dir indexes
-		dirIndexes, _ := result.GetStrings("dirindexes")
-		param.DirIndexes = normalizeFilenames(dirIndexes)
+		param.DirIndexes, _ = result.GetStrings("dirindexes")
 
 		// global restrict access
 		if result.HasKey("globalrestrictaccess") {
-			globalRestrictAccesses, _ := result.GetStrings("globalrestrictaccess")
-			param.GlobalRestrictAccess = util.ExtractHostsFromUrls(globalRestrictAccesses)
+			param.GlobalRestrictAccess, _ = result.GetStrings("globalrestrictaccess")
 		}
 
 		// restrict access urls
@@ -350,64 +339,41 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
-		certs, es := LoadCertificates(certFiles, keyFiles)
+		certs, es := loadCertificates(certFiles, keyFiles)
 		errs = append(errs, es...)
 		param.Certificates = certs
 
-		// normalize aliases
+		// aliases
 		arrAlias, _ := result.GetStrings("aliases")
 		param.Aliases, es = normalizePathMaps(arrAlias)
 		errs = append(errs, es...)
 
-		// normalize upload urls
-		arrUploadUrls, _ := result.GetStrings("uploadurls")
-		param.UploadUrls = normalizeUrlPaths(arrUploadUrls)
+		// upload/mkdir/delete/archive/cors/auth urls/dirs
+		param.GlobalUpload = result.HasKey("globalupload")
+		param.UploadUrls, _ = result.GetStrings("uploadurls")
+		param.UploadDirs, _ = result.GetStrings("uploaddirs")
 
-		// normalize upload dirs
-		arrUploadDirs, _ := result.GetStrings("uploaddirs")
-		param.UploadDirs = normalizeFsPaths(arrUploadDirs)
+		param.GlobalMkdir = result.HasKey("globalmkdir")
+		param.MkdirUrls, _ = result.GetStrings("mkdirurls")
+		param.MkdirDirs, _ = result.GetStrings("mkdirdirs")
 
-		// normalize mkdir urls
-		arrMkdirUrls, _ := result.GetStrings("mkdirurls")
-		param.MkdirUrls = normalizeUrlPaths(arrMkdirUrls)
+		param.GlobalDelete = result.HasKey("globaldelete")
+		param.DeleteUrls, _ = result.GetStrings("deleteurls")
+		param.DeleteDirs, _ = result.GetStrings("deletedirs")
 
-		// normalize mkdir dirs
-		arrMkdirDirs, _ := result.GetStrings("mkdirdirs")
-		param.MkdirDirs = normalizeFsPaths(arrMkdirDirs)
+		param.GlobalArchive = result.HasKey("globalarchive")
+		param.ArchiveUrls, _ = result.GetStrings("archiveurls")
+		param.ArchiveDirs, _ = result.GetStrings("archivedirs")
 
-		// normalize delete urls
-		arrDeleteUrls, _ := result.GetStrings("deleteurls")
-		param.DeleteUrls = normalizeUrlPaths(arrDeleteUrls)
+		param.GlobalCors = result.HasKey("globalcors")
+		param.CorsUrls, _ = result.GetStrings("corsurls")
+		param.CorsDirs, _ = result.GetStrings("corsdirs")
 
-		// normalize delete dirs
-		arrDeleteDirs, _ := result.GetStrings("deletedirs")
-		param.DeleteDirs = normalizeFsPaths(arrDeleteDirs)
+		param.GlobalAuth = result.HasKey("globalauth")
+		param.AuthUrls, _ = result.GetStrings("authurls")
+		param.AuthDirs, _ = result.GetStrings("authdirs")
 
-		// normalize archive urls
-		arrArchiveUrls, _ := result.GetStrings("archiveurls")
-		param.ArchiveUrls = normalizeUrlPaths(arrArchiveUrls)
-
-		// normalize archive dirs
-		arrArchiveDirs, _ := result.GetStrings("archivedirs")
-		param.ArchiveDirs = normalizeFsPaths(arrArchiveDirs)
-
-		// normalize cors urls
-		arrCorsUrls, _ := result.GetStrings("corsurls")
-		param.CorsUrls = normalizeUrlPaths(arrCorsUrls)
-
-		// normalize cors dirs
-		arrCorsDirs, _ := result.GetStrings("corsdirs")
-		param.CorsDirs = normalizeFsPaths(arrCorsDirs)
-
-		// normalize auth urls
-		arrAuthUrls, _ := result.GetStrings("authurls")
-		param.AuthUrls = normalizeUrlPaths(arrAuthUrls)
-
-		// normalize auth dirs
-		arrAuthDirs, _ := result.GetStrings("authdirs")
-		param.AuthDirs = normalizeFsPaths(arrAuthDirs)
-
-		// normalize users
+		// users
 		arrUsersPlain, _ := result.GetStrings("users")
 		param.UsersPlain = EntriesToUsers(arrUsersPlain)
 		arrUsersBase64, _ := result.GetStrings("usersbase64")
@@ -421,7 +387,7 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 		arrUsersSha512, _ := result.GetStrings("userssha512")
 		param.UsersSha512 = EntriesToUsers(arrUsersSha512)
 
-		// normalize listen
+		// listen
 		listens, _ := result.GetStrings("listens")
 		param.Listens = append(param.Listens, listens...)
 
@@ -444,27 +410,17 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 			}
 		}
 
-		// shows
-		shows, _ := result.GetStrings("shows")
-		param.Shows = shows
+		// shows/hides
+		param.Shows, _ = result.GetStrings("shows")
+		param.ShowDirs, _ = result.GetStrings("showdirs")
+		param.ShowFiles, _ = result.GetStrings("showfiles")
+		param.Hides, _ = result.GetStrings("hides")
+		param.HideDirs, _ = result.GetStrings("hidedirs")
+		param.HideFiles, _ = result.GetStrings("hidefiles")
 
-		showDirs, _ := result.GetStrings("showdirs")
-		param.ShowDirs = showDirs
+		es = param.normalize()
+		errs = append(errs, es...)
 
-		showFiles, _ := result.GetStrings("showfiles")
-		param.ShowFiles = showFiles
-
-		// hides
-		hides, _ := result.GetStrings("hides")
-		param.Hides = hides
-
-		hideDirs, _ := result.GetStrings("hidedirs")
-		param.HideDirs = hideDirs
-
-		hideFiles, _ := result.GetStrings("hidefiles")
-		param.HideFiles = hideFiles
-
-		param.normalize()
 		params = append(params, param)
 	}
 

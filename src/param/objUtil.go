@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func LoadCertificates(certFiles, keyFiles []string) ([]tls.Certificate, []error) {
+func loadCertificates(certFiles, keyFiles []string) ([]tls.Certificate, []error) {
 	return goVirtualHost.LoadCertificates(certFiles, keyFiles)
 }
 

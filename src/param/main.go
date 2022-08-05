@@ -1,6 +1,8 @@
 package param
 
 import (
+	"../serverError"
+	"../util"
 	"crypto/tls"
 	"os"
 )
@@ -25,6 +27,7 @@ type Param struct {
 	RestrictAccessUrls   map[string][]string
 	RestrictAccessDirs   map[string][]string
 
+	// value: [name, value]
 	GlobalHeaders [][2]string
 	HeadersUrls   map[string][][2]string
 	HeadersDirs   map[string][][2]string
@@ -83,14 +86,53 @@ type Param struct {
 	ErrorLog  string
 }
 
-func (p *Param) normalize() {
-	_, hasRootAlias := p.Aliases["/"]
+func (param *Param) normalize() (errs []error) {
+	var err error
+
+	// root
+	param.Root, err = util.NormalizeFsPath(param.Root)
+	errs = serverError.AppendError(errs, err)
+
+	// root & empty root && alias
+	_, hasRootAlias := param.Aliases["/"]
 	if hasRootAlias {
-		p.EmptyRoot = false
-	} else if p.EmptyRoot {
-		p.Root = os.DevNull
-		p.Aliases["/"] = os.DevNull
+		param.EmptyRoot = false
+	} else if param.EmptyRoot {
+		param.Root = os.DevNull
+		param.Aliases["/"] = os.DevNull
 	} else {
-		p.Aliases["/"] = p.Root
+		param.Aliases["/"] = param.Root
 	}
+
+	// url prefixes
+	param.PrefixUrls = normalizeUrlPaths(param.PrefixUrls)
+
+	// // force dir slash
+	if param.ForceDirSlash != 0 {
+		param.ForceDirSlash = normalizeRedirectCode(param.ForceDirSlash)
+	}
+
+	// dir indexes
+	param.DirIndexes = normalizeFilenames(param.DirIndexes)
+
+	// global restrict access, nil to disable, non-nil to enable with allowed hosts
+	if param.GlobalRestrictAccess != nil {
+		param.GlobalRestrictAccess = util.ExtractHostsFromUrls(param.GlobalRestrictAccess)
+	}
+
+	// upload/mkdir/delete/archive/cors/auth urls/dirs
+	param.UploadUrls = normalizeUrlPaths(param.UploadUrls)
+	param.UploadDirs = normalizeFsPaths(param.UploadDirs)
+	param.MkdirUrls = normalizeUrlPaths(param.MkdirUrls)
+	param.MkdirDirs = normalizeFsPaths(param.MkdirDirs)
+	param.DeleteUrls = normalizeUrlPaths(param.DeleteUrls)
+	param.DeleteDirs = normalizeFsPaths(param.DeleteDirs)
+	param.ArchiveUrls = normalizeUrlPaths(param.ArchiveUrls)
+	param.ArchiveDirs = normalizeFsPaths(param.ArchiveDirs)
+	param.CorsUrls = normalizeUrlPaths(param.CorsUrls)
+	param.CorsDirs = normalizeFsPaths(param.CorsDirs)
+	param.AuthUrls = normalizeUrlPaths(param.AuthUrls)
+	param.AuthDirs = normalizeFsPaths(param.AuthDirs)
+
+	return
 }
