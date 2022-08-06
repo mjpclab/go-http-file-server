@@ -32,6 +32,21 @@ func splitKeyValues(input string) (key string, values []string, ok bool) {
 	return key, values, true
 }
 
+func splitAllKeyValues(inputs []string) (results [][]string) {
+	results = make([][]string, 0, len(inputs))
+	for i := range inputs {
+		key, values, ok := splitKeyValues(inputs[i])
+		if !ok {
+			continue
+		}
+		keyValues := make([]string, 1+len(values))
+		keyValues[0] = key
+		copy(keyValues[1:], values)
+		results = append(results, keyValues)
+	}
+	return
+}
+
 func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
 	sep, sepLen = utf8.DecodeRuneInString(input)
 	if sepLen == 0 {
@@ -64,31 +79,44 @@ func splitAllKeyValue(inputs []string) (results [][2]string) {
 }
 
 func normalizePathRestrictAccesses(
-	inputs []string,
+	inputs [][]string,
 	normalizePath func(string) (string, error),
-) (maps map[string][]string, errs []error) {
-	maps = make(map[string][]string, len(inputs))
+) (results [][]string, errs []error) {
+	var err error
+	results = make([][]string, 0, len(inputs))
 
+eachInput:
 	for i := range inputs {
-		reqPath, hosts, ok := splitKeyValues(inputs[i])
-		if !ok {
+		if len(inputs[i]) == 0 {
 			continue
 		}
 
-		normalizedPath, err := normalizePath(reqPath)
+		reqPath := inputs[i][0]
+		if len(reqPath) == 0 {
+			continue
+		}
+		reqPath, err = normalizePath(reqPath)
 		if err != nil {
 			errs = append(errs, err)
+			continue
 		}
-		normalizedHosts := util.ExtractHostsFromUrls(hosts)
 
-		for existingPath := range maps {
-			if util.IsPathEqual(existingPath, normalizedPath) {
-				normalizedPath = existingPath
-				break
+		hosts := inputs[i][1:]
+		if len(hosts) > 0 {
+			hosts = util.ExtractHostsFromUrls(hosts)
+			for j := range results {
+				if util.IsPathEqual(results[j][0], reqPath) {
+					results[j] = append(results[j], hosts...)
+					continue eachInput
+				}
 			}
 		}
 
-		maps[normalizedPath] = append(maps[normalizedPath], normalizedHosts...)
+		restrict := make([]string, 1+len(hosts))
+		restrict[0] = reqPath
+		copy(restrict[1:], hosts)
+
+		results = append(results, restrict)
 	}
 
 	return

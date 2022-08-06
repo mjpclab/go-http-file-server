@@ -130,20 +130,20 @@ func TestSplitAllKeyValue(t *testing.T) {
 }
 
 func TestNormalizePathRestrictAccesses(t *testing.T) {
-	results, _ := normalizePathRestrictAccesses([]string{
-		":/foo:host1:host2",
-		":/foo/:host3:host4",
-		":/bar",
+	results, _ := normalizePathRestrictAccesses([][]string{
+		{"/foo", "host1", "host2"},
+		{"/foo/", "host3", "host4"},
+		{"/bar"},
 	}, util.NormalizeUrlPath)
 
 	if len(results) != 2 {
 		t.Error()
 	}
-	if !expectStrings(results["/foo"], "host1", "host2", "host3", "host4") {
-		t.Error()
+	if !expectStrings(results[0], "/foo", "host1", "host2", "host3", "host4") {
+		t.Error(results[0])
 	}
-	if len(results["/bar"]) != 0 {
-		t.Error()
+	if !expectStrings(results[1], "/bar") {
+		t.Error(results[1])
 	}
 }
 

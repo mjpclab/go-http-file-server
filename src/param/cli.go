@@ -318,13 +318,11 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 
 		// restrict access urls
 		restrictAccessUrls, _ := result.GetStrings("restrictaccessurls")
-		param.RestrictAccessUrls, es = normalizePathRestrictAccesses(restrictAccessUrls, util.NormalizeUrlPath)
-		errs = append(errs, es...)
+		param.RestrictAccessUrls = splitAllKeyValues(restrictAccessUrls)
 
 		// restrict access dirs
 		restrictAccessDirs, _ := result.GetStrings("restrictaccessdirs")
-		param.RestrictAccessDirs, es = normalizePathRestrictAccesses(restrictAccessDirs, util.NormalizeFsPath)
-		errs = append(errs, es...)
+		param.RestrictAccessDirs = splitAllKeyValues(restrictAccessDirs)
 
 		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")

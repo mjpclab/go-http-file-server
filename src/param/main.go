@@ -20,8 +20,9 @@ type Param struct {
 	Aliases [][2]string
 
 	GlobalRestrictAccess []string
-	RestrictAccessUrls   map[string][]string
-	RestrictAccessDirs   map[string][]string
+	// value: [restrict-path, allow-hosts...]
+	RestrictAccessUrls [][]string
+	RestrictAccessDirs [][]string
 
 	// value: [name, value]
 	GlobalHeaders [][2]string
@@ -127,6 +128,13 @@ func (param *Param) normalize() (errs []error) {
 	if param.GlobalRestrictAccess != nil {
 		param.GlobalRestrictAccess = util.ExtractHostsFromUrls(param.GlobalRestrictAccess)
 	}
+
+	// restrict access
+	param.RestrictAccessUrls, es = normalizePathRestrictAccesses(param.RestrictAccessUrls, util.NormalizeUrlPath)
+	errs = append(errs, es...)
+
+	param.RestrictAccessDirs, es = normalizePathRestrictAccesses(param.RestrictAccessDirs, util.NormalizeFsPath)
+	errs = append(errs, es...)
 
 	// upload/mkdir/delete/archive/cors/auth urls/dirs
 	param.UploadUrls = normalizeUrlPaths(param.UploadUrls)

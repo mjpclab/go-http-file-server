@@ -7,11 +7,14 @@ import (
 	"strings"
 )
 
-func newRestrictAccesses(pathHostsMap map[string][]string) []pathStrings {
-	restricts := make([]pathStrings, 0, len(pathHostsMap))
+func newRestrictAccesses(pathHostsList [][]string) []pathStrings {
+	restricts := make([]pathStrings, 0, len(pathHostsList))
 
-	for reqPath, hosts := range pathHostsMap {
-		restricts = append(restricts, pathStrings{reqPath, hosts})
+	for _, pathHosts := range pathHostsList {
+		if len(pathHosts) == 0 {
+			continue
+		}
+		restricts = append(restricts, pathStrings{pathHosts[0], pathHosts[1:]})
 	}
 
 	return restricts
