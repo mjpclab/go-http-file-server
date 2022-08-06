@@ -111,6 +111,11 @@ ghfs [options]
     Use virtual empty directory as root directory.
     Useful to share alias directories only.
 
+-a|--alias <separator><url-path><separator><fs-path> ...
+    Set path alias.
+    Mount a file system path to URL path.
+    e.g. ":/doc:/usr/share/doc"
+
 --prefix <path> ...
     Serve files under a specific sub url path.
     Could be useful if server is behind a reverse proxy and
@@ -139,11 +144,6 @@ ghfs [options]
 
 -I|--dir-index <file> ...
     Specify default index file for directory.
-
--a|--alias <separator><url-path><separator><fs-path> ...
-    Set path alias.
-    Mount a file system path to URL path.
-    e.g. ":/doc:/usr/share/doc"
 
 --global-restrict-access [<allowed-host> ...]
     Restrict access from third party host for all url paths, by detecting

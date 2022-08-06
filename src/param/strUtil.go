@@ -52,6 +52,17 @@ func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
 	return sep, sepLen, k, v, true
 }
 
+func splitAllKeyValue(inputs []string) (results [][2]string) {
+	results = make([][2]string, 0, len(inputs))
+	for i := range inputs {
+		_, _, k, v, ok := splitKeyValue(inputs[i])
+		if ok {
+			results = append(results, [2]string{k, v})
+		}
+	}
+	return
+}
+
 func normalizePathRestrictAccesses(
 	inputs []string,
 	normalizePath func(string) (string, error),
@@ -119,30 +130,31 @@ func normalizePathHeadersMap(
 	return
 }
 
-func normalizePathMaps(inputs []string) (maps map[string]string, errs []error) {
-	maps = make(map[string]string, len(inputs))
-	var err error
+func normalizePathMaps(inputs [][2]string) (results [][2]string, errs []error) {
+	results = make([][2]string, 0, len(inputs))
 
-	for _, input := range inputs {
-		_, _, urlPath, fsPath, ok := splitKeyValue(input)
-		if !ok {
+eachInput:
+	for i := range inputs {
+		urlPath := inputs[i][0]
+		fsPath := inputs[i][1]
+		if len(urlPath) == 0 || len(fsPath) == 0 {
+			continue
+		}
+		urlPath = util.CleanUrlPath(urlPath)
+		fsPath, err := util.NormalizeFsPath(fsPath)
+		if err != nil {
+			errs = append(errs, err)
 			continue
 		}
 
-		urlPath = util.CleanUrlPath(urlPath)
-		fsPath, err = util.NormalizeFsPath(fsPath)
-		if err != nil {
-			errs = append(errs, err)
-		}
-
-		for existingUrl := range maps {
-			if util.IsPathEqual(existingUrl, urlPath) {
-				urlPath = existingUrl
-				break
+		for j := range results {
+			if util.IsPathEqual(results[j][0], urlPath) {
+				results[j][1] = fsPath
+				continue eachInput
 			}
 		}
 
-		maps[urlPath] = fsPath
+		results = append(results, [2]string{urlPath, fsPath})
 	}
 
 	return

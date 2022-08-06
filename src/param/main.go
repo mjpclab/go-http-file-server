@@ -16,7 +16,8 @@ type Param struct {
 
 	DefaultSort string
 	DirIndexes  []string
-	Aliases     map[string]string
+	// value: [url-path, fs-path]
+	Aliases [][2]string
 
 	GlobalRestrictAccess []string
 	RestrictAccessUrls   map[string][]string
@@ -83,21 +84,32 @@ type Param struct {
 }
 
 func (param *Param) normalize() (errs []error) {
+	var es []error
 	var err error
 
 	// root
 	param.Root, err = util.NormalizeFsPath(param.Root)
 	errs = serverError.AppendError(errs, err)
 
+	// alias
+	param.Aliases, es = normalizePathMaps(param.Aliases)
+	errs = append(errs, es...)
+
 	// root & empty root && alias
-	_, hasRootAlias := param.Aliases["/"]
-	if hasRootAlias {
+	rootAliasIndex := -1
+	for i := range param.Aliases {
+		if param.Aliases[i][0] == "/" {
+			rootAliasIndex = i
+			break
+		}
+	}
+	if rootAliasIndex >= 0 {
 		param.EmptyRoot = false
 	} else if param.EmptyRoot {
 		param.Root = os.DevNull
-		param.Aliases["/"] = os.DevNull
+		param.Aliases = append(param.Aliases, [2]string{"/", os.DevNull})
 	} else {
-		param.Aliases["/"] = param.Root
+		param.Aliases = append(param.Aliases, [2]string{"/", param.Root})
 	}
 
 	// url prefixes

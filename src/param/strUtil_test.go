@@ -116,6 +116,19 @@ func TestSplitKeyValue(t *testing.T) {
 	}
 }
 
+func TestSplitAllKeyValue(t *testing.T) {
+	results := splitAllKeyValue([]string{":foo:bar", "#lorem#ipsum"})
+	if len(results) != 2 {
+		t.Error(results)
+	}
+	if !expectStrings(results[0][:], "foo", "bar") {
+		t.Error(results[0])
+	}
+	if !expectStrings(results[1][:], "lorem", "ipsum") {
+		t.Error(results[1])
+	}
+}
+
 func TestNormalizePathRestrictAccesses(t *testing.T) {
 	results, _ := normalizePathRestrictAccesses([]string{
 		":/foo:host1:host2",
@@ -170,25 +183,46 @@ func TestNormalizePathHeadersMap(t *testing.T) {
 }
 
 func TestNormalizePathMaps(t *testing.T) {
-	var maps map[string]string
+	var results [][2]string
 	var fsPath string
 
-	maps, _ = normalizePathMaps([]string{":/data/lib://usr/lib"})
+	results, _ = normalizePathMaps([][2]string{{"/data/lib", "//usr/lib"}})
+	if len(results) != 1 {
+		t.Error(results)
+	}
 	fsPath, _ = filepath.Abs("/usr/lib")
-	if maps["/data/lib"] != fsPath {
-		t.Error(maps)
+	if !expectStrings(results[0][:], "/data/lib", fsPath) {
+		t.Error(results[0])
 	}
 
-	maps, _ = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
-	if len(maps) != 2 {
-		t.Error(maps)
+	results, _ = normalizePathMaps([][2]string{{"/data/lib", "//usr/lib"}, {"foo", "bar/baz"}})
+	if len(results) != 2 {
+		t.Error(results)
 	}
-	if maps["/data/lib"] != "/usr/lib" {
-		t.Error(maps)
+	fsPath, _ = filepath.Abs("/usr/lib")
+	if !expectStrings(results[0][:], "/data/lib", fsPath) {
+		t.Error(results[0])
 	}
 	fsPath, _ = filepath.Abs("bar/baz")
-	if maps["/foo"] != fsPath {
-		t.Error(maps)
+	if !expectStrings(results[1][:], "/foo", fsPath) {
+		t.Error(results[1])
+	}
+
+	results, _ = normalizePathMaps([][2]string{
+		{"/data/lib", "//usr/lib"},
+		{"foo", "bar/baz"},
+		{"data/lib", "/usr/local/lib"},
+	})
+	if len(results) != 2 {
+		t.Error(results)
+	}
+	fsPath, _ = filepath.Abs("/usr/local/lib")
+	if !expectStrings(results[0][:], "/data/lib", fsPath) {
+		t.Error(results[0])
+	}
+	fsPath, _ = filepath.Abs("bar/baz")
+	if !expectStrings(results[1][:], "/foo", fsPath) {
+		t.Error(results[1])
 	}
 }
 

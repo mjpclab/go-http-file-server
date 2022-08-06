@@ -26,6 +26,9 @@ func init() {
 	err = options.AddFlags("emptyroot", []string{"-R", "--empty-root"}, "GHFS_EMPTY_ROOT", "use virtual empty root directory")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlagValues("prefixurls", "--prefix", "", nil, "serve files under URL path instead of /")
 	serverError.CheckFatal(err)
 
@@ -38,9 +41,6 @@ func init() {
 	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("dirindexes", []string{"-I", "--dir-index"}, "GHFS_DIR_INDEX", nil, "default index page for directory")
-	serverError.CheckFatal(err)
-
-	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("globalrestrictaccess", "--global-restrict-access", "GHFS_GLOBAL_RESTRICT_ACCESS", []string{}, "restrict access to all url paths from current host, with optional extra allow list")
@@ -294,6 +294,10 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 		param.AccessLog, _ = result.GetString("accesslog")
 		param.ErrorLog, _ = result.GetString("errorlog")
 
+		// aliases
+		strAlias, _ := result.GetStrings("aliases")
+		param.Aliases = splitAllKeyValue(strAlias)
+
 		// force dir slash
 		if result.HasKey("forcedirslash") {
 			strRedirectCode, _ := result.GetString("forcedirslash")
@@ -342,11 +346,6 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 		certs, es := loadCertificates(certFiles, keyFiles)
 		errs = append(errs, es...)
 		param.Certificates = certs
-
-		// aliases
-		arrAlias, _ := result.GetStrings("aliases")
-		param.Aliases, es = normalizePathMaps(arrAlias)
-		errs = append(errs, es...)
 
 		// upload/mkdir/delete/archive/cors/auth urls/dirs
 		param.GlobalUpload = result.HasKey("globalupload")
