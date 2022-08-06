@@ -26,8 +26,9 @@ type Param struct {
 
 	// value: [name, value]
 	GlobalHeaders [][2]string
-	HeadersUrls   map[string][][2]string
-	HeadersDirs   map[string][][2]string
+	// value: [path, (name, value)...]
+	HeadersUrls [][]string
+	HeadersDirs [][]string
 
 	GlobalUpload bool
 	UploadUrls   []string
@@ -130,10 +131,17 @@ func (param *Param) normalize() (errs []error) {
 	}
 
 	// restrict access
-	param.RestrictAccessUrls, es = normalizePathRestrictAccesses(param.RestrictAccessUrls, util.NormalizeUrlPath)
+	param.RestrictAccessUrls, es = normalizePathValues(param.RestrictAccessUrls, true, util.NormalizeUrlPath, util.ExtractHostsFromUrls)
 	errs = append(errs, es...)
 
-	param.RestrictAccessDirs, es = normalizePathRestrictAccesses(param.RestrictAccessDirs, util.NormalizeFsPath)
+	param.RestrictAccessDirs, es = normalizePathValues(param.RestrictAccessDirs, true, util.NormalizeFsPath, util.ExtractHostsFromUrls)
+	errs = append(errs, es...)
+
+	// headers
+	param.HeadersUrls, es = normalizePathValues(param.HeadersUrls, false, util.NormalizeUrlPath, normalizeHeaders)
+	errs = append(errs, es...)
+
+	param.HeadersDirs, es = normalizePathValues(param.HeadersDirs, false, util.NormalizeFsPath, normalizeHeaders)
 	errs = append(errs, es...)
 
 	// upload/mkdir/delete/archive/cors/auth urls/dirs

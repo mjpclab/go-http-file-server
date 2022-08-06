@@ -3,7 +3,6 @@ package param
 import (
 	"../goNixArgParser"
 	"../serverError"
-	"../util"
 	"errors"
 	"net/http"
 	"os"
@@ -278,7 +277,6 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 
 	// init param data
 	params = make([]*Param, 0, len(results))
-	var es []error
 	for _, result := range results {
 		param := &Param{}
 
@@ -329,14 +327,12 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 		param.GlobalHeaders = entriesToHeaders(globalHeaders)
 
 		// headers urls
-		arrHeadersUrls, _ := result.GetStrings("headersurls")
-		param.HeadersUrls, es = normalizePathHeadersMap(arrHeadersUrls, util.NormalizeUrlPath)
-		errs = append(errs, es...)
+		headersUrls, _ := result.GetStrings("headersurls")
+		param.HeadersUrls = splitAllKeyValues(headersUrls)
 
 		// headers dirs
-		arrHeadersDirs, _ := result.GetStrings("headersdirs")
-		param.HeadersDirs, es = normalizePathHeadersMap(arrHeadersDirs, util.NormalizeFsPath)
-		errs = append(errs, es...)
+		headersDirs, _ := result.GetStrings("headersdirs")
+		param.HeadersDirs = splitAllKeyValues(headersDirs)
 
 		// certificate
 		certFiles, _ := result.GetStrings("certs")

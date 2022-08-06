@@ -47,8 +47,8 @@ func splitAllKeyValues(inputs []string) (results [][]string) {
 	return
 }
 
-func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
-	sep, sepLen = utf8.DecodeRuneInString(input)
+func splitKeyValue(input string) (k, v string, ok bool) {
+	sep, sepLen := utf8.DecodeRuneInString(input)
 	if sepLen == 0 {
 		return
 	}
@@ -64,13 +64,13 @@ func splitKeyValue(input string) (sep rune, sepLen int, k, v string, ok bool) {
 
 	k = entry[:sepIndex]
 	v = entry[sepIndex+sepLen:]
-	return sep, sepLen, k, v, true
+	return k, v, true
 }
 
 func splitAllKeyValue(inputs []string) (results [][2]string) {
 	results = make([][2]string, 0, len(inputs))
 	for i := range inputs {
-		_, _, k, v, ok := splitKeyValue(inputs[i])
+		k, v, ok := splitKeyValue(inputs[i])
 		if ok {
 			results = append(results, [2]string{k, v})
 		}
@@ -78,9 +78,11 @@ func splitAllKeyValue(inputs []string) (results [][2]string) {
 	return
 }
 
-func normalizePathRestrictAccesses(
+func normalizePathValues(
 	inputs [][]string,
+	keepEmptyValuesEntry bool,
 	normalizePath func(string) (string, error),
+	normalizeEntryValues func([]string) []string,
 ) (results [][]string, errs []error) {
 	var err error
 	results = make([][]string, 0, len(inputs))
@@ -101,58 +103,26 @@ eachInput:
 			continue
 		}
 
-		hosts := inputs[i][1:]
-		if len(hosts) > 0 {
-			hosts = util.ExtractHostsFromUrls(hosts)
-			for j := range results {
-				if util.IsPathEqual(results[j][0], reqPath) {
-					results[j] = append(results[j], hosts...)
-					continue eachInput
-				}
+		values := inputs[i][1:]
+		if normalizeEntryValues != nil {
+			values = normalizeEntryValues(values)
+		}
+		for j := range results {
+			if util.IsPathEqual(results[j][0], reqPath) {
+				results[j] = append(results[j], values...)
+				continue eachInput
 			}
 		}
 
-		restrict := make([]string, 1+len(hosts))
-		restrict[0] = reqPath
-		copy(restrict[1:], hosts)
-
-		results = append(results, restrict)
-	}
-
-	return
-}
-
-func normalizePathHeadersMap(
-	inputs []string,
-	normalizePath func(string) (string, error),
-) (maps map[string][][2]string, errs []error) {
-	maps = make(map[string][][2]string, len(inputs))
-
-	for _, input := range inputs {
-		sep, sepLen, reqPath, header, ok := splitKeyValue(input)
-		if !ok {
-			continue
-		}
-		sepIndex := strings.IndexRune(header, sep)
-		if sepIndex <= 0 || sepIndex+sepLen == len(header) {
+		if len(values) == 0 && !keepEmptyValuesEntry {
 			continue
 		}
 
-		normalizedPath, err := normalizePath(reqPath)
-		if err != nil {
-			errs = append(errs, err)
-		}
-		headerName := header[:sepIndex]
-		headerValue := header[sepIndex+1:]
+		entry := make([]string, 1+len(values))
+		entry[0] = reqPath
+		copy(entry[1:], values)
 
-		for existingPath := range maps {
-			if util.IsPathEqual(existingPath, normalizedPath) {
-				normalizedPath = existingPath
-				break
-			}
-		}
-
-		maps[normalizedPath] = append(maps[normalizedPath], [2]string{headerName, headerValue})
+		results = append(results, entry)
 	}
 
 	return
@@ -186,6 +156,16 @@ eachInput:
 	}
 
 	return
+}
+
+func normalizeHeaders(inputs []string) []string {
+	if len(inputs) != 2 {
+		return nil
+	}
+	if len(inputs[0]) == 0 || len(inputs[1]) == 0 {
+		return nil
+	}
+	return inputs
 }
 
 func normalizeUrlPaths(inputs []string) []string {

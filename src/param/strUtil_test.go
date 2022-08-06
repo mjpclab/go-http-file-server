@@ -73,27 +73,27 @@ func TestSplitKeyValue(t *testing.T) {
 	var k, v string
 	var ok bool
 
-	_, _, k, v, ok = splitKeyValue("")
+	k, v, ok = splitKeyValue("")
 	if ok {
 		t.Error("empty string should not OK")
 	}
 
-	_, _, k, v, ok = splitKeyValue(":")
+	k, v, ok = splitKeyValue(":")
 	if ok {
 		t.Error("separator-only string should not OK")
 	}
 
-	_, _, k, v, ok = splitKeyValue("::world")
+	k, v, ok = splitKeyValue("::world")
 	if ok {
 		t.Error("empty key should not OK")
 	}
 
-	_, _, k, v, ok = splitKeyValue(":hello:")
+	k, v, ok = splitKeyValue(":hello:")
 	if ok {
 		t.Error("empty value should not OK")
 	}
 
-	_, _, k, v, ok = splitKeyValue(":key:value")
+	k, v, ok = splitKeyValue(":key:value")
 	if !ok {
 		t.Fail()
 	}
@@ -104,7 +104,7 @@ func TestSplitKeyValue(t *testing.T) {
 		t.Fail()
 	}
 
-	_, _, k, v, ok = splitKeyValue("@KEY@VALUE")
+	k, v, ok = splitKeyValue("@KEY@VALUE")
 	if !ok {
 		t.Fail()
 	}
@@ -130,11 +130,11 @@ func TestSplitAllKeyValue(t *testing.T) {
 }
 
 func TestNormalizePathRestrictAccesses(t *testing.T) {
-	results, _ := normalizePathRestrictAccesses([][]string{
+	results, _ := normalizePathValues([][]string{
 		{"/foo", "host1", "host2"},
 		{"/foo/", "host3", "host4"},
 		{"/bar"},
-	}, util.NormalizeUrlPath)
+	}, true, util.NormalizeUrlPath, util.ExtractHostsFromUrls)
 
 	if len(results) != 2 {
 		t.Error()
@@ -148,37 +148,28 @@ func TestNormalizePathRestrictAccesses(t *testing.T) {
 }
 
 func TestNormalizePathHeadersMap(t *testing.T) {
-	var result map[string][][2]string
+	var result [][]string
 
-	result, _ = normalizePathHeadersMap([]string{
-		":/foo:X-header1:X-Value1",
-		":/foo/:X-header2:X-Value2",
-		":/bar:X-header3:X-Value3",
-		":baz",
-		":baz:",
-		":baz:X-Not-Valid",
-		":baz:X-Not-Valid:",
-	}, util.NormalizeUrlPath)
+	result, _ = normalizePathValues([][]string{
+		{"/foo", "X-header1", "X-Value1"},
+		{"/foo/", "X-header2", "X-Value2"},
+		{"/bar", "X-header3", "X-Value3"},
+		{"baz"},
+		{"baz", ""},
+		{"baz", "X-Not-Valid"},
+		{"baz", "X-Not-Valid", ""},
+	}, false, util.NormalizeUrlPath, normalizeHeaders)
 
 	if len(result) != 2 {
 		t.Error(result)
 	}
 
-	if len(result["/foo"]) != 2 {
-		t.Error(result["/foo"])
-	}
-	if result["/foo"][0][0] != "X-header1" || result["/foo"][0][1] != "X-Value1" {
-		t.Error(result["/foo"][0])
-	}
-	if result["/foo"][1][0] != "X-header2" || result["/foo"][1][1] != "X-Value2" {
-		t.Error(result["/foo"][0])
+	if !expectStrings(result[0], "/foo", "X-header1", "X-Value1", "X-header2", "X-Value2") {
+		t.Error(result[0])
 	}
 
-	if len(result["/bar"]) != 1 {
-		t.Error(result["/foo"])
-	}
-	if result["/bar"][0][0] != "X-header3" || result["/bar"][0][1] != "X-Value3" {
-		t.Error(result["/foo"][0])
+	if !expectStrings(result[1], "/bar", "X-header3", "X-Value3") {
+		t.Error(result[1])
 	}
 }
 
