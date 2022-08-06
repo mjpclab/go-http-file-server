@@ -392,16 +392,10 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 		param.ListensTLS, _ = result.GetStrings("listenstls")
 
 		// hsts & https
-		if len(param.ListensTLS) > 0 {
-			if result.HasKey("globalhsts") {
-				param.GlobalHsts = validateHstsPort(param.ListensPlain, param.ListensTLS)
-			}
+		param.GlobalHsts = result.HasKey("globalhsts")
 
-			if result.HasKey("globalhttps") {
-				httpsPort, _ := result.GetString("globalhttps")
-				param.HttpsPort, param.GlobalHttps = normalizeHttpsPort(httpsPort, param.ListensTLS)
-			}
-		}
+		param.GlobalHttps = result.HasKey("globalhttps")
+		param.HttpsPort, _ = result.GetString("globalhttps")
 
 		// shows/hides
 		param.Shows, _ = result.GetStrings("shows")

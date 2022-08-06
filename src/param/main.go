@@ -158,5 +158,14 @@ func (param *Param) normalize() (errs []error) {
 	param.AuthUrls = normalizeUrlPaths(param.AuthUrls)
 	param.AuthDirs = normalizeFsPaths(param.AuthDirs)
 
+	// hsts & https
+	if param.GlobalHsts {
+		param.GlobalHsts = validateHstsPort(param.ListensPlain, param.ListensTLS)
+	}
+
+	if param.GlobalHttps {
+		param.HttpsPort, param.GlobalHttps = normalizeHttpsPort(param.HttpsPort, param.ListensTLS)
+	}
+
 	return
 }
