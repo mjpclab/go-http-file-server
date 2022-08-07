@@ -6,6 +6,7 @@ import (
 	"../serverError"
 	"../serverHandler"
 	"../serverLog"
+	"../setting"
 	"../tpl"
 	"../util"
 	"os"
@@ -31,15 +32,15 @@ func (app *App) ReOpenLog() []error {
 	return app.logFileMan.Reopen()
 }
 
-func NewApp(params []*param.Param) (*App, []error) {
-	errs := writePidFile()
-	if len(errs) > 0 {
-		return nil, errs
+func NewApp(params []*param.Param, setting *setting.Setting) (*App, []error) {
+	if len(setting.PidFile) > 0 {
+		errs := writePidFile(setting.PidFile)
+		if len(errs) > 0 {
+			return nil, errs
+		}
 	}
 
-	verbose := !util.GetBoolEnv("GHFS_QUIET")
-
-	if serverHandler.TryEnableWSL1Fix() && verbose {
+	if serverHandler.TryEnableWSL1Fix() && !setting.Quiet {
 		ttyFile, teardownTtyFile := util.GetTTYFile()
 		ttyFile.WriteString("WSL 1 compatible mode enabled\n")
 		teardownTtyFile()
@@ -114,7 +115,7 @@ func NewApp(params []*param.Param) (*App, []error) {
 		}
 	}
 
-	if verbose {
+	if !setting.Quiet {
 		go printAccessibleURLs(vhSvc)
 	}
 
@@ -124,12 +125,7 @@ func NewApp(params []*param.Param) (*App, []error) {
 	}, nil
 }
 
-func writePidFile() (errs []error) {
-	pidFilename := os.Getenv("GHFS_PID_FILE")
-	if len(pidFilename) == 0 {
-		return nil
-	}
-
+func writePidFile(pidFilename string) (errs []error) {
 	pidContent := strconv.Itoa(os.Getpid())
 	pidFile, err := os.OpenFile(pidFilename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {

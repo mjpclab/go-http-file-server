@@ -4,6 +4,7 @@ import (
 	"./app"
 	"./param"
 	"./serverError"
+	"./setting"
 	"./version"
 	"errors"
 	"os"
@@ -35,6 +36,7 @@ func reopenLogOnHup(appInst *app.App) {
 }
 
 func main() {
+	// params
 	params, printVersion, printHelp, errs := param.ParseFromCli()
 	serverError.CheckFatal(errs...)
 	if printVersion {
@@ -46,9 +48,12 @@ func main() {
 		os.Exit(0)
 	}
 
-	appInst, errs := app.NewApp(params)
-	serverError.CheckFatal(errs...)
+	// setting
+	setting := setting.ParseFromEnv()
 
+	// app
+	appInst, errs := app.NewApp(params, setting)
+	serverError.CheckFatal(errs...)
 	if appInst == nil {
 		serverError.CheckFatal(errors.New("failed to create application instance"))
 	}
@@ -57,6 +62,5 @@ func main() {
 	reopenLogOnHup(appInst)
 	errs = appInst.Open()
 	serverError.CheckFatal(errs...)
-
 	appInst.Close()
 }
