@@ -35,7 +35,7 @@ func reopenLogOnHup(appInst *app.App) {
 }
 
 func main() {
-	params, printVersion, printHelp, errs := param.ParseCli()
+	params, printVersion, printHelp, errs := param.ParseFromCli()
 	serverError.CheckFatal(errs...)
 	if printVersion {
 		version.PrintVersion()

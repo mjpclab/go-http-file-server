@@ -195,9 +195,7 @@ func init() {
 	serverError.CheckFatal(err)
 }
 
-func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
-	args := os.Args
-
+func ParseFromArgs(args []string) (params []*Param, printVersion, printHelp bool, errs []error) {
 	// parse option
 	results := cliCmd.ParseGroups(args, nil)
 
@@ -412,6 +410,10 @@ func ParseCli() (params []*Param, printVersion, printHelp bool, errs []error) {
 	}
 
 	return
+}
+
+func ParseFromCli() (params []*Param, printVersion, printHelp bool, errs []error) {
+	return ParseFromArgs(os.Args)
 }
 
 func PrintHelp() {
