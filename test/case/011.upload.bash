@@ -68,4 +68,4 @@ uploaded=$(cat "$fs"/uploaded/2/isub/iuploaded.tmp)
 assert "$uploaded" "$content"
 
 cleanup
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

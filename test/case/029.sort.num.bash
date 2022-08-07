@@ -22,4 +22,4 @@ line5=$(curl_get_body http://127.0.0.1:3003/ | grep -n './hello-index.txt' | cut
 [ ! "$line3" -lt "$line4" ] && fail "line3 is not before line4"
 [ ! "$line4" -lt "$line5" ] && fail "line4 is not before line5"
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

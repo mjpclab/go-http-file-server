@@ -25,4 +25,4 @@ assert $(curl_head_status 'http://127.0.0.1:3003/escape-escaped%252fslash/') '20
 assert $(curl_head_status 'http://127.0.0.1:3003/escape%23sharp') '200'
 assert $(curl_head_status 'http://127.0.0.1:3003/escape%25percent') '200'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

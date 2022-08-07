@@ -43,4 +43,4 @@ assert $(curl_head_status --referer 'http://127.0.0.1:3003/vh2/b/' 'http://127.0
 
 assert $(curl_head_status 'http://127.0.0.1:3003/vh2/file1.txt') '200'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

@@ -11,9 +11,9 @@ import (
 	"syscall"
 )
 
-func cleanupOnInterrupt(appInst *app.App) {
+func cleanupOnEnd(appInst *app.App) {
 	chSignal := make(chan os.Signal)
-	signal.Notify(chSignal, syscall.SIGINT)
+	signal.Notify(chSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
 		<-chSignal
@@ -22,7 +22,7 @@ func cleanupOnInterrupt(appInst *app.App) {
 	}()
 }
 
-func reOpenLogOnHup(appInst *app.App) {
+func reopenLogOnHup(appInst *app.App) {
 	chSignal := make(chan os.Signal)
 	signal.Notify(chSignal, syscall.SIGHUP)
 
@@ -53,8 +53,8 @@ func main() {
 		serverError.CheckFatal(errors.New("failed to create application instance"))
 	}
 
-	cleanupOnInterrupt(appInst)
-	reOpenLogOnHup(appInst)
+	cleanupOnEnd(appInst)
+	reopenLogOnHup(appInst)
 	errs = appInst.Open()
 	serverError.CheckFatal(errs...)
 

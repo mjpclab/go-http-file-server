@@ -32,4 +32,4 @@ assert "$status" '404'
 baz=$(curl_get_body http://127.0.0.1:3003/foo/bar/baz/b1.txt)
 assert "$baz" 'vhost2/b/b1.txt'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null
