@@ -131,17 +131,25 @@ func (param *Param) normalize() (errs []error) {
 	}
 
 	// restrict access
-	param.RestrictAccessUrls, es = normalizePathValues(param.RestrictAccessUrls, true, util.NormalizeUrlPath, util.ExtractHostsFromUrls)
-	errs = append(errs, es...)
+	param.RestrictAccessUrls, es = normalizeAllPathValues(param.RestrictAccessUrls, true, util.NormalizeUrlPath, util.ExtractHostsFromUrls)
+	if len(es) == 0 {
+		dedupAllPathValues(param.RestrictAccessUrls)
+	} else {
+		errs = append(errs, es...)
+	}
 
-	param.RestrictAccessDirs, es = normalizePathValues(param.RestrictAccessDirs, true, util.NormalizeFsPath, util.ExtractHostsFromUrls)
-	errs = append(errs, es...)
+	param.RestrictAccessDirs, es = normalizeAllPathValues(param.RestrictAccessDirs, true, util.NormalizeFsPath, util.ExtractHostsFromUrls)
+	if len(es) == 0 {
+		dedupAllPathValues(param.RestrictAccessDirs)
+	} else {
+		errs = append(errs, es...)
+	}
 
 	// headers
-	param.HeadersUrls, es = normalizePathValues(param.HeadersUrls, false, util.NormalizeUrlPath, normalizeHeaders)
+	param.HeadersUrls, es = normalizeAllPathValues(param.HeadersUrls, false, util.NormalizeUrlPath, normalizeHeaders)
 	errs = append(errs, es...)
 
-	param.HeadersDirs, es = normalizePathValues(param.HeadersDirs, false, util.NormalizeFsPath, normalizeHeaders)
+	param.HeadersDirs, es = normalizeAllPathValues(param.HeadersDirs, false, util.NormalizeFsPath, normalizeHeaders)
 	errs = append(errs, es...)
 
 	// upload/mkdir/delete/archive/cors/auth urls/dirs

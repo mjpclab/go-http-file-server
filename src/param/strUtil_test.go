@@ -130,7 +130,7 @@ func TestSplitAllKeyValue(t *testing.T) {
 }
 
 func TestNormalizePathRestrictAccesses(t *testing.T) {
-	results, _ := normalizePathValues([][]string{
+	results, _ := normalizeAllPathValues([][]string{
 		{"/foo", "host1", "host2"},
 		{"/foo/", "host3", "host4"},
 		{"/bar"},
@@ -150,7 +150,7 @@ func TestNormalizePathRestrictAccesses(t *testing.T) {
 func TestNormalizePathHeadersMap(t *testing.T) {
 	var result [][]string
 
-	result, _ = normalizePathValues([][]string{
+	result, _ = normalizeAllPathValues([][]string{
 		{"/foo", "X-header1", "X-Value1"},
 		{"/foo/", "X-header2", "X-Value2"},
 		{"/bar", "X-header3", "X-Value3"},
@@ -214,6 +214,40 @@ func TestNormalizePathMaps(t *testing.T) {
 	fsPath, _ = filepath.Abs("bar/baz")
 	if !expectStrings(results[1][:], "/foo", fsPath) {
 		t.Error(results[1])
+	}
+}
+
+func TestDedupPathValues(t *testing.T) {
+	var result []string
+
+	result = dedupPathValues(nil)
+	if !expectStrings(result) {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{})
+	if !expectStrings(result) {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{"/foo"})
+	if !expectStrings(result, "/foo") {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{"/foo", "wow"})
+	if !expectStrings(result, "/foo", "wow") {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{"/foo", "aa", "bb", "cc"})
+	if !expectStrings(result, "/foo", "aa", "bb", "cc") {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{"/foo", "xx", "yy", "xx", "zz", "zz", "/foo"})
+	if !expectStrings(result, "/foo", "xx", "yy", "zz", "/foo") {
+		t.Error(result)
 	}
 }
 

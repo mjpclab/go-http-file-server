@@ -78,7 +78,7 @@ func splitAllKeyValue(inputs []string) (results [][2]string) {
 	return
 }
 
-func normalizePathValues(
+func normalizeAllPathValues(
 	inputs [][]string,
 	keepEmptyValuesEntry bool,
 	normalizePath func(string) (string, error),
@@ -126,6 +126,35 @@ eachInput:
 	}
 
 	return
+}
+
+func dedupPathValues(inputs []string) []string {
+	if len(inputs) <= 2 { // path & single value
+		return inputs
+	}
+
+	values := inputs[1:]
+	endIndex := 1
+eachValue:
+	for i, length := 1, len(values); i < length; i++ {
+		for j := 0; j < endIndex; j++ {
+			if values[i] == values[j] {
+				continue eachValue
+			}
+		}
+		if endIndex != i {
+			values[endIndex] = values[i]
+		}
+		endIndex++
+	}
+
+	return inputs[:1+endIndex]
+}
+
+func dedupAllPathValues(inputs [][]string) {
+	for i, iLen := 0, len(inputs); i < iLen; i++ {
+		inputs[i] = dedupPathValues(inputs[i])
+	}
 }
 
 func normalizePathMaps(inputs [][2]string) (results [][2]string, errs []error) {
