@@ -30,4 +30,4 @@ assert $(curl_head_status 'http://127.0.0.1:3003/foo/bar/lorem/ipsum/a') '302'
 	fail "incorrect redirect location"
 assert $(curl_head_status 'http://127.0.0.1:3003/foo/bar/lorem/ipsum/a/') '200'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

@@ -10,8 +10,30 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 )
+
+func wildcardToRegexp(wildcards []string) (*regexp.Regexp, error) {
+	if len(wildcards) == 0 {
+		return nil, nil
+	}
+
+	normalizedWildcards := make([]string, 0, len(wildcards))
+	for _, wildcard := range wildcards {
+		if len(wildcard) == 0 {
+			continue
+		}
+		normalizedWildcards = append(normalizedWildcards, util.WildcardToStrRegexp(wildcard))
+	}
+
+	if len(normalizedWildcards) == 0 {
+		return nil, nil
+	}
+
+	exp := strings.Join(normalizedWildcards, "|")
+	return regexp.Compile(exp)
+}
 
 func needResponseBody(method string) bool {
 	return method != shimgo.Net_Http_MethodHead &&

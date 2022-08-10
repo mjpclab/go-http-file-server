@@ -34,4 +34,4 @@ curl_upload_content 'http://127.0.0.1:3003/?upload' dirfile mycontent 'my/mydir/
 [ -e "$fs"/vhost1/my ] && fail "$fs/vhost1/my should not exists"
 
 cleanup
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

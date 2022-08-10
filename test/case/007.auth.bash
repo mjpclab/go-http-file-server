@@ -17,4 +17,4 @@ assert "$userhellostatus" '200'
 userhelloheadstatus=$(curl_head_status http://alice:AliceSecret@127.0.0.1:3003/hello/)
 assert "$userhelloheadstatus" '200'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

@@ -12,4 +12,4 @@ sleep 0.05 # wait server ready
 assert $(cat "$fs"/vhost1/pid.txt) $!
 
 cleanup
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

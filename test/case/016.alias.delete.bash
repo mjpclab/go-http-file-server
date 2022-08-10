@@ -23,4 +23,4 @@ curl_head_status 'http://127.0.0.1:3003/share/dir?delete&name=2.tmp' > /dev/null
 [ -e "$file2" ] && fail "$file2 should not exists"
 
 cleanup
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

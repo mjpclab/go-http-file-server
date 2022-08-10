@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (h *handler) mkdirs(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
+func (h *aliasHandler) mkdirs(authUserName, fsPrefix string, files []string, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	var errs []error
 
 	for _, inputFilename := range files {
@@ -39,8 +39,7 @@ func (h *handler) mkdirs(authUserName, fsPrefix string, files []string, aliasSub
 		}
 	}
 
-	if len(errs) > 0 {
-		h.logErrors(errs...)
+	if h.logErrors(errs) {
 		return false
 	}
 

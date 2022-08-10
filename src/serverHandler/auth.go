@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-func (h *handler) needAuth(w http.ResponseWriter, r *http.Request) {
+func (h *aliasHandler) needAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\""+r.URL.Path+"\"")
 }
 
-func (h *handler) verifyAuth(r *http.Request) (username string, success bool, err error) {
+func (h *aliasHandler) verifyAuth(r *http.Request) (username string, success bool, err error) {
 	var password string
 	var hasAuthReq bool
 	username, password, hasAuthReq = shimgo.Net_Http_BasicAuth(r)
@@ -26,6 +26,6 @@ func (h *handler) verifyAuth(r *http.Request) (username string, success bool, er
 	return
 }
 
-func (h *handler) authFailed(w http.ResponseWriter) {
+func (h *aliasHandler) authFailed(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusUnauthorized)
 }

@@ -8,26 +8,26 @@ func TestEntriesToUsers(t *testing.T) {
 		"user2:",
 		"user3:pass3",
 	}
-	users := EntriesToUsers(entries)
+	users := entriesToUsers(entries)
 	if len(users) != 3 {
 		t.Fatal("user count is not 3")
 	}
-	if users[0].Username != "" {
+	if users[0][0] != "" {
 		t.Fail()
 	}
-	if users[0].Password != "pass1" {
+	if users[0][1] != "pass1" {
 		t.Fail()
 	}
-	if users[1].Username != "user2" {
+	if users[1][0] != "user2" {
 		t.Fail()
 	}
-	if users[1].Password != "" {
+	if users[1][1] != "" {
 		t.Fail()
 	}
-	if users[2].Username != "user3" {
+	if users[2][0] != "user3" {
 		t.Fail()
 	}
-	if users[2].Password != "pass3" {
+	if users[2][1] != "pass3" {
 		t.Fail()
 	}
 }

@@ -32,3 +32,7 @@
 # 标准库兼容性
 ## SSL/TLS protocol
 - Go 1.13是最后支持SSLv3的版本
+
+# 参考
+
+https://github.com/golang/go/wiki/MinimumRequirements#microarchitecture-support

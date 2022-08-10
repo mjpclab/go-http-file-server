@@ -19,4 +19,4 @@ curl_head_status 'http://127.0.0.1:3003/share/dir/?mkdir&name=bar.tmp' > /dev/nu
 [ -d "$file2" ] || fail "$file2 should exists as directory"
 
 cleanup
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

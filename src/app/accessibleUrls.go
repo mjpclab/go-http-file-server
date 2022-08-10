@@ -3,7 +3,7 @@ package app
 import (
 	"../goVirtualHost"
 	"../util"
-	"fmt"
+	"strconv"
 )
 
 func printAccessibleURLs(vhSvc *goVirtualHost.Service) {
@@ -11,9 +11,9 @@ func printAccessibleURLs(vhSvc *goVirtualHost.Service) {
 	file, teardown := util.GetTTYFile()
 
 	for vhIndex := range vhostsUrls {
-		fmt.Fprintln(file, "Host", vhIndex, "may be accessed by URLs:")
+		file.WriteString("Host " + strconv.Itoa(vhIndex) + " may be accessed by URLs:\n")
 		for urlIndex := range vhostsUrls[vhIndex] {
-			fmt.Fprintln(file, "  ", vhostsUrls[vhIndex][urlIndex])
+			file.WriteString("  " + vhostsUrls[vhIndex][urlIndex] + "\n")
 		}
 	}
 

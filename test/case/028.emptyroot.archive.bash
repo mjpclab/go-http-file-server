@@ -22,4 +22,4 @@ curl_get_body 'http://127.0.0.1:3003/?tar&name=go' > "$archive"
 (tar -tf "$archive" | grep -q -E -v '^go/') && fail "unexpected file in $(basename $archive)"
 
 cleanup
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

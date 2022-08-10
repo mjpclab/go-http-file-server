@@ -47,7 +47,7 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 	return nil
 }
 
-func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, pageData *responseData) {
 	if !pageData.CanArchive {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -61,7 +61,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 	tw := tar.NewWriter(w)
 	defer func() {
 		err := tw.Close()
-		h.errHandler.LogError(err)
+		h.logError(err)
 	}()
 
 	h.archive(
@@ -77,7 +77,7 @@ func (h *handler) tar(w http.ResponseWriter, r *http.Request, pageData *response
 	)
 }
 
-func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *responseData) {
+func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, pageData *responseData) {
 	if !pageData.CanArchive {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -89,18 +89,18 @@ func (h *handler) tgz(w http.ResponseWriter, r *http.Request, pageData *response
 	}
 
 	gzw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
-	if h.errHandler.LogError(err) {
+	if h.logError(err) {
 		return
 	}
 	defer func() {
 		err := gzw.Close()
-		h.errHandler.LogError(err)
+		h.logError(err)
 	}()
 
 	tw := tar.NewWriter(gzw)
 	defer func() {
 		err := tw.Close()
-		h.errHandler.LogError(err)
+		h.logError(err)
 	}()
 
 	h.archive(

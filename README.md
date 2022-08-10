@@ -118,12 +118,19 @@ ghfs [options]
     Use virtual empty directory as root directory.
     Useful to share alias directories only.
 
+-a|--alias <separator><url-path><separator><fs-path> ...
+    Set path alias.
+    Mount a file system path to URL path.
+    e.g. ":/doc:/usr/share/doc"
+
 --prefix <path> ...
     Serve files under a specific sub url path.
     Could be useful if server is behind a reverse proxy and
     received the request without proxying path stripped.
---base <path> ...
-    Similar to --prefix, but the path is case-insensitive.
+
+-/|--force-dir-slash [<status-code>=301]
+    If a directory list page is requested without tailing "/" in the URL,
+    redirect to the URL with the suffix.
 
 --default-sort <sortBy>
     Default sort rule for files and directories.
@@ -145,15 +152,30 @@ ghfs [options]
 -I|--dir-index <file> ...
     Specify default index file for directory.
 
--a|--alias <separator><url-path><separator><fs-path> ...
-    Set path alias.
-    Mount a file system path to URL path.
-    e.g. ":/doc:/usr/share/doc"
--b|--bind <separator><url-path><separator><fs-path> ...
-    Similar to --alias, but the url path is case-insensitive.
+--global-restrict-access [<allowed-host> ...]
+    Restrict access from third party host for all url paths, by detecting
+    request header `Referer` or `Origin`.
+    If the request header is empty, directory list page is still allowed
+    to access.
+    If allowed host is not specified, file content can only be accessed from
+    current host. Note this will not help to restrict access from other one
+    who point a domain to your host and could be matched to current virtual host,
+    unless specify the allowed host explicitly.
+    The "host" could be a hostname which means using a default port, or the form
+    of "host:port".
+--restrict-access <separator><url-path>[<separator><allowed-host>...] ...
+    Similar to --global-restrict-access, but for a specific URL path(and sub paths).
+    e.g. "#/url/path#example1.com#example2.com".
+--restrict-access-dir <separator><fs-path>[<separator><allowed-host>...] ...
+    Similar to --global-restrict-access, but for a file system path(and sub paths).
+    e.g. "#/fs/path#example1.com#example2.com".
 
---header <name>:<value> ...
-    Set custom HTTP response header.
+--global-header <name>:<value> ...
+    Add custom HTTP response header.
+--header <separator><url-path><separator><name><separator><value> ...
+    Add custom HTTP response header for a specific URL path(and sub path).
+--header-dir <separator><fs-path><separator><name><separator><value> ...
+    Similar to --header, but use file system path instead of url path.
 
 -U|--global-upload
     Allow upload files for all url paths.
@@ -276,7 +298,7 @@ ghfs [options]
     Defaults to "-".
 
 --config <file>
-    External config file to load for current virtual host.
+    Specify options from external file.
 
     Its content is option list of any other options,
     same as the form specified on command line,

@@ -1,12 +1,13 @@
 package serverHandler
 
 import (
+	"../serverLog"
 	"../shimgo"
 	"../util"
 	"net/http"
 )
 
-func (h *handler) logRequest(r *http.Request) {
+func (h *aliasHandler) logRequest(r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
@@ -23,7 +24,7 @@ func (h *handler) logRequest(r *http.Request) {
 
 	uri := util.EscapeControllingRune(r.RequestURI)
 
-	buf := make([]byte, 0, 2+len(r.RemoteAddr)+len(r.Method)+unescapedLen+len(uri))
+	buf := serverLog.NewBuffer(2 + len(r.RemoteAddr) + len(r.Method) + unescapedLen + len(uri))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
 	buf = append(buf, ' ')                     // 1 byte
@@ -38,12 +39,12 @@ func (h *handler) logRequest(r *http.Request) {
 	go h.logger.LogAccess(buf)
 }
 
-func (h *handler) logMutate(username, action, detail string, r *http.Request) {
+func (h *aliasHandler) logMutate(username, action, detail string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
 
-	buf := make([]byte, 0, 6+len(r.RemoteAddr)+len(username)+len(action)+len(detail))
+	buf := serverLog.NewBuffer(6 + len(r.RemoteAddr) + len(username) + len(action) + len(detail))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
 	if len(username) > 0 {
@@ -59,12 +60,12 @@ func (h *handler) logMutate(username, action, detail string, r *http.Request) {
 	go h.logger.LogAccess(buf)
 }
 
-func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) {
+func (h *aliasHandler) logUpload(username, filename, fsPath string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
 
-	buf := make([]byte, 0, 16+len(r.RemoteAddr)+len(username)+len(filename)+len(fsPath))
+	buf := serverLog.NewBuffer(16 + len(r.RemoteAddr) + len(username) + len(filename) + len(fsPath))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
 	if len(username) > 0 {
@@ -80,12 +81,12 @@ func (h *handler) logUpload(username, filename, fsPath string, r *http.Request) 
 	go h.logger.LogAccess(buf)
 }
 
-func (h *handler) logArchive(filename, relPath string, r *http.Request) {
+func (h *aliasHandler) logArchive(filename, relPath string, r *http.Request) {
 	if !h.logger.CanLogAccess() {
 		return
 	}
 
-	buf := make([]byte, 0, 19+len(r.RemoteAddr)+len(filename)+len(relPath))
+	buf := serverLog.NewBuffer(19 + len(r.RemoteAddr) + len(filename) + len(relPath))
 
 	buf = append(buf, []byte(r.RemoteAddr)...)      // ~ 9-47 bytes, mainly 21 bytes
 	buf = append(buf, []byte(" archive file: ")...) // 15 bytes
@@ -96,15 +97,38 @@ func (h *handler) logArchive(filename, relPath string, r *http.Request) {
 	go h.logger.LogAccess(buf)
 }
 
-func (h *handler) logErrors(errs ...error) {
-	if !h.logger.CanLogError() {
-		return
+func (h *aliasHandler) logErrors(errs []error) (hasError bool) {
+	if len(errs) == 0 {
+		return false
 	}
 
-	go func(errs []error) {
-		for i := range errs {
-			errBytes := util.EscapeControllingRune(errs[i].Error())
-			h.logger.LogError(errBytes)
-		}
-	}(errs)
+	if h.logger.CanLogError() {
+		go func(errs []error) {
+			for i := range errs {
+				errBytes := util.EscapeControllingRune(errs[i].Error())
+				buf := serverLog.NewBuffer(len(errBytes))
+				buf = append(buf, errBytes...)
+				h.logger.LogError(buf)
+			}
+		}(errs)
+	}
+
+	return true
+}
+
+func (h *aliasHandler) logError(err error) (hasError bool) {
+	if err == nil {
+		return false
+	}
+
+	if h.logger.CanLogError() {
+		go func(err error) {
+			errBytes := util.EscapeControllingRune(err.Error())
+			buf := serverLog.NewBuffer(len(errBytes))
+			buf = append(buf, errBytes...)
+			h.logger.LogError(buf)
+		}(err)
+	}
+
+	return true
 }

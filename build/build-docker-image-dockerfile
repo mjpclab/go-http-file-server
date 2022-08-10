@@ -3,7 +3,7 @@ ENV GO111MODULE=auto
 COPY .git/ /mnt/ghfs/.git/
 COPY src/ /mnt/ghfs/src/
 COPY build/ /mnt/ghfs/build/
-RUN ["/bin/bash", "-c", "cd /mnt/ghfs/build/; source ./build.inc.sh; go build -ldflags \"$LDFLAGS\" -o /tmp/ghfs /mnt/ghfs/src/main.go"]
+RUN ["/bin/bash", "-c", "cd /mnt/ghfs/build/; source ./build.inc.sh; go build -ldflags \"$(getLdFlags)\" -o /tmp/ghfs /mnt/ghfs/src/main.go"]
 RUN mkdir -p /output/usr/local/bin/; cp /tmp/ghfs /output/usr/local/bin/;
 COPY conf/docker-image/ /output/
 

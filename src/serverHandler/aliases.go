@@ -6,10 +6,10 @@ import (
 
 type aliases []alias
 
-func newAliases(entries map[string]string) aliases {
+func newAliases(entries [][2]string) aliases {
 	aliases := make(aliases, 0, len(entries))
-	for urlPath, fsPath := range entries {
-		aliases = append(aliases, createAlias(urlPath, fsPath))
+	for i := range entries {
+		aliases = append(aliases, createAlias(entries[i][0], entries[i][1]))
 	}
 
 	sort.Sort(aliases)

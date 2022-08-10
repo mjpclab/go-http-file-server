@@ -11,4 +11,4 @@ sleep 0.05 # wait server ready
 (curl_get_header http://127.0.0.1:3003/file1.txt?download | grep -q -i -F 'content-disposition') ||
 	fail "Content-Disposition header is not exists"
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

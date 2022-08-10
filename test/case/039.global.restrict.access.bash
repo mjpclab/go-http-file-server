@@ -14,4 +14,4 @@ assert $(curl_head_status --referer 'http://example1.com/' 'http://127.0.0.1:300
 assert $(curl_head_status --referer 'http://example2.com/' 'http://127.0.0.1:3003/hello/index.txt') '200'
 assert $(curl_head_status --referer 'http://127.0.0.1:3003/hello/' 'http://127.0.0.1:3003/hello/index.txt') '200'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

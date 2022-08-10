@@ -3,27 +3,24 @@ package app
 import (
 	"../goVirtualHost"
 	"../param"
-	"../serverErrHandler"
+	"../serverError"
 	"../serverHandler"
 	"../serverLog"
+	"../setting"
 	"../tpl"
 	"../util"
-	"../vhostHandler"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 )
 
 type App struct {
-	vhostSvc      *goVirtualHost.Service
-	vhostHandlers []*vhostHandler.VhostHandler
-	logFileMan    *serverLog.FileMan
+	vhostSvc   *goVirtualHost.Service
+	logFileMan *serverLog.FileMan
 }
 
-func (app *App) Open() {
-	errors := app.vhostSvc.Open()
-	serverErrHandler.CheckError(errors...)
+func (app *App) Open() []error {
+	return app.vhostSvc.Open()
 }
 
 func (app *App) Close() {
@@ -31,34 +28,34 @@ func (app *App) Close() {
 	app.logFileMan.Close()
 }
 
-func (app *App) ReOpenLog() {
-	errors := app.logFileMan.Reopen()
-	serverErrHandler.CheckFatal(errors...)
+func (app *App) ReOpenLog() []error {
+	return app.logFileMan.Reopen()
 }
 
-func NewApp(params []*param.Param) *App {
-	writePidFile()
+func NewApp(params []*param.Param, setting *setting.Setting) (*App, []error) {
+	if len(setting.PidFile) > 0 {
+		errs := writePidFile(setting.PidFile)
+		if len(errs) > 0 {
+			return nil, errs
+		}
+	}
 
-	verbose := !util.GetBoolEnv("GHFS_QUIET")
-
-	if serverHandler.TryEnableWSL1Fix() && verbose {
+	if serverHandler.TryEnableWSL1Fix() && !setting.Quiet {
 		ttyFile, teardownTtyFile := util.GetTTYFile()
-		fmt.Fprintln(ttyFile, "WSL 1 compatible mode enabled")
+		ttyFile.WriteString("WSL 1 compatible mode enabled\n")
 		teardownTtyFile()
 	}
 
 	vhSvc := goVirtualHost.NewService()
-	vhHandlers := make([]*vhostHandler.VhostHandler, 0, len(params))
 	logFileMan := serverLog.NewFileMan()
 	themes := make(map[string]tpl.Theme)
 
 	for _, p := range params {
 		// logger
-		logger, errors := logFileMan.NewLogger(p.AccessLog, p.ErrorLog)
-		serverErrHandler.CheckFatal(errors...)
-
-		// ErrHandler
-		errHandler := serverErrHandler.NewErrHandler(logger)
+		logger, errs := logFileMan.NewLogger(p.AccessLog, p.ErrorLog)
+		if len(errs) > 0 {
+			return nil, errs
+		}
 
 		// theme
 		var theme tpl.Theme
@@ -68,20 +65,31 @@ func NewApp(params []*param.Param) *App {
 			theme = tpl.DefaultTheme
 		} else {
 			themeKey, err := filepath.Abs(p.Theme)
-			serverErrHandler.CheckFatal(err)
+			errs = serverError.AppendError(errs, err)
+			if err != nil {
+				continue
+			}
 
 			var themeExists bool
 			theme, themeExists = themes[themeKey]
 			if !themeExists {
 				theme, err = tpl.LoadMemTheme(p.Theme)
-				serverErrHandler.CheckFatal(err)
+				errs = serverError.AppendError(errs, err)
+				if err != nil {
+					continue
+				}
 				themes[themeKey] = theme
 			}
 		}
+		if len(errs) > 0 {
+			return nil, errs
+		}
 
-		// vHostMux
-		vhHandler := vhostHandler.NewHandler(p, logger, errHandler, theme)
-		vhHandlers = append(vhHandlers, vhHandler)
+		// vHost Handler
+		vhHandler, errs := serverHandler.NewVhostHandler(p, logger, theme)
+		if len(errs) > 0 {
+			return nil, errs
+		}
 
 		// init vhost
 		listens := p.Listens
@@ -93,43 +101,42 @@ func NewApp(params []*param.Param) *App {
 			}
 		}
 
-		errors = vhSvc.Add(&goVirtualHost.HostInfo{
+		errs = vhSvc.Add(&goVirtualHost.HostInfo{
 			Listens:      listens,
 			ListensPlain: p.ListensPlain,
 			ListensTLS:   p.ListensTLS,
 			Certs:        p.Certificates,
 			HostNames:    p.HostNames,
-			Handler:      vhHandler.Handler,
+			Handler:      vhHandler,
 		})
-		if len(errors) > 0 {
-			serverErrHandler.CheckFatal(errors...)
-			logger.LogErrors(errors...)
-			os.Exit(1)
+		if len(errs) > 0 {
+			logger.LogErrors(errs...)
+			return nil, errs
 		}
 	}
 
-	if verbose {
+	if !setting.Quiet {
 		go printAccessibleURLs(vhSvc)
 	}
 
 	return &App{
-		vhostSvc:      vhSvc,
-		vhostHandlers: vhHandlers,
-		logFileMan:    logFileMan,
-	}
+		vhostSvc:   vhSvc,
+		logFileMan: logFileMan,
+	}, nil
 }
 
-func writePidFile() {
-	pidFilename := os.Getenv("GHFS_PID_FILE")
-	if len(pidFilename) == 0 {
-		return
-	}
-
+func writePidFile(pidFilename string) (errs []error) {
 	pidContent := strconv.Itoa(os.Getpid())
 	pidFile, err := os.OpenFile(pidFilename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-	if !serverErrHandler.CheckFatal(err) {
-		_, err := pidFile.WriteString(pidContent)
-		err2 := pidFile.Close()
-		serverErrHandler.CheckFatal(err, err2)
+	if err != nil {
+		return []error{err}
 	}
+
+	_, err = pidFile.WriteString(pidContent)
+	errs = serverError.AppendError(errs, err)
+
+	err = pidFile.Close()
+	errs = serverError.AppendError(errs, err)
+
+	return
 }
