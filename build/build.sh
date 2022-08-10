@@ -11,7 +11,7 @@ for build in "$@"; do
 	arg=($build)
 	export GOOS="${arg[0]}"
 	ARCH="${arg[1]}"	# e.g. "amd64" or "amd64,v2"
-	GOARCH=${ARCH%,*}
+	export GOARCH=${ARCH%,*}
 	if [ "$ARCH" != "$GOARCH" ]; then
 		# e.g. "GOAMD64=v2"
 		ARCH_OPT="${ARCH#*,}"
