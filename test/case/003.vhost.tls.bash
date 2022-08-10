@@ -11,4 +11,4 @@ assert "$vh1file1" 'vhost1/file1.txt'
 vh2file1=$(curl_get_body https://127.0.0.2:3003/file1.txt)
 assert "$vh2file1" 'vhost2/file1.txt'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

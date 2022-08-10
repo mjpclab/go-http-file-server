@@ -32,3 +32,7 @@
 # Standard library compatibility
 ## SSL/TLS protocol
 - Go 1.13 is the last release supports SSLv3
+
+# See also
+
+https://github.com/golang/go/wiki/MinimumRequirements#microarchitecture-support

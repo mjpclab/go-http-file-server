@@ -10,17 +10,32 @@ type pathHeaders struct {
 	headers [][2]string
 }
 
-func newPathHeaders(pathHeadersMap map[string][][2]string) []pathHeaders {
-	results := make([]pathHeaders, 0, len(pathHeadersMap))
+func newPathHeaders(pathHeadersList [][]string) []pathHeaders {
+	results := make([]pathHeaders, 0, len(pathHeadersList))
 
-	for refPath, headers := range pathHeadersMap {
+	for _, pathHeadersSeq := range pathHeadersList {
+		if len(pathHeadersSeq) <= 1 { // no headers
+			continue
+		}
+		refPath := pathHeadersSeq[0]
+
+		pathHeadersSeq = pathHeadersSeq[1:]
+		headerPairCount := len(pathHeadersSeq) / 2
+		if headerPairCount == 0 {
+			continue
+		}
+		headers := make([][2]string, headerPairCount)
+		for i := 0; i < headerPairCount; i++ {
+			headers[i] = [2]string{pathHeadersSeq[i*2], pathHeadersSeq[i*2+1]}
+		}
+
 		results = append(results, pathHeaders{refPath, headers})
 	}
 
 	return results
 }
 
-func (h *handler) getHeaders(reqUrlPath, reqFsPath string, doGetHeaders bool) [][2]string {
+func (h *aliasHandler) getHeaders(reqUrlPath, reqFsPath string, doGetHeaders bool) [][2]string {
 	if !doGetHeaders {
 		return nil
 	}

@@ -37,4 +37,4 @@ sleep 0.05 # wait server ready
 (curl_get_header http://127.0.0.1:3003/shortcut/vhost2 | grep -q -i 'X-Vh2-Name:\s*X-Vh2-Value') ||
 	fail "Custom header 'X-Vh2-Name:X-Vh2-Value' should exists"
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

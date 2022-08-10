@@ -2,6 +2,7 @@ package user
 
 import (
 	"../util"
+	"errors"
 )
 
 type List struct {
@@ -18,26 +19,27 @@ func (list *List) findIndex(username string) int {
 	return -1
 }
 
-func (list *List) addUser(user user) {
+func (list *List) addUser(user user) error {
 	username := user.getName()
 	index := list.findIndex(username)
 	if index < 0 {
 		list.users = append(list.users, user)
+		return nil
 	} else {
-		list.users[index] = user
+		return errors.New("duplicated username: " + username)
 	}
 }
 
 func (list *List) AddPlain(username, password string) error {
 	user := newPlainUser(username, password)
-	list.addUser(user)
-	return nil
+	err := list.addUser(user)
+	return err
 }
 
 func (list *List) AddBase64(username, password string) error {
 	user := newBase64User(username, password)
-	list.addUser(user)
-	return nil
+	err := list.addUser(user)
+	return err
 }
 
 func (list *List) AddMd5(username, password string) error {
@@ -46,8 +48,8 @@ func (list *List) AddMd5(username, password string) error {
 		return err
 	}
 
-	list.addUser(user)
-	return nil
+	err = list.addUser(user)
+	return err
 }
 
 func (list *List) AddSha1(username, password string) error {
@@ -56,8 +58,8 @@ func (list *List) AddSha1(username, password string) error {
 		return err
 	}
 
-	list.addUser(user)
-	return nil
+	err = list.addUser(user)
+	return err
 }
 
 func (list *List) AddSha256(username, password string) error {
@@ -66,8 +68,8 @@ func (list *List) AddSha256(username, password string) error {
 		return err
 	}
 
-	list.addUser(user)
-	return nil
+	err = list.addUser(user)
+	return err
 }
 
 func (list *List) AddSha512(username, password string) error {
@@ -76,8 +78,8 @@ func (list *List) AddSha512(username, password string) error {
 		return err
 	}
 
-	list.addUser(user)
-	return nil
+	err = list.addUser(user)
+	return err
 }
 
 func (list *List) Auth(username, password string) bool {

@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"../param"
-	"../serverErrHandler"
 	"../serverLog"
 	"../tpl"
 	"../user"
@@ -20,7 +19,32 @@ type pathStrings struct {
 	strings []string
 }
 
-type handler struct {
+type aliasParam struct {
+	users  user.List
+	theme  tpl.Theme
+	logger *serverLog.Logger
+
+	shows     *regexp.Regexp
+	showDirs  *regexp.Regexp
+	showFiles *regexp.Regexp
+	hides     *regexp.Regexp
+	hideDirs  *regexp.Regexp
+	hideFiles *regexp.Regexp
+
+	headersUrls []pathHeaders
+	headersDirs []pathHeaders
+
+	restrictAccess     bool
+	restrictAccessUrls []pathStrings
+	restrictAccessDirs []pathStrings
+
+	pageVaryV1    string
+	pageVary      string
+	contentVaryV1 string
+	contentVary   string
+}
+
+type aliasHandler struct {
 	root          string
 	emptyRoot     bool
 	forceDirSlash int
@@ -30,9 +54,21 @@ type handler struct {
 	defaultSort   string
 	aliasPrefix   string
 
+	users  user.List
+	theme  tpl.Theme
+	logger *serverLog.Logger
+
+	shows     *regexp.Regexp
+	showDirs  *regexp.Regexp
+	showFiles *regexp.Regexp
+	hides     *regexp.Regexp
+	hideDirs  *regexp.Regexp
+	hideFiles *regexp.Regexp
+
 	dirIndexes []string
 	aliases    aliases
 
+	restrictAccess       bool
 	globalRestrictAccess []string
 	restrictAccessUrls   []pathStrings
 	restrictAccessDirs   []pathStrings
@@ -64,29 +100,16 @@ type handler struct {
 	globalAuth bool
 	authUrls   []string
 	authDirs   []string
-	users      user.List
 
-	shows     *regexp.Regexp
-	showDirs  *regexp.Regexp
-	showFiles *regexp.Regexp
-	hides     *regexp.Regexp
-	hideDirs  *regexp.Regexp
-	hideFiles *regexp.Regexp
-	theme     tpl.Theme
+	pageVaryV1    string
+	pageVary      string
+	contentVaryV1 string
+	contentVary   string
 
 	fileServer http.Handler
-
-	logger     *serverLog.Logger
-	errHandler *serverErrHandler.ErrHandler
-
-	restrictAccess bool
-	pageVaryV1     string
-	pageVary       string
-	contentVaryV1  string
-	contentVary    string
 }
 
-func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.logRequest(r)
 
 	// hsts redirect
@@ -109,9 +132,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// data
 	data := h.getResponseData(r)
-	if len(data.errors) > 0 {
-		h.logErrors(data.errors...)
-	}
+	h.logErrors(data.errors)
 	file := data.File
 	if file != nil {
 		defer file.Close()
@@ -171,54 +192,51 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func newHandler(
+func newAliasHandler(
 	p *param.Param,
-	root string,
-	aliasPrefix string,
+	ap *aliasParam,
+	currentAlias alias,
 	allAliases aliases,
-	restrictAccessUrls, restrictAccessDirs []pathStrings,
-	headersUrls, headersDirs []pathHeaders,
-	users user.List,
-	theme tpl.Theme,
-	logger *serverLog.Logger,
-	errHandler *serverErrHandler.ErrHandler,
-	restrictAccess bool,
-	pageVaryV1, pageVary, contentVaryV1, contentVary string,
 ) http.Handler {
-	emptyRoot := p.EmptyRoot && aliasPrefix == "/"
+	emptyRoot := p.EmptyRoot && currentAlias.url == "/"
 
 	aliases := aliases{}
 	for _, alias := range allAliases {
-		if alias.isSuccessorOf(aliasPrefix) {
+		if alias.isSuccessorOf(currentAlias.url) {
 			aliases = append(aliases, alias)
 		}
 	}
 
 	var fileServer http.Handler
 	if !emptyRoot && createFileServer != nil { // for WSL 1 fix
-		fileServer = createFileServer(root)
+		fileServer = createFileServer(currentAlias.fs)
 	}
 
-	h := &handler{
-		root:          root,
+	h := &aliasHandler{
+		root:          currentAlias.fs,
 		emptyRoot:     emptyRoot,
 		forceDirSlash: p.ForceDirSlash,
 		globalHsts:    p.GlobalHsts,
 		globalHttps:   p.GlobalHttps,
 		httpsPort:     p.HttpsPort,
 		defaultSort:   p.DefaultSort,
-		aliasPrefix:   aliasPrefix,
-		aliases:       aliases,
+		aliasPrefix:   currentAlias.url,
+
+		users:  ap.users,
+		theme:  ap.theme,
+		logger: ap.logger,
 
 		dirIndexes: p.DirIndexes,
+		aliases:    aliases,
 
+		restrictAccess:       ap.restrictAccess,
 		globalRestrictAccess: p.GlobalRestrictAccess,
-		restrictAccessUrls:   restrictAccessUrls,
-		restrictAccessDirs:   restrictAccessDirs,
+		restrictAccessUrls:   ap.restrictAccessUrls,
+		restrictAccessDirs:   ap.restrictAccessDirs,
 
 		globalHeaders: p.GlobalHeaders,
-		headersUrls:   headersUrls,
-		headersDirs:   headersDirs,
+		headersUrls:   ap.headersUrls,
+		headersDirs:   ap.headersDirs,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
@@ -243,26 +261,20 @@ func newHandler(
 		globalAuth: p.GlobalAuth,
 		authUrls:   p.AuthUrls,
 		authDirs:   p.AuthDirs,
-		users:      users,
 
-		shows:     p.Shows,
-		showDirs:  p.ShowDirs,
-		showFiles: p.ShowFiles,
-		hides:     p.Hides,
-		hideDirs:  p.HideDirs,
-		hideFiles: p.HideFiles,
-		theme:     theme,
+		shows:     ap.shows,
+		showDirs:  ap.showDirs,
+		showFiles: ap.showFiles,
+		hides:     ap.hides,
+		hideDirs:  ap.hideDirs,
+		hideFiles: ap.hideFiles,
 
 		fileServer: fileServer,
 
-		logger:     logger,
-		errHandler: errHandler,
-
-		restrictAccess: restrictAccess,
-		pageVaryV1:     pageVaryV1,
-		pageVary:       pageVary,
-		contentVaryV1:  contentVaryV1,
-		contentVary:    contentVary,
+		pageVaryV1:    ap.pageVaryV1,
+		pageVary:      ap.pageVary,
+		contentVaryV1: ap.contentVaryV1,
+		contentVary:   ap.contentVary,
 	}
 	return h
 }

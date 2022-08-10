@@ -3,4 +3,10 @@
 cd $(dirname "$0")
 rm -rf ../output/
 
-bash ./build.sh "$(go env GOOS) $(go env GOARCH)"
+GOARCH=$(go env GOARCH)
+ARCH_OPT_NAME=$(echo "GO$GOARCH" | tr 'a-z' 'A-Z')
+if [ -n "${!ARCH_OPT_NAME}" ]; then
+	ARCH_OPT=",${!ARCH_OPT_NAME}"
+fi
+
+bash ./build.sh "$(go env GOOS) ${GOARCH}${ARCH_OPT}"

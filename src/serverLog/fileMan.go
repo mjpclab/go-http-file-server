@@ -3,16 +3,14 @@
 package serverLog
 
 import (
-	"../util"
 	"errors"
-	"fmt"
 	"os"
 	"sync"
-	"time"
 )
 
-const chanBuffer = 15
+const chanBuffer = 31
 const fileMode = 0660
+const logEnding = '\n'
 
 type fileEntry struct {
 	fsPath string
@@ -24,17 +22,6 @@ type fileEntry struct {
 type FileMan struct {
 	wg      *sync.WaitGroup
 	entries []*fileEntry
-}
-
-func getLogEntry(payload []byte) []byte {
-	buf := make([]byte, 0, len(payload)+21)
-
-	buf = append(buf, []byte(util.FormatTimeSecond(time.Now()))...) //19 bytes
-	buf = append(buf, ' ')                                          // 1 byte
-	buf = append(buf, payload...)
-	buf = append(buf, '\n') //1  byte
-
-	return buf
 }
 
 func openLogFile(fsPath string) (*os.File, error) {
@@ -56,9 +43,10 @@ func newFileEntry(fsPath string, info os.FileInfo, file *os.File) *fileEntry {
 
 func (entry *fileEntry) serve() {
 	for payload := range entry.ch {
-		_, e := entry.file.Write(getLogEntry(payload))
+		payload = append(payload, logEnding)
+		_, e := entry.file.Write(payload)
 		if e != nil {
-			fmt.Fprintln(os.Stderr, e)
+			os.Stderr.WriteString(e.Error() + "\n")
 		}
 	}
 	if entry.info != nil { // not Stdout or Stderr

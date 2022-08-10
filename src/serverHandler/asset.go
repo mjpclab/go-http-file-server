@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (h *handler) asset(w http.ResponseWriter, r *http.Request, assetPath string) {
+func (h *aliasHandler) asset(w http.ResponseWriter, r *http.Request, assetPath string) {
 	header := w.Header()
 	header.Set("X-Content-Type-Options", "nosniff")
 	header.Set("Cache-Control", "public, max-age=3600")

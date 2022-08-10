@@ -24,4 +24,4 @@ assert $(curl_head_status 'http://127.0.0.1:3003/lorem') '404'
 assert $(curl_head_status 'http://127.0.0.1:3003/lorem/ipsum') '200'
 assert $(curl_head_status 'http://127.0.0.1:3003/lorem/ipsum/') '200'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

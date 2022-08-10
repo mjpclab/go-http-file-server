@@ -73,27 +73,27 @@ func TestSplitKeyValue(t *testing.T) {
 	var k, v string
 	var ok bool
 
-	_, _, k, v, ok = splitKeyValue("")
+	k, v, ok = splitKeyValue("")
 	if ok {
 		t.Error("empty string should not OK")
 	}
 
-	_, _, k, v, ok = splitKeyValue(":")
+	k, v, ok = splitKeyValue(":")
 	if ok {
 		t.Error("separator-only string should not OK")
 	}
 
-	_, _, k, v, ok = splitKeyValue("::world")
+	k, v, ok = splitKeyValue("::world")
 	if ok {
 		t.Error("empty key should not OK")
 	}
 
-	_, _, k, v, ok = splitKeyValue(":hello:")
+	k, v, ok = splitKeyValue(":hello:")
 	if ok {
 		t.Error("empty value should not OK")
 	}
 
-	_, _, k, v, ok = splitKeyValue(":key:value")
+	k, v, ok = splitKeyValue(":key:value")
 	if !ok {
 		t.Fail()
 	}
@@ -104,7 +104,7 @@ func TestSplitKeyValue(t *testing.T) {
 		t.Fail()
 	}
 
-	_, _, k, v, ok = splitKeyValue("@KEY@VALUE")
+	k, v, ok = splitKeyValue("@KEY@VALUE")
 	if !ok {
 		t.Fail()
 	}
@@ -116,79 +116,138 @@ func TestSplitKeyValue(t *testing.T) {
 	}
 }
 
+func TestSplitAllKeyValue(t *testing.T) {
+	results := splitAllKeyValue([]string{":foo:bar", "#lorem#ipsum"})
+	if len(results) != 2 {
+		t.Error(results)
+	}
+	if !expectStrings(results[0][:], "foo", "bar") {
+		t.Error(results[0])
+	}
+	if !expectStrings(results[1][:], "lorem", "ipsum") {
+		t.Error(results[1])
+	}
+}
+
 func TestNormalizePathRestrictAccesses(t *testing.T) {
-	results, _ := normalizePathRestrictAccesses([]string{
-		":/foo:host1:host2",
-		":/foo/:host3:host4",
-		":/bar",
-	}, util.NormalizeUrlPath)
+	results, _ := normalizeAllPathValues([][]string{
+		{"/foo", "host1", "host2"},
+		{"/foo/", "host3", "host4"},
+		{"/bar"},
+	}, true, util.NormalizeUrlPath, util.ExtractHostsFromUrls)
 
 	if len(results) != 2 {
 		t.Error()
 	}
-	if !expectStrings(results["/foo"], "host1", "host2", "host3", "host4") {
-		t.Error()
+	if !expectStrings(results[0], "/foo", "host1", "host2", "host3", "host4") {
+		t.Error(results[0])
 	}
-	if len(results["/bar"]) != 0 {
-		t.Error()
+	if !expectStrings(results[1], "/bar") {
+		t.Error(results[1])
 	}
 }
 
 func TestNormalizePathHeadersMap(t *testing.T) {
-	var result map[string][][2]string
+	var result [][]string
 
-	result, _ = normalizePathHeadersMap([]string{
-		":/foo:X-header1:X-Value1",
-		":/foo/:X-header2:X-Value2",
-		":/bar:X-header3:X-Value3",
-		":baz",
-		":baz:",
-		":baz:X-Not-Valid",
-		":baz:X-Not-Valid:",
-	}, util.NormalizeUrlPath)
+	result, _ = normalizeAllPathValues([][]string{
+		{"/foo", "X-header1", "X-Value1"},
+		{"/foo/", "X-header2", "X-Value2"},
+		{"/bar", "X-header3", "X-Value3"},
+		{"baz"},
+		{"baz", ""},
+		{"baz", "X-Not-Valid"},
+		{"baz", "X-Not-Valid", ""},
+	}, false, util.NormalizeUrlPath, normalizeHeaders)
 
 	if len(result) != 2 {
 		t.Error(result)
 	}
 
-	if len(result["/foo"]) != 2 {
-		t.Error(result["/foo"])
-	}
-	if result["/foo"][0][0] != "X-header1" || result["/foo"][0][1] != "X-Value1" {
-		t.Error(result["/foo"][0])
-	}
-	if result["/foo"][1][0] != "X-header2" || result["/foo"][1][1] != "X-Value2" {
-		t.Error(result["/foo"][0])
+	if !expectStrings(result[0], "/foo", "X-header1", "X-Value1", "X-header2", "X-Value2") {
+		t.Error(result[0])
 	}
 
-	if len(result["/bar"]) != 1 {
-		t.Error(result["/foo"])
-	}
-	if result["/bar"][0][0] != "X-header3" || result["/bar"][0][1] != "X-Value3" {
-		t.Error(result["/foo"][0])
+	if !expectStrings(result[1], "/bar", "X-header3", "X-Value3") {
+		t.Error(result[1])
 	}
 }
 
 func TestNormalizePathMaps(t *testing.T) {
-	var maps map[string]string
+	var results [][2]string
 	var fsPath string
 
-	maps, _ = normalizePathMaps([]string{":/data/lib://usr/lib"})
+	results, _ = normalizePathMaps([][2]string{{"/data/lib", "//usr/lib"}})
+	if len(results) != 1 {
+		t.Error(results)
+	}
 	fsPath, _ = filepath.Abs("/usr/lib")
-	if maps["/data/lib"] != fsPath {
-		t.Error(maps)
+	if !expectStrings(results[0][:], "/data/lib", fsPath) {
+		t.Error(results[0])
 	}
 
-	maps, _ = normalizePathMaps([]string{":/data/lib://usr/lib", "@foo@bar/baz"})
-	if len(maps) != 2 {
-		t.Error(maps)
+	results, _ = normalizePathMaps([][2]string{{"/data/lib", "//usr/lib"}, {"foo", "bar/baz"}})
+	if len(results) != 2 {
+		t.Error(results)
 	}
-	if maps["/data/lib"] != "/usr/lib" {
-		t.Error(maps)
+	fsPath, _ = filepath.Abs("/usr/lib")
+	if !expectStrings(results[0][:], "/data/lib", fsPath) {
+		t.Error(results[0])
 	}
 	fsPath, _ = filepath.Abs("bar/baz")
-	if maps["/foo"] != fsPath {
-		t.Error(maps)
+	if !expectStrings(results[1][:], "/foo", fsPath) {
+		t.Error(results[1])
+	}
+
+	results, _ = normalizePathMaps([][2]string{
+		{"/data/lib", "//usr/lib"},
+		{"foo", "bar/baz"},
+		{"data/lib", "/usr/local/lib"},
+	})
+	if len(results) != 2 {
+		t.Error(results)
+	}
+	fsPath, _ = filepath.Abs("/usr/local/lib")
+	if !expectStrings(results[0][:], "/data/lib", fsPath) {
+		t.Error(results[0])
+	}
+	fsPath, _ = filepath.Abs("bar/baz")
+	if !expectStrings(results[1][:], "/foo", fsPath) {
+		t.Error(results[1])
+	}
+}
+
+func TestDedupPathValues(t *testing.T) {
+	var result []string
+
+	result = dedupPathValues(nil)
+	if !expectStrings(result) {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{})
+	if !expectStrings(result) {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{"/foo"})
+	if !expectStrings(result, "/foo") {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{"/foo", "wow"})
+	if !expectStrings(result, "/foo", "wow") {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{"/foo", "aa", "bb", "cc"})
+	if !expectStrings(result, "/foo", "aa", "bb", "cc") {
+		t.Error(result)
+	}
+
+	result = dedupPathValues([]string{"/foo", "xx", "yy", "xx", "zz", "zz", "/foo"})
+	if !expectStrings(result, "/foo", "xx", "yy", "zz", "/foo") {
+		t.Error(result)
 	}
 }
 

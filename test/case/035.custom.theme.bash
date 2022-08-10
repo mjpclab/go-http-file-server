@@ -23,4 +23,4 @@ sleep 0.05 # wait server ready
 (curl_get_body 'http://127.0.0.2:3003/?asset=index.js' | grep -q -F '/* index.js from custom theme */') ||
 	fail "Should use custom theme for vhost 2"
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

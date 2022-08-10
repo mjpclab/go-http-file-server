@@ -23,7 +23,7 @@ var regexpEscapeReplacer = strings.NewReplacer(
 	"*", ".*?",
 )
 
-func WildcardToRegexp(wildcard string) string {
+func WildcardToStrRegexp(wildcard string) string {
 	exp := "^" + regexpEscapeReplacer.Replace(wildcard) + "$"
 	return exp
 }

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
 	success := false
 
 	switch {
@@ -14,11 +14,11 @@ func (h *handler) mutate(w http.ResponseWriter, r *http.Request, data *responseD
 			success = h.saveUploadFiles(data.AuthUserName, h.root+data.handlerReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
 		}
 	case data.IsMkdir:
-		if data.CanMkdir && !h.errHandler.LogError(r.ParseForm()) {
+		if data.CanMkdir && !h.logError(r.ParseForm()) {
 			success = h.mkdirs(data.AuthUserName, h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	case data.IsDelete:
-		if data.CanDelete && !h.errHandler.LogError(r.ParseForm()) {
+		if data.CanDelete && !h.logError(r.ParseForm()) {
 			success = h.deleteItems(data.AuthUserName, h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	}

@@ -2,7 +2,7 @@ package serverHandler
 
 import "os"
 
-func (h *handler) FilterItems(items []os.FileInfo) []os.FileInfo {
+func (h *aliasHandler) FilterItems(items []os.FileInfo) []os.FileInfo {
 	if h.shows == nil &&
 		h.showDirs == nil &&
 		h.showFiles == nil &&

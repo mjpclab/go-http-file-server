@@ -11,4 +11,4 @@ assert "$file1status" '200'
 file1headstatus=$(curl_head_status http://127.0.0.1:3003/file1.txt)
 assert "$file1headstatus" '200'
 
-jobs -p | xargs kill
+jobs -p | xargs kill &> /dev/null

@@ -9,11 +9,11 @@ import (
 	"time"
 )
 
-var serveContent = func(h *handler, w http.ResponseWriter, r *http.Request, info os.FileInfo, file *os.File) {
+var serveContent = func(h *aliasHandler, w http.ResponseWriter, r *http.Request, info os.FileInfo, file *os.File) {
 	http.ServeContent(w, r, info.Name(), info.ModTime(), file)
 }
 
-func (h *handler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
 	header.Set("X-Content-Type-Options", "nosniff")
 	if r.ProtoMajor <= 1 {
