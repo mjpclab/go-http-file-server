@@ -1,6 +1,9 @@
 package util
 
-import "time"
+import (
+	"../shimgo"
+	"time"
+)
 
 const timeLayout = "2006-01-02 15:04:05"
 
@@ -9,5 +12,5 @@ func FormatTimeSecond(t time.Time) string {
 }
 
 func AppendTimeSecond(buf []byte, t time.Time) []byte {
-	return t.AppendFormat(buf, timeLayout)
+	return shimgo.Time_AppendFormat(t, buf, timeLayout)
 }
