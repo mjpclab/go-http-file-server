@@ -36,6 +36,7 @@ func NewVhostHandler(
 		errs = serverError.AppendError(errs, users.AddSha512(u[0], u[1]))
 	}
 
+	// show/hide
 	shows, err := wildcardToRegexp(p.Shows)
 	errs = serverError.AppendError(errs, err)
 	showDirs, err := wildcardToRegexp(p.ShowDirs)
@@ -53,18 +54,30 @@ func NewVhostHandler(
 		return nil, errs
 	}
 
+	// restrict access
 	restrictAccessUrls := newRestrictAccesses(p.RestrictAccessUrls)
 	restrictAccessDirs := newRestrictAccesses(p.RestrictAccessDirs)
 	restrictAccess := hasRestrictAccess(p.GlobalRestrictAccess, restrictAccessUrls, restrictAccessDirs)
-	pageVaryV1 := "Accept-Encoding"
-	contentVaryV1 := ""
+
+	// `Vary` header
+	pageVarys := make([]string, 0, 4)
+	contentVarys := make([]string, 0, 3)
+	pageVarys = append(pageVarys, "Accept-Encoding")
 	if restrictAccess {
-		pageVaryV1 += ", Referer, Origin"
-		contentVaryV1 = "Referer, Origin"
+		pageVarys = append(pageVarys, "Referer", "Origin")
+		contentVarys = append(contentVarys, "Referer", "Origin")
 	}
+	if len(p.AuthUrls) > 0 || len(p.AuthDirs) > 0 {
+		pageVarys = append(pageVarys, "Authorization")
+		contentVarys = append(contentVarys, "Authorization")
+	}
+
+	pageVaryV1 := strings.Join(pageVarys, ", ")
+	contentVaryV1 := strings.Join(contentVarys, ", ")
 	pageVary := strings.ToLower(pageVaryV1)
 	contentVary := strings.ToLower(contentVaryV1)
 
+	// alias param
 	ap := &aliasParam{
 		users:  *users,
 		theme:  theme,
