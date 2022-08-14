@@ -10,11 +10,11 @@ import (
 	"strings"
 )
 
-var cliCmd *goNixArgParser.Command
+var cliCmd = NewCliCmd()
 
-func init() {
-	cliCmd = goNixArgParser.NewSimpleCommand(os.Args[0], "Simple command line based HTTP file server to share local file system")
-	options := cliCmd.Options()
+func NewCliCmd() *goNixArgParser.Command {
+	cmd := goNixArgParser.NewSimpleCommand(os.Args[0], "Simple command line based HTTP file server to share local file system")
+	options := cmd.Options()
 	var opt goNixArgParser.Option
 
 	// define option
@@ -193,11 +193,13 @@ func init() {
 
 	err = options.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
 	serverError.CheckFatal(err)
+
+	return cmd
 }
 
-func ParseFromArgs(args []string) (params []*Param, printVersion, printHelp bool, errs []error) {
+func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*goNixArgParser.ParseResult, printVersion, printHelp bool, errs []error) {
 	// parse option
-	results := cliCmd.ParseGroups(args, nil)
+	results = cmd.ParseGroups(args, nil)
 
 	// pre-check
 	for _, result := range results {
@@ -273,6 +275,10 @@ func ParseFromArgs(args []string) (params []*Param, printVersion, printHelp bool
 		}
 	}
 
+	return
+}
+
+func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params []*Param, errs []error) {
 	// init param data
 	params = make([]*Param, 0, len(results))
 	for _, result := range results {
@@ -413,7 +419,15 @@ func ParseFromArgs(args []string) (params []*Param, printVersion, printHelp bool
 }
 
 func ParseFromCli() (params []*Param, printVersion, printHelp bool, errs []error) {
-	return ParseFromArgs(os.Args)
+	var cmdResults []*goNixArgParser.ParseResult
+
+	cmdResults, printVersion, printHelp, errs = ArgsToCmdResults(cliCmd, os.Args)
+	if printVersion || printHelp || len(errs) > 0 {
+		return
+	}
+
+	params, errs = CmdResultsToParams(cmdResults)
+	return
 }
 
 func PrintHelp() {
