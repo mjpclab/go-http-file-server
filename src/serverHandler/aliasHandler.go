@@ -1,10 +1,10 @@
 package serverHandler
 
 import (
-	"../param"
-	"../serverLog"
-	"../tpl"
-	"../user"
+	"mjpclab.dev/ghfs/src/param"
+	"mjpclab.dev/ghfs/src/serverLog"
+	"mjpclab.dev/ghfs/src/tpl"
+	"mjpclab.dev/ghfs/src/user"
 	"net/http"
 	"regexp"
 	"strings"

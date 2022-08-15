@@ -1,11 +1,11 @@
 package serverHandler
 
 import (
-	"../util"
 	"errors"
 	"io"
 	"mime"
 	"mime/multipart"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"path/filepath"

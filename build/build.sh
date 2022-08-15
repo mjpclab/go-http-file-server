@@ -2,7 +2,6 @@
 
 cd $(dirname "$0")
 
-export GO111MODULE=auto
 source ./build.inc.sh
 
 mkdir -p "$OUTDIR"

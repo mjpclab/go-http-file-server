@@ -1,8 +1,8 @@
 package param
 
 import (
-	"../goVirtualHost"
 	"crypto/tls"
+	"mjpclab.dev/ghfs/src/goVirtualHost"
 	"strings"
 )
 

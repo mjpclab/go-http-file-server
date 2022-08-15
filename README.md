@@ -15,7 +15,7 @@ Simple command line based HTTP file server to share local file system.
 ## Compile
 Minimal required Go version is 1.18.
 ```sh
-GO111MODULE=auto go build src/main.go
+go build src/main.go
 ```
 Will generate executable file "main" in current directory.
 

@@ -1,7 +1,7 @@
 package serverLog
 
 import (
-	"../util"
+	"mjpclab.dev/ghfs/src/util"
 	"time"
 )
 

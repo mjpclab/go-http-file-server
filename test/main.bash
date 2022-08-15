@@ -17,7 +17,7 @@ export src=$(realpath ../src)
 export ghfs=$(realpath bin)/ghfs
 export GHFS_QUIET=1
 
-GO111MODULE=auto go build -o "$ghfs" "$src/main.go"
+go build -o "$ghfs" "$src/main.go"
 
 pattern="$1"
 if [ -z "$pattern" ]; then

@@ -1,9 +1,9 @@
 package param
 
 import (
-	"../serverError"
-	"../util"
 	"crypto/tls"
+	"mjpclab.dev/ghfs/src/serverError"
+	"mjpclab.dev/ghfs/src/util"
 	"os"
 )
 

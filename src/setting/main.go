@@ -1,7 +1,7 @@
 package setting
 
 import (
-	"../util"
+	"mjpclab.dev/ghfs/src/util"
 	"os"
 )
 

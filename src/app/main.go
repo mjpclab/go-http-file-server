@@ -1,14 +1,14 @@
 package app
 
 import (
-	"../goVirtualHost"
-	"../param"
-	"../serverError"
-	"../serverHandler"
-	"../serverLog"
-	"../setting"
-	"../tpl"
-	"../util"
+	"mjpclab.dev/ghfs/src/goVirtualHost"
+	"mjpclab.dev/ghfs/src/param"
+	"mjpclab.dev/ghfs/src/serverError"
+	"mjpclab.dev/ghfs/src/serverHandler"
+	"mjpclab.dev/ghfs/src/serverLog"
+	"mjpclab.dev/ghfs/src/setting"
+	"mjpclab.dev/ghfs/src/tpl"
+	"mjpclab.dev/ghfs/src/util"
 	"os"
 	"path/filepath"
 	"strconv"

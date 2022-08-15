@@ -1,5 +1,4 @@
 FROM golang AS builder
-ENV GO111MODULE=auto
 COPY .git/ /mnt/ghfs/.git/
 COPY src/ /mnt/ghfs/src/
 COPY build/ /mnt/ghfs/build/

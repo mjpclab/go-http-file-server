@@ -1,9 +1,9 @@
 package param
 
 import (
-	"../goNixArgParser"
-	"../serverError"
 	"errors"
+	"mjpclab.dev/ghfs/src/goNixArgParser"
+	"mjpclab.dev/ghfs/src/serverError"
 	"net/http"
 	"os"
 	"strconv"

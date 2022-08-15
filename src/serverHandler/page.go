@@ -1,12 +1,12 @@
 package serverHandler
 
 import (
-	"../acceptHeaders"
-	"../i18n"
-	tplutil "../tpl/util"
-	"../util"
 	"html/template"
 	"io"
+	"mjpclab.dev/ghfs/src/acceptHeaders"
+	"mjpclab.dev/ghfs/src/i18n"
+	tplutil "mjpclab.dev/ghfs/src/tpl/util"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 )
 

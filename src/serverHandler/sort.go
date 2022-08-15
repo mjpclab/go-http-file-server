@@ -1,8 +1,8 @@
 package serverHandler
 
 import (
-	"../util"
 	"bytes"
+	"mjpclab.dev/ghfs/src/util"
 	"os"
 	"sort"
 	"strings"

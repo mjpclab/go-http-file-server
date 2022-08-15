@@ -1,9 +1,9 @@
 package serverHandler
 
 import (
-	"../i18n"
-	"../util"
 	"html/template"
+	"mjpclab.dev/ghfs/src/i18n"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"path"
