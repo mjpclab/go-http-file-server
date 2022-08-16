@@ -2,6 +2,7 @@ package param
 
 import (
 	"crypto/tls"
+	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/util"
 	"os"
@@ -83,6 +84,8 @@ type Param struct {
 
 	AccessLog string
 	ErrorLog  string
+
+	Middlewares []middleware.Middleware
 }
 
 type Params []*Param

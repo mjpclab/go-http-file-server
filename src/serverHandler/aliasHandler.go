@@ -1,6 +1,7 @@
 package serverHandler
 
 import (
+	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/tpl"
@@ -106,6 +107,8 @@ type aliasHandler struct {
 	contentVaryV1 string
 	contentVary   string
 
+	middlewares []middleware.Middleware
+
 	fileServer http.Handler
 }
 
@@ -131,7 +134,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// data
-	data := h.getResponseData(r)
+	data, fsPath := h.getResponseData(r)
 	h.logErrors(data.errors)
 	file := data.File
 	if file != nil {
@@ -167,7 +170,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// regular flows
+	// archive
 	if len(r.URL.RawQuery) >= 3 {
 		switch r.URL.RawQuery[:3] {
 		case "tar":
@@ -182,6 +185,12 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// middlewares
+	if h.middleware(w, r, data, fsPath) {
+		return
+	}
+
+	// final process
 	item := data.Item
 	if data.WantJson {
 		h.json(w, r, data)
@@ -275,6 +284,8 @@ func newAliasHandler(
 		pageVary:      ap.pageVary,
 		contentVaryV1: ap.contentVaryV1,
 		contentVary:   ap.contentVary,
+
+		middlewares: p.Middlewares,
 	}
 	return h
 }

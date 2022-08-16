@@ -291,7 +291,7 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 	return
 }
 
-func (h *aliasHandler) getResponseData(r *http.Request) *responseData {
+func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsPath string) {
 	var errs []error
 
 	prefixReqPath := r.URL.RawPath
@@ -458,5 +458,5 @@ func (h *aliasHandler) getResponseData(r *http.Request) *responseData {
 		Context:       context,
 
 		NeedDirSlashRedirect: needDirSlashRedirect,
-	}
+	}, reqFsPath
 }
