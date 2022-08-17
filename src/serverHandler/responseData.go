@@ -67,7 +67,7 @@ type responseData struct {
 	SubItemsHtml  []itemHtml
 	SubItemPrefix string
 	SortState     SortState
-	Context       *pathContext
+	Context       pathContext
 
 	NeedDirSlashRedirect bool
 
@@ -406,7 +406,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) *responseData {
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 
-	context := &pathContext{
+	context := pathContext{
 		download:    isDownload,
 		sort:        rawSortBy,
 		defaultSort: h.defaultSort,
