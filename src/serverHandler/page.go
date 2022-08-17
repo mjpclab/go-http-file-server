@@ -15,7 +15,7 @@ const TypeFile = template.HTML("file")
 
 func updateSubItemsHtml(data *responseData) {
 	length := len(data.SubItems)
-	data.SubItemsHtml = make([]*itemHtml, length)
+	data.SubItemsHtml = make([]itemHtml, length)
 
 	for i, info := range data.SubItems {
 		name := info.Name()
@@ -42,7 +42,7 @@ func updateSubItemsHtml(data *responseData) {
 			deleteUrl = name
 		}
 
-		data.SubItemsHtml[i] = &itemHtml{
+		data.SubItemsHtml[i] = itemHtml{
 			Type:        typ,
 			Url:         url,
 			DisplayName: displayName,

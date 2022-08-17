@@ -64,7 +64,7 @@ type responseData struct {
 	ItemName      string
 	SubItems      []os.FileInfo
 	AliasSubItems []os.FileInfo
-	SubItemsHtml  []*itemHtml
+	SubItemsHtml  []itemHtml
 	SubItemPrefix string
 	SortState     SortState
 	Context       *pathContext
