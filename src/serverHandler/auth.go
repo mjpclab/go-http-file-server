@@ -1,8 +1,8 @@
 package serverHandler
 
 import (
-	"../shimgo"
 	"errors"
+	"mjpclab.dev/ghfs/src/shimgo"
 	"net/http"
 )
 

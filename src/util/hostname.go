@@ -1,7 +1,7 @@
 package util
 
 import (
-	"../shimgo"
+	"mjpclab.dev/ghfs/src/shimgo"
 	"strings"
 )
 

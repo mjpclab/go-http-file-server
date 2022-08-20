@@ -1,7 +1,7 @@
 package serverHandler
 
 import (
-	"../shimgo"
+	"mjpclab.dev/ghfs/src/shimgo"
 	"net/http"
 	"strings"
 )

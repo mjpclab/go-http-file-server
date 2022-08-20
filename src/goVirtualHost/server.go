@@ -1,8 +1,8 @@
 package goVirtualHost
 
 import (
-	"../shimgo"
 	"crypto/tls"
+	"mjpclab.dev/ghfs/src/shimgo"
 	"net/http"
 )
 

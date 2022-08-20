@@ -1,7 +1,7 @@
 package goVirtualHost
 
 import (
-	"../shimgo"
+	"mjpclab.dev/ghfs/src/shimgo"
 	"net"
 	"sort"
 	"strings"

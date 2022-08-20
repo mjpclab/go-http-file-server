@@ -1,9 +1,9 @@
 package goNixArgParser
 
 import (
-	"../shimgo"
 	"errors"
 	"io"
+	"mjpclab.dev/ghfs/src/shimgo"
 	"strings"
 )
 
