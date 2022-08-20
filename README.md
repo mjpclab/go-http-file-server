@@ -14,6 +14,7 @@ Simple command line based HTTP file server to share local file system.
 
 ## Compile
 Minimal required Go version is 1.9.
+Ensure this project is located at `GOPATH/src/mjpclab.dev/ghfs`.
 ```sh
 go build src/main.go
 ```

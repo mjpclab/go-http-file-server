@@ -14,6 +14,7 @@
 
 ## 编译
 至少需要Go 1.9版本。
+确保该项目位于 `GOPATH/src/mjpclab.dev/ghfs`。
 ```sh
 go build src/main.go
 ```
