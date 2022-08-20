@@ -85,6 +85,8 @@ type Param struct {
 	ErrorLog  string
 }
 
+type Params []*Param
+
 func (param *Param) normalize() (errs []error) {
 	var es []error
 	var err error
@@ -173,6 +175,18 @@ func (param *Param) normalize() (errs []error) {
 
 	if param.GlobalHttps {
 		param.HttpsPort, param.GlobalHttps = normalizeHttpsPort(param.HttpsPort, param.ListensTLS)
+	}
+
+	return
+}
+
+func NewParams(paramList []Param) (params Params, errs []error) {
+	params = make(Params, len(paramList))
+
+	for i := range params {
+		copiedParam := paramList[i]
+		params[i] = &copiedParam
+		errs = append(errs, params[i].normalize()...)
 	}
 
 	return

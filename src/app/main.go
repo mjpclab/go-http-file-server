@@ -32,7 +32,7 @@ func (app *App) ReOpenLog() []error {
 	return app.logFileMan.Reopen()
 }
 
-func NewApp(params []*param.Param, setting *setting.Setting) (*App, []error) {
+func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 	if len(setting.PidFile) > 0 {
 		errs := writePidFile(setting.PidFile)
 		if len(errs) > 0 {

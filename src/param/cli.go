@@ -278,9 +278,9 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 	return
 }
 
-func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params []*Param, errs []error) {
+func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, errs []error) {
 	// init param data
-	params = make([]*Param, 0, len(results))
+	params = make(Params, 0, len(results))
 	for _, result := range results {
 		param := &Param{}
 
@@ -418,7 +418,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params []*Param,
 	return
 }
 
-func ParseFromCli() (params []*Param, printVersion, printHelp bool, errs []error) {
+func ParseFromCli() (params Params, printVersion, printHelp bool, errs []error) {
 	var cmdResults []*goNixArgParser.ParseResult
 
 	cmdResults, printVersion, printHelp, errs = ArgsToCmdResults(cliCmd, os.Args)
