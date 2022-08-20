@@ -1,12 +1,12 @@
 package serverHandler
 
 import (
-	"../acceptHeaders"
-	"../shimgo"
-	"../util"
 	"compress/flate"
 	"compress/gzip"
 	"io"
+	"mjpclab.dev/ghfs/src/acceptHeaders"
+	"mjpclab.dev/ghfs/src/shimgo"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"path"

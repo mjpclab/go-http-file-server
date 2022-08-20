@@ -14,8 +14,9 @@
 
 ## 编译
 至少需要Go 1.2版本。
+确保该项目位于 `GOPATH/src/mjpclab.dev/ghfs`。
 ```sh
-GO111MODULE=auto go build src/main.go
+go build src/main.go
 ```
 会在当前目录生成"main"可执行文件。
 

@@ -1,7 +1,7 @@
 package param
 
 import (
-	"../util"
+	"mjpclab.dev/ghfs/src/util"
 	"path/filepath"
 	"testing"
 )

@@ -1,10 +1,10 @@
 package serverHandler
 
 import (
-	"../shimgo"
-	"../util"
 	"errors"
 	"io"
+	"mjpclab.dev/ghfs/src/shimgo"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"path/filepath"

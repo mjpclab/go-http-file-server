@@ -1,7 +1,7 @@
 package serverHandler
 
 import (
-	"../param"
+	"mjpclab.dev/ghfs/src/param"
 	"net/http"
 )
 

@@ -1,9 +1,9 @@
 package serverHandler
 
 import (
-	"../serverLog"
-	"../shimgo"
-	"../util"
+	"mjpclab.dev/ghfs/src/serverLog"
+	"mjpclab.dev/ghfs/src/shimgo"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 )
 

@@ -6,6 +6,8 @@ cd $(dirname "$0")
 source ./build-all.inc.sh
 
 prefix=$(realpath ../)
+ghfs=/go/src/mjpclab.dev/ghfs
+
 rm -rf "$prefix/output/"
 
 buildByDocker() {
@@ -15,7 +17,7 @@ buildByDocker() {
 
   docker run \
     --rm \
-    -v "$prefix":/mnt \
+    -v "$prefix":"$ghfs" \
     -e EX_UID="$(id -u)" \
     -e EX_GID="$(id -g)" \
     golang:"$gover" \
@@ -23,8 +25,8 @@ buildByDocker() {
       sed -i -e "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apt/sources.list;
       apt-get update;
       apt-get install -yq --force-yes git zip;
-      /bin/bash /mnt/build/build.sh "$@";
-      chown -R $EX_UID:$EX_GID /mnt/output;
+      /bin/bash '"$ghfs"'/build/build.sh "$@";
+      chown -R $EX_UID:$EX_GID '"$ghfs"'/output;
     ' \
     'argv_0_placeholder' \
     "$@"

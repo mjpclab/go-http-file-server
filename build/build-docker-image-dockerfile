@@ -1,9 +1,9 @@
 FROM golang AS builder
-ENV GO111MODULE=auto
-COPY .git/ /mnt/ghfs/.git/
-COPY src/ /mnt/ghfs/src/
-COPY build/ /mnt/ghfs/build/
-RUN ["/bin/bash", "-c", "cd /mnt/ghfs/build/; source ./build.inc.sh; go build -ldflags \"$(getLdFlags)\" -o /tmp/ghfs /mnt/ghfs/src/main.go"]
+COPY .git/ /go/src/mjpclab.dev/ghfs/.git/
+COPY go.mod /go/src/mjpclab.dev/ghfs/go.mod
+COPY src/ /go/src/mjpclab.dev/ghfs/src/
+COPY build/ /go/src/mjpclab.dev/ghfs/build/
+RUN ["/bin/bash", "-c", "cd /go/src/mjpclab.dev/ghfs/build/; source ./build.inc.sh; go build -ldflags \"$(getLdFlags)\" -o /tmp/ghfs /go/src/mjpclab.dev/ghfs/src/main.go"]
 RUN mkdir -p /output/usr/local/bin/; cp /tmp/ghfs /output/usr/local/bin/;
 COPY conf/docker-image/ /output/
 

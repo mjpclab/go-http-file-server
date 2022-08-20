@@ -1,8 +1,8 @@
 package tpl
 
 import (
-	"./frontend"
 	"bytes"
+	"mjpclab.dev/ghfs/src/tpl/frontend"
 	"strings"
 )
 

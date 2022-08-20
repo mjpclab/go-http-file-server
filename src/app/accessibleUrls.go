@@ -1,8 +1,8 @@
 package app
 
 import (
-	"../goVirtualHost"
-	"../util"
+	"mjpclab.dev/ghfs/src/goVirtualHost"
+	"mjpclab.dev/ghfs/src/util"
 	"strconv"
 )
 

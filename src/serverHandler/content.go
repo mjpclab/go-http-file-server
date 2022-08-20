@@ -1,8 +1,8 @@
 package serverHandler
 
 import (
-	"../shimgo"
-	"../util"
+	"mjpclab.dev/ghfs/src/shimgo"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"strconv"
