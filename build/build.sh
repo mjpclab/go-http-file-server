@@ -29,12 +29,13 @@ for build in "$@"; do
 
 	cp -r ../src/ /tmp/
 	sed -i -e '/var appVer/s/"dev"/"'$VERSION'"/' /tmp/src/version/main.go
-	sed -i -e '/var appArch/s/"runtime.GOARCH"/"'$ARCH'"/' /tmp/src/version/main.go
+	sed -i -e '/var appArch/s/runtime.GOARCH/"'$ARCH'"/' /tmp/src/version/main.go
+	mount --bind /tmp/src ../src
 
 	BIN="$TMP/$MAINNAME$(go env GOEXE)"
 	rm -f "$BIN"
 	echo "Building: $GOOS$OS_SUFFIX $ARCH"
-	go build -ldflags "$LDFLAGS" -o "$BIN" /tmp/src/main.go
+	go build -ldflags "$LDFLAGS" -o "$BIN" ../src/main.go
 
 	OUT="$OUTDIR/$MAINNAME-$VERSION-$GOOS$OS_SUFFIX-$GOARCH$ARCH_OPT".zip
 	zip -j "$OUT" "$BIN" "$LICENSE" "$LICENSE_GO"

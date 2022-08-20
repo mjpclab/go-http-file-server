@@ -17,6 +17,7 @@ buildByDocker() {
 
   docker run \
     --rm \
+    --privileged \
     -v "$prefix":"$ghfs" \
     -e EX_UID="$(id -u)" \
     -e EX_GID="$(id -g)" \
