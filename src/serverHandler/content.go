@@ -1,7 +1,7 @@
 package serverHandler
 
 import (
-	"../util"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"net/url"
 	"os"

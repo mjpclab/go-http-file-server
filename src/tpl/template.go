@@ -1,8 +1,8 @@
 package tpl
 
 import (
-	"./util"
 	"html/template"
+	"mjpclab.dev/ghfs/src/tpl/util"
 )
 
 func ParsePageTpl(tplText string) (tpl *template.Template, err error) {

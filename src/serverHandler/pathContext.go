@@ -6,7 +6,7 @@ type pathContext struct {
 	defaultSort string
 }
 
-func (ctx *pathContext) QueryString() string {
+func (ctx pathContext) QueryString() string {
 	// ?download&sort=x/
 	buffer := make([]byte, 1, 18)
 	buffer[0] = '?'
@@ -25,7 +25,7 @@ func (ctx *pathContext) QueryString() string {
 	return string(buffer)
 }
 
-func (ctx *pathContext) FileQueryString() string {
+func (ctx pathContext) FileQueryString() string {
 	if ctx.download {
 		return "?download"
 	}
@@ -33,8 +33,8 @@ func (ctx *pathContext) FileQueryString() string {
 	return ""
 }
 
-func (ctx *pathContext) QueryStringOfSort(sort string) string {
-	copiedCtx := *ctx
+func (ctx pathContext) QueryStringOfSort(sort string) string {
+	copiedCtx := ctx
 	copiedCtx.sort = &sort
 	return copiedCtx.QueryString()
 }

@@ -1,9 +1,9 @@
 package tpl
 
 import (
-	"../util"
 	"bytes"
 	"io"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type asset struct {

@@ -1,9 +1,10 @@
 package param
 
 import (
-	"../serverError"
-	"../util"
 	"crypto/tls"
+	"mjpclab.dev/ghfs/src/middleware"
+	"mjpclab.dev/ghfs/src/serverError"
+	"mjpclab.dev/ghfs/src/util"
 	"os"
 )
 
@@ -83,7 +84,11 @@ type Param struct {
 
 	AccessLog string
 	ErrorLog  string
+
+	Middlewares []middleware.Middleware
 }
+
+type Params []*Param
 
 func (param *Param) normalize() (errs []error) {
 	var es []error
@@ -173,6 +178,18 @@ func (param *Param) normalize() (errs []error) {
 
 	if param.GlobalHttps {
 		param.HttpsPort, param.GlobalHttps = normalizeHttpsPort(param.HttpsPort, param.ListensTLS)
+	}
+
+	return
+}
+
+func NewParams(paramList []Param) (params Params, errs []error) {
+	params = make(Params, len(paramList))
+
+	for i := range params {
+		copiedParam := paramList[i]
+		params[i] = &copiedParam
+		errs = append(errs, params[i].normalize()...)
 	}
 
 	return

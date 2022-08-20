@@ -1,21 +1,21 @@
 package param
 
 import (
-	"../goNixArgParser"
-	"../serverError"
 	"errors"
 	"io/ioutil"
+	"mjpclab.dev/ghfs/src/goNixArgParser"
+	"mjpclab.dev/ghfs/src/serverError"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 )
 
-var cliCmd *goNixArgParser.Command
+var cliCmd = NewCliCmd()
 
-func init() {
-	cliCmd = goNixArgParser.NewSimpleCommand(os.Args[0], "Simple command line based HTTP file server to share local file system")
-	options := cliCmd.Options()
+func NewCliCmd() *goNixArgParser.Command {
+	cmd := goNixArgParser.NewSimpleCommand(os.Args[0], "Simple command line based HTTP file server to share local file system")
+	options := cmd.Options()
 	var opt goNixArgParser.Option
 
 	// define option
@@ -194,11 +194,13 @@ func init() {
 
 	err = options.AddFlags("help", []string{"-h", "--help"}, "", "print this help")
 	serverError.CheckFatal(err)
+
+	return cmd
 }
 
-func ParseFromArgs(args []string) (params []*Param, printVersion, printHelp bool, errs []error) {
+func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*goNixArgParser.ParseResult, printVersion, printHelp bool, errs []error) {
 	// parse option
-	results := cliCmd.ParseGroups(args, nil)
+	results = cmd.ParseGroups(args, nil)
 
 	// pre-check
 	for _, result := range results {
@@ -274,8 +276,12 @@ func ParseFromArgs(args []string) (params []*Param, printVersion, printHelp bool
 		}
 	}
 
+	return
+}
+
+func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, errs []error) {
 	// init param data
-	params = make([]*Param, 0, len(results))
+	params = make(Params, 0, len(results))
 	for _, result := range results {
 		param := &Param{}
 
@@ -413,8 +419,16 @@ func ParseFromArgs(args []string) (params []*Param, printVersion, printHelp bool
 	return
 }
 
-func ParseFromCli() (params []*Param, printVersion, printHelp bool, errs []error) {
-	return ParseFromArgs(os.Args)
+func ParseFromCli() (params Params, printVersion, printHelp bool, errs []error) {
+	var cmdResults []*goNixArgParser.ParseResult
+
+	cmdResults, printVersion, printHelp, errs = ArgsToCmdResults(cliCmd, os.Args)
+	if printVersion || printHelp || len(errs) > 0 {
+		return
+	}
+
+	params, errs = CmdResultsToParams(cmdResults)
+	return
 }
 
 func PrintHelp() {

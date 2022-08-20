@@ -1,14 +1,14 @@
 package app
 
 import (
-	"../goVirtualHost"
-	"../param"
-	"../serverError"
-	"../serverHandler"
-	"../serverLog"
-	"../setting"
-	"../tpl"
-	"../util"
+	"mjpclab.dev/ghfs/src/goVirtualHost"
+	"mjpclab.dev/ghfs/src/param"
+	"mjpclab.dev/ghfs/src/serverError"
+	"mjpclab.dev/ghfs/src/serverHandler"
+	"mjpclab.dev/ghfs/src/serverLog"
+	"mjpclab.dev/ghfs/src/setting"
+	"mjpclab.dev/ghfs/src/tpl"
+	"mjpclab.dev/ghfs/src/util"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -32,7 +32,7 @@ func (app *App) ReOpenLog() []error {
 	return app.logFileMan.Reopen()
 }
 
-func NewApp(params []*param.Param, setting *setting.Setting) (*App, []error) {
+func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 	if len(setting.PidFile) > 0 {
 		errs := writePidFile(setting.PidFile)
 		if len(errs) > 0 {

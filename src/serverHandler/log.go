@@ -1,8 +1,8 @@
 package serverHandler
 
 import (
-	"../serverLog"
-	"../util"
+	"mjpclab.dev/ghfs/src/serverLog"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"net/url"
 )

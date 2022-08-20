@@ -1,5 +1,6 @@
 *
 !.git
+!go.mod
 !src/
 !build/
 !conf/docker-image

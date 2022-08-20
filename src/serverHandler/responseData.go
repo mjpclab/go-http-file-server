@@ -1,9 +1,9 @@
 package serverHandler
 
 import (
-	"../i18n"
-	"../util"
 	"html/template"
+	"mjpclab.dev/ghfs/src/i18n"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"path"
@@ -64,10 +64,10 @@ type responseData struct {
 	ItemName      string
 	SubItems      []os.FileInfo
 	AliasSubItems []os.FileInfo
-	SubItemsHtml  []*itemHtml
+	SubItemsHtml  []itemHtml
 	SubItemPrefix string
 	SortState     SortState
-	Context       *pathContext
+	Context       pathContext
 
 	NeedDirSlashRedirect bool
 
@@ -291,7 +291,7 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 	return
 }
 
-func (h *aliasHandler) getResponseData(r *http.Request) *responseData {
+func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsPath string) {
 	var errs []error
 
 	prefixReqPath := r.URL.RawPath
@@ -406,7 +406,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) *responseData {
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 
-	context := &pathContext{
+	context := pathContext{
 		download:    isDownload,
 		sort:        rawSortBy,
 		defaultSort: h.defaultSort,
@@ -458,5 +458,5 @@ func (h *aliasHandler) getResponseData(r *http.Request) *responseData {
 		Context:       context,
 
 		NeedDirSlashRedirect: needDirSlashRedirect,
-	}
+	}, reqFsPath
 }

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"./app"
-	"./param"
-	"./serverError"
-	"./setting"
-	"./version"
 	"errors"
+	"mjpclab.dev/ghfs/src/app"
+	"mjpclab.dev/ghfs/src/param"
+	"mjpclab.dev/ghfs/src/serverError"
+	"mjpclab.dev/ghfs/src/setting"
+	"mjpclab.dev/ghfs/src/version"
 	"os"
 	"os/signal"
 	"syscall"

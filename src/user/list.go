@@ -1,8 +1,8 @@
 package user
 
 import (
-	"../util"
 	"errors"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type List struct {
