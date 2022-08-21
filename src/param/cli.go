@@ -3,6 +3,7 @@ package param
 import (
 	"errors"
 	"mjpclab.dev/ghfs/src/goNixArgParser"
+	"mjpclab.dev/ghfs/src/goVirtualHost"
 	"mjpclab.dev/ghfs/src/serverError"
 	"net/http"
 	"os"
@@ -298,7 +299,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 
 		// aliases
 		strAlias, _ := result.GetStrings("aliases")
-		param.Aliases = splitAllKeyValue(strAlias)
+		param.Aliases = SplitAllKeyValue(strAlias)
 
 		// force dir slash
 		if result.HasKey("forcedirslash") {
@@ -320,28 +321,28 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 
 		// restrict access urls
 		restrictAccessUrls, _ := result.GetStrings("restrictaccessurls")
-		param.RestrictAccessUrls = splitAllKeyValues(restrictAccessUrls)
+		param.RestrictAccessUrls = SplitAllKeyValues(restrictAccessUrls)
 
 		// restrict access dirs
 		restrictAccessDirs, _ := result.GetStrings("restrictaccessdirs")
-		param.RestrictAccessDirs = splitAllKeyValues(restrictAccessDirs)
+		param.RestrictAccessDirs = SplitAllKeyValues(restrictAccessDirs)
 
 		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")
-		param.GlobalHeaders = entriesToHeaders(globalHeaders)
+		param.GlobalHeaders = EntriesToKVs(globalHeaders)
 
 		// headers urls
 		headersUrls, _ := result.GetStrings("headersurls")
-		param.HeadersUrls = splitAllKeyValues(headersUrls)
+		param.HeadersUrls = SplitAllKeyValues(headersUrls)
 
 		// headers dirs
 		headersDirs, _ := result.GetStrings("headersdirs")
-		param.HeadersDirs = splitAllKeyValues(headersDirs)
+		param.HeadersDirs = SplitAllKeyValues(headersDirs)
 
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
-		certs, es := loadCertificates(certFiles, keyFiles)
+		certs, es := goVirtualHost.LoadCertificates(certFiles, keyFiles)
 		errs = append(errs, es...)
 		param.Certificates = certs
 
