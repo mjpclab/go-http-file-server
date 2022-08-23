@@ -16,6 +16,11 @@ func (h *aliasHandler) middleware(w http.ResponseWriter, r *http.Request, data *
 		AliasReqPath:  data.handlerReqPath,
 		AliasFsPath:   fsPath,
 		AliasFsRoot:   h.root,
+
+		Item:     data.Item,
+		SubItems: data.SubItems,
+
+		Status: data.Status,
 	}
 
 	for i := range h.middlewares {
