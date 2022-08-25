@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-func (h *aliasHandler) middleware(w http.ResponseWriter, r *http.Request, data *responseData, fsPath string) (processed bool) {
-	if len(h.middlewares) == 0 {
+func (h *aliasHandler) postMiddleware(w http.ResponseWriter, r *http.Request, data *responseData, fsPath string) (processed bool) {
+	if len(h.postMiddlewares) == 0 {
 		return false
 	}
 
@@ -23,8 +23,8 @@ func (h *aliasHandler) middleware(w http.ResponseWriter, r *http.Request, data *
 		Status: data.Status,
 	}
 
-	for i := range h.middlewares {
-		if h.middlewares[i](w, r, context) {
+	for i := range h.postMiddlewares {
+		if h.postMiddlewares[i](w, r, context) {
 			return true
 		}
 	}

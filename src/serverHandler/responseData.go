@@ -294,7 +294,7 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsPath string) {
 	var errs []error
 
-	prefixReqPath := r.URL.RawPath
+	prefixReqPath := r.URL.RawPath // init by pathTransformHandler
 	rawReqPath := r.URL.Path
 	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 

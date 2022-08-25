@@ -85,7 +85,8 @@ type Param struct {
 	AccessLog string
 	ErrorLog  string
 
-	Middlewares []middleware.Middleware
+	PreMiddlewares  []middleware.Middleware
+	PostMiddlewares []middleware.Middleware
 }
 
 type Params []*Param

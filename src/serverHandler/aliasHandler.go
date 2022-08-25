@@ -107,7 +107,7 @@ type aliasHandler struct {
 	contentVaryV1 string
 	contentVary   string
 
-	middlewares []middleware.Middleware
+	postMiddlewares []middleware.Middleware
 
 	fileServer http.Handler
 }
@@ -185,8 +185,8 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// middlewares
-	if h.middleware(w, r, data, fsPath) {
+	// post middlewares
+	if h.postMiddleware(w, r, data, fsPath) {
 		return
 	}
 
@@ -285,7 +285,7 @@ func newAliasHandler(
 		contentVaryV1: ap.contentVaryV1,
 		contentVary:   ap.contentVary,
 
-		middlewares: p.Middlewares,
+		postMiddlewares: p.PostMiddlewares,
 	}
 	return h
 }
