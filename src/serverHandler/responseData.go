@@ -373,7 +373,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && !needDirSlashRedirect && allowAccess && needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && !needDirSlashRedirect && allowAccess && NeedResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError

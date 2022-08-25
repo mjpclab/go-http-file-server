@@ -83,7 +83,7 @@ func (h *aliasHandler) json(w http.ResponseWriter, r *http.Request, data *respon
 	header.Set("Content-Type", "application/json; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
-	if !needResponseBody(r.Method) {
+	if !NeedResponseBody(r.Method) {
 		w.WriteHeader(data.Status)
 		return
 	}

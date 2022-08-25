@@ -32,7 +32,7 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *res
 	item := data.Item
 	file := data.File
 
-	if needResponseBody(r.Method) {
+	if NeedResponseBody(r.Method) {
 		serveContent(h, w, r, item, file)
 		return
 	}

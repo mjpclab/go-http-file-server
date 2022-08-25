@@ -77,7 +77,7 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *respon
 
 	updateTranslation(r, data)
 
-	if !needResponseBody(r.Method) {
+	if !NeedResponseBody(r.Method) {
 		w.WriteHeader(data.Status)
 		return
 	}
