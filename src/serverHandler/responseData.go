@@ -353,7 +353,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		status = getStatusByErr(_statErr)
 	}
 
-	needDirSlashRedirect := h.forceDirSlash > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' && !shouldServeAsContent(file, item)
+	needDirSlashRedirect := h.forceDirSlash > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' && item != nil && item.IsDir()
 
 	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess && !needDirSlashRedirect)
 	if _statIdxErr != nil {
@@ -388,6 +388,11 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	_dereferenceErrs := dereferenceSymbolLinks(reqFsPath, subItems)
 	if len(_dereferenceErrs) > 0 {
 		errs = append(errs, _dereferenceErrs...)
+	}
+
+	// update `needDirSlashRedirect` for dangling intermediate alias directory
+	if !needDirSlashRedirect && h.forceDirSlash > 0 && len(subItems) > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' {
+		needDirSlashRedirect = true
 	}
 
 	subItems = h.FilterItems(subItems)
