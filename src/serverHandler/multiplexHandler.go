@@ -23,9 +23,11 @@ func (mux multiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			VhostReqPath:  r.URL.Path,
 		}
 		for i := range mux.preMiddlewares {
-			processed := mux.preMiddlewares[i](w, r, middlewareContext)
-			if processed {
+			processResult := mux.preMiddlewares[i](w, r, middlewareContext)
+			if processResult == middleware.Processed {
 				return
+			} else if processResult == middleware.SkipRests {
+				break
 			}
 		}
 	}

@@ -24,8 +24,11 @@ func (h *aliasHandler) postMiddleware(w http.ResponseWriter, r *http.Request, da
 	}
 
 	for i := range h.postMiddlewares {
-		if h.postMiddlewares[i](w, r, context) {
+		result := h.postMiddlewares[i](w, r, context)
+		if result == middleware.Processed {
 			return true
+		} else if result == middleware.SkipRests {
+			break
 		}
 	}
 
