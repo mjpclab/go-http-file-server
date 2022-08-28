@@ -228,7 +228,7 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 
 	// append config and re-parse
 	configs := []string{}
-	groupSeps := cliCmd.Options().GroupSeps()[0]
+	groupSeps := cmd.Options().GroupSeps()[0]
 	foundConfig := false
 	for i := range results {
 		configs = append(configs, groupSeps)
@@ -262,7 +262,7 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 
 	if foundConfig {
 		configs = configs[1:]
-		results = cliCmd.ParseGroups(args, configs)
+		results = cmd.ParseGroups(args, configs)
 		for i := range results {
 			undefs := results[i].GetUndefs()
 			if len(undefs) > 0 {
