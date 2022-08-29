@@ -17,10 +17,19 @@ func (h *aliasHandler) postMiddleware(w http.ResponseWriter, r *http.Request, da
 		AliasFsPath:   fsPath,
 		AliasFsRoot:   h.root,
 
+		NeedAuth:     data.NeedAuth,
+		AuthUserName: data.AuthUserName,
+		AuthSuccess:  data.AuthSuccess,
+
+		RestrictAccess: data.RestrictAccess,
+		AllowAccess:    data.AllowAccess,
+
+		Status: data.Status,
+
 		Item:     data.Item,
 		SubItems: data.SubItems,
 
-		Status: data.Status,
+		Logger: h.logger,
 	}
 
 	for i := range h.postMiddlewares {

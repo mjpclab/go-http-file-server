@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/param"
+	"mjpclab.dev/ghfs/src/serverLog"
 	"net/http"
 )
 
@@ -12,6 +13,7 @@ type aliasWithHandler struct {
 }
 
 type multiplexHandler struct {
+	logger            *serverLog.Logger
 	preMiddlewares    []middleware.Middleware
 	aliasWithHandlers []aliasWithHandler
 }
@@ -21,6 +23,7 @@ func (mux multiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		middlewareContext := &middleware.Context{
 			PrefixReqPath: r.URL.RawPath, // init by pathTransformHandler
 			VhostReqPath:  r.URL.Path,
+			Logger:        mux.logger,
 		}
 		for i := range mux.preMiddlewares {
 			processResult := mux.preMiddlewares[i](w, r, middlewareContext)
@@ -68,6 +71,7 @@ func newMultiplexHandler(
 	}
 
 	return multiplexHandler{
+		logger:            ap.logger,
 		preMiddlewares:    p.PreMiddlewares,
 		aliasWithHandlers: aliasWithHandlers,
 	}
