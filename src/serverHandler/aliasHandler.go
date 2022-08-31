@@ -145,12 +145,12 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.needAuth(w, r)
 	}
 	if !data.AuthSuccess {
-		h.authFailed(w)
+		h.authFailed(w, data)
 		return
 	}
 
 	if !data.AllowAccess {
-		restrictAccess(w)
+		restrictAccess(w, data)
 		return
 	}
 

@@ -302,6 +302,8 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.aliasPrefix):])
 	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
 
+	status := http.StatusOK
+
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 	authUserName := ""
 	authSuccess := true
@@ -310,6 +312,9 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		authUserName, authSuccess, _authErr = h.verifyAuth(r)
 		if _authErr != nil {
 			errs = append(errs, _authErr)
+		}
+		if !authSuccess {
+			status = http.StatusUnauthorized
 		}
 	}
 
@@ -336,7 +341,6 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	}
 	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
 
-	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
 	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
@@ -371,6 +375,9 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	}
 
 	allowAccess := h.isAllowAccess(r, rawReqPath, reqFsPath, file, item)
+	if !allowAccess {
+		status = http.StatusForbidden
+	}
 
 	itemName := getItemName(item, r)
 
