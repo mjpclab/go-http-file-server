@@ -33,7 +33,8 @@ type responseData struct {
 	AuthUserName string
 	AuthSuccess  bool
 
-	AllowAccess bool
+	RestrictAccess bool
+	AllowAccess    bool
 
 	Headers [][2]string
 
@@ -426,7 +427,8 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
 
-		AllowAccess: allowAccess,
+		RestrictAccess: h.restrictAccess,
+		AllowAccess:    allowAccess,
 
 		Headers: headers,
 
