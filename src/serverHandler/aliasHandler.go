@@ -112,6 +112,28 @@ type aliasHandler struct {
 	fileServer http.Handler
 }
 
+func (h *aliasHandler) preCheck(w http.ResponseWriter, r *http.Request, data *responseData) (passed bool) {
+	if data.NeedAuth {
+		h.needAuth(w, r)
+	}
+	if !data.AuthSuccess {
+		h.authFailed(w, data.Status)
+		return
+	}
+
+	if !data.AllowAccess {
+		restrictAccess(w, data.Status)
+		return
+	}
+
+	if data.NeedDirSlashRedirect {
+		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
+		return
+	}
+
+	return true
+}
+
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.logRequest(r)
 
@@ -141,21 +163,8 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 	}
 
-	if data.NeedAuth {
-		h.needAuth(w, r)
-	}
-	if !data.AuthSuccess {
-		h.authFailed(w, data)
-		return
-	}
-
-	if !data.AllowAccess {
-		restrictAccess(w, data)
-		return
-	}
-
-	if data.NeedDirSlashRedirect {
-		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
+	if !h.preCheck(w, r, data) {
+		h.postMiddleware(w, r, data, fsPath)
 		return
 	}
 
@@ -185,7 +194,6 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// post middlewares
 	if h.postMiddleware(w, r, data, fsPath) {
 		return
 	}

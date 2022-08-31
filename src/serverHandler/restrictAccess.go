@@ -78,6 +78,6 @@ func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath stri
 	return false
 }
 
-func restrictAccess(w http.ResponseWriter, data *responseData) {
-	w.WriteHeader(data.Status)
+func restrictAccess(w http.ResponseWriter, status int) {
+	w.WriteHeader(status)
 }

@@ -25,6 +25,6 @@ func (h *aliasHandler) verifyAuth(r *http.Request) (username string, success boo
 	return
 }
 
-func (h *aliasHandler) authFailed(w http.ResponseWriter, data *responseData) {
-	w.WriteHeader(data.Status)
+func (h *aliasHandler) authFailed(w http.ResponseWriter, status int) {
+	w.WriteHeader(status)
 }
