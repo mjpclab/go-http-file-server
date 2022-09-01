@@ -135,8 +135,6 @@ func (h *aliasHandler) preCheck(w http.ResponseWriter, r *http.Request, data *re
 }
 
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.logRequest(r)
-
 	// hsts redirect
 	if h.globalHsts && h.hsts(w, r) {
 		return

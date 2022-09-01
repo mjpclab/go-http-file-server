@@ -104,7 +104,8 @@ func NewVhostHandler(
 	}
 
 	muxHandler := newMultiplexHandler(p, ap)
-	pathTransformHandler := newPathTransformHandler(p.PrefixUrls, muxHandler)
+	logHandler := newLogHandler(logger, muxHandler)
+	pathTransformHandler := newPathTransformHandler(p.PrefixUrls, logHandler)
 
 	return pathTransformHandler, nil
 }
