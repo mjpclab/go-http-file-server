@@ -1,7 +1,6 @@
 package goVirtualHost
 
 import (
-	"context"
 	"errors"
 	"sync"
 )
@@ -132,31 +131,6 @@ func (svc *Service) Open() (errs []error) {
 
 	errs = svc.openServers()
 	return
-}
-
-func (svc *Service) Shutdown(ctx context.Context) {
-	svc.mu.Lock()
-	if svc.state >= stateClosed {
-		svc.mu.Unlock()
-		return
-	}
-	svc.state = stateClosed
-	svc.mu.Unlock()
-
-	wg := &sync.WaitGroup{}
-	for _, listener := range svc.listeners {
-		l := listener
-
-		wg.Add(1)
-		go func() {
-			if l.server != nil {
-				l.server.shutdown(ctx)
-			}
-			l.close()
-			wg.Done()
-		}()
-	}
-	wg.Wait()
 }
 
 func (svc *Service) Close() {

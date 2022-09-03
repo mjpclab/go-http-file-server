@@ -1,7 +1,6 @@
 package goVirtualHost
 
 import (
-	"context"
 	"crypto/tls"
 	"mjpclab.dev/ghfs/src/shimgo"
 	"net/http"
@@ -83,10 +82,6 @@ func (server *server) open(listener *listener) error {
 	} else {
 		return server.httpServer.Serve(listener.netListener)
 	}
-}
-
-func (server *server) shutdown(ctx context.Context) error {
-	return server.httpServer.Shutdown(ctx)
 }
 
 func (server *server) close() error {
