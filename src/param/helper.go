@@ -4,78 +4,25 @@ import (
 	"mjpclab.dev/ghfs/src/util"
 	"path/filepath"
 	"strings"
-	"unicode/utf8"
 )
 
-func splitKeyValues(input string) (key string, values []string, ok bool) {
-	sep, sepLen := utf8.DecodeRuneInString(input)
-	if sepLen == 0 {
-		return
-	}
-	entry := input[sepLen:]
-	if len(entry) == 0 {
-		return
-	}
+// input element: "user" or "user:pass"
+// output element [2]string{"user", "pass"}
+func entriesToUsers(entries []string) [][2]string {
+	users := make([][2]string, 0, len(entries))
+	for _, userEntry := range entries {
+		username := userEntry
+		password := ""
 
-	sepIndex := strings.IndexRune(entry, sep)
-	if sepIndex == 0 { // no key
-		return
-	} else if sepIndex > 0 {
-		key = entry[:sepIndex]
-		values = strings.FieldsFunc(entry[sepIndex+sepLen:], func(r rune) bool {
-			return r == sep
-		})
-	} else { // only key
-		key = entry
-	}
-
-	return key, values, true
-}
-
-func splitAllKeyValues(inputs []string) (results [][]string) {
-	results = make([][]string, 0, len(inputs))
-	for i := range inputs {
-		key, values, ok := splitKeyValues(inputs[i])
-		if !ok {
-			continue
+		colonIndex := strings.IndexByte(userEntry, ':')
+		if colonIndex >= 0 {
+			username = userEntry[:colonIndex]
+			password = userEntry[colonIndex+1:]
 		}
-		keyValues := make([]string, 1+len(values))
-		keyValues[0] = key
-		copy(keyValues[1:], values)
-		results = append(results, keyValues)
-	}
-	return
-}
 
-func splitKeyValue(input string) (k, v string, ok bool) {
-	sep, sepLen := utf8.DecodeRuneInString(input)
-	if sepLen == 0 {
-		return
+		users = append(users, [2]string{username, password})
 	}
-	entry := input[sepLen:]
-	if len(entry) == 0 {
-		return
-	}
-
-	sepIndex := strings.IndexRune(entry, sep)
-	if sepIndex <= 0 || sepIndex+sepLen == len(entry) {
-		return
-	}
-
-	k = entry[:sepIndex]
-	v = entry[sepIndex+sepLen:]
-	return k, v, true
-}
-
-func splitAllKeyValue(inputs []string) (results [][2]string) {
-	results = make([][2]string, 0, len(inputs))
-	for i := range inputs {
-		k, v, ok := splitKeyValue(inputs[i])
-		if ok {
-			results = append(results, [2]string{k, v})
-		}
-	}
-	return
+	return users
 }
 
 func normalizeAllPathValues(
@@ -197,38 +144,6 @@ func normalizeHeaders(inputs []string) []string {
 	return inputs
 }
 
-func normalizeUrlPaths(inputs []string) []string {
-	outputs := make([]string, 0, len(inputs))
-
-	for _, input := range inputs {
-		if len(input) == 0 {
-			continue
-		}
-		outputs = append(outputs, util.CleanUrlPath(input))
-	}
-
-	return outputs
-}
-
-func normalizeFsPaths(inputs []string) []string {
-	outputs := make([]string, 0, len(inputs))
-
-	for _, input := range inputs {
-		if len(input) == 0 {
-			continue
-		}
-
-		abs, err := util.NormalizeFsPath(input)
-		if err != nil {
-			continue
-		}
-
-		outputs = append(outputs, abs)
-	}
-
-	return outputs
-}
-
 func normalizeFilenames(inputs []string) []string {
 	outputs := make([]string, 0, len(inputs))
 
@@ -298,11 +213,4 @@ func normalizeHttpsPort(httpsPort string, listensTLS []string) (string, bool) {
 	}
 
 	return "", false
-}
-
-func normalizeRedirectCode(code int) int {
-	if code <= 300 || code > 399 {
-		return 301
-	}
-	return code
 }

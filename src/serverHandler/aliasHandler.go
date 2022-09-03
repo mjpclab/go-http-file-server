@@ -107,14 +107,34 @@ type aliasHandler struct {
 	contentVaryV1 string
 	contentVary   string
 
-	middlewares []middleware.Middleware
+	postMiddlewares []middleware.Middleware
 
 	fileServer http.Handler
 }
 
-func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.logRequest(r)
+func (h *aliasHandler) preCheck(w http.ResponseWriter, r *http.Request, data *responseData) (passed bool) {
+	if data.NeedAuth {
+		h.needAuth(w, r)
+	}
+	if !data.AuthSuccess {
+		h.authFailed(w, data.Status)
+		return
+	}
 
+	if !data.AllowAccess {
+		restrictAccess(w, data.Status)
+		return
+	}
+
+	if data.NeedDirSlashRedirect {
+		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
+		return
+	}
+
+	return true
+}
+
+func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// hsts redirect
 	if h.globalHsts && h.hsts(w, r) {
 		return
@@ -141,21 +161,8 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 	}
 
-	if data.NeedAuth {
-		h.needAuth(w, r)
-	}
-	if !data.AuthSuccess {
-		h.authFailed(w)
-		return
-	}
-
-	if !data.AllowAccess {
-		restrictAccess(w)
-		return
-	}
-
-	if data.NeedDirSlashRedirect {
-		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
+	if !h.preCheck(w, r, data) {
+		h.postMiddleware(w, r, data, fsPath)
 		return
 	}
 
@@ -185,8 +192,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// middlewares
-	if h.middleware(w, r, data, fsPath) {
+	if h.postMiddleware(w, r, data, fsPath) {
 		return
 	}
 
@@ -285,7 +291,7 @@ func newAliasHandler(
 		contentVaryV1: ap.contentVaryV1,
 		contentVary:   ap.contentVary,
 
-		middlewares: p.Middlewares,
+		postMiddlewares: p.PostMiddlewares,
 	}
 	return h
 }

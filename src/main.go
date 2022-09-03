@@ -18,7 +18,7 @@ func cleanupOnEnd(appInst *app.App) {
 
 	go func() {
 		<-chSignal
-		appInst.Close()
+		appInst.Shutdown()
 		os.Exit(0)
 	}()
 }
@@ -62,5 +62,5 @@ func main() {
 	reopenLogOnHup(appInst)
 	errs = appInst.Open()
 	serverError.CheckFatal(errs...)
-	appInst.Close()
+	appInst.Shutdown()
 }

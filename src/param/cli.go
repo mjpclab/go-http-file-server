@@ -2,8 +2,8 @@ package param
 
 import (
 	"errors"
-	"io/ioutil"
 	"mjpclab.dev/ghfs/src/goNixArgParser"
+	"mjpclab.dev/ghfs/src/goVirtualHost"
 	"mjpclab.dev/ghfs/src/serverError"
 	"net/http"
 	"os"
@@ -228,7 +228,7 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 
 	// append config and re-parse
 	configs := []string{}
-	groupSeps := cliCmd.Options().GroupSeps()[0]
+	groupSeps := cmd.Options().GroupSeps()[0]
 	foundConfig := false
 	for i := range results {
 		configs = append(configs, groupSeps)
@@ -239,17 +239,9 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 			continue
 		}
 
-		configStr, err := ioutil.ReadFile(config)
+		configArgs, err := goNixArgParser.LoadConfigArgs(config)
 		if err != nil {
 			errs = append(errs, err)
-			continue
-		}
-		if len(configStr) == 0 {
-			continue
-		}
-
-		configArgs := strings.Fields(string(configStr))
-		if len(configArgs) == 0 {
 			continue
 		}
 
@@ -262,7 +254,7 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 
 	if foundConfig {
 		configs = configs[1:]
-		results = cliCmd.ParseGroups(args, configs)
+		results = cmd.ParseGroups(args, configs)
 		for i := range results {
 			undefs := results[i].GetUndefs()
 			if len(undefs) > 0 {
@@ -299,7 +291,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 
 		// aliases
 		strAlias, _ := result.GetStrings("aliases")
-		param.Aliases = splitAllKeyValue(strAlias)
+		param.Aliases = SplitAllKeyValue(strAlias)
 
 		// force dir slash
 		if result.HasKey("forcedirslash") {
@@ -321,28 +313,28 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 
 		// restrict access urls
 		restrictAccessUrls, _ := result.GetStrings("restrictaccessurls")
-		param.RestrictAccessUrls = splitAllKeyValues(restrictAccessUrls)
+		param.RestrictAccessUrls = SplitAllKeyValues(restrictAccessUrls)
 
 		// restrict access dirs
 		restrictAccessDirs, _ := result.GetStrings("restrictaccessdirs")
-		param.RestrictAccessDirs = splitAllKeyValues(restrictAccessDirs)
+		param.RestrictAccessDirs = SplitAllKeyValues(restrictAccessDirs)
 
 		// global headers
 		globalHeaders, _ := result.GetStrings("globalheaders")
-		param.GlobalHeaders = entriesToHeaders(globalHeaders)
+		param.GlobalHeaders = EntriesToKVs(globalHeaders)
 
 		// headers urls
 		headersUrls, _ := result.GetStrings("headersurls")
-		param.HeadersUrls = splitAllKeyValues(headersUrls)
+		param.HeadersUrls = SplitAllKeyValues(headersUrls)
 
 		// headers dirs
 		headersDirs, _ := result.GetStrings("headersdirs")
-		param.HeadersDirs = splitAllKeyValues(headersDirs)
+		param.HeadersDirs = SplitAllKeyValues(headersDirs)
 
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
-		certs, es := loadCertificates(certFiles, keyFiles)
+		certs, es := goVirtualHost.LoadCertificates(certFiles, keyFiles)
 		errs = append(errs, es...)
 		param.Certificates = certs
 

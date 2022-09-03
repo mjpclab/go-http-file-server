@@ -85,7 +85,8 @@ type Param struct {
 	AccessLog string
 	ErrorLog  string
 
-	Middlewares []middleware.Middleware
+	PreMiddlewares  []middleware.Middleware
+	PostMiddlewares []middleware.Middleware
 }
 
 type Params []*Param
@@ -120,11 +121,11 @@ func (param *Param) normalize() (errs []error) {
 	}
 
 	// url prefixes
-	param.PrefixUrls = normalizeUrlPaths(param.PrefixUrls)
+	param.PrefixUrls = NormalizeUrlPaths(param.PrefixUrls)
 
 	// // force dir slash
 	if param.ForceDirSlash != 0 {
-		param.ForceDirSlash = normalizeRedirectCode(param.ForceDirSlash)
+		param.ForceDirSlash = NormalizeRedirectCode(param.ForceDirSlash)
 	}
 
 	// dir indexes
@@ -158,18 +159,18 @@ func (param *Param) normalize() (errs []error) {
 	errs = append(errs, es...)
 
 	// upload/mkdir/delete/archive/cors/auth urls/dirs
-	param.UploadUrls = normalizeUrlPaths(param.UploadUrls)
-	param.UploadDirs = normalizeFsPaths(param.UploadDirs)
-	param.MkdirUrls = normalizeUrlPaths(param.MkdirUrls)
-	param.MkdirDirs = normalizeFsPaths(param.MkdirDirs)
-	param.DeleteUrls = normalizeUrlPaths(param.DeleteUrls)
-	param.DeleteDirs = normalizeFsPaths(param.DeleteDirs)
-	param.ArchiveUrls = normalizeUrlPaths(param.ArchiveUrls)
-	param.ArchiveDirs = normalizeFsPaths(param.ArchiveDirs)
-	param.CorsUrls = normalizeUrlPaths(param.CorsUrls)
-	param.CorsDirs = normalizeFsPaths(param.CorsDirs)
-	param.AuthUrls = normalizeUrlPaths(param.AuthUrls)
-	param.AuthDirs = normalizeFsPaths(param.AuthDirs)
+	param.UploadUrls = NormalizeUrlPaths(param.UploadUrls)
+	param.UploadDirs = NormalizeFsPaths(param.UploadDirs)
+	param.MkdirUrls = NormalizeUrlPaths(param.MkdirUrls)
+	param.MkdirDirs = NormalizeFsPaths(param.MkdirDirs)
+	param.DeleteUrls = NormalizeUrlPaths(param.DeleteUrls)
+	param.DeleteDirs = NormalizeFsPaths(param.DeleteDirs)
+	param.ArchiveUrls = NormalizeUrlPaths(param.ArchiveUrls)
+	param.ArchiveDirs = NormalizeFsPaths(param.ArchiveDirs)
+	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
+	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)
+	param.AuthUrls = NormalizeUrlPaths(param.AuthUrls)
+	param.AuthDirs = NormalizeFsPaths(param.AuthDirs)
 
 	// hsts & https
 	if param.GlobalHsts {

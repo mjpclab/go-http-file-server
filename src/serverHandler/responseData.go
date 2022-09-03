@@ -33,7 +33,8 @@ type responseData struct {
 	AuthUserName string
 	AuthSuccess  bool
 
-	AllowAccess bool
+	RestrictAccess bool
+	AllowAccess    bool
 
 	Headers [][2]string
 
@@ -294,12 +295,14 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsPath string) {
 	var errs []error
 
-	prefixReqPath := r.URL.RawPath
+	prefixReqPath := r.URL.RawPath // init by pathTransformHandler
 	rawReqPath := r.URL.Path
 	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.aliasPrefix):])
 	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
+
+	status := http.StatusOK
 
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
 	authUserName := ""
@@ -309,6 +312,9 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		authUserName, authSuccess, _authErr = h.verifyAuth(r)
 		if _authErr != nil {
 			errs = append(errs, _authErr)
+		}
+		if !authSuccess {
+			status = http.StatusUnauthorized
 		}
 	}
 
@@ -335,7 +341,6 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	}
 	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
 
-	status := http.StatusOK
 	isRoot := rawReqPath == "/"
 
 	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
@@ -353,7 +358,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		status = getStatusByErr(_statErr)
 	}
 
-	needDirSlashRedirect := h.forceDirSlash > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' && !shouldServeAsContent(file, item)
+	needDirSlashRedirect := h.forceDirSlash > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' && item != nil && item.IsDir()
 
 	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess && !needDirSlashRedirect)
 	if _statIdxErr != nil {
@@ -370,10 +375,13 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	}
 
 	allowAccess := h.isAllowAccess(r, rawReqPath, reqFsPath, file, item)
+	if !allowAccess {
+		status = http.StatusForbidden
+	}
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && !needDirSlashRedirect && allowAccess && needResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && !needDirSlashRedirect && allowAccess && NeedResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
@@ -388,6 +396,11 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	_dereferenceErrs := dereferenceSymbolLinks(reqFsPath, subItems)
 	if len(_dereferenceErrs) > 0 {
 		errs = append(errs, _dereferenceErrs...)
+	}
+
+	// update `needDirSlashRedirect` for dangling intermediate alias directory
+	if !needDirSlashRedirect && h.forceDirSlash > 0 && len(subItems) > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' {
+		needDirSlashRedirect = true
 	}
 
 	subItems = h.FilterItems(subItems)
@@ -421,7 +434,8 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
 
-		AllowAccess: allowAccess,
+		RestrictAccess: h.restrictAccess,
+		AllowAccess:    allowAccess,
 
 		Headers: headers,
 

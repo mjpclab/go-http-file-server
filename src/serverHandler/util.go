@@ -34,7 +34,7 @@ func wildcardToRegexp(wildcards []string) (*regexp.Regexp, error) {
 	return regexp.Compile(exp)
 }
 
-func needResponseBody(method string) bool {
+func NeedResponseBody(method string) bool {
 	return method != http.MethodHead &&
 		method != http.MethodOptions &&
 		method != http.MethodConnect &&
