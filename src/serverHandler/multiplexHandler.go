@@ -5,6 +5,7 @@ import (
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"net/http"
+	"strings"
 )
 
 type aliasWithHandler struct {
@@ -20,8 +21,12 @@ type multiplexHandler struct {
 
 func (mux multiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(mux.preMiddlewares) > 0 {
+		prefixReqPath := r.RequestURI // init by pathTransformHandler
+		if qsIndex := strings.IndexByte(prefixReqPath, '?'); qsIndex >= 0 {
+			prefixReqPath = prefixReqPath[:qsIndex]
+		}
 		middlewareContext := &middleware.Context{
-			PrefixReqPath: r.URL.RawPath, // init by pathTransformHandler
+			PrefixReqPath: prefixReqPath,
 			VhostReqPath:  r.URL.Path,
 			Logger:        mux.logger,
 		}
