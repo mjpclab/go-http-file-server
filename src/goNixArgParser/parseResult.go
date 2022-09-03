@@ -1,8 +1,9 @@
 package goNixArgParser
 
-///////////////////////////////
+// =============================
 // set configOptions
-//////////////////////////////
+// =============================
+
 func (r *ParseResult) SetConfigOption(key, value string) {
 	r.configOptions[key] = []string{value}
 }
@@ -19,9 +20,9 @@ func (r *ParseResult) SetConfigOptions(key string, values []string) {
 	r.configOptions[key] = configValues
 }
 
-///////////////////////////////
+//=============================
 // has xxx
-//////////////////////////////
+//=============================
 
 func (r *ParseResult) HasFlagKey(key string) bool {
 	_, found := r.specifiedOptions[key]
@@ -67,9 +68,9 @@ func (r *ParseResult) HasValue(key string) bool {
 	return r.HasFlagValue(key) || r.HasEnvValue(key) || r.HasConfigValue(key) || r.HasDefaultValue(key)
 }
 
-///////////////////////////////
+//=============================
 // get single value
-//////////////////////////////
+//=============================
 
 func (r *ParseResult) GetString(key string) (value string, found bool) {
 	value, found = getValue(r.specifiedOptions, key)
@@ -150,9 +151,10 @@ func (r *ParseResult) GetFloat64(key string) (value float64, found bool) {
 	return
 }
 
-///////////////////////////////
+// =============================
 // get multi values
-//////////////////////////////
+// =============================
+
 func (r *ParseResult) GetStrings(key string) (values []string, found bool) {
 	values, found = getValues(r.specifiedOptions, key)
 	if found {
@@ -242,16 +244,18 @@ func (r *ParseResult) GetRests() (rests []string) {
 	return
 }
 
-///////////////////////////////
+// =============================
 // commands
-//////////////////////////////
+// =============================
+
 func (r *ParseResult) GetCommands() []string {
 	return copys(r.commands)
 }
 
-///////////////////////////////
+// =============================
 // ambigus
-//////////////////////////////
+// =============================
+
 func (r *ParseResult) HasAmbigu() bool {
 	return len(r.specifiedAmbigus) > 0 || len(r.configAmbigus) > 0
 }
@@ -274,9 +278,10 @@ func (r *ParseResult) GetAmbigus() []string {
 	return flags
 }
 
-///////////////////////////////
+// =============================
 // undefs
-//////////////////////////////
+// =============================
+
 func (r *ParseResult) HasUndef() bool {
 	return len(r.specifiedUndefs) > 0 || len(r.configUndefs) > 0
 }
