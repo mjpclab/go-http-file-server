@@ -239,17 +239,9 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 			continue
 		}
 
-		configStr, err := os.ReadFile(config)
+		configArgs, err := goNixArgParser.LoadConfigArgs(config)
 		if err != nil {
 			errs = append(errs, err)
-			continue
-		}
-		if len(configStr) == 0 {
-			continue
-		}
-
-		configArgs := strings.Fields(string(configStr))
-		if len(configArgs) == 0 {
 			continue
 		}
 
