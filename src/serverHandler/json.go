@@ -9,11 +9,10 @@ import (
 )
 
 type jsonItem struct {
-	IsDir     bool      `json:"isDir"`
-	IsVirtual bool      `json:"isVirtual"`
-	Name      string    `json:"name"`
-	Size      int64     `json:"size"`
-	ModTime   time.Time `json:"modTime"`
+	IsDir   bool      `json:"isDir"`
+	Name    string    `json:"name"`
+	Size    int64     `json:"size"`
+	ModTime time.Time `json:"modTime"`
 }
 
 type jsonResponseData struct {
@@ -37,11 +36,10 @@ type jsonResponseData struct {
 
 func getJsonItem(info os.FileInfo) *jsonItem {
 	return &jsonItem{
-		IsDir:     info.IsDir(),
-		IsVirtual: isVirtual(info),
-		Name:      info.Name(),
-		Size:      info.Size(),
-		ModTime:   info.ModTime(),
+		IsDir:   info.IsDir(),
+		Name:    info.Name(),
+		Size:    info.Size(),
+		ModTime: info.ModTime(),
 	}
 }
 
@@ -83,7 +81,7 @@ func (h *aliasHandler) json(w http.ResponseWriter, r *http.Request, data *respon
 	header.Set("Content-Type", "application/json; charset=utf-8")
 	header.Set("Cache-Control", "public, max-age=0")
 
-	if !needResponseBody(r.Method) {
+	if !NeedResponseBody(r.Method) {
 		w.WriteHeader(data.Status)
 		return
 	}

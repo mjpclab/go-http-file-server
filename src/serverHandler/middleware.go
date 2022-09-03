@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-func (h *aliasHandler) middleware(w http.ResponseWriter, r *http.Request, data *responseData, fsPath string) (processed bool) {
-	if len(h.middlewares) == 0 {
+func (h *aliasHandler) postMiddleware(w http.ResponseWriter, r *http.Request, data *responseData, fsPath string) (processed bool) {
+	if len(h.postMiddlewares) == 0 {
 		return false
 	}
 
@@ -16,11 +16,28 @@ func (h *aliasHandler) middleware(w http.ResponseWriter, r *http.Request, data *
 		AliasReqPath:  data.handlerReqPath,
 		AliasFsPath:   fsPath,
 		AliasFsRoot:   h.root,
+
+		NeedAuth:     data.NeedAuth,
+		AuthUserName: data.AuthUserName,
+		AuthSuccess:  data.AuthSuccess,
+
+		RestrictAccess: data.RestrictAccess,
+		AllowAccess:    data.AllowAccess,
+
+		Status: data.Status,
+
+		Item:     data.Item,
+		SubItems: data.SubItems,
+
+		Logger: h.logger,
 	}
 
-	for i := range h.middlewares {
-		if h.middlewares[i](w, r, context) {
+	for i := range h.postMiddlewares {
+		result := h.postMiddlewares[i](w, r, context)
+		if result == middleware.Processed {
 			return true
+		} else if result == middleware.SkipRests {
+			break
 		}
 	}
 

@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-func (h *aliasHandler) logRequest(r *http.Request) {
-	if !h.logger.CanLogAccess() {
+func logRequest(logger *serverLog.Logger, r *http.Request) {
+	if !logger.CanLogAccess() {
 		return
 	}
 
@@ -36,7 +36,7 @@ func (h *aliasHandler) logRequest(r *http.Request) {
 	}
 	buf = append(buf, uri...)
 
-	go h.logger.LogAccess(buf)
+	go logger.LogAccess(buf)
 }
 
 func (h *aliasHandler) logMutate(username, action, detail string, r *http.Request) {

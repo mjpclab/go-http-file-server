@@ -140,7 +140,7 @@ func (h *aliasHandler) archive(
 	targetFilename := itemName + fileSuffix
 	writeArchiveHeader(w, contentType, targetFilename)
 
-	if !needResponseBody(r.Method) {
+	if !NeedResponseBody(r.Method) {
 		return
 	}
 

@@ -6,126 +6,33 @@ import (
 	"testing"
 )
 
-func expectStrings(actuals []string, expects ...string) bool {
-	if len(actuals) != len(expects) {
-		return false
+func TestEntriesToUsers(t *testing.T) {
+	entries := []string{
+		":pass1",
+		"user2:",
+		"user3:pass3",
 	}
-
-	for i := range actuals {
-		if actuals[i] != expects[i] {
-			return false
-		}
+	users := entriesToUsers(entries)
+	if len(users) != 3 {
+		t.Fatal("user count is not 3")
 	}
-
-	return true
-}
-
-func TestSplitKeyValues(t *testing.T) {
-	var key string
-	var values []string
-	var ok bool
-
-	key, values, ok = splitKeyValues("")
-	if ok {
-		t.Error()
-	}
-
-	key, values, ok = splitKeyValues(":")
-	if ok {
-		t.Error()
-	}
-
-	key, values, ok = splitKeyValues(":abc")
-	if !ok {
-		t.Error()
-	}
-	if key != "abc" {
-		t.Error(key)
-	}
-	if len(values) != 0 {
-		t.Error(values)
-	}
-
-	key, values, ok = splitKeyValues(":foo:")
-	if !ok {
-		t.Error()
-	}
-	if key != "foo" {
-		t.Error(key)
-	}
-	if len(values) != 0 {
-		t.Errorf("%#v\n", values)
-	}
-
-	key, values, ok = splitKeyValues(":foo:lorem:ipsum")
-	if !ok {
-		t.Error()
-	}
-	if key != "foo" {
-		t.Error(key)
-	}
-	if !expectStrings(values, "lorem", "ipsum") {
-		t.Error(values)
-	}
-}
-
-func TestSplitKeyValue(t *testing.T) {
-	var k, v string
-	var ok bool
-
-	k, v, ok = splitKeyValue("")
-	if ok {
-		t.Error("empty string should not OK")
-	}
-
-	k, v, ok = splitKeyValue(":")
-	if ok {
-		t.Error("separator-only string should not OK")
-	}
-
-	k, v, ok = splitKeyValue("::world")
-	if ok {
-		t.Error("empty key should not OK")
-	}
-
-	k, v, ok = splitKeyValue(":hello:")
-	if ok {
-		t.Error("empty value should not OK")
-	}
-
-	k, v, ok = splitKeyValue(":key:value")
-	if !ok {
+	if users[0][0] != "" {
 		t.Fail()
 	}
-	if k != "key" {
+	if users[0][1] != "pass1" {
 		t.Fail()
 	}
-	if v != "value" {
+	if users[1][0] != "user2" {
 		t.Fail()
 	}
-
-	k, v, ok = splitKeyValue("@KEY@VALUE")
-	if !ok {
+	if users[1][1] != "" {
 		t.Fail()
 	}
-	if k != "KEY" {
+	if users[2][0] != "user3" {
 		t.Fail()
 	}
-	if v != "VALUE" {
+	if users[2][1] != "pass3" {
 		t.Fail()
-	}
-}
-
-func TestSplitAllKeyValue(t *testing.T) {
-	results := splitAllKeyValue([]string{":foo:bar", "#lorem#ipsum"})
-	if len(results) != 2 {
-		t.Error(results)
-	}
-	if !expectStrings(results[0][:], "foo", "bar") {
-		t.Error(results[0])
-	}
-	if !expectStrings(results[1][:], "lorem", "ipsum") {
-		t.Error(results[1])
 	}
 }
 
