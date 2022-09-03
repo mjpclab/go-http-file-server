@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"mjpclab.dev/ghfs/src/goVirtualHost"
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverError"
@@ -13,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
 )
 
 type App struct {
@@ -27,12 +25,6 @@ func (app *App) Open() []error {
 
 func (app *App) Close() {
 	app.vhostSvc.Close()
-	app.logFileMan.Close()
-}
-
-func (app *App) Shutdown() {
-	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*100)
-	app.vhostSvc.Shutdown(ctx)
 	app.logFileMan.Close()
 }
 
