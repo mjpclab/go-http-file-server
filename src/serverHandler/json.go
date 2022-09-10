@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"encoding/json"
 	"io"
+	"mjpclab.dev/ghfs/src/serverCompress"
 	"net/http"
 	"os"
 	"time"
@@ -87,8 +88,7 @@ func (h *aliasHandler) json(w http.ResponseWriter, r *http.Request, data *respon
 	}
 
 	var bodyW io.Writer
-	if compressW, encoding, useCompressW := getCompressWriter(w, r); useCompressW {
-		header.Set("Content-Encoding", encoding)
+	if compressW, useCompressW := serverCompress.GetWriter(w, r); useCompressW {
 		bodyW = compressW
 		defer compressW.Close()
 	} else {

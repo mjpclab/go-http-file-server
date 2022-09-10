@@ -5,6 +5,7 @@ import (
 	"io"
 	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
+	"mjpclab.dev/ghfs/src/serverCompress"
 	tplutil "mjpclab.dev/ghfs/src/tpl/util"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
@@ -83,9 +84,8 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *respon
 	}
 
 	var bodyW io.Writer
-	if compressW, encoding, useCompressW := getCompressWriter(w, r); useCompressW {
+	if compressW, useCompressW := serverCompress.GetWriter(w, r); useCompressW {
 		defer compressW.Close()
-		header.Set("Content-Encoding", encoding)
 		bodyW = compressW
 	} else {
 		bodyW = w
