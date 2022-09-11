@@ -2,8 +2,6 @@ package serverHandler
 
 import (
 	"encoding/json"
-	"io"
-	"mjpclab.dev/ghfs/src/serverCompress"
 	"net/http"
 	"os"
 	"time"
@@ -87,17 +85,10 @@ func (h *aliasHandler) json(w http.ResponseWriter, r *http.Request, data *respon
 		return
 	}
 
-	var bodyW io.Writer
-	if compressW, useCompressW := serverCompress.GetWriter(w, r); useCompressW {
-		bodyW = compressW
-		defer compressW.Close()
-	} else {
-		bodyW = w
-	}
 	w.WriteHeader(data.Status)
 
 	jsonData := getJsonData(data)
-	encoder := json.NewEncoder(bodyW)
+	encoder := json.NewEncoder(w)
 	err := encoder.Encode(jsonData)
 	h.logError(err)
 }

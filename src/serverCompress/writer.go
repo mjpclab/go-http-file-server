@@ -8,9 +8,17 @@ import (
 	"net/http"
 )
 
+const contentEncGzip = "gzip"
+const contentEncDeflate = "deflate"
+
+var encodings = []string{contentEncGzip, contentEncDeflate}
+
 func GetWriter(w http.ResponseWriter, r *http.Request) (wc io.WriteCloser, ok bool) {
 	header := w.Header()
 	if len(header.Get("Content-Encoding")) > 0 {
+		return nil, false
+	}
+	if !isCompressibleType(header.Get("Content-Type")) {
 		return nil, false
 	}
 

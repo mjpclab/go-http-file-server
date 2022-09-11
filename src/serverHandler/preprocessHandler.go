@@ -2,6 +2,7 @@ package serverHandler
 
 import (
 	"mjpclab.dev/ghfs/src/middleware"
+	"mjpclab.dev/ghfs/src/serverCompress"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"net/http"
 )
@@ -15,6 +16,8 @@ type preprocessHandler struct {
 func (pph preprocessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logRequest(pph.logger, r)
 
+	rw := serverCompress.NewResponseWriter(w, r)
+
 	if len(pph.preMiddlewares) > 0 {
 		middlewareContext := &middleware.Context{
 			PrefixReqPath: r.URL.RawPath, // init by pathTransformHandler
@@ -22,8 +25,9 @@ func (pph preprocessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Logger:        pph.logger,
 		}
 		for i := range pph.preMiddlewares {
-			processResult := pph.preMiddlewares[i](w, r, middlewareContext)
+			processResult := pph.preMiddlewares[i](rw, r, middlewareContext)
 			if processResult == middleware.Processed {
+				rw.Close()
 				return
 			} else if processResult == middleware.SkipRests {
 				break
@@ -31,7 +35,8 @@ func (pph preprocessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	pph.nextHandler.ServeHTTP(w, r)
+	pph.nextHandler.ServeHTTP(rw, r)
+	rw.Close()
 }
 
 func newPreprocessHandler(logger *serverLog.Logger, preMiddlewares []middleware.Middleware, nextHandler http.Handler) http.Handler {
