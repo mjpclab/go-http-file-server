@@ -27,4 +27,5 @@ func (h *aliasHandler) verifyAuth(r *http.Request) (username string, success boo
 
 func (h *aliasHandler) authFailed(w http.ResponseWriter, status int) {
 	w.WriteHeader(status)
+	w.Write([]byte("Unauthorized"))
 }
