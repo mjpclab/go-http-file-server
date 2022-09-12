@@ -26,7 +26,7 @@ func (pph preprocessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		for i := range pph.preMiddlewares {
 			processResult := pph.preMiddlewares[i](rw, r, middlewareContext)
-			if processResult == middleware.Processed {
+			if processResult == middleware.Outputted {
 				rw.Close()
 				return
 			} else if processResult == middleware.SkipRests {
