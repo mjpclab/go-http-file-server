@@ -23,8 +23,11 @@ func (fs wrappedHttpFileSystem) Open(name string) (http.File, error) {
 	return wrappedHttpFile{file}, err
 }
 
-func createFsFileServer(root string) http.Handler {
-	return http.FileServer(wrappedHttpFileSystem{http.Dir(root)})
+func createFsFileServer(aliasUrl, aliasFs string) http.Handler {
+	fs := wrappedHttpFileSystem{http.Dir(aliasFs)}
+	handler := http.FileServer(fs)
+	handler = http.StripPrefix(aliasUrl, handler)
+	return handler
 }
 
 func serveFsContent(h *aliasHandler, w http.ResponseWriter, r *http.Request, info os.FileInfo, file *os.File) {

@@ -13,7 +13,7 @@ import (
 
 var defaultHandler = http.NotFoundHandler()
 
-var createFileServer func(root string) http.Handler
+var createFileServer func(aliasUrl, aliasFs string) http.Handler
 
 type pathStrings struct {
 	path    string
@@ -219,7 +219,7 @@ func newAliasHandler(
 
 	var fileServer http.Handler
 	if !emptyRoot && createFileServer != nil { // for WSL 1 fix
-		fileServer = createFileServer(currentAlias.fs)
+		fileServer = createFileServer(currentAlias.url, currentAlias.fs)
 	}
 
 	h := &aliasHandler{
