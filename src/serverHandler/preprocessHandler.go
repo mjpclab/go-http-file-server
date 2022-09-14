@@ -5,6 +5,7 @@ import (
 	"mjpclab.dev/ghfs/src/serverCompress"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"net/http"
+	"strings"
 )
 
 type preprocessHandler struct {
@@ -19,8 +20,12 @@ func (pph preprocessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rw := serverCompress.NewResponseWriter(w, r)
 
 	if len(pph.preMiddlewares) > 0 {
+		prefixReqPath := r.RequestURI // init by pathTransformHandler
+		if qsIndex := strings.IndexByte(prefixReqPath, '?'); qsIndex >= 0 {
+			prefixReqPath = prefixReqPath[:qsIndex]
+		}
 		middlewareContext := &middleware.Context{
-			PrefixReqPath: r.URL.RawPath, // init by pathTransformHandler
+			PrefixReqPath: prefixReqPath,
 			VhostReqPath:  r.URL.Path,
 			Logger:        pph.logger,
 		}
