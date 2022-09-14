@@ -78,6 +78,7 @@ func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath stri
 	return false
 }
 
-func restrictAccess(w http.ResponseWriter, status int) {
+func (h *aliasHandler) accessRestricted(w http.ResponseWriter, status int) {
 	w.WriteHeader(status)
+	w.Write([]byte("Forbidden"))
 }

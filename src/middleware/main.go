@@ -7,7 +7,7 @@ type ProcessResult int
 const (
 	GoNext ProcessResult = iota
 	SkipRests
-	Processed
+	Outputted
 )
 
 type Middleware func(w http.ResponseWriter, r *http.Request, context *Context) (result ProcessResult)

@@ -19,6 +19,8 @@ type Context struct {
 	RestrictAccess bool
 	AllowAccess    bool
 
+	WantJson bool
+
 	Status int
 
 	Item     os.FileInfo
