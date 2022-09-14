@@ -1,11 +1,8 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/param"
-	"mjpclab.dev/ghfs/src/serverLog"
 	"net/http"
-	"strings"
 )
 
 type aliasWithHandler struct {
@@ -13,34 +10,10 @@ type aliasWithHandler struct {
 	handler http.Handler
 }
 
-type multiplexHandler struct {
-	logger            *serverLog.Logger
-	preMiddlewares    []middleware.Middleware
-	aliasWithHandlers []aliasWithHandler
-}
+type multiplexHandler []aliasWithHandler
 
 func (mux multiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if len(mux.preMiddlewares) > 0 {
-		prefixReqPath := r.RequestURI // init by pathTransformHandler
-		if qsIndex := strings.IndexByte(prefixReqPath, '?'); qsIndex >= 0 {
-			prefixReqPath = prefixReqPath[:qsIndex]
-		}
-		middlewareContext := &middleware.Context{
-			PrefixReqPath: prefixReqPath,
-			VhostReqPath:  r.URL.Path,
-			Logger:        mux.logger,
-		}
-		for i := range mux.preMiddlewares {
-			processResult := mux.preMiddlewares[i](w, r, middlewareContext)
-			if processResult == middleware.Processed {
-				return
-			} else if processResult == middleware.SkipRests {
-				break
-			}
-		}
-	}
-
-	for _, ah := range mux.aliasWithHandlers {
+	for _, ah := range mux {
 		if ah.alias.isMatch(r.URL.Path) || ah.alias.isPredecessorOf(r.URL.Path) {
 			ah.handler.ServeHTTP(w, r)
 			return
@@ -75,9 +48,5 @@ func newMultiplexHandler(
 		}
 	}
 
-	return multiplexHandler{
-		logger:            ap.logger,
-		preMiddlewares:    p.PreMiddlewares,
-		aliasWithHandlers: aliasWithHandlers,
-	}
+	return multiplexHandler(aliasWithHandlers)
 }

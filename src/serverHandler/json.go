@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"time"
@@ -86,18 +85,10 @@ func (h *aliasHandler) json(w http.ResponseWriter, r *http.Request, data *respon
 		return
 	}
 
-	var bodyW io.Writer
-	if compressW, encoding, useCompressW := getCompressWriter(w, r); useCompressW {
-		header.Set("Content-Encoding", encoding)
-		bodyW = compressW
-		defer compressW.Close()
-	} else {
-		bodyW = w
-	}
 	w.WriteHeader(data.Status)
 
 	jsonData := getJsonData(data)
-	encoder := json.NewEncoder(bodyW)
+	encoder := json.NewEncoder(w)
 	err := encoder.Encode(jsonData)
 	h.logError(err)
 }

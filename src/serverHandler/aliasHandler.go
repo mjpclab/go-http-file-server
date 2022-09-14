@@ -13,7 +13,7 @@ import (
 
 var defaultHandler = http.NotFoundHandler()
 
-var createFileServer func(root string) http.Handler
+var createFileServer func(aliasUrl, aliasFs string) http.Handler
 
 type pathStrings struct {
 	path    string
@@ -112,28 +112,6 @@ type aliasHandler struct {
 	fileServer http.Handler
 }
 
-func (h *aliasHandler) preCheck(w http.ResponseWriter, r *http.Request, data *responseData) (passed bool) {
-	if data.NeedAuth {
-		h.needAuth(w, r)
-	}
-	if !data.AuthSuccess {
-		h.authFailed(w, data.Status)
-		return
-	}
-
-	if !data.AllowAccess {
-		restrictAccess(w, data.Status)
-		return
-	}
-
-	if data.NeedDirSlashRedirect {
-		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
-		return
-	}
-
-	return true
-}
-
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// hsts redirect
 	if h.globalHsts && h.hsts(w, r) {
@@ -161,8 +139,25 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 	}
 
-	if !h.preCheck(w, r, data) {
-		h.postMiddleware(w, r, data, fsPath)
+	if data.NeedAuth {
+		h.needAuth(w, r)
+	}
+	if !data.AuthSuccess {
+		if !h.postMiddleware(w, r, data, fsPath) {
+			h.authFailed(w, data.Status)
+		}
+		return
+	}
+
+	if !data.AllowAccess {
+		if !h.postMiddleware(w, r, data, fsPath) {
+			h.accessRestricted(w, data.Status)
+		}
+		return
+	}
+
+	if data.NeedDirSlashRedirect {
+		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
 		return
 	}
 
@@ -224,7 +219,7 @@ func newAliasHandler(
 
 	var fileServer http.Handler
 	if !emptyRoot && createFileServer != nil { // for WSL 1 fix
-		fileServer = createFileServer(currentAlias.fs)
+		fileServer = createFileServer(currentAlias.url, currentAlias.fs)
 	}
 
 	h := &aliasHandler{

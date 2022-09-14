@@ -7,7 +7,7 @@ import (
 )
 
 func (h *aliasHandler) needAuth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("WWW-Authenticate", "Basic realm=\""+r.URL.Path+"\"")
+	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 
 func (h *aliasHandler) verifyAuth(r *http.Request) (username string, success bool, err error) {
@@ -28,4 +28,5 @@ func (h *aliasHandler) verifyAuth(r *http.Request) (username string, success boo
 
 func (h *aliasHandler) authFailed(w http.ResponseWriter, status int) {
 	w.WriteHeader(status)
+	w.Write([]byte("Unauthorized"))
 }

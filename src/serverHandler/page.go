@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"html/template"
-	"io"
 	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
 	tplutil "mjpclab.dev/ghfs/src/tpl/util"
@@ -82,17 +81,9 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *respon
 		return
 	}
 
-	var bodyW io.Writer
-	if compressW, encoding, useCompressW := getCompressWriter(w, r); useCompressW {
-		defer compressW.Close()
-		header.Set("Content-Encoding", encoding)
-		bodyW = compressW
-	} else {
-		bodyW = w
-	}
 	w.WriteHeader(data.Status)
 
 	updateSubItemsHtml(data)
-	err := h.theme.RenderPage(bodyW, data)
+	err := h.theme.RenderPage(w, data)
 	h.logError(err)
 }
