@@ -67,7 +67,7 @@ func NewVhostHandler(
 		pageVarys = append(pageVarys, "Referer", "Origin")
 		contentVarys = append(contentVarys, "Referer", "Origin")
 	}
-	if len(p.AuthUrls) > 0 || len(p.AuthDirs) > 0 {
+	if p.GlobalAuth || len(p.AuthUrls) > 0 || len(p.AuthDirs) > 0 {
 		pageVarys = append(pageVarys, "Authorization")
 		contentVarys = append(contentVarys, "Authorization")
 	}
