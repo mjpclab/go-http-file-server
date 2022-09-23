@@ -32,12 +32,12 @@ type aliasParam struct {
 	hideDirs  *regexp.Regexp
 	hideFiles *regexp.Regexp
 
-	headersUrls []pathHeaders
-	headersDirs []pathHeaders
-
 	restrictAccess     bool
 	restrictAccessUrls []pathStrings
 	restrictAccessDirs []pathStrings
+
+	headersUrls []pathHeaders
+	headersDirs []pathHeaders
 
 	pageVaryV1    string
 	pageVary      string
@@ -69,6 +69,10 @@ type aliasHandler struct {
 	dirIndexes []string
 	aliases    aliases
 
+	globalAuth bool
+	authUrls   []string
+	authDirs   []string
+
 	restrictAccess       bool
 	globalRestrictAccess []string
 	restrictAccessUrls   []pathStrings
@@ -97,10 +101,6 @@ type aliasHandler struct {
 	globalCors bool
 	corsUrls   []string
 	corsDirs   []string
-
-	globalAuth bool
-	authUrls   []string
-	authDirs   []string
 
 	pageVaryV1    string
 	pageVary      string
@@ -239,6 +239,10 @@ func newAliasHandler(
 		dirIndexes: p.DirIndexes,
 		aliases:    aliases,
 
+		globalAuth: p.GlobalAuth,
+		authUrls:   p.AuthUrls,
+		authDirs:   p.AuthDirs,
+
 		restrictAccess:       ap.restrictAccess,
 		globalRestrictAccess: p.GlobalRestrictAccess,
 		restrictAccessUrls:   ap.restrictAccessUrls,
@@ -267,10 +271,6 @@ func newAliasHandler(
 		globalCors: p.GlobalCors,
 		corsUrls:   p.CorsUrls,
 		corsDirs:   p.CorsDirs,
-
-		globalAuth: p.GlobalAuth,
-		authUrls:   p.AuthUrls,
-		authDirs:   p.AuthDirs,
 
 		shows:     ap.shows,
 		showDirs:  ap.showDirs,

@@ -90,12 +90,12 @@ func NewVhostHandler(
 		hideDirs:  hideDirs,
 		hideFiles: hideFiles,
 
-		headersUrls: newPathHeaders(p.HeadersUrls),
-		headersDirs: newPathHeaders(p.HeadersDirs),
-
 		restrictAccess:     restrictAccess,
 		restrictAccessUrls: restrictAccessUrls,
 		restrictAccessDirs: restrictAccessDirs,
+
+		headersUrls: newPathHeaders(p.HeadersUrls),
+		headersDirs: newPathHeaders(p.HeadersDirs),
 
 		pageVaryV1:    pageVaryV1,
 		pageVary:      pageVary,
