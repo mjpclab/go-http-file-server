@@ -9,13 +9,16 @@ var compressibleTypes = []string{
 	"application/javascript",
 	"application/x-javascript",
 	"application/json",
-	"application/xhtml+xml",
 	"application/xml",
-	"image/svg+xml",
 }
 
 func isCompressibleType(contentType string) bool {
 	if strings.HasPrefix(contentType, "text/") {
+		return true
+	}
+
+	// "image/svg+xml", "application/xhtml+xml", ...
+	if strings.HasSuffix(contentType, "+xml") {
 		return true
 	}
 
