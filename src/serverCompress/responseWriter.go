@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-const minLengthDigits = 3
+const minLengthDigits = 4
 
 // responseWriter implements http.ResponseWriter
 type responseWriter struct {
