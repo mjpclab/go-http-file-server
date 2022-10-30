@@ -38,12 +38,13 @@ type responseData struct {
 
 	Headers [][2]string
 
-	IsDownload bool
-	IsUpload   bool
-	IsMkdir    bool
-	IsDelete   bool
-	IsMutate   bool
-	WantJson   bool
+	IsDownload     bool
+	IsDownloadFile bool
+	IsUpload       bool
+	IsMkdir        bool
+	IsDelete       bool
+	IsMutate       bool
+	WantJson       bool
 
 	CanUpload    bool
 	CanMkdir     bool
@@ -322,11 +323,15 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	rawQuery := r.URL.RawQuery
 	isDownload := false
+	isDownloadFile := false
 	isUpload := false
 	isMkdir := false
 	isDelete := false
 	isMutate := false
 	switch {
+	case strings.HasPrefix(rawQuery, "downloadfile"):
+		isDownload = true
+		isDownloadFile = true
 	case strings.HasPrefix(rawQuery, "download"):
 		isDownload = true
 	case strings.HasPrefix(rawQuery, "upload") && r.Method == http.MethodPost:
@@ -420,9 +425,10 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
 
 	context := pathContext{
-		download:    isDownload,
-		sort:        rawSortBy,
-		defaultSort: h.defaultSort,
+		download:     isDownload,
+		downloadfile: isDownloadFile,
+		sort:         rawSortBy,
+		defaultSort:  h.defaultSort,
 	}
 
 	return &responseData{
@@ -439,12 +445,13 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 		Headers: headers,
 
-		IsDownload: isDownload,
-		IsUpload:   isUpload,
-		IsMkdir:    isMkdir,
-		IsDelete:   isDelete,
-		IsMutate:   isMutate,
-		WantJson:   wantJson,
+		IsDownload:     isDownload,
+		IsDownloadFile: isDownloadFile,
+		IsUpload:       isUpload,
+		IsMkdir:        isMkdir,
+		IsDelete:       isDelete,
+		IsMutate:       isMutate,
+		WantJson:       wantJson,
 
 		CanUpload:    canUpload,
 		CanMkdir:     canMkdir,

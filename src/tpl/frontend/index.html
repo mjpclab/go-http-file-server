@@ -96,7 +96,7 @@
 {{end}}
 {{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
-	{{if not .IsDownload}}
+	{{if not $isDownload}}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
 		<span class="detail">
 		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">{{.Trans.ListDirLabel}}{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
