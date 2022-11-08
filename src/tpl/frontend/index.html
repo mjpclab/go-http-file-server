@@ -72,15 +72,6 @@
 </div>
 {{end}}
 
-{{if .SubItemsHtml}}
-<div class="panel filter" id="panel-filter">
-	<div class="form">
-		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}"/>
-		<button type="reset">X</button>
-	</div>
-</div>
-{{end}}
-
 {{if .CanDelete}}
 <script type="text/javascript">
 	function confirmDelete(form) {
@@ -94,6 +85,14 @@
 	}
 </script>
 {{end}}
+{{end}}
+{{if .SubItemsHtml}}
+<div class="panel filter" id="panel-filter">
+	<div class="form">
+		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}"/>
+		<button type="reset">X</button>
+	</div>
+</div>
 {{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
 	{{if not $isDownload}}
