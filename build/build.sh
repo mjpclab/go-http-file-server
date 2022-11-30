@@ -35,7 +35,7 @@ for build in "$@"; do
 	BIN="$TMP/$MAINNAME$(go env GOEXE)"
 	rm -f "$BIN"
 	echo "Building: $GOOS$OS_SUFFIX $ARCH"
-	go build -ldflags "$LDFLAGS" -o "$BIN" ../src/main.go
+	go build -ldflags "$(getLdFlags)" -o "$BIN" ../main.go
 
 	OUT="$OUTDIR/$MAINNAME-$VERSION-$GOOS$OS_SUFFIX-$GOARCH$ARCH_OPT".zip
 	zip -j "$OUT" "$BIN" "$LICENSE" "$LICENSE_GO"

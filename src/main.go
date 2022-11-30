@@ -1,4 +1,4 @@
-package main
+package src
 
 import (
 	"errors"
@@ -36,7 +36,7 @@ func reopenLogOnHup(appInst *app.App) {
 	}()
 }
 
-func main() {
+func Main() {
 	// params
 	params, printVersion, printHelp, errs := param.ParseFromCli()
 	serverError.CheckFatal(errs...)

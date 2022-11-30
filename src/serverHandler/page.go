@@ -66,7 +66,9 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *respon
 	header := w.Header()
 	header.Set("X-Content-Type-Options", "nosniff")
 	header.Set("Content-Type", "text/html; charset=utf-8")
-	header.Set("Cache-Control", "public, max-age=0")
+	if len(header.Get("Cache-Control")) == 0 {
+		header.Set("Cache-Control", "public, max-age=0")
+	}
 
 	if r.ProtoMajor <= 1 {
 		header.Set("Vary", h.pageVaryV1)
