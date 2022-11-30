@@ -75,15 +75,6 @@ const DefaultTplStr = `
 </div>
 {{end}}
 
-{{if .SubItemsHtml}}
-<div class="panel filter" id="panel-filter">
-	<div class="form">
-		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}"/>
-		<button type="reset">X</button>
-	</div>
-</div>
-{{end}}
-
 {{if .CanDelete}}
 <script type="text/javascript">
 	function confirmDelete(form) {
@@ -98,8 +89,16 @@ const DefaultTplStr = `
 </script>
 {{end}}
 {{end}}
+{{if .SubItemsHtml}}
+<div class="panel filter" id="panel-filter">
+	<div class="form">
+		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}"/>
+		<button type="reset">X</button>
+	</div>
+</div>
+{{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
-	{{if not .IsDownload}}
+	{{if not $isDownload}}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
 		<span class="detail">
 		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">{{.Trans.ListDirLabel}}{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
