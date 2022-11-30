@@ -39,6 +39,7 @@ curl 'http://localhost/ghfs/?json'
 # 显示用于下载的页面
 ```
 GET <path>?download[&sort=key]
+GET <path>?downloadfile[&sort=key]
 ```
 类似于常规显示的页面，但隐藏路径列表、可排序的表头和上级目录链接。
 这为“wget”之类的工具递归下载提供了方便。
@@ -48,10 +49,13 @@ GET <path>?download[&sort=key]
 wget --recursive -nc -nH -np 'http://localhost/dir/?download'
 ```
 
+选项`downloadfile`使文件链接可被下载，而不是显示其内容。
+
 # 下载文件
-通知用户代理下载文件而不是显示其内容。
+通过输出`Content-Disposition`头，通知用户代理下载文件而不是显示其内容。
 ```
 GET <path/to/file>?download
+GET <path/to/file>?downloadfile
 ```
 
 举例：

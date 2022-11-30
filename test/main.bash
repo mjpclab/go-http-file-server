@@ -13,11 +13,10 @@ done
 export root=$(realpath .)
 export fs=$(realpath fs)
 export cert=$(realpath cert)
-export src=$(realpath ../src)
 export ghfs=$(realpath bin)/ghfs
 export GHFS_QUIET=1
 
-go build -o "$ghfs" "$src/main.go"
+go build -o "$ghfs" "../main.go"
 
 pattern="$1"
 if [ -z "$pattern" ]; then

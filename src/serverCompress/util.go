@@ -17,14 +17,15 @@ func isCompressibleType(contentType string) bool {
 		return true
 	}
 
+	sepIndex := strings.IndexByte(contentType, ';')
+	if sepIndex > 0 {
+		contentType = contentType[:sepIndex]
+	}
+
 	// "image/svg+xml", "application/xhtml+xml", ...
 	if strings.HasSuffix(contentType, "+xml") {
 		return true
 	}
 
-	sepIndex := strings.IndexByte(contentType, ';')
-	if sepIndex > 0 {
-		contentType = contentType[:sepIndex]
-	}
 	return util.Contains(compressibleTypes, contentType)
 }
