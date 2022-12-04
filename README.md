@@ -300,6 +300,8 @@ ghfs [options]
     The external config's priority is lower than arguments specified on command line.
     If one option is specified on command line, then external config of that option is ignored.
 
+    Set "-" to use stdin.
+
 ,,
     To specify multiple virtual hosts with options, split these hosts' options by this sign.
     Options above can be specified for each virtual host.

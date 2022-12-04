@@ -229,7 +229,8 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 	// append config and re-parse
 	configs := []string{}
 	groupSeps := cmd.Options().GroupSeps()[0]
-	foundConfig := false
+	hasConfig := false
+	var stdinConfigArgs []string
 	for i := range results {
 		configs = append(configs, groupSeps)
 
@@ -239,20 +240,29 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 			continue
 		}
 
-		configArgs, err := goNixArgParser.LoadConfigArgs(config)
-		if err != nil {
-			errs = append(errs, err)
-			continue
+		var configArgs []string
+		if stdinConfigArgs != nil && config == "-" {
+			configArgs = stdinConfigArgs
+		} else {
+			var err error
+			configArgs, err = goNixArgParser.LoadConfigArgs(config)
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+			if config == "-" {
+				stdinConfigArgs = configArgs
+			}
 		}
 
-		foundConfig = true
+		hasConfig = true
 		configs = append(configs, configArgs...)
 	}
 	if len(errs) > 0 {
 		return
 	}
 
-	if foundConfig {
+	if hasConfig {
 		configs = configs[1:]
 		results = cmd.ParseGroups(args, configs)
 		for i := range results {
