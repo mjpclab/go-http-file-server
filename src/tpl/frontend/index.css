@@ -79,6 +79,10 @@ button:disabled {
 	cursor: default;
 }
 
+input[type=text] {
+	padding: 0.25em;
+}
+
 em {
 	font-style: normal;
 	font-weight: normal;
