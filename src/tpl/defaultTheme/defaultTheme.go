@@ -1,8 +1,9 @@
-package tpl
+package defaultTheme
 
 import (
 	"bytes"
 	_ "embed"
+	"mjpclab.dev/ghfs/src/tpl/theme"
 )
 
 //go:embed frontend/index.html
@@ -17,19 +18,19 @@ var defaultCss []byte
 //go:embed frontend/index.js
 var defaultJs []byte
 
-var DefaultTheme MemTheme
+var DefaultTheme theme.MemTheme
 
 func init() {
-	defaultTpl, err := ParsePageTpl(defaultTplStr)
-	if err != nil {
-		defaultTpl, _ = ParsePageTpl("Builtin Template Error")
-	}
-	DefaultTheme.template = defaultTpl
+	var err error
 
-	defaultAssets := map[string]asset{
+	DefaultTheme.Template, err = theme.ParsePageTpl(defaultTplStr)
+	if err != nil {
+		DefaultTheme.Template, _ = theme.ParsePageTpl("Builtin Template Error")
+	}
+
+	DefaultTheme.Assets = theme.Assets{
 		"favicon.ico": {"image/x-icon", bytes.NewReader(defaultFavicon)},
 		"index.css":   {"text/css", bytes.NewReader(defaultCss)},
 		"index.js":    {"application/javascript", bytes.NewReader(defaultJs)},
 	}
-	DefaultTheme.assets = defaultAssets
 }

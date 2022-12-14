@@ -4,7 +4,7 @@ import (
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/serverLog"
-	"mjpclab.dev/ghfs/src/tpl"
+	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
 	"net/http"
 	"strings"
@@ -13,7 +13,7 @@ import (
 func NewVhostHandler(
 	p *param.Param,
 	logger *serverLog.Logger,
-	theme tpl.Theme,
+	theme theme.Theme,
 ) (handler http.Handler, errs []error) {
 	// users
 	users := user.NewList(p.UserMatchCase)

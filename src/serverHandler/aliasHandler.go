@@ -4,7 +4,7 @@ import (
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverLog"
-	"mjpclab.dev/ghfs/src/tpl"
+	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
 	"net/http"
 	"regexp"
@@ -22,7 +22,7 @@ type pathStrings struct {
 
 type aliasParam struct {
 	users  user.List
-	theme  tpl.Theme
+	theme  theme.Theme
 	logger *serverLog.Logger
 
 	shows     *regexp.Regexp
@@ -56,7 +56,7 @@ type aliasHandler struct {
 	aliasPrefix   string
 
 	users  user.List
-	theme  tpl.Theme
+	theme  theme.Theme
 	logger *serverLog.Logger
 
 	shows     *regexp.Regexp
