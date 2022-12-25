@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $(dirname "$0")
+cd "$(dirname "$0")"
 rm -rf ../output/
 
 GOARCH=$(go env GOARCH)
