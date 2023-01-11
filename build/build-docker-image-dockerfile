@@ -1,4 +1,5 @@
 FROM golang AS builder
+COPY *.go /go/src/mjpclab.dev/ghfs/
 COPY .git/ /go/src/mjpclab.dev/ghfs/.git/
 COPY go.mod /go/src/mjpclab.dev/ghfs/go.mod
 COPY src/ /go/src/mjpclab.dev/ghfs/src/
