@@ -8,7 +8,8 @@ import (
 	"mjpclab.dev/ghfs/src/serverHandler"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/setting"
-	"mjpclab.dev/ghfs/src/tpl"
+	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
+	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/util"
 	"os"
 	"path/filepath"
@@ -56,7 +57,7 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 
 	vhSvc := goVirtualHost.NewService()
 	logFileMan := serverLog.NewFileMan()
-	themes := make(map[string]tpl.Theme)
+	themes := make(map[string]theme.Theme)
 
 	for _, p := range params {
 		// logger
@@ -66,11 +67,11 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 		}
 
 		// theme
-		var theme tpl.Theme
+		var themeInst theme.Theme
 		if len(p.ThemeDir) > 0 {
-			theme = tpl.DirTheme(p.ThemeDir)
+			themeInst = theme.DirTheme(p.ThemeDir)
 		} else if len(p.Theme) == 0 {
-			theme = tpl.DefaultTheme
+			themeInst = defaultTheme.DefaultTheme
 		} else {
 			themeKey, err := filepath.Abs(p.Theme)
 			errs = serverError.AppendError(errs, err)
@@ -79,14 +80,14 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 			}
 
 			var themeExists bool
-			theme, themeExists = themes[themeKey]
+			themeInst, themeExists = themes[themeKey]
 			if !themeExists {
-				theme, err = tpl.LoadMemTheme(p.Theme)
+				themeInst, err = theme.LoadMemTheme(p.Theme)
 				errs = serverError.AppendError(errs, err)
 				if err != nil {
 					continue
 				}
-				themes[themeKey] = theme
+				themes[themeKey] = themeInst
 			}
 		}
 		if len(errs) > 0 {
@@ -94,7 +95,7 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 		}
 
 		// vHost Handler
-		vhHandler, errs := serverHandler.NewVhostHandler(p, logger, theme)
+		vhHandler, errs := serverHandler.NewVhostHandler(p, logger, themeInst)
 		if len(errs) > 0 {
 			return nil, errs
 		}

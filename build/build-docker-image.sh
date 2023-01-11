@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $(dirname "$0")
+cd "$(dirname "$0")"
 source ./build.inc.version.sh
 
 TAG_PREFIX=${TAG_PREFIX:-mjpclab/ghfs}

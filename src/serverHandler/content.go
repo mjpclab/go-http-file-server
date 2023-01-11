@@ -40,7 +40,9 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *res
 	ctype, err := util.GetContentType(item.Name(), file)
 	if err == nil {
 		header.Set("Accept-Ranges", "bytes")
-		header.Set("Content-Type", ctype)
+		if len(header.Get("Content-Type")) == 0 {
+			header.Set("Content-Type", ctype)
+		}
 		header.Set("Content-Length", strconv.FormatInt(item.Size(), 10))
 		header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
 		header.Set("Last-Modified", item.ModTime().UTC().Format(http.TimeFormat))

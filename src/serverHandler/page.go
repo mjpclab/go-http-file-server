@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
-	tplutil "mjpclab.dev/ghfs/src/tpl/util"
+	tplUtil "mjpclab.dev/ghfs/src/tpl/util"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 )
@@ -18,7 +18,7 @@ func updateSubItemsHtml(data *responseData) {
 
 	for i, info := range data.SubItems {
 		name := info.Name()
-		urlEscapedName := tplutil.FormatFileUrl(name)
+		urlEscapedName := tplUtil.FormatFileUrl(name)
 
 		var displayName template.HTML
 		var typ template.HTML
@@ -26,14 +26,14 @@ func updateSubItemsHtml(data *responseData) {
 		var readableSize template.HTML
 
 		if info.IsDir() {
-			displayName = tplutil.FormatFilename(name) + "/"
+			displayName = tplUtil.FormatFilename(name) + "/"
 			typ = TypeDir
 			url = data.SubItemPrefix + urlEscapedName + "/" + data.Context.QueryString()
 		} else {
-			displayName = tplutil.FormatFilename(name)
+			displayName = tplUtil.FormatFilename(name)
 			typ = TypeFile
 			url = data.SubItemPrefix + urlEscapedName + data.Context.FileQueryString()
-			readableSize = tplutil.FormatSize(info.Size())
+			readableSize = tplUtil.FormatSize(info.Size())
 		}
 
 		var deleteUrl string
@@ -46,7 +46,7 @@ func updateSubItemsHtml(data *responseData) {
 			Url:         url,
 			DisplayName: displayName,
 			DisplaySize: readableSize,
-			DisplayTime: tplutil.FormatTime(info.ModTime()),
+			DisplayTime: tplUtil.FormatTime(info.ModTime()),
 			DeleteUrl:   deleteUrl,
 		}
 	}
