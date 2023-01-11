@@ -82,6 +82,10 @@ button:disabled {
 	cursor: default;
 }
 
+input[type=text] {
+	padding: 0.25em;
+}
+
 em {
 	font-style: normal;
 	font-weight: normal;
@@ -349,7 +353,7 @@ html.dragging::before {
 	content: '';
 	position: absolute;
 	left: 0.6em;
-	top: 1.1em;
+	top: 1em;
 	width: 0.5em;
 	height: 0.5em;
 	margin-left: 1px;
