@@ -37,18 +37,18 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *res
 		return
 	}
 
-	ctype, err := util.GetContentType(item.Name(), file)
-	if err == nil {
-		header.Set("Accept-Ranges", "bytes")
-		if len(header.Values("Content-Type")) == 0 {
+	header.Set("Accept-Ranges", "bytes")
+	if len(header.Values("Content-Type")) == 0 {
+		ctype, err := util.GetContentType(item.Name(), file)
+		if err == nil {
 			header.Set("Content-Type", ctype)
+		} else if data.Status == http.StatusOK {
+			data.Status = http.StatusInternalServerError
 		}
-		header.Set("Content-Length", strconv.FormatInt(item.Size(), 10))
-		header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
-		header.Set("Last-Modified", item.ModTime().UTC().Format(http.TimeFormat))
-	} else if data.Status == http.StatusOK {
-		data.Status = http.StatusInternalServerError
 	}
+	header.Set("Content-Length", strconv.FormatInt(item.Size(), 10))
+	header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
+	header.Set("Last-Modified", item.ModTime().UTC().Format(http.TimeFormat))
 
 	w.WriteHeader(data.Status)
 }
