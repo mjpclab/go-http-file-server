@@ -1,3 +1,6 @@
+package frontend
+
+const DefaultCss = `
 html, body {
 	margin: 0;
 	padding: 0;
@@ -77,6 +80,10 @@ input:disabled[type=submit],
 input:disabled[type=reset],
 button:disabled {
 	cursor: default;
+}
+
+input[type=text] {
+	padding: 0.25em;
 }
 
 em {
@@ -346,7 +353,7 @@ html.dragging::before {
 	content: '';
 	position: absolute;
 	left: 0.6em;
-	top: 1.1em;
+	top: 1em;
 	width: 0.5em;
 	height: 0.5em;
 	margin-left: 1px;
@@ -646,3 +653,4 @@ html.dragging::before {
 		display: none;
 	}
 }
+`

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $(dirname "$0")
+cd "$(dirname "$0")"
 
 # init variable `builds`
 source ./build-all.inc.sh

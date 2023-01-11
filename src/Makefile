@@ -10,7 +10,7 @@ define embedHex
 endef
 
 tpls:
-	$(call embedStr, tpl/frontend/index.html)
-	$(call embedStr, tpl/frontend/index.css)
-	$(call embedStr, tpl/frontend/index.js)
-	$(call embedHex, tpl/frontend/favicon.ico)
+	$(call embedStr, tpl/defaultTheme/frontend/index.html)
+	$(call embedStr, tpl/defaultTheme/frontend/index.css)
+	$(call embedStr, tpl/defaultTheme/frontend/index.js)
+	$(call embedHex, tpl/defaultTheme/frontend/favicon.ico)

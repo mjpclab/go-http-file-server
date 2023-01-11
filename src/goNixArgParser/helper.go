@@ -2,6 +2,7 @@ package goNixArgParser
 
 import (
 	"io/ioutil"
+	"os"
 	"regexp"
 )
 
@@ -67,11 +68,22 @@ func SplitToArgs(input string) (args []string) {
 }
 
 func LoadConfigArgs(filename string) (args []string, err error) {
-	input, err := ioutil.ReadFile(filename)
+	var file *os.File
+	if filename == "-" {
+		file = os.Stdin
+	} else {
+		file, err = os.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+	}
+
+	bytesConfig, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 
-	strConfig := string(input)
+	strConfig := string(bytesConfig)
 	return SplitToArgs(strConfig), nil
 }
