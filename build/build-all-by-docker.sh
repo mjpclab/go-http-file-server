@@ -25,6 +25,7 @@ buildByDocker() {
       sed -i -e "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apt/sources.list;
       apt-get update;
       apt-get install -yq git zip;
+      git config --global safe.directory "*"
       /bin/bash '"$ghfs"'/build/build.sh "$@";
       chown -R $EX_UID:$EX_GID '"$ghfs"'/output;
     ' \
