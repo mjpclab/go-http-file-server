@@ -1,16 +1,17 @@
-FROM golang AS builder
+FROM golang:alpine AS builder
 COPY *.go /go/src/mjpclab.dev/ghfs/
 COPY .git/ /go/src/mjpclab.dev/ghfs/.git/
 COPY go.mod /go/src/mjpclab.dev/ghfs/go.mod
 COPY src/ /go/src/mjpclab.dev/ghfs/src/
 COPY build/ /go/src/mjpclab.dev/ghfs/build/
+RUN sed -i 's;://[^/ ]*;://mirrors.aliyun.com;' /etc/apk/repositories
+RUN apk add bash
 RUN ["/bin/bash", "-c", "cd /go/src/mjpclab.dev/ghfs/build/; source ./build.inc.sh; go build -ldflags \"$(getLdFlags)\" -o /tmp/ghfs /go/src/mjpclab.dev/ghfs/main.go"]
 RUN mkdir -p /output/usr/local/bin/; cp /tmp/ghfs /output/usr/local/bin/;
 COPY conf/docker-image/ /output/
 
 FROM alpine
 COPY --from=builder /output /
-RUN mkdir /lib64 /var/ghfs; ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 VOLUME /var/ghfs
 EXPOSE 8080 8443
 USER nobody
