@@ -36,6 +36,14 @@ buildByDocker() {
 gover=latest
 buildByDocker "$gover" "${builds[@]}"
 
+gover=1.20
+builds=('windows 386 -7-8' 'windows amd64 -7-8' 'windows amd64,v2 -7-8' 'windows amd64,v3 -7-8')
+buildByDocker "$gover" "${builds[@]}"
+
+#gover=1.20
+#builds=('darwin amd64 -10.13-high-sierra')
+#buildByDocker "$gover" "${builds[@]}"
+
 #gover=1.16
 #builds=('darwin amd64 -10.12-sierra')
 #buildByDocker "$gover" "${builds[@]}"
