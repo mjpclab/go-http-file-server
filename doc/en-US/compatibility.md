@@ -23,11 +23,17 @@
 - Go 1.14 is the last release supports 32-bit binaries on OSX
 - Go 1.14 is the last release supports OSX 10.11 El Capitan
 - Go 1.15 supports OSX 10.12 Sierra or later
+- Go 1.16 is the last release supports OSX 10.12 Sierra
+- Go 1.17 supports OSX 10.13 High Sierra or later
+- Go 1.20 is the last release supports OSX 10.13 High Sierra
+- Go 1.21 supports OSX 10.14 Mojave or later
 
 ## Windows platform
 - Go 1.10 is the last release supports Windows XP
 - Go 1.10 is the last release supports Windows Vista
 - Go 1.11 supports Windows 7+
+- Go 1.20 is the last release supports Windows 7/8/Server 2008/Server 2012
+- Go 1.21 supports Windows 10/Server 2016
 
 # Standard library compatibility
 ## SSL/TLS protocol
