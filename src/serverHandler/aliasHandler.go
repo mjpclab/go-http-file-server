@@ -49,9 +49,9 @@ type aliasHandler struct {
 	root          string
 	emptyRoot     bool
 	forceDirSlash int
-	globalHsts    bool
-	globalHttps   bool
-	httpsPort     string // with prefix ":"
+	hsts          bool
+	toHttps       bool
+	toHttpsPort   string // with prefix ":"
 	defaultSort   string
 	aliasPrefix   string
 
@@ -114,12 +114,12 @@ type aliasHandler struct {
 
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// hsts redirect
-	if h.globalHsts && h.hsts(w, r) {
+	if h.hsts && h.tryHsts(w, r) {
 		return
 	}
 
 	// https redirect
-	if h.globalHttps && h.https(w, r) {
+	if h.toHttps && h.tryToHttps(w, r) {
 		return
 	}
 
@@ -226,9 +226,9 @@ func newAliasHandler(
 		root:          currentAlias.fs,
 		emptyRoot:     emptyRoot,
 		forceDirSlash: p.ForceDirSlash,
-		globalHsts:    p.GlobalHsts,
-		globalHttps:   p.GlobalHttps,
-		httpsPort:     p.HttpsPort,
+		hsts:          p.Hsts,
+		toHttps:       p.ToHttps,
+		toHttpsPort:   p.ToHttpsPort,
 		defaultSort:   p.DefaultSort,
 		aliasPrefix:   currentAlias.url,
 

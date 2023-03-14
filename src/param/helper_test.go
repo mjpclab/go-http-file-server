@@ -170,102 +170,102 @@ func TestNormalizeHttpsPort(t *testing.T) {
 	var httpsPort string
 	var ok bool
 
-	httpsPort, ok = normalizeHttpsPort("123", []string{"123"})
+	httpsPort, ok = normalizeToHttpsPort("123", []string{"123"})
 	if !ok || httpsPort != ":123" {
 		t.Error("1")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("234", []string{":234"})
+	httpsPort, ok = normalizeToHttpsPort("234", []string{":234"})
 	if !ok || httpsPort != ":234" {
 		t.Error("2")
 	}
 
-	httpsPort, ok = normalizeHttpsPort(":345", []string{"345"})
+	httpsPort, ok = normalizeToHttpsPort(":345", []string{"345"})
 	if !ok || httpsPort != ":345" {
 		t.Error("3")
 	}
 
-	httpsPort, ok = normalizeHttpsPort(":456", []string{":456"})
+	httpsPort, ok = normalizeToHttpsPort(":456", []string{":456"})
 	if !ok || httpsPort != ":456" {
 		t.Error("4")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("", nil)
+	httpsPort, ok = normalizeToHttpsPort("", nil)
 	if ok {
 		t.Error("5")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("", []string{})
+	httpsPort, ok = normalizeToHttpsPort("", []string{})
 	if ok {
 		t.Error("5")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("123", nil)
+	httpsPort, ok = normalizeToHttpsPort("123", nil)
 	if ok {
 		t.Error("5")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("123", []string{})
+	httpsPort, ok = normalizeToHttpsPort("123", []string{})
 	if ok {
 		t.Error("5")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("", []string{""})
+	httpsPort, ok = normalizeToHttpsPort("", []string{""})
 	if !ok || httpsPort != "" {
 		t.Error("5")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("65536", []string{"65536"})
+	httpsPort, ok = normalizeToHttpsPort("65536", []string{"65536"})
 	if ok || httpsPort != "" {
 		t.Error("6", httpsPort)
 	}
 
-	httpsPort, ok = normalizeHttpsPort("", []string{"567"})
+	httpsPort, ok = normalizeToHttpsPort("", []string{"567"})
 	if !ok || httpsPort != ":567" {
 		t.Error("7")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("", []string{":678"})
+	httpsPort, ok = normalizeToHttpsPort("", []string{":678"})
 	if !ok || httpsPort != ":678" {
 		t.Error("8")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("789", []string{":890"})
+	httpsPort, ok = normalizeToHttpsPort("789", []string{":890"})
 	if ok || httpsPort != "" {
 		t.Error("9")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("789", []string{"127.0.0.1:890"})
+	httpsPort, ok = normalizeToHttpsPort("789", []string{"127.0.0.1:890"})
 	if ok || httpsPort != "" {
 		t.Error("10")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("789", []string{"[::1]:890"})
+	httpsPort, ok = normalizeToHttpsPort("789", []string{"[::1]:890"})
 	if ok || httpsPort != "" {
 		t.Error("11")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("", []string{":443"})
+	httpsPort, ok = normalizeToHttpsPort("", []string{":443"})
 	if !ok || httpsPort != ":443" {
 		t.Error("12")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("", []string{"127.0.0.1"})
+	httpsPort, ok = normalizeToHttpsPort("", []string{"127.0.0.1"})
 	if !ok || httpsPort != "" {
 		t.Error("13")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("", []string{"[::1]"})
+	httpsPort, ok = normalizeToHttpsPort("", []string{"[::1]"})
 	if !ok || httpsPort != "" {
 		t.Error("14")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("443", []string{"127.0.0.1"})
+	httpsPort, ok = normalizeToHttpsPort("443", []string{"127.0.0.1"})
 	if !ok || httpsPort != "" {
 		t.Error("15")
 	}
 
-	httpsPort, ok = normalizeHttpsPort("443", []string{"[::1]"})
+	httpsPort, ok = normalizeToHttpsPort("443", []string{"[::1]"})
 	if !ok || httpsPort != "" {
 		t.Error("16")
 	}

@@ -188,26 +188,26 @@ func validateHstsPort(listensPlain, listensTLS []string) bool {
 	return fromOK && toOK
 }
 
-func normalizeHttpsPort(httpsPort string, listensTLS []string) (string, bool) {
-	if len(httpsPort) > 0 {
-		httpsPort = util.ExtractListenPort(httpsPort)
-		if len(httpsPort) == 0 {
+func normalizeToHttpsPort(toHttpsPort string, listensTLS []string) (string, bool) {
+	if len(toHttpsPort) > 0 {
+		toHttpsPort = util.ExtractListenPort(toHttpsPort)
+		if len(toHttpsPort) == 0 {
 			return "", false
 		}
 	} else if len(listensTLS) > 0 {
-		httpsPort = util.ExtractListenPort(listensTLS[0])
+		toHttpsPort = util.ExtractListenPort(listensTLS[0])
 	}
 
 	for _, listen := range listensTLS {
 		port := util.ExtractListenPort(listen)
-		if len(httpsPort) == 0 && len(port) == 0 {
+		if len(toHttpsPort) == 0 && len(port) == 0 {
 			return "", true
 		}
-		if httpsPort == port {
-			return ":" + httpsPort, true
+		if toHttpsPort == port {
+			return ":" + toHttpsPort, true
 		}
 
-		if httpsPort == "443" && port == "" {
+		if toHttpsPort == "443" && port == "" {
 			return "", true
 		}
 	}

@@ -160,10 +160,10 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValue("themedir", "--theme-dir", "GHFS_THEME_DIR", "", "external theme directory")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlag("globalhsts", "--hsts", "GHFS_HSTS", "enable HSTS(HTTP Strict Transport Security)")
+	err = options.AddFlag("hsts", "--hsts", "GHFS_HSTS", "enable HSTS(HTTP Strict Transport Security)")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValue("globalhttps", "--to-https", "GHFS_TO_HTTPS", "", "redirect http:// to https://, with optional target port")
+	err = options.AddFlagValue("tohttps", "--to-https", "GHFS_TO_HTTPS", "", "redirect http:// to https://, with optional target port")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("shows", []string{"-S", "--show"}, "GHFS_SHOW", nil, "show directories or files match wildcard")
@@ -399,10 +399,10 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.ListensTLS, _ = result.GetStrings("listenstls")
 
 		// hsts & https
-		param.GlobalHsts = result.HasKey("globalhsts")
+		param.Hsts = result.HasKey("hsts")
 
-		param.GlobalHttps = result.HasKey("globalhttps")
-		param.HttpsPort, _ = result.GetString("globalhttps")
+		param.ToHttps = result.HasKey("tohttps")
+		param.ToHttpsPort, _ = result.GetString("tohttps")
 
 		// shows/hides
 		param.Shows, _ = result.GetStrings("shows")

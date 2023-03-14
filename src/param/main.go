@@ -71,9 +71,9 @@ type Param struct {
 	Theme        string
 	ThemeDir     string
 
-	GlobalHsts  bool
-	GlobalHttps bool
-	HttpsPort   string
+	Hsts        bool
+	ToHttps     bool
+	ToHttpsPort string
 
 	Shows     []string
 	ShowDirs  []string
@@ -173,12 +173,12 @@ func (param *Param) normalize() (errs []error) {
 	param.AuthDirs = NormalizeFsPaths(param.AuthDirs)
 
 	// hsts & https
-	if param.GlobalHsts {
-		param.GlobalHsts = validateHstsPort(param.ListensPlain, param.ListensTLS)
+	if param.Hsts {
+		param.Hsts = validateHstsPort(param.ListensPlain, param.ListensTLS)
 	}
 
-	if param.GlobalHttps {
-		param.HttpsPort, param.GlobalHttps = normalizeHttpsPort(param.HttpsPort, param.ListensTLS)
+	if param.ToHttps {
+		param.ToHttpsPort, param.ToHttps = normalizeToHttpsPort(param.ToHttpsPort, param.ListensTLS)
 	}
 
 	return
