@@ -7,7 +7,6 @@ import (
 	"mjpclab.dev/ghfs/src/serverError"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -305,8 +304,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 
 		// force dir slash
 		if result.HasKey("forcedirslash") {
-			strRedirectCode, _ := result.GetString("forcedirslash")
-			redirectCode, _ := strconv.Atoi(strRedirectCode)
+			redirectCode, _ := result.GetInt("forcedirslash")
 			if redirectCode == 0 {
 				redirectCode = http.StatusMovedPermanently
 			}
