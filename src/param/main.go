@@ -72,6 +72,7 @@ type Param struct {
 	ThemeDir     string
 
 	Hsts        bool
+	HstsMaxAge  int
 	ToHttps     bool
 	ToHttpsPort string
 

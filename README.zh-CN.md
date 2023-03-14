@@ -252,7 +252,7 @@ ghfs [选项]
         页面模板文件名固定为“index.html”。
         使用“?asset=<asset-path>”格式来引用主题中的静态资源。
 
---hsts
+--hsts [<有效时长>]
     启用HSTS(HTTP Strict Transport Security)。
     仅当当前虚拟主机的纯HTTP和TLS模式都监听在标准端口上时才有效。
 --to-https [<目标端口>]

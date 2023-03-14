@@ -159,7 +159,7 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValue("themedir", "--theme-dir", "GHFS_THEME_DIR", "", "external theme directory")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlag("hsts", "--hsts", "GHFS_HSTS", "enable HSTS(HTTP Strict Transport Security)")
+	err = options.AddFlagValue("hsts", "--hsts", "GHFS_HSTS", "", "enable HSTS(HTTP Strict Transport Security)")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlagValue("tohttps", "--to-https", "GHFS_TO_HTTPS", "", "redirect http:// to https://, with optional target port")
@@ -398,6 +398,13 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 
 		// hsts & https
 		param.Hsts = result.HasKey("hsts")
+		if param.Hsts {
+			if result.HasValue("hsts") {
+				param.HstsMaxAge, _ = result.GetInt("hsts")
+			} else {
+				param.HstsMaxAge = 31536000
+			}
+		}
 
 		param.ToHttps = result.HasKey("tohttps")
 		param.ToHttpsPort, _ = result.GetString("tohttps")

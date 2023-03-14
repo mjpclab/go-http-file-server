@@ -8,6 +8,7 @@ import (
 	"mjpclab.dev/ghfs/src/user"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -50,6 +51,7 @@ type aliasHandler struct {
 	emptyRoot     bool
 	forceDirSlash int
 	hsts          bool
+	hstsMaxAge    string
 	toHttps       bool
 	toHttpsPort   string // with prefix ":"
 	defaultSort   string
@@ -227,6 +229,7 @@ func newAliasHandler(
 		emptyRoot:     emptyRoot,
 		forceDirSlash: p.ForceDirSlash,
 		hsts:          p.Hsts,
+		hstsMaxAge:    strconv.Itoa(p.HstsMaxAge),
 		toHttps:       p.ToHttps,
 		toHttpsPort:   p.ToHttpsPort,
 		defaultSort:   p.DefaultSort,

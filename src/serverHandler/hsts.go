@@ -13,7 +13,7 @@ func (h *aliasHandler) tryHsts(w http.ResponseWriter, r *http.Request) (needRedi
 	}
 
 	header := w.Header()
-	header.Set("Strict-Transport-Security", "max-age=31536000")
+	header.Set("Strict-Transport-Security", "max-age="+h.hstsMaxAge)
 
 	if r.TLS != nil {
 		return
