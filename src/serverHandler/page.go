@@ -69,10 +69,7 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *respon
 	if lacksHeader(header, "Cache-Control") {
 		header.Set("Cache-Control", "public, max-age=0")
 	}
-
-	if r.ProtoMajor <= 1 {
-		header.Set("Vary", h.pageVaryV1)
-	} else {
+	if len(h.pageVary) > 0 {
 		header.Set("Vary", h.pageVary)
 	}
 

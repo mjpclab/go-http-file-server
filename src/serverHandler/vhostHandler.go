@@ -60,18 +60,15 @@ func NewVhostHandler(
 	restrictAccess := hasRestrictAccess(p.GlobalRestrictAccess, restrictAccessUrls, restrictAccessDirs)
 
 	// `Vary` header
-	pageVarys := make([]string, 0, 4)
-	contentVarys := make([]string, 0, 3)
-	pageVarys = append(pageVarys, "Accept-Encoding")
+	pageVarys := make([]string, 0, 3)
+	contentVarys := make([]string, 0, 2)
+	pageVarys = append(pageVarys, "accept-encoding")
 	if restrictAccess {
-		pageVarys = append(pageVarys, "Referer", "Origin")
-		contentVarys = append(contentVarys, "Referer", "Origin")
+		pageVarys = append(pageVarys, "referer", "origin")
+		contentVarys = append(contentVarys, "referer", "origin")
 	}
-
-	pageVaryV1 := strings.Join(pageVarys, ", ")
-	contentVaryV1 := strings.Join(contentVarys, ", ")
-	pageVary := strings.ToLower(pageVaryV1)
-	contentVary := strings.ToLower(contentVaryV1)
+	pageVary := strings.Join(pageVarys, ", ")
+	contentVary := strings.Join(contentVarys, ", ")
 
 	// alias param
 	ap := &aliasParam{
@@ -93,10 +90,8 @@ func NewVhostHandler(
 		headersUrls: newPathHeaders(p.HeadersUrls),
 		headersDirs: newPathHeaders(p.HeadersDirs),
 
-		pageVaryV1:    pageVaryV1,
-		pageVary:      pageVary,
-		contentVaryV1: contentVaryV1,
-		contentVary:   contentVary,
+		pageVary:    pageVary,
+		contentVary: contentVary,
 	}
 
 	muxHandler := newMultiplexHandler(p, ap)
