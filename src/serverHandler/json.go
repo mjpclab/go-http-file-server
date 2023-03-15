@@ -78,7 +78,9 @@ func getJsonData(data *responseData) *jsonResponseData {
 func (h *aliasHandler) json(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
 	header.Set("Content-Type", "application/json; charset=utf-8")
-	header.Set("Cache-Control", "public, max-age=0")
+	if lacksHeader(header, "Cache-Control") {
+		header.Set("Cache-Control", "public, max-age=0")
+	}
 
 	if !NeedResponseBody(r.Method) {
 		w.WriteHeader(data.Status)

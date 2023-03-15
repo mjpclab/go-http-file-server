@@ -66,7 +66,7 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *respon
 	header := w.Header()
 	header.Set("X-Content-Type-Options", "nosniff")
 	header.Set("Content-Type", "text/html; charset=utf-8")
-	if len(header.Values("Cache-Control")) == 0 {
+	if lacksHeader(header, "Cache-Control") {
 		header.Set("Cache-Control", "public, max-age=0")
 	}
 

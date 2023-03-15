@@ -45,6 +45,10 @@ func NeedResponseBody(method string) bool {
 		method != http.MethodTrace
 }
 
+func lacksHeader(header http.Header, key string) bool {
+	return len(header.Values(key)) == 0
+}
+
 func getCleanFilePath(requestPath string) (filePath string, ok bool) {
 	filePath = path.Clean(requestPath)
 	ok = filePath == path.Base(filePath)

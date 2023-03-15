@@ -38,7 +38,7 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *res
 	}
 
 	header.Set("Accept-Ranges", "bytes")
-	if len(header.Values("Content-Type")) == 0 {
+	if lacksHeader(header, "Content-Type") {
 		ctype, err := util.GetContentType(item.Name(), file)
 		if err == nil {
 			header.Set("Content-Type", ctype)
