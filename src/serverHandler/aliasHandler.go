@@ -40,8 +40,7 @@ type aliasParam struct {
 	headersUrls []pathHeaders
 	headersDirs []pathHeaders
 
-	pageVary    string
-	contentVary string
+	vary string
 }
 
 type aliasHandler struct {
@@ -102,8 +101,7 @@ type aliasHandler struct {
 	corsUrls   []string
 	corsDirs   []string
 
-	pageVary    string
-	contentVary string
+	vary string
 
 	postMiddlewares []middleware.Middleware
 
@@ -280,8 +278,7 @@ func newAliasHandler(
 
 		fileServer: fileServer,
 
-		pageVary:    ap.pageVary,
-		contentVary: ap.contentVary,
+		vary: ap.vary,
 
 		postMiddlewares: p.PostMiddlewares,
 	}
