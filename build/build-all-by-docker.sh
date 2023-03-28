@@ -42,5 +42,5 @@ buildByDocker() {
 gover=1.2
 builds=()
 builds+=('windows 386 -2000')
-#builds+=("${builds[@]}" 'freebsd 386 -8' 'freebsd amd64 -8')
+#builds+=("${builds[@]}" 'freebsd 386 -8.x' 'freebsd amd64 -8.x')
 buildByDocker "$gover" "${builds[@]}"
