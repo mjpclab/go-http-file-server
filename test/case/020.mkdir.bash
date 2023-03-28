@@ -11,7 +11,7 @@ sleep 0.05 # wait server ready
 cleanup
 
 file1="$fs"/uploaded/1/foo.tmp
-curl_head_status 'http://127.0.0.1:3003/1/?mkdir&name=foo.tmp' > /dev/null
+curl_post_status -d 'name=foo.tmp' 'http://127.0.0.1:3003/1/?mkdir' > /dev/null
 [ -d "$file1" ] || fail "$file1 should exists as directory"
 
 cleanup

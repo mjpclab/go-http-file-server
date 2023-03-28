@@ -49,6 +49,10 @@ curl_get_body() {
 	curl -s -k $opts "$url"
 }
 
+curl_post_status() {
+	curl_get_status -X POST "$@"
+}
+
 curl_upload_content() {
 	url="$1"
 	name="$2"
