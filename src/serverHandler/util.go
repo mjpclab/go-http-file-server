@@ -30,6 +30,14 @@ func wildcardToRegexp(wildcards []string) (*regexp.Regexp, error) {
 	return regexp.Compile(exp)
 }
 
+func getRedirectCode(r *http.Request) int {
+	if r.Method == http.MethodPost {
+		return http.StatusTemporaryRedirect
+	} else {
+		return http.StatusMovedPermanently
+	}
+}
+
 func NeedResponseBody(method string) bool {
 	return method != http.MethodHead &&
 		method != http.MethodOptions &&

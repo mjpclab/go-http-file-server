@@ -20,7 +20,7 @@ func (h *aliasHandler) tryHsts(w http.ResponseWriter, r *http.Request) (needRedi
 	}
 
 	location := "https://" + r.Host + r.RequestURI
-	http.Redirect(w, r, location, http.StatusMovedPermanently)
+	http.Redirect(w, r, location, getRedirectCode(r))
 	return true
 }
 
@@ -37,6 +37,6 @@ func (h *aliasHandler) tryToHttps(w http.ResponseWriter, r *http.Request) (needR
 	}
 
 	location := "https://" + hostname + targetPort + r.RequestURI
-	http.Redirect(w, r, location, http.StatusMovedPermanently)
+	http.Redirect(w, r, location, getRedirectCode(r))
 	return true
 }
