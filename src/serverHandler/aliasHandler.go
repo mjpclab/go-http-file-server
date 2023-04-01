@@ -8,6 +8,7 @@ import (
 	"mjpclab.dev/ghfs/src/user"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -39,19 +40,17 @@ type aliasParam struct {
 	headersUrls []pathHeaders
 	headersDirs []pathHeaders
 
-	pageVaryV1    string
-	pageVary      string
-	contentVaryV1 string
-	contentVary   string
+	vary string
 }
 
 type aliasHandler struct {
 	root          string
 	emptyRoot     bool
 	forceDirSlash int
-	globalHsts    bool
-	globalHttps   bool
-	httpsPort     string // with prefix ":"
+	hsts          bool
+	hstsMaxAge    string
+	toHttps       bool
+	toHttpsPort   string // with prefix ":"
 	defaultSort   string
 	aliasPrefix   string
 
@@ -102,10 +101,7 @@ type aliasHandler struct {
 	corsUrls   []string
 	corsDirs   []string
 
-	pageVaryV1    string
-	pageVary      string
-	contentVaryV1 string
-	contentVary   string
+	vary string
 
 	postMiddlewares []middleware.Middleware
 
@@ -114,12 +110,12 @@ type aliasHandler struct {
 
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// hsts redirect
-	if h.globalHsts && h.hsts(w, r) {
+	if h.hsts && h.tryHsts(w, r) {
 		return
 	}
 
 	// https redirect
-	if h.globalHttps && h.https(w, r) {
+	if h.toHttps && h.tryToHttps(w, r) {
 		return
 	}
 
@@ -226,9 +222,10 @@ func newAliasHandler(
 		root:          currentAlias.fs,
 		emptyRoot:     emptyRoot,
 		forceDirSlash: p.ForceDirSlash,
-		globalHsts:    p.GlobalHsts,
-		globalHttps:   p.GlobalHttps,
-		httpsPort:     p.HttpsPort,
+		hsts:          p.Hsts,
+		hstsMaxAge:    strconv.Itoa(p.HstsMaxAge),
+		toHttps:       p.ToHttps,
+		toHttpsPort:   p.ToHttpsPort,
 		defaultSort:   p.DefaultSort,
 		aliasPrefix:   currentAlias.url,
 
@@ -281,10 +278,7 @@ func newAliasHandler(
 
 		fileServer: fileServer,
 
-		pageVaryV1:    ap.pageVaryV1,
-		pageVary:      ap.pageVary,
-		contentVaryV1: ap.contentVaryV1,
-		contentVary:   ap.contentVary,
+		vary: ap.vary,
 
 		postMiddlewares: p.PostMiddlewares,
 	}

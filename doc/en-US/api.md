@@ -103,9 +103,6 @@ curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file
 # Create directories in specific path
 Only work when "mkdir" is enabled.
 ```
-GET <path>?mkdir[&json]&name=<dir1path>&name=<dir2path>&...name=<dirNpath>
-```
-```
 POST <path>?mkdir[&json]
 
 name=<dir1path>&name=<dir2path>&...name=<dirNpath>
@@ -147,9 +144,6 @@ curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' 'http://
 # Delete files or directories in specific path
 Only work when "delete" is enabled.
 Directories will be deleted recursively.
-```
-GET <path>?delete[&json]&name=<dir1>&name=<dir2>&...name=<dirN>
-```
 ```
 POST <path>?delete[&json]
 

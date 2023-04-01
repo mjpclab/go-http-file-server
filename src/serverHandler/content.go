@@ -15,16 +15,8 @@ var serveContent = func(h *aliasHandler, w http.ResponseWriter, r *http.Request,
 
 func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
+	header.Set("Vary", h.vary)
 	header.Set("X-Content-Type-Options", "nosniff")
-	if r.ProtoMajor <= 1 {
-		if len(h.contentVaryV1) > 0 {
-			header.Set("Vary", h.contentVaryV1)
-		}
-	} else {
-		if len(h.contentVary) > 0 {
-			header.Set("Vary", h.contentVary)
-		}
-	}
 	if data.IsDownload {
 		header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+url.PathEscape(data.ItemName))
 	}
@@ -38,7 +30,7 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *res
 	}
 
 	header.Set("Accept-Ranges", "bytes")
-	if len(header.Get("Content-Type")) == 0 {
+	if lacksHeader(header, "Content-Type") {
 		ctype, err := util.GetContentType(item.Name(), file)
 		if err == nil {
 			header.Set("Content-Type", ctype)

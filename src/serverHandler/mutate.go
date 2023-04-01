@@ -6,11 +6,16 @@ import (
 )
 
 func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	success := false
 
 	switch {
 	case data.IsUpload:
-		if data.CanUpload && r.Method == http.MethodPost {
+		if data.CanUpload {
 			success = h.saveUploadFiles(data.AuthUserName, h.root+data.handlerReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
 		}
 	case data.IsMkdir:

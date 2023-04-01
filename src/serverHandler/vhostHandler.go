@@ -7,7 +7,6 @@ import (
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
 	"net/http"
-	"strings"
 )
 
 func NewVhostHandler(
@@ -60,22 +59,10 @@ func NewVhostHandler(
 	restrictAccess := hasRestrictAccess(p.GlobalRestrictAccess, restrictAccessUrls, restrictAccessDirs)
 
 	// `Vary` header
-	pageVarys := make([]string, 0, 4)
-	contentVarys := make([]string, 0, 3)
-	pageVarys = append(pageVarys, "Accept-Encoding")
+	vary := "accept-encoding"
 	if restrictAccess {
-		pageVarys = append(pageVarys, "Referer", "Origin")
-		contentVarys = append(contentVarys, "Referer", "Origin")
+		vary += ", referer, origin"
 	}
-	if p.GlobalAuth || len(p.AuthUrls) > 0 || len(p.AuthDirs) > 0 {
-		pageVarys = append(pageVarys, "Authorization")
-		contentVarys = append(contentVarys, "Authorization")
-	}
-
-	pageVaryV1 := strings.Join(pageVarys, ", ")
-	contentVaryV1 := strings.Join(contentVarys, ", ")
-	pageVary := strings.ToLower(pageVaryV1)
-	contentVary := strings.ToLower(contentVaryV1)
 
 	// alias param
 	ap := &aliasParam{
@@ -97,10 +84,7 @@ func NewVhostHandler(
 		headersUrls: newPathHeaders(p.HeadersUrls),
 		headersDirs: newPathHeaders(p.HeadersDirs),
 
-		pageVaryV1:    pageVaryV1,
-		pageVary:      pageVary,
-		contentVaryV1: contentVaryV1,
-		contentVary:   contentVary,
+		vary: vary,
 	}
 
 	muxHandler := newMultiplexHandler(p, ap)

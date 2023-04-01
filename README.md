@@ -269,7 +269,7 @@ ghfs [options]
         Page template filename is always "index.html".
         Use "?asset=<asset-path>" to reference an asset in theme.
 
---hsts
+--hsts [<max-age>]
     Enable HSTS(HTTP Strict Transport Security).
     Only available if current virtual host listens both plain HTTP and TLS on standard ports.
 --to-https [<target-port>]

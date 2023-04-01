@@ -30,11 +30,23 @@ func wildcardToRegexp(wildcards []string) (*regexp.Regexp, error) {
 	return regexp.Compile(exp)
 }
 
+func getRedirectCode(r *http.Request) int {
+	if r.Method == http.MethodPost {
+		return http.StatusTemporaryRedirect
+	} else {
+		return http.StatusMovedPermanently
+	}
+}
+
 func NeedResponseBody(method string) bool {
 	return method != http.MethodHead &&
 		method != http.MethodOptions &&
 		method != http.MethodConnect &&
 		method != http.MethodTrace
+}
+
+func lacksHeader(header http.Header, key string) bool {
+	return len(header.Get(key)) == 0
 }
 
 func getCleanFilePath(requestPath string) (filePath string, ok bool) {
