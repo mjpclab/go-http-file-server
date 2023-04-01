@@ -25,8 +25,8 @@
 - Go 1.15支持OSX 10.12 Sierra及后续版本
 - Go 1.16是最后支持OSX 10.12 Sierra的版本
 - Go 1.17支持OSX 10.13 High Sierra及后续版本
-- Go 1.20是最后支持OSX 10.13 High Sierra的版本
-- Go 1.21支持OSX 10.14 Mojave及后续版本
+- Go 1.20是最后支持OSX 10.13 High Sierra和10.14 Mojave的版本
+- Go 1.21支持OSX 10.15 Catalina及后续版本
 
 ## Windows平台
 - Go 1.10是最后支持Windows XP的版本

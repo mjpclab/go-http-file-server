@@ -100,9 +100,6 @@ curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file
 # 在指定路径下创建目录
 仅在“mkdir”选项启用时有效。
 ```
-GET <path>?mkdir[&json]&name=<dir1path>&name=<dir2path>&...name=<dirNpath>
-```
-```
 POST <path>?mkdir[&json]
 
 name=<dir1path>&name=<dir2path>&...name=<dirNpath>
@@ -144,9 +141,6 @@ curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' 'http://
 # 在指定路径下删除文件或目录
 仅在“delete”选项启用时有效。
 目录将被递归删除。
-```
-GET <path>?delete[&json]&name=<dir1>&name=<dir2>&...name=<dirN>
-```
 ```
 POST <path>?delete[&json]
 

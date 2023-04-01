@@ -1252,13 +1252,13 @@
 				}
 				params += els[i].name + '=' + encodeURIComponent(els[i].value)
 			}
-			var url = form.action + '?' + params;
+			var url = form.action;
 
 			var xhr = new XMLHttpRequest();
 			xhr.open('POST', url);	// will retrieve deleted result into bfcache
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			xhr.addEventListener('load', onLoad);
-			xhr.send();
+			xhr.send(params);
 			e.preventDefault();
 			return false;
 		}, false);

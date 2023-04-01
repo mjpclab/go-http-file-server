@@ -127,6 +127,10 @@ func (s *OptionSet) Add(opt Option) error {
 		}
 	}
 
+	if !opt.AcceptValue && len(opt.DefaultValues) > 0 {
+		opt.DefaultValues = nil
+	}
+
 	option := &opt
 
 	// append
@@ -151,21 +155,24 @@ func (s *OptionSet) Add(opt Option) error {
 	}
 
 	// redundant - env maps
-	if len(option.EnvVars) > 0 {
-		for _, envVar := range option.EnvVars {
-			if len(envVar) == 0 {
-				continue
-			}
-			envValue, hasEnv := shimgo.Os_LookupEnv(envVar)
-			if !hasEnv {
-				continue
-			}
 
+	for _, envVar := range option.EnvVars {
+		if len(envVar) == 0 {
+			continue
+		}
+		envValue, hasEnv := shimgo.Os_LookupEnv(envVar)
+		if !hasEnv {
+			continue
+		}
+
+		if len(envValue) > 0 {
 			if option.MultiValues {
 				s.keyEnvMap[option.Key] = option.splitValues(envValue)
 			} else {
 				s.keyEnvMap[option.Key] = []string{envValue}
 			}
+		} else {
+			s.keyEnvMap[option.Key] = []string{}
 		}
 	}
 

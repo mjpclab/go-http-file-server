@@ -64,16 +64,11 @@ func updateTranslation(r *http.Request, data *responseData) {
 
 func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
+	header.Set("Vary", h.vary)
 	header.Set("X-Content-Type-Options", "nosniff")
 	header.Set("Content-Type", "text/html; charset=utf-8")
-	if len(header.Get("Cache-Control")) == 0 {
+	if lacksHeader(header, "Cache-Control") {
 		header.Set("Cache-Control", "public, max-age=0")
-	}
-
-	if r.ProtoMajor <= 1 {
-		header.Set("Vary", h.pageVaryV1)
-	} else {
-		header.Set("Vary", h.pageVary)
 	}
 
 	updateTranslation(r, data)

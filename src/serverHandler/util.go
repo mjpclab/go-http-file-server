@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"mjpclab.dev/ghfs/src/shimgo"
 	"mjpclab.dev/ghfs/src/util"
+	"net/http"
 	"os"
 	"path"
 	"regexp"
@@ -30,11 +31,23 @@ func wildcardToRegexp(wildcards []string) (*regexp.Regexp, error) {
 	return regexp.Compile(exp)
 }
 
+func getRedirectCode(r *http.Request) int {
+	if r.Method == shimgo.Net_Http_MethodPost {
+		return http.StatusTemporaryRedirect
+	} else {
+		return http.StatusMovedPermanently
+	}
+}
+
 func NeedResponseBody(method string) bool {
 	return method != shimgo.Net_Http_MethodHead &&
 		method != shimgo.Net_Http_MethodOptions &&
 		method != shimgo.Net_Http_MethodConnect &&
 		method != shimgo.Net_Http_MethodTrace
+}
+
+func lacksHeader(header http.Header, key string) bool {
+	return len(header.Get(key)) == 0
 }
 
 func getCleanFilePath(requestPath string) (filePath string, ok bool) {
