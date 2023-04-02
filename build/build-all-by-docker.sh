@@ -26,6 +26,7 @@ buildByDocker() {
         sed -i -e "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apt/sources.list;
         apt-get update;
         apt-get install -yq git zip;
+        dpkg -i '"$ghfs"'/build/pkg/*.deb
       elif [ -e /etc/apk/repositories ]; then
         sed -i "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apk/repositories
         apk add bash git zip
