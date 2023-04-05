@@ -6,16 +6,8 @@ import (
 )
 
 func (h *aliasHandler) tryHsts(w http.ResponseWriter, r *http.Request) (needRedirect bool) {
-	_, port := util.ExtractHostnamePort(r.Host)
-
-	if len(port) > 0 {
-		return
-	}
-
-	header := w.Header()
-	header.Set("Strict-Transport-Security", "max-age="+h.hstsMaxAge)
-
 	if r.TLS != nil {
+		w.Header().Set("Strict-Transport-Security", "max-age="+h.hstsMaxAge)
 		return
 	}
 
