@@ -42,7 +42,7 @@ gover=latest
 buildByDocker "$gover" "${builds[@]}"
 
 gover=alpine
-builds=('linux amd64 -musl' 'linux amd64,v2 -musl' 'linux amd64,v3 -musl' 'linux arm64 -musl')
+builds=('linux 386 -musl' 'linux amd64 -musl' 'linux amd64,v2 -musl' 'linux amd64,v3 -musl' 'linux arm64 -musl')
 buildByDocker "$gover" "${builds[@]}"
 
 gover=1.20
