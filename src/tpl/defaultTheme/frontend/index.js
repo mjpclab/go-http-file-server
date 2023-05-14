@@ -394,8 +394,8 @@
 					// key changed, no more prefix match
 					lookupKey = '';
 				}
+				lookupBuffer += key;
 			}
-			lookupBuffer += key;
 			delayClearLookupContext();
 			return getMatchedFocusableSibling(itemList, false, currentLookupStartA, lookupKey || lookupBuffer);
 		}
