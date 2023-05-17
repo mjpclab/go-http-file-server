@@ -93,7 +93,7 @@ func hasPrefixDirNoCase(absPath, prefix string, separator byte) bool {
 	return false
 }
 
-func NormalizeUrlPath(input string) (string, error) { // keep same func signature as `NormalizeFsPath`
+func NormalizeUrlPath(input string) (string, error) {
 	result := CleanUrlPath(input)
 	return result, nil
 }
