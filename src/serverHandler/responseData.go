@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -301,7 +302,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
 
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.aliasPrefix):])
-	reqFsPath, _ := util.NormalizeFsPath(h.root + reqPath)
+	reqFsPath := filepath.Clean(h.root + reqPath)
 
 	status := http.StatusOK
 

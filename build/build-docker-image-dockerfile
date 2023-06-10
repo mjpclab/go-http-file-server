@@ -1,13 +1,10 @@
 FROM golang:alpine AS builder
-COPY *.go /go/src/mjpclab.dev/ghfs/
-COPY .git/ /go/src/mjpclab.dev/ghfs/.git/
-COPY go.mod /go/src/mjpclab.dev/ghfs/go.mod
-COPY src/ /go/src/mjpclab.dev/ghfs/src/
-COPY build/ /go/src/mjpclab.dev/ghfs/build/
-RUN sed -i 's;://[^/ ]*;://mirrors.aliyun.com;' /etc/apk/repositories
-RUN apk add bash
-RUN ["/bin/bash", "-c", "cd /go/src/mjpclab.dev/ghfs/build/; source ./build.inc.sh; go build -ldflags \"$(getLdFlags)\" -o /tmp/ghfs /go/src/mjpclab.dev/ghfs/main.go"]
-RUN mkdir -p /output/usr/local/bin/; cp /tmp/ghfs /output/usr/local/bin/;
+COPY . /go/src/mjpclab.dev/ghfs/
+RUN \
+	sed -i 's;://[^/ ]*;://mirrors.aliyun.com;' /etc/apk/repositories; \
+	apk add bash; \
+	mkdir -p /output/usr/local/bin/;
+RUN ["/bin/bash", "-c", "cd /go/src/mjpclab.dev/ghfs/build/; source ./build.inc.sh; go build -ldflags \"$(getLdFlags)\" -o /output/usr/local/bin/ghfs ../main.go"]
 COPY conf/docker-image/ /output/
 
 FROM alpine
@@ -17,7 +14,7 @@ EXPOSE 8080 8443
 USER nobody
 CMD [ \
 	"/usr/local/bin/ghfs", \
-	"--listen-plain", "8080", "-r", "/var/ghfs/", \
-	",,", \
-	"--listen-tls", "8443", "-c", "/etc/server.crt", "-k", "/etc/server.key", "-r", "/var/ghfs/" \
+	"-r", "/var/ghfs/", \
+	"--listen-plain", "8080", \
+	"--listen-tls", "8443", "-c", "/etc/server.crt", "-k", "/etc/server.key" \
 ]
