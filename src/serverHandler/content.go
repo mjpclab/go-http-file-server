@@ -4,14 +4,9 @@ import (
 	"mjpclab.dev/ghfs/src/shimgo"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 )
-
-var serveContent = func(h *aliasHandler, w http.ResponseWriter, r *http.Request, info os.FileInfo, file *os.File) {
-	http.ServeContent(w, r, info.Name(), info.ModTime(), file)
-}
 
 func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
 	header := w.Header()
@@ -25,7 +20,7 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *res
 	file := data.File
 
 	if NeedResponseBody(r.Method) {
-		serveContent(h, w, r, item, file)
+		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
 		return
 	}
 

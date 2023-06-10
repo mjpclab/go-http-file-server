@@ -6,6 +6,7 @@ import (
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/util"
 	"os"
+	"path/filepath"
 )
 
 type Param struct {
@@ -97,7 +98,7 @@ func (param *Param) normalize() (errs []error) {
 	var err error
 
 	// root
-	param.Root, err = util.NormalizeFsPath(param.Root)
+	param.Root, err = filepath.Abs(param.Root)
 	errs = serverError.AppendError(errs, err)
 
 	// alias
@@ -145,7 +146,7 @@ func (param *Param) normalize() (errs []error) {
 		errs = append(errs, es...)
 	}
 
-	param.RestrictAccessDirs, es = normalizeAllPathValues(param.RestrictAccessDirs, true, util.NormalizeFsPath, util.ExtractHostsFromUrls)
+	param.RestrictAccessDirs, es = normalizeAllPathValues(param.RestrictAccessDirs, true, filepath.Abs, util.ExtractHostsFromUrls)
 	if len(es) == 0 {
 		dedupAllPathValues(param.RestrictAccessDirs)
 	} else {
@@ -156,7 +157,7 @@ func (param *Param) normalize() (errs []error) {
 	param.HeadersUrls, es = normalizeAllPathValues(param.HeadersUrls, false, util.NormalizeUrlPath, normalizeHeaders)
 	errs = append(errs, es...)
 
-	param.HeadersDirs, es = normalizeAllPathValues(param.HeadersDirs, false, util.NormalizeFsPath, normalizeHeaders)
+	param.HeadersDirs, es = normalizeAllPathValues(param.HeadersDirs, false, filepath.Abs, normalizeHeaders)
 	errs = append(errs, es...)
 
 	// upload/mkdir/delete/archive/cors/auth urls/dirs

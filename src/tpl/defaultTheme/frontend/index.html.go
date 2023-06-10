@@ -123,7 +123,7 @@ const DefaultTplStr = `
 			<span class="field size">{{.DisplaySize}}</span>
 			<span class="field time">{{.DisplayTime}}</span>
 		</a>
-		{{if and (not $isDownload) .DeleteUrl}}<form class="delete" action="{{$SubItemPrefix}}" onsubmit="return confirmDelete(this)"><input type="hidden" name="delete"/><input type="hidden" name="name" value="{{.DeleteUrl}}"/><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/><button type="submit">x</button></form>{{end}}
+		{{if and (not $isDownload) .DeleteUrl}}<form class="delete" method="post" action="{{$SubItemPrefix}}?delete" onsubmit="return confirmDelete(this)"><input type="hidden" name="name" value="{{.DeleteUrl}}"/><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/><button type="submit">x</button></form>{{end}}
 	</li>
 	{{end}}
 </ul>

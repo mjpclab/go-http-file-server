@@ -115,7 +115,7 @@ eachInput:
 			continue
 		}
 		urlPath = util.CleanUrlPath(urlPath)
-		fsPath, err := util.NormalizeFsPath(fsPath)
+		fsPath, err := filepath.Abs(fsPath)
 		if err != nil {
 			errs = append(errs, err)
 			continue

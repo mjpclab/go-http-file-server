@@ -2,6 +2,7 @@ package param
 
 import (
 	"mjpclab.dev/ghfs/src/util"
+	"path/filepath"
 	"strings"
 	"unicode/utf8"
 )
@@ -119,7 +120,7 @@ func NormalizeFsPaths(inputs []string) []string {
 			continue
 		}
 
-		abs, err := util.NormalizeFsPath(input)
+		abs, err := filepath.Abs(input)
 		if err != nil {
 			continue
 		}

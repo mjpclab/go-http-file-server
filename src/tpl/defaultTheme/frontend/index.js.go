@@ -246,7 +246,7 @@ const DefaultJs = `
 			return;
 		}
 
-		function getFocusableSibling(container, isPrev, startA) {
+		function getFocusableSibling(container, isBackward, startA) {
 			if (!container) {
 				return
 			}
@@ -258,7 +258,7 @@ const DefaultJs = `
 				startLI = startLI.parentElement;
 			}
 			if (!startLI) {
-				if (isPrev) {
+				if (isBackward) {
 					startLI = container.firstElementChild;
 				} else {
 					startLI = container.lastElementChild;
@@ -270,7 +270,7 @@ const DefaultJs = `
 
 			var siblingLI = startLI;
 			do {
-				if (isPrev) {
+				if (isBackward) {
 					siblingLI = siblingLI.previousElementSibling;
 					if (!siblingLI) {
 						siblingLI = container.lastElementChild;
@@ -306,7 +306,7 @@ const DefaultJs = `
 			return a;
 		}
 
-		function getMatchedFocusableSibling(container, isPrev, startA, buf) {
+		function getMatchedFocusableSibling(container, isBackward, startA, buf) {
 			var skipRound = buf.length === 1;	// find next prefix
 			var matchKeyA;
 			var firstCheckA;
@@ -337,7 +337,7 @@ const DefaultJs = `
 				if (buf.length <= textContent.length && textContent.substring(0, buf.length) === buf) {
 					return a;
 				}
-			} while (a = getFocusableSibling(container, isPrev, a));
+			} while (a = getFocusableSibling(container, isBackward, a));
 			return matchKeyA;
 		}
 
@@ -379,7 +379,7 @@ const DefaultJs = `
 			lookupTimer = setTimeout(clearLookupContext, 850);
 		}
 
-		function lookup(key) {
+		function lookup(key, isBackward) {
 			key = key.toLowerCase();
 
 			var currentLookupStartA;
@@ -397,10 +397,10 @@ const DefaultJs = `
 					// key changed, no more prefix match
 					lookupKey = '';
 				}
+				lookupBuffer += key;
 			}
-			lookupBuffer += key;
 			delayClearLookupContext();
-			return getMatchedFocusableSibling(itemList, false, currentLookupStartA, lookupKey || lookupBuffer);
+			return getMatchedFocusableSibling(itemList, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
 		}
 
 		var canArrowMove;
@@ -460,7 +460,7 @@ const DefaultJs = `
 					}
 				}
 				if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
-					return lookup(e.key);
+					return lookup(e.key, e.shiftKey);
 				}
 			} else if (e.keyCode) {
 				if (canArrowMove(e)) {
@@ -492,7 +492,7 @@ const DefaultJs = `
 					}
 				}
 				if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.keyCode >= 32 && e.keyCode <= 126) {
-					return lookup(String.fromCharCode(e.keyCode));
+					return lookup(String.fromCharCode(e.keyCode), e.shiftKey);
 				}
 			}
 		}
@@ -1255,13 +1255,13 @@ const DefaultJs = `
 				}
 				params += els[i].name + '=' + encodeURIComponent(els[i].value)
 			}
-			var url = form.action + '?' + params;
+			var url = form.action;
 
 			var xhr = new XMLHttpRequest();
 			xhr.open('POST', url);	// will retrieve deleted result into bfcache
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			xhr.addEventListener('load', onLoad);
-			xhr.send();
+			xhr.send(params);
 			e.preventDefault();
 			return false;
 		}, false);
