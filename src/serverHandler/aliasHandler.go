@@ -14,6 +14,8 @@ import (
 
 var defaultHandler = http.NotFoundHandler()
 
+var createFileServer func(aliasUrl, aliasFs string) http.Handler
+
 type pathStrings struct {
 	path    string
 	strings []string
@@ -102,6 +104,8 @@ type aliasHandler struct {
 	vary string
 
 	postMiddlewares []middleware.Middleware
+
+	fileServer http.Handler
 }
 
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -209,6 +213,11 @@ func newAliasHandler(
 		}
 	}
 
+	var fileServer http.Handler
+	if !emptyRoot && createFileServer != nil { // for WSL 1 fix
+		fileServer = createFileServer(currentAlias.url, currentAlias.fs)
+	}
+
 	h := &aliasHandler{
 		root:          currentAlias.fs,
 		emptyRoot:     emptyRoot,
@@ -266,6 +275,8 @@ func newAliasHandler(
 		hides:     ap.hides,
 		hideDirs:  ap.hideDirs,
 		hideFiles: ap.hideFiles,
+
+		fileServer: fileServer,
 
 		vary: ap.vary,
 

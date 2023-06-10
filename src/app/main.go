@@ -10,6 +10,7 @@ import (
 	"mjpclab.dev/ghfs/src/setting"
 	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
 	"mjpclab.dev/ghfs/src/tpl/theme"
+	"mjpclab.dev/ghfs/src/util"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -46,6 +47,12 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 		if len(errs) > 0 {
 			return nil, errs
 		}
+	}
+
+	if serverHandler.TryEnableWSL1Fix() && !setting.Quiet {
+		ttyFile, teardownTtyFile := util.GetTTYFile()
+		ttyFile.WriteString("WSL 1 compat mode enabled\n")
+		teardownTtyFile()
 	}
 
 	vhSvc := goVirtualHost.NewService()
