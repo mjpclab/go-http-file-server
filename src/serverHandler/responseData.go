@@ -351,12 +351,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
 	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
-	var rootRelPath string
-	if len(pathEntries) > 0 {
-		rootRelPath = pathEntries[0].Path
-	} else {
-		rootRelPath = currDirRelPath
-	}
+	rootRelPath := pathEntries[0].Path
 
 	file, item, _statErr := stat(reqFsPath, authSuccess && !h.emptyRoot)
 	if _statErr != nil {
