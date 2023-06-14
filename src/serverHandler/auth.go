@@ -9,20 +9,23 @@ func (h *aliasHandler) needAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 
-func (h *aliasHandler) verifyAuth(r *http.Request) (username string, success bool, err error) {
-	var password string
-	var hasAuthReq bool
-	username, password, hasAuthReq = r.BasicAuth()
+func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool) (username string, success bool, err error) {
+	user, pass, hasAuthReq := r.BasicAuth()
+
+	if hasAuthReq && h.users.Auth(user, pass) {
+		return user, true, nil
+	}
+
+	if !needAuth {
+		return "", true, nil
+	}
 
 	if !hasAuthReq {
 		err = errors.New(r.RemoteAddr + " missing auth info")
-		return
-	}
-
-	success = h.users.Auth(username, password)
-	if !success {
+	} else {
 		err = errors.New(r.RemoteAddr + " auth failed")
 	}
+
 	return
 }
 

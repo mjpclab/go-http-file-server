@@ -53,6 +53,7 @@ type responseData struct {
 	HasDeletable bool
 	CanArchive   bool
 	CanCors      bool
+	LoginAvail   bool
 
 	errors []error
 	Status int
@@ -307,11 +308,8 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	status := http.StatusOK
 
 	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
-	authUserName := ""
-	authSuccess := true
+	authUserName, authSuccess, _authErr := h.verifyAuth(r, needAuth)
 	if needAuth {
-		var _authErr error
-		authUserName, authSuccess, _authErr = h.verifyAuth(r)
 		if _authErr != nil {
 			errs = append(errs, _authErr)
 		}
@@ -419,6 +417,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
 	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
 	canCors := h.getCanCors(rawReqPath, reqFsPath)
+	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
 	context := pathContext{
 		download:     isDownload,
@@ -455,6 +454,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		HasDeletable: hasDeletable,
 		CanArchive:   canArchive,
 		CanCors:      canCors,
+		LoginAvail:   loginAvail,
 
 		errors: errs,
 		Status: status,

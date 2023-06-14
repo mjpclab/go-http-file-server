@@ -1,6 +1,7 @@
 package i18n
 
 type Translation struct {
+	LoginLabel string
 	MkdirLabel string
 
 	UploadFilesLabel       string
@@ -38,6 +39,7 @@ type Translation struct {
 }
 
 var translationEnUs = Translation{
+	LoginLabel: "Login",
 	MkdirLabel: "Create dir",
 
 	UploadFilesLabel:       "Files",
@@ -75,6 +77,7 @@ var translationEnUs = Translation{
 }
 
 var translationZhSimp = Translation{
+	LoginLabel: "登录",
 	MkdirLabel: "建目录",
 
 	UploadFilesLabel:       "文件",
@@ -112,6 +115,7 @@ var translationZhSimp = Translation{
 }
 
 var translationZhTrad = Translation{
+	LoginLabel: "登入",
 	MkdirLabel: "建目錄",
 
 	UploadFilesLabel:       "檔案",

@@ -10,6 +10,10 @@ type List struct {
 	namesEqualFunc util.StrEqualFunc
 }
 
+func (list *List) Len() int {
+	return len(list.users)
+}
+
 func (list *List) findIndex(username string) int {
 	for i := range list.users {
 		if list.namesEqualFunc(list.users[i].getName(), username) {
