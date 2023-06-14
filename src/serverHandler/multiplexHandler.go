@@ -25,7 +25,7 @@ func (mux multiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func newMultiplexHandler(
 	p *param.Param,
-	ap *aliasParam,
+	vhostCtx *vhostContext,
 ) http.Handler {
 	if len(p.Aliases) == 0 {
 		return defaultHandler
@@ -36,7 +36,7 @@ func newMultiplexHandler(
 	if len(aliases) == 1 && len(p.PreMiddlewares) == 0 {
 		alias, hasRootAlias := aliases.byUrlPath("/")
 		if hasRootAlias {
-			return newAliasHandler(p, ap, alias, aliases)
+			return newAliasHandler(p, vhostCtx, alias, aliases)
 		}
 	}
 
@@ -44,7 +44,7 @@ func newMultiplexHandler(
 	for i, alias := range aliases {
 		aliasWithHandlers[i] = aliasWithHandler{
 			alias:   alias,
-			handler: newAliasHandler(p, ap, alias, aliases),
+			handler: newAliasHandler(p, vhostCtx, alias, aliases),
 		}
 	}
 

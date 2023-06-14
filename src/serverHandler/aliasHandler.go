@@ -19,28 +19,6 @@ type pathStrings struct {
 	strings []string
 }
 
-type aliasParam struct {
-	users  user.List
-	theme  theme.Theme
-	logger *serverLog.Logger
-
-	shows     *regexp.Regexp
-	showDirs  *regexp.Regexp
-	showFiles *regexp.Regexp
-	hides     *regexp.Regexp
-	hideDirs  *regexp.Regexp
-	hideFiles *regexp.Regexp
-
-	restrictAccess     bool
-	restrictAccessUrls []pathStrings
-	restrictAccessDirs []pathStrings
-
-	headersUrls []pathHeaders
-	headersDirs []pathHeaders
-
-	vary string
-}
-
 type aliasHandler struct {
 	root          string
 	emptyRoot     bool
@@ -196,7 +174,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func newAliasHandler(
 	p *param.Param,
-	ap *aliasParam,
+	vhostCtx *vhostContext,
 	currentAlias alias,
 	allAliases aliases,
 ) http.Handler {
@@ -220,9 +198,9 @@ func newAliasHandler(
 		defaultSort:   p.DefaultSort,
 		aliasPrefix:   currentAlias.url,
 
-		users:  ap.users,
-		theme:  ap.theme,
-		logger: ap.logger,
+		users:  vhostCtx.users,
+		theme:  vhostCtx.theme,
+		logger: vhostCtx.logger,
 
 		dirIndexes: p.DirIndexes,
 		aliases:    aliases,
@@ -231,14 +209,14 @@ func newAliasHandler(
 		authUrls:   p.AuthUrls,
 		authDirs:   p.AuthDirs,
 
-		restrictAccess:       ap.restrictAccess,
+		restrictAccess:       vhostCtx.restrictAccess,
 		globalRestrictAccess: p.GlobalRestrictAccess,
-		restrictAccessUrls:   ap.restrictAccessUrls,
-		restrictAccessDirs:   ap.restrictAccessDirs,
+		restrictAccessUrls:   vhostCtx.restrictAccessUrls,
+		restrictAccessDirs:   vhostCtx.restrictAccessDirs,
 
 		globalHeaders: p.GlobalHeaders,
-		headersUrls:   ap.headersUrls,
-		headersDirs:   ap.headersDirs,
+		headersUrls:   vhostCtx.headersUrls,
+		headersDirs:   vhostCtx.headersDirs,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
@@ -260,14 +238,14 @@ func newAliasHandler(
 		corsUrls:   p.CorsUrls,
 		corsDirs:   p.CorsDirs,
 
-		shows:     ap.shows,
-		showDirs:  ap.showDirs,
-		showFiles: ap.showFiles,
-		hides:     ap.hides,
-		hideDirs:  ap.hideDirs,
-		hideFiles: ap.hideFiles,
+		shows:     vhostCtx.shows,
+		showDirs:  vhostCtx.showDirs,
+		showFiles: vhostCtx.showFiles,
+		hides:     vhostCtx.hides,
+		hideDirs:  vhostCtx.hideDirs,
+		hideFiles: vhostCtx.hideFiles,
 
-		vary: ap.vary,
+		vary: vhostCtx.vary,
 
 		postMiddlewares: p.PostMiddlewares,
 	}
