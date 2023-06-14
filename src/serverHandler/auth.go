@@ -13,15 +13,16 @@ func (h *aliasHandler) verifyAuth(r *http.Request) (username string, success boo
 	var password string
 	var hasAuthReq bool
 	username, password, hasAuthReq = r.BasicAuth()
-	if hasAuthReq {
-		success = h.users.Auth(username, password)
-		if !success {
-			err = errors.New(r.RemoteAddr + " auth failed")
-		}
-	} else {
+
+	if !hasAuthReq {
 		err = errors.New(r.RemoteAddr + " missing auth info")
+		return
 	}
 
+	success = h.users.Auth(username, password)
+	if !success {
+		err = errors.New(r.RemoteAddr + " auth failed")
+	}
 	return
 }
 
