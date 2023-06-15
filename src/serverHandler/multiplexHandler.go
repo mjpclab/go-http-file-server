@@ -33,7 +33,7 @@ func newMultiplexHandler(
 
 	aliases := newAliases(p.Aliases)
 
-	if len(aliases) == 1 && len(p.PreMiddlewares) == 0 {
+	if len(aliases) == 1 {
 		alias, hasRootAlias := aliases.byUrlPath("/")
 		if hasRootAlias {
 			return newAliasHandler(p, vhostCtx, alias, aliases)
