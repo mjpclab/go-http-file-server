@@ -110,13 +110,19 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if data.NeedAuth {
-		h.needAuth(w, r)
-	}
-	if !data.AuthSuccess {
-		if !h.postMiddleware(w, r, data, fsPath) {
-			h.authFailed(w, data.Status)
+		h.notifyAuth(w, r)
+
+		if !data.AuthSuccess {
+			if !h.postMiddleware(w, r, data, fsPath) {
+				h.authFailed(w, data.Status)
+			}
+			return
 		}
-		return
+
+		if data.forceAuth {
+			h.redirectWithoutForceAuth(w, r, data)
+			return
+		}
 	}
 
 	if !data.AllowAccess {

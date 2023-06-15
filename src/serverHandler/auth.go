@@ -3,9 +3,24 @@ package serverHandler
 import (
 	"errors"
 	"net/http"
+	"strings"
 )
 
-func (h *aliasHandler) needAuth(w http.ResponseWriter, r *http.Request) {
+const authQueryParam = "auth"
+
+func (h *aliasHandler) needAuth(rawQuery, rawReqPath, reqFsPath string) (need, force bool) {
+	if strings.HasPrefix(rawQuery, authQueryParam) {
+		return true, true
+	}
+
+	if h.globalAuth {
+		return true, false
+	}
+
+	return hasUrlOrDirPrefix(h.authUrls, rawReqPath, h.authDirs, reqFsPath), false
+}
+
+func (h *aliasHandler) notifyAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 

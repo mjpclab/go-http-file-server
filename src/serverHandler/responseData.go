@@ -31,6 +31,7 @@ type responseData struct {
 	handlerReqPath string
 
 	NeedAuth     bool
+	forceAuth    bool
 	AuthUserName string
 	AuthSuccess  bool
 
@@ -305,9 +306,11 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.aliasPrefix):])
 	reqFsPath := filepath.Clean(h.root + reqPath)
 
+	rawQuery := r.URL.RawQuery
+
 	status := http.StatusOK
 
-	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
+	needAuth, forceAuth := h.needAuth(rawQuery, rawReqPath, reqFsPath)
 	authUserName, authSuccess, _authErr := h.verifyAuth(r, needAuth)
 	if needAuth {
 		if _authErr != nil {
@@ -320,7 +323,6 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	headers := h.getHeaders(rawReqPath, reqFsPath, authSuccess)
 
-	rawQuery := r.URL.RawQuery
 	isDownload := false
 	isDownloadFile := false
 	isUpload := false
@@ -432,6 +434,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		handlerReqPath: reqPath,
 
 		NeedAuth:     needAuth,
+		forceAuth:    forceAuth,
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
 
