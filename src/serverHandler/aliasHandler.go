@@ -109,6 +109,13 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 	}
 
+	if !data.AllowAccess {
+		if !h.postMiddleware(w, r, data, fsPath) {
+			h.accessRestricted(w, data.Status)
+		}
+		return
+	}
+
 	if data.NeedAuth {
 		h.notifyAuth(w, r)
 
@@ -123,13 +130,6 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.redirectWithoutForceAuth(w, r, data)
 			return
 		}
-	}
-
-	if !data.AllowAccess {
-		if !h.postMiddleware(w, r, data, fsPath) {
-			h.accessRestricted(w, data.Status)
-		}
-		return
 	}
 
 	if data.NeedDirSlashRedirect {
@@ -169,7 +169,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// final process
 	item := data.Item
-	if data.WantJson {
+	if data.wantJson {
 		h.json(w, r, data)
 	} else if shouldServeAsContent(file, item) {
 		h.content(w, r, data)

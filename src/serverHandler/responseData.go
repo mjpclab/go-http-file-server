@@ -29,6 +29,7 @@ type responseData struct {
 	prefixReqPath  string
 	rawReqPath     string
 	handlerReqPath string
+	wantJson       bool
 
 	NeedAuth     bool
 	forceAuth    bool
@@ -46,7 +47,6 @@ type responseData struct {
 	IsMkdir        bool
 	IsDelete       bool
 	IsMutate       bool
-	WantJson       bool
 
 	CanUpload    bool
 	CanMkdir     bool
@@ -413,12 +413,12 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	subItemPrefix := getSubItemPrefix(currDirRelPath, rawReqPath, tailSlash)
 
-	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
-	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
-	canDelete := h.getCanDelete(item, rawReqPath, reqFsPath)
+	canUpload := authSuccess && h.getCanUpload(item, rawReqPath, reqFsPath)
+	canMkdir := authSuccess && h.getCanMkdir(item, rawReqPath, reqFsPath)
+	canDelete := authSuccess && h.getCanDelete(item, rawReqPath, reqFsPath)
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
-	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
-	canCors := h.getCanCors(rawReqPath, reqFsPath)
+	canArchive := authSuccess && h.getCanArchive(subItems, rawReqPath, reqFsPath)
+	canCors := authSuccess && h.getCanCors(rawReqPath, reqFsPath)
 	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
 	context := pathContext{
@@ -432,6 +432,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		prefixReqPath:  prefixReqPath,
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
+		wantJson:       wantJson,
 
 		NeedAuth:     needAuth,
 		forceAuth:    forceAuth,
@@ -449,7 +450,6 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		IsMkdir:        isMkdir,
 		IsDelete:       isDelete,
 		IsMutate:       isMutate,
-		WantJson:       wantJson,
 
 		CanUpload:    canUpload,
 		CanMkdir:     canMkdir,

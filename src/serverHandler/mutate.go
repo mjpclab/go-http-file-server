@@ -28,7 +28,7 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, data *resp
 		}
 	}
 
-	if data.WantJson {
+	if data.wantJson {
 		header := w.Header()
 		header.Set("Content-Type", "application/json; charset=utf-8")
 		header.Set("Cache-Control", "public, max-age=0")

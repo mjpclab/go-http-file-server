@@ -24,7 +24,7 @@ func (h *aliasHandler) postMiddleware(w http.ResponseWriter, r *http.Request, da
 		RestrictAccess: data.RestrictAccess,
 		AllowAccess:    data.AllowAccess,
 
-		WantJson: data.WantJson,
+		WantJson: data.wantJson,
 
 		Status: data.Status,
 
