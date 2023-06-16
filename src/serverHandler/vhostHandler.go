@@ -11,7 +11,7 @@ import (
 )
 
 type vhostContext struct {
-	users  user.List
+	users  *user.List
 	theme  theme.Theme
 	logger *serverLog.Logger
 
@@ -89,7 +89,7 @@ func NewVhostHandler(
 
 	// alias param
 	vhostCtx := &vhostContext{
-		users:  *users,
+		users:  users,
 		theme:  theme,
 		logger: logger,
 

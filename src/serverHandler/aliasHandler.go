@@ -30,7 +30,7 @@ type aliasHandler struct {
 	defaultSort   string
 	aliasPrefix   string
 
-	users  user.List
+	users  *user.List
 	theme  theme.Theme
 	logger *serverLog.Logger
 
@@ -79,6 +79,7 @@ type aliasHandler struct {
 
 	vary string
 
+	inMiddlewares   []middleware.Middleware
 	postMiddlewares []middleware.Middleware
 }
 
@@ -109,8 +110,12 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 	}
 
+	if h.applyMiddlewares(h.inMiddlewares, w, r, data, fsPath) {
+		return
+	}
+
 	if !data.AllowAccess {
-		if !h.postMiddleware(w, r, data, fsPath) {
+		if !h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
 			h.accessRestricted(w, data.Status)
 		}
 		return
@@ -158,7 +163,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if h.postMiddleware(w, r, data, fsPath) {
+	if h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
 		return
 	}
 
@@ -248,6 +253,7 @@ func newAliasHandler(
 
 		vary: vhostCtx.vary,
 
+		inMiddlewares:   p.InMiddlewares,
 		postMiddlewares: p.PostMiddlewares,
 	}
 	return h

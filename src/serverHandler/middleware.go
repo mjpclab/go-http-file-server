@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-func (h *aliasHandler) postMiddleware(w http.ResponseWriter, r *http.Request, data *responseData, fsPath string) (processed bool) {
-	if len(h.postMiddlewares) == 0 {
-		return false
+func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.ResponseWriter, r *http.Request, data *responseData, fsPath string) (processed bool) {
+	if len(mids) == 0 {
+		return
 	}
 
 	context := &middleware.Context{
@@ -17,25 +17,28 @@ func (h *aliasHandler) postMiddleware(w http.ResponseWriter, r *http.Request, da
 		AliasFsPath:   fsPath,
 		AliasFsRoot:   h.root,
 
-		NeedAuth:     data.NeedAuth,
-		AuthUserName: data.AuthUserName,
-		AuthSuccess:  data.AuthSuccess,
+		WantJson: data.wantJson,
 
 		RestrictAccess: data.RestrictAccess,
 		AllowAccess:    data.AllowAccess,
 
-		WantJson: data.wantJson,
+		NeedAuth:     data.NeedAuth,
+		AuthUserName: data.AuthUserName,
+		AuthSuccess:  data.AuthSuccess,
 
-		Status: data.Status,
+		CanUpload:  &data.CanUpload,
+		CanMkdir:   &data.CanMkdir,
+		CanDelete:  &data.CanDelete,
+		CanArchive: &data.CanArchive,
 
-		Item:     data.Item,
-		SubItems: data.SubItems,
+		Status: &data.Status,
 
+		Users:  h.users,
 		Logger: h.logger,
 	}
 
-	for i := range h.postMiddlewares {
-		result := h.postMiddlewares[i](w, r, context)
+	for i := range mids {
+		result := mids[i](w, r, context)
 		if result == middleware.Outputted {
 			return true
 		} else if result == middleware.SkipRests {

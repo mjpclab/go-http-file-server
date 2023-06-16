@@ -14,7 +14,7 @@ func (list *List) Len() int {
 	return len(list.users)
 }
 
-func (list *List) findIndex(username string) int {
+func (list *List) FindIndex(username string) int {
 	for i := range list.users {
 		if list.namesEqualFunc(list.users[i].getName(), username) {
 			return i
@@ -25,7 +25,7 @@ func (list *List) findIndex(username string) int {
 
 func (list *List) addUser(user user) error {
 	username := user.getName()
-	index := list.findIndex(username)
+	index := list.FindIndex(username)
 	if index < 0 {
 		list.users = append(list.users, user)
 		return nil
@@ -87,7 +87,7 @@ func (list *List) AddSha512(username, password string) error {
 }
 
 func (list *List) Auth(username, password string) bool {
-	index := list.findIndex(username)
+	index := list.FindIndex(username)
 	if index < 0 {
 		return false
 	}
