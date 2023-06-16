@@ -118,48 +118,43 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if data.NeedAuth {
 		h.notifyAuth(w, r)
+	}
 
-		if !data.AuthSuccess {
-			if !h.postMiddleware(w, r, data, fsPath) {
-				h.authFailed(w, data.Status)
-			}
-			return
-		}
-
+	if data.AuthSuccess {
 		if data.forceAuth {
 			h.redirectWithoutForceAuth(w, r, data)
 			return
 		}
-	}
 
-	if data.NeedDirSlashRedirect {
-		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
-		return
-	}
-
-	header(w, data.Headers)
-
-	if data.CanCors {
-		cors(w)
-	}
-
-	if data.IsMutate {
-		h.mutate(w, r, data)
-		return
-	}
-
-	// archive
-	if len(r.URL.RawQuery) >= 3 {
-		switch r.URL.RawQuery[:3] {
-		case "tar":
-			h.tar(w, r, data)
+		if data.NeedDirSlashRedirect {
+			h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
 			return
-		case "tgz":
-			h.tgz(w, r, data)
+		}
+
+		header(w, data.Headers)
+
+		if data.CanCors {
+			cors(w)
+		}
+
+		if data.IsMutate {
+			h.mutate(w, r, data)
 			return
-		case "zip":
-			h.zip(w, r, data)
-			return
+		}
+
+		// archive
+		if len(r.URL.RawQuery) >= 3 {
+			switch r.URL.RawQuery[:3] {
+			case "tar":
+				h.tar(w, r, data)
+				return
+			case "tgz":
+				h.tgz(w, r, data)
+				return
+			case "zip":
+				h.zip(w, r, data)
+				return
+			}
 		}
 	}
 

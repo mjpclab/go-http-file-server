@@ -43,8 +43,3 @@ func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool) (username stri
 
 	return
 }
-
-func (h *aliasHandler) authFailed(w http.ResponseWriter, status int) {
-	w.WriteHeader(status)
-	w.Write([]byte("Unauthorized"))
-}
