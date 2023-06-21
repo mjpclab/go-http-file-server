@@ -30,8 +30,10 @@ type responseData struct {
 	prefixReqPath  string
 	rawReqPath     string
 	handlerReqPath string
+	wantJson       bool
 
 	NeedAuth     bool
+	forceAuth    bool
 	AuthUserName string
 	AuthSuccess  bool
 
@@ -46,7 +48,6 @@ type responseData struct {
 	IsMkdir        bool
 	IsDelete       bool
 	IsMutate       bool
-	WantJson       bool
 
 	CanUpload    bool
 	CanMkdir     bool
@@ -54,6 +55,7 @@ type responseData struct {
 	HasDeletable bool
 	CanArchive   bool
 	CanCors      bool
+	LoginAvail   bool
 
 	errors []error
 	Status int
@@ -309,14 +311,13 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	reqPath := util.CleanUrlPath(rawReqPath[len(h.aliasPrefix):])
 	reqFsPath := filepath.Clean(h.root + reqPath)
 
+	rawQuery := r.URL.RawQuery
+
 	status := http.StatusOK
 
-	needAuth := h.getNeedAuth(rawReqPath, reqFsPath)
-	authUserName := ""
-	authSuccess := true
+	needAuth, forceAuth := h.needAuth(rawQuery, rawReqPath, reqFsPath)
+	authUserName, authSuccess, _authErr := h.verifyAuth(r, needAuth)
 	if needAuth {
-		var _authErr error
-		authUserName, authSuccess, _authErr = h.verifyAuth(r)
 		if _authErr != nil {
 			errs = append(errs, _authErr)
 		}
@@ -327,7 +328,6 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	headers := h.getHeaders(rawReqPath, reqFsPath, authSuccess)
 
-	rawQuery := r.URL.RawQuery
 	isDownload := false
 	isDownloadFile := false
 	isUpload := false
@@ -356,12 +356,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
 	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
-	var rootRelPath string
-	if len(pathEntries) > 0 {
-		rootRelPath = pathEntries[0].Path
-	} else {
-		rootRelPath = currDirRelPath
-	}
+	rootRelPath := pathEntries[0].Path
 
 	file, item, _statErr := stat(reqFsPath, authSuccess && !h.emptyRoot)
 	if _statErr != nil {
@@ -423,12 +418,13 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	subItemPrefix := getSubItemPrefix(currDirRelPath, rawReqPath, tailSlash)
 
-	canUpload := h.getCanUpload(item, rawReqPath, reqFsPath)
-	canMkdir := h.getCanMkdir(item, rawReqPath, reqFsPath)
-	canDelete := h.getCanDelete(item, rawReqPath, reqFsPath)
+	canUpload := authSuccess && h.getCanUpload(item, rawReqPath, reqFsPath)
+	canMkdir := authSuccess && h.getCanMkdir(item, rawReqPath, reqFsPath)
+	canDelete := authSuccess && h.getCanDelete(item, rawReqPath, reqFsPath)
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
-	canArchive := h.getCanArchive(subItems, rawReqPath, reqFsPath)
-	canCors := h.getCanCors(rawReqPath, reqFsPath)
+	canArchive := authSuccess && h.getCanArchive(subItems, rawReqPath, reqFsPath)
+	canCors := authSuccess && h.getCanCors(rawReqPath, reqFsPath)
+	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
 	context := pathContext{
 		download:     isDownload,
@@ -441,8 +437,10 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		prefixReqPath:  prefixReqPath,
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
+		wantJson:       wantJson,
 
 		NeedAuth:     needAuth,
+		forceAuth:    forceAuth,
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
 
@@ -457,7 +455,6 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		IsMkdir:        isMkdir,
 		IsDelete:       isDelete,
 		IsMutate:       isMutate,
-		WantJson:       wantJson,
 
 		CanUpload:    canUpload,
 		CanMkdir:     canMkdir,
@@ -465,6 +462,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		HasDeletable: hasDeletable,
 		CanArchive:   canArchive,
 		CanCors:      canCors,
+		LoginAvail:   loginAvail,
 
 		errors: errs,
 		Status: status,

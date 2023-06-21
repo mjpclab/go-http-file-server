@@ -128,7 +128,9 @@ const DefaultTplStr = `
 	{{end}}
 </ul>
 
-{{if eq .Status 403}}
+{{if eq .Status 401}}
+<div class="error">{{.Trans.Error401}}</div>
+{{else if eq .Status 403}}
 <div class="error">{{.Trans.Error403}}</div>
 {{else if eq .Status 404}}
 <div class="error">{{.Trans.Error404}}</div>

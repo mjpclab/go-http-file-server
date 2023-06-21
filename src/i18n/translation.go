@@ -1,6 +1,7 @@
 package i18n
 
 type Translation struct {
+	LoginLabel string
 	MkdirLabel string
 
 	UploadFilesLabel       string
@@ -32,12 +33,14 @@ type Translation struct {
 	DeleteLabel   string
 	DeleteConfirm string
 
+	Error401 string
 	Error403 string
 	Error404 string
 	Error500 string
 }
 
 var translationEnUs = Translation{
+	LoginLabel: "Login",
 	MkdirLabel: "Create dir",
 
 	UploadFilesLabel:       "Files",
@@ -69,12 +72,14 @@ var translationEnUs = Translation{
 	DeleteLabel:   "Delete",
 	DeleteConfirm: "Confirm delete?",
 
+	Error401: "401 unauthorized",
 	Error403: "403 resource is forbidden",
 	Error404: "404 resource not found",
 	Error500: "500 potential issue occurred",
 }
 
 var translationZhSimp = Translation{
+	LoginLabel: "登录",
 	MkdirLabel: "建目录",
 
 	UploadFilesLabel:       "文件",
@@ -106,12 +111,14 @@ var translationZhSimp = Translation{
 	DeleteLabel:   "删除",
 	DeleteConfirm: "确认删除吗？",
 
+	Error401: "401 未授权",
 	Error403: "403 禁止访问资源",
 	Error404: "404 资源不存在",
 	Error500: "500 发生潜在错误",
 }
 
 var translationZhTrad = Translation{
+	LoginLabel: "登入",
 	MkdirLabel: "建目錄",
 
 	UploadFilesLabel:       "檔案",
@@ -143,6 +150,7 @@ var translationZhTrad = Translation{
 	DeleteLabel:   "刪除",
 	DeleteConfirm: "確認刪除嗎？",
 
+	Error401: "401 未授權",
 	Error403: "403 禁止訪問資源",
 	Error404: "404 資源不存在",
 	Error500: "500 發生潛在錯誤",

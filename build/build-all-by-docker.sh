@@ -28,9 +28,13 @@ buildByDocker() {
         apt-get update;
         apt-get install -yq --force-yes git zip;
         dpkg -i '"$ghfs"'/build/pkg/*.deb
+      elif [ -e /etc/apt/sources.list.d/debian.sources ]; then
+        sed -i -e "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apt/sources.list.d/debian.sources;
+        apt-get update;
+        apt-get install -yq git zip;
       elif [ -e /etc/apk/repositories ]; then
-        sed -i "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apk/repositories
-        apk add bash git zip
+        sed -i "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apk/repositories;
+        apk add bash git zip;
       fi
       git config --global safe.directory "*"
       /bin/bash '"$ghfs"'/build/build.sh "$@";

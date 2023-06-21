@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"mjpclab.dev/ghfs/src/serverLog"
-	"os"
+	"mjpclab.dev/ghfs/src/user"
 )
 
 type Context struct {
@@ -12,19 +12,22 @@ type Context struct {
 	AliasFsPath   string
 	AliasFsRoot   string
 
-	NeedAuth     bool
-	AuthUserName string
-	AuthSuccess  bool
+	WantJson bool
 
 	RestrictAccess bool
 	AllowAccess    bool
 
-	WantJson bool
+	NeedAuth     bool
+	AuthUserName string
+	AuthSuccess  bool
 
-	Status int
+	CanUpload  *bool
+	CanMkdir   *bool
+	CanDelete  *bool
+	CanArchive *bool
 
-	Item     os.FileInfo
-	SubItems []os.FileInfo
+	Status *int
 
+	Users  *user.List
 	Logger *serverLog.Logger
 }

@@ -7,7 +7,30 @@ import (
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
 	"net/http"
+	"regexp"
 )
+
+type vhostContext struct {
+	users  *user.List
+	theme  theme.Theme
+	logger *serverLog.Logger
+
+	shows     *regexp.Regexp
+	showDirs  *regexp.Regexp
+	showFiles *regexp.Regexp
+	hides     *regexp.Regexp
+	hideDirs  *regexp.Regexp
+	hideFiles *regexp.Regexp
+
+	restrictAccess     bool
+	restrictAccessUrls []pathStrings
+	restrictAccessDirs []pathStrings
+
+	headersUrls []pathHeaders
+	headersDirs []pathHeaders
+
+	vary string
+}
 
 func NewVhostHandler(
 	p *param.Param,
@@ -65,8 +88,8 @@ func NewVhostHandler(
 	}
 
 	// alias param
-	ap := &aliasParam{
-		users:  *users,
+	vhostCtx := &vhostContext{
+		users:  users,
 		theme:  theme,
 		logger: logger,
 
@@ -87,9 +110,8 @@ func NewVhostHandler(
 		vary: vary,
 	}
 
-	muxHandler := newMultiplexHandler(p, ap)
-	preprocessHandler := newPreprocessHandler(logger, p.PreMiddlewares, muxHandler)
-	pathTransformHandler := newPathTransformHandler(p.PrefixUrls, preprocessHandler)
-
-	return pathTransformHandler, nil
+	handler = newMultiplexHandler(p, vhostCtx)
+	handler = newPreprocessHandler(logger, p.PreMiddlewares, handler)
+	handler = newPathTransformHandler(p.PrefixUrls, handler)
+	return
 }
