@@ -19,28 +19,6 @@ type pathStrings struct {
 	strings []string
 }
 
-type aliasParam struct {
-	users  user.List
-	theme  theme.Theme
-	logger *serverLog.Logger
-
-	shows     *regexp.Regexp
-	showDirs  *regexp.Regexp
-	showFiles *regexp.Regexp
-	hides     *regexp.Regexp
-	hideDirs  *regexp.Regexp
-	hideFiles *regexp.Regexp
-
-	restrictAccess     bool
-	restrictAccessUrls []pathStrings
-	restrictAccessDirs []pathStrings
-
-	headersUrls []pathHeaders
-	headersDirs []pathHeaders
-
-	vary string
-}
-
 type aliasHandler struct {
 	root          string
 	emptyRoot     bool
@@ -52,7 +30,7 @@ type aliasHandler struct {
 	defaultSort   string
 	aliasPrefix   string
 
-	users  user.List
+	users  *user.List
 	theme  theme.Theme
 	logger *serverLog.Logger
 
@@ -101,6 +79,7 @@ type aliasHandler struct {
 
 	vary string
 
+	inMiddlewares   []middleware.Middleware
 	postMiddlewares []middleware.Middleware
 }
 
@@ -131,61 +110,66 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 	}
 
-	if data.NeedAuth {
-		h.needAuth(w, r)
-	}
-	if !data.AuthSuccess {
-		if !h.postMiddleware(w, r, data, fsPath) {
-			h.authFailed(w, data.Status)
-		}
+	if h.applyMiddlewares(h.inMiddlewares, w, r, data, fsPath) {
 		return
 	}
 
 	if !data.AllowAccess {
-		if !h.postMiddleware(w, r, data, fsPath) {
+		if !h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
 			h.accessRestricted(w, data.Status)
 		}
 		return
 	}
 
-	if data.NeedDirSlashRedirect {
-		h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
-		return
+	if data.NeedAuth {
+		h.notifyAuth(w, r)
 	}
 
-	header(w, data.Headers)
-
-	if data.CanCors {
-		cors(w)
-	}
-
-	if data.IsMutate {
-		h.mutate(w, r, data)
-		return
-	}
-
-	// archive
-	if len(r.URL.RawQuery) >= 3 {
-		switch r.URL.RawQuery[:3] {
-		case "tar":
-			h.tar(w, r, data)
+	if data.AuthSuccess {
+		if data.forceAuth {
+			h.redirectWithoutForceAuth(w, r, data)
 			return
-		case "tgz":
-			h.tgz(w, r, data)
+		}
+
+		if data.NeedDirSlashRedirect {
+			h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
 			return
-		case "zip":
-			h.zip(w, r, data)
+		}
+
+		header(w, data.Headers)
+
+		if data.CanCors {
+			cors(w)
+		}
+
+		if data.IsMutate {
+			h.mutate(w, r, data)
 			return
+		}
+
+		// archive
+		if len(r.URL.RawQuery) >= 3 {
+			switch r.URL.RawQuery[:3] {
+			case "tar":
+				h.tar(w, r, data)
+				return
+			case "tgz":
+				h.tgz(w, r, data)
+				return
+			case "zip":
+				h.zip(w, r, data)
+				return
+			}
 		}
 	}
 
-	if h.postMiddleware(w, r, data, fsPath) {
+	if h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
 		return
 	}
 
 	// final process
 	item := data.Item
-	if data.WantJson {
+	if data.wantJson {
 		h.json(w, r, data)
 	} else if shouldServeAsContent(file, item) {
 		h.content(w, r, data)
@@ -196,7 +180,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func newAliasHandler(
 	p *param.Param,
-	ap *aliasParam,
+	vhostCtx *vhostContext,
 	currentAlias alias,
 	allAliases aliases,
 ) http.Handler {
@@ -220,9 +204,9 @@ func newAliasHandler(
 		defaultSort:   p.DefaultSort,
 		aliasPrefix:   currentAlias.url,
 
-		users:  ap.users,
-		theme:  ap.theme,
-		logger: ap.logger,
+		users:  vhostCtx.users,
+		theme:  vhostCtx.theme,
+		logger: vhostCtx.logger,
 
 		dirIndexes: p.DirIndexes,
 		aliases:    aliases,
@@ -231,14 +215,14 @@ func newAliasHandler(
 		authUrls:   p.AuthUrls,
 		authDirs:   p.AuthDirs,
 
-		restrictAccess:       ap.restrictAccess,
+		restrictAccess:       vhostCtx.restrictAccess,
 		globalRestrictAccess: p.GlobalRestrictAccess,
-		restrictAccessUrls:   ap.restrictAccessUrls,
-		restrictAccessDirs:   ap.restrictAccessDirs,
+		restrictAccessUrls:   vhostCtx.restrictAccessUrls,
+		restrictAccessDirs:   vhostCtx.restrictAccessDirs,
 
 		globalHeaders: p.GlobalHeaders,
-		headersUrls:   ap.headersUrls,
-		headersDirs:   ap.headersDirs,
+		headersUrls:   vhostCtx.headersUrls,
+		headersDirs:   vhostCtx.headersDirs,
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,
@@ -260,15 +244,16 @@ func newAliasHandler(
 		corsUrls:   p.CorsUrls,
 		corsDirs:   p.CorsDirs,
 
-		shows:     ap.shows,
-		showDirs:  ap.showDirs,
-		showFiles: ap.showFiles,
-		hides:     ap.hides,
-		hideDirs:  ap.hideDirs,
-		hideFiles: ap.hideFiles,
+		shows:     vhostCtx.shows,
+		showDirs:  vhostCtx.showDirs,
+		showFiles: vhostCtx.showFiles,
+		hides:     vhostCtx.hides,
+		hideDirs:  vhostCtx.hideDirs,
+		hideFiles: vhostCtx.hideFiles,
 
-		vary: ap.vary,
+		vary: vhostCtx.vary,
 
+		inMiddlewares:   p.InMiddlewares,
 		postMiddlewares: p.PostMiddlewares,
 	}
 	return h

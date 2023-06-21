@@ -118,7 +118,7 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 	}
 
 	if !setting.Quiet {
-		go printAccessibleURLs(vhSvc)
+		go printAccessibleURLs(vhSvc, params)
 	}
 
 	return &App{

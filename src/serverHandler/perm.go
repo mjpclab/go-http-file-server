@@ -76,11 +76,3 @@ func (h *aliasHandler) getCanCors(rawReqPath, reqFsPath string) bool {
 
 	return hasUrlOrDirPrefix(h.corsUrls, rawReqPath, h.corsDirs, reqFsPath)
 }
-
-func (h *aliasHandler) getNeedAuth(rawReqPath, reqFsPath string) bool {
-	if h.globalAuth {
-		return true
-	}
-
-	return hasUrlOrDirPrefix(h.authUrls, rawReqPath, h.authDirs, reqFsPath)
-}
