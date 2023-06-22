@@ -1,3 +1,4 @@
+export CGO_ENABLED=0
 TMP='/tmp'
 OUTDIR='../output'
 MAINNAME='ghfs'
