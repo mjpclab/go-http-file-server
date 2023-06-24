@@ -45,10 +45,6 @@ buildByDocker() {
 gover=latest
 buildByDocker "$gover" "${builds[@]}"
 
-gover=alpine
-builds=('linux 386 -musl' 'linux amd64 -musl' 'linux amd64,v2 -musl' 'linux amd64,v3 -musl' 'linux arm64 -musl')
-buildByDocker "$gover" "${builds[@]}"
-
 gover=1.20
 builds=()
 builds+=('windows 386 -7-8' 'windows amd64 -7-8')
