@@ -2,7 +2,7 @@ FROM golang:alpine AS builder
 COPY . /go/src/mjpclab.dev/ghfs/
 RUN \
 	sed -i 's;://[^/ ]*;://mirrors.aliyun.com;' /etc/apk/repositories; \
-	apk add bash; \
+	apk add bash git; \
 	mkdir -p /output/usr/local/bin/;
 RUN ["/bin/bash", "-c", "cd /go/src/mjpclab.dev/ghfs/build/; source ./build.inc.sh; go build -ldflags \"$(getLdFlags)\" -o /output/usr/local/bin/ghfs ../main.go"]
 COPY conf/docker-image/ /output/
