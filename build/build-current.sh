@@ -5,8 +5,9 @@ rm -rf ../output/
 
 GOARCH=$(go env GOARCH)
 ARCH_OPT_NAME=$(echo "GO$GOARCH" | tr 'a-z' 'A-Z')
-if [ -n "${!ARCH_OPT_NAME}" ]; then
-	ARCH_OPT=",${!ARCH_OPT_NAME}"
+ARCH_OPT_VALUE=$(go env "$ARCH_OPT_NAME")
+if [ -n "$ARCH_OPT_VALUE" ]; then
+	ARCH_OPT=",$ARCH_OPT_VALUE"
 fi
 
 bash ./build.sh "$(go env GOOS) ${GOARCH}${ARCH_OPT}"
