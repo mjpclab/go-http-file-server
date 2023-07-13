@@ -19,10 +19,12 @@ func (pph preprocessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rw := serverCompress.NewResponseWriter(w, r)
 
 	if len(pph.preMiddlewares) > 0 {
+		status := 0
 		middlewareContext := &middleware.Context{
 			PrefixReqPath: r.URL.RawPath, // init by pathTransformHandler
 			VhostReqPath:  r.URL.Path,
 			Logger:        pph.logger,
+			Status:        &status,
 		}
 		for i := range pph.preMiddlewares {
 			processResult := pph.preMiddlewares[i](rw, r, middlewareContext)
