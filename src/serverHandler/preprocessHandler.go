@@ -24,10 +24,12 @@ func (pph preprocessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if qsIndex := strings.IndexByte(prefixReqPath, '?'); qsIndex >= 0 {
 			prefixReqPath = prefixReqPath[:qsIndex]
 		}
+		status := 0
 		middlewareContext := &middleware.Context{
 			PrefixReqPath: prefixReqPath,
 			VhostReqPath:  r.URL.Path,
 			Logger:        pph.logger,
+			Status:        &status,
 		}
 		for i := range pph.preMiddlewares {
 			processResult := pph.preMiddlewares[i](rw, r, middlewareContext)
