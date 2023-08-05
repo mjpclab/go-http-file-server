@@ -103,7 +103,8 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 			}
 		}
 
-		errs = vhSvc.Add(&goVirtualHost.HostInfo{
+		var warns []error
+		errs, warns = vhSvc.Add(&goVirtualHost.HostInfo{
 			Listens:      listens,
 			ListensPlain: p.ListensPlain,
 			ListensTLS:   p.ListensTLS,
@@ -111,6 +112,9 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 			HostNames:    p.HostNames,
 			Handler:      vhHandler,
 		})
+		if len(warns) > 0 {
+			logger.LogErrors(warns...)
+		}
 		if len(errs) > 0 {
 			logger.LogErrors(errs...)
 			return nil, errs
