@@ -41,7 +41,7 @@ func (svc *Service) addVhostToServers(vhost *vhost, params params) {
 	}
 }
 
-func (svc *Service) Add(info *HostInfo) (errs []error) {
+func (svc *Service) Add(info *HostInfo) (errs, warns []error) {
 	svc.mu.Lock()
 	defer svc.mu.Unlock()
 
@@ -52,7 +52,7 @@ func (svc *Service) Add(info *HostInfo) (errs []error) {
 
 	hostNames, vhostParams, certs := info.parse()
 
-	errs = svc.params.validate(vhostParams)
+	errs, warns = svc.params.validate(vhostParams)
 	if len(errs) > 0 {
 		return
 	}
@@ -153,7 +153,7 @@ func (svc *Service) Close() {
 func (svc *Service) GetAccessibleURLs(includeLoopback bool) [][]string {
 	gotIPList := false
 	var ipv46s, ipv4s, ipv6s []string
-
+	var allHostNameUrls []string
 	vhUrls := make(map[*vhost][]string)
 
 	for _, listener := range svc.listeners {
@@ -179,7 +179,10 @@ func (svc *Service) GetAccessibleURLs(includeLoopback bool) [][]string {
 					url = httpUrl
 				}
 				url = url + hostname + port
-				vhUrls[vh] = append(vhUrls[vh], url)
+				if !contains(allHostNameUrls, url) {
+					allHostNameUrls = append(allHostNameUrls, url)
+					vhUrls[vh] = append(vhUrls[vh], url)
+				}
 			}
 			if vh == defaultVh {
 				var url string

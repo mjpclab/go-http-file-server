@@ -8,7 +8,7 @@ import (
 
 func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
 	if r.Method != shimgo.Net_Http_MethodPost {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 

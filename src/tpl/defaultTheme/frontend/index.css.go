@@ -605,6 +605,10 @@ html.dragging::before {
 	.item-list .header .detail {
 		background-color: #181818;
 	}
+
+	.error {
+		background: #663;
+	}
 }
 
 @media only screen and (max-width: 375px) {

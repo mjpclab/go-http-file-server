@@ -32,14 +32,9 @@ func (params params) validateParam(param *param) (errs []error) {
 			}
 		}
 
-		if ownParam.proto == param.proto && ownParam.ip == param.ip && ownParam.port == param.port {
+		if ownParam.stacksEqual(param) {
 			if ownParam.useTLS != param.useTLS {
 				err := wrapError(ConflictTLSMode, fmt.Sprintf("cannot serve for both Plain and TLS mode: %+v, %+v", ownParam, param))
-				errs = append(errs, err)
-			}
-
-			if (len(param.hostNames) == 0 && len(ownParam.hostNames) == 0) || (ownParam.hasHostNames(param.hostNames)) {
-				err := wrapError(DuplicatedAddressHostname, fmt.Sprintf("duplicated address and hostname: %+v, %+v", ownParam, param))
 				errs = append(errs, err)
 			}
 		}
@@ -48,22 +43,55 @@ func (params params) validateParam(param *param) (errs []error) {
 	return
 }
 
-func (params params) validate(inputs params) (errs []error) {
+func (params params) validateShadows(param *param) (errs []error) {
+	if len(params) == 0 {
+		return nil
+	}
+
+	if len(param.hostNames) == 0 {
+		shadowed := false
+		for _, ownParam := range params {
+			if ownParam.stacksEqual(param) && len(ownParam.hostNames) == 0 {
+				shadowed = true
+				break
+			}
+		}
+		if !shadowed {
+			return nil
+		}
+	} else {
+		for _, hostName := range param.hostNames {
+			shadowed := false
+			for _, ownParam := range params {
+				if ownParam.stacksEqual(param) && ownParam.hasHostName(hostName) {
+					shadowed = true
+					break
+				}
+			}
+			if !shadowed {
+				return nil
+			}
+		}
+	}
+
+	err := wrapError(DuplicatedAddressHostname, fmt.Sprintf("duplicated address and hostname: %+v", param))
+	errs = append(errs, err)
+	return
+}
+
+func (params params) validate(inputs params) (errs, warns []error) {
 	for _, p := range inputs {
 		es := p.validate()
-		if len(es) > 0 {
-			errs = append(errs, es...)
-		}
+		errs = append(errs, es...)
 
 		es = inputs.validateParam(p)
-		if len(es) > 0 {
-			errs = append(errs, es...)
-		}
+		errs = append(errs, es...)
 
 		es = params.validateParam(p)
-		if len(es) > 0 {
-			errs = append(errs, es...)
-		}
+		errs = append(errs, es...)
+
+		ws := params.validateShadows(p)
+		warns = append(warns, ws...)
 	}
 
 	return
