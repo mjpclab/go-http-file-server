@@ -40,10 +40,14 @@ func normalizeHostNames(inputs []string) []string {
 	output := make([]string, 0, len(inputs))
 
 	for _, str := range inputs {
-		if len(str) > 0 {
-			name := strings.ToLower(str)
-			output = append(output, name)
+		if len(str) == 0 {
+			continue
 		}
+		name := strings.ToLower(strings.TrimSpace(str))
+		if len(name) == 0 {
+			continue
+		}
+		output = append(output, name)
 	}
 
 	return output
@@ -213,4 +217,13 @@ func getAllIfaceIPs(includeLoopback bool) (all, allv4, allv6 []string) {
 	sort.Sort(allAddrsV6)
 	allv6 = allAddrsV6.String()
 	return
+}
+
+func contains(list []string, item string) bool {
+	for i, length := 0, len(list); i < length; i++ {
+		if list[i] == item {
+			return true
+		}
+	}
+	return false
 }

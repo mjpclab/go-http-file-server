@@ -7,7 +7,7 @@ import (
 
 func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
