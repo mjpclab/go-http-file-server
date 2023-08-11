@@ -2,10 +2,7 @@ package serverHandler
 
 import (
 	"mjpclab.dev/ghfs/src/shimgo"
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
-	"strconv"
-	"time"
 )
 
 func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
@@ -19,23 +16,5 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *res
 	item := data.Item
 	file := data.File
 
-	if NeedResponseBody(r.Method) {
-		http.ServeContent(w, r, item.Name(), item.ModTime(), file)
-		return
-	}
-
-	header.Set("Accept-Ranges", "bytes")
-	if lacksHeader(header, "Content-Type") {
-		ctype, err := util.GetContentType(item.Name(), file)
-		if err == nil {
-			header.Set("Content-Type", ctype)
-		} else if data.Status == http.StatusOK {
-			data.Status = http.StatusInternalServerError
-		}
-	}
-	header.Set("Content-Length", strconv.FormatInt(item.Size(), 10))
-	header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
-	header.Set("Last-Modified", item.ModTime().UTC().Format(http.TimeFormat))
-
-	w.WriteHeader(data.Status)
+	http.ServeContent(w, r, item.Name(), item.ModTime(), file)
 }

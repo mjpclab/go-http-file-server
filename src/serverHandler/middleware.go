@@ -37,6 +37,13 @@ func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.Res
 		Logger: h.logger,
 	}
 
+	if data.File != nil {
+		context.File = &data.File
+	}
+	if data.Item != nil {
+		context.FileInfo = &data.Item
+	}
+
 	for i := range mids {
 		result := mids[i](w, r, context)
 		if result == middleware.Outputted {

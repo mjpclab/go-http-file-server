@@ -73,12 +73,11 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *respon
 
 	updateTranslation(r, data)
 
+	w.WriteHeader(data.Status)
+
 	if !NeedResponseBody(r.Method) {
-		w.WriteHeader(data.Status)
 		return
 	}
-
-	w.WriteHeader(data.Status)
 
 	updateSubItemsHtml(data)
 	err := h.theme.RenderPage(w, data)
