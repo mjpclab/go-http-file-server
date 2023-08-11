@@ -34,6 +34,10 @@ func (accepts Accepts) GetPreferredValue(availables []string) (index int, value 
 func ParseAccepts(input string) Accepts {
 	entries := strings.Split(input, ",")
 	entryCount := len(entries)
+	if entryCount == 0 {
+		return nil
+	}
+
 	accepts := make(Accepts, entryCount)
 	for i := 0; i < entryCount; i++ {
 		accepts[i] = parseAcceptItem(strings.TrimSpace(entries[i]))

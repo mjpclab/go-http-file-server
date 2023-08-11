@@ -105,9 +105,10 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// data
 	data, fsPath := h.getResponseData(r)
 	h.logErrors(data.errors)
-	file := data.File
-	if file != nil {
-		defer file.Close()
+	if data.File != nil {
+		defer func() {
+			data.File.Close()
+		}()
 	}
 
 	if h.applyMiddlewares(h.inMiddlewares, w, r, data, fsPath) {
@@ -168,10 +169,9 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// final process
-	item := data.Item
 	if data.wantJson {
 		h.json(w, r, data)
-	} else if shouldServeAsContent(file, item) {
+	} else if shouldServeAsContent(data.File, data.Item) {
 		h.content(w, r, data)
 	} else {
 		h.page(w, r, data)
