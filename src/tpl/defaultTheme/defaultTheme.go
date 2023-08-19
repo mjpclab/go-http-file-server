@@ -30,7 +30,7 @@ func init() {
 
 	DefaultTheme.Assets = theme.Assets{
 		"favicon.ico": {"image/x-icon", bytes.NewReader(defaultFavicon)},
-		"index.css":   {"text/css", bytes.NewReader(defaultCss)},
-		"index.js":    {"application/javascript", bytes.NewReader(defaultJs)},
+		"index.css":   {"text/css; charset=utf-8", bytes.NewReader(defaultCss)},
+		"index.js":    {"application/javascript; charset=utf-8", bytes.NewReader(defaultJs)},
 	}
 }
