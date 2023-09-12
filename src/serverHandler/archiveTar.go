@@ -12,18 +12,23 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 	if archivePath[0] == '/' {
 		archivePath = archivePath[1:]
 	}
+
+	var typeFlag byte
+	var mode int64
+	var size int64
 	if fInfo.IsDir() {
 		archivePath += "/"
-	}
-
-	var size int64
-	if !fInfo.IsDir() {
+		typeFlag = tar.TypeDir
+		mode = 0755
+	} else {
+		mode = 0644
 		size = fInfo.Size()
 	}
 
 	header := &tar.Header{
 		Name:       archivePath,
-		Mode:       0664,
+		Typeflag:   typeFlag,
+		Mode:       mode,
 		Size:       size,
 		ModTime:    fInfo.ModTime(),
 		AccessTime: fInfo.ModTime(),
