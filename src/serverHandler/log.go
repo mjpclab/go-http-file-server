@@ -5,12 +5,34 @@ import (
 	"mjpclab.dev/ghfs/src/shimgo"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
+	"strconv"
 )
 
-func logRequest(logger *serverLog.Logger, r *http.Request) {
+type loggableResponseWriter struct {
+	http.ResponseWriter
+	request *http.Request
+	logger  *serverLog.Logger
+}
+
+func (w loggableResponseWriter) WriteHeader(statusCode int) {
+	w.ResponseWriter.WriteHeader(statusCode)
+	logRequest(w.logger, w.request, statusCode)
+}
+
+func tryGetLoggableResponseWriter(w http.ResponseWriter, r *http.Request, logger *serverLog.Logger) http.ResponseWriter {
+	if logger.CanLogAccess() {
+		return loggableResponseWriter{w, r, logger}
+	} else {
+		return w
+	}
+}
+
+func logRequest(logger *serverLog.Logger, r *http.Request, statusCode int) {
 	if !logger.CanLogAccess() {
 		return
 	}
+
+	code := strconv.Itoa(statusCode)
 
 	var unescapedUri []byte
 	unescapedLen := 0
@@ -24,9 +46,11 @@ func logRequest(logger *serverLog.Logger, r *http.Request) {
 
 	uri := util.EscapeControllingRune(r.RequestURI)
 
-	buf := serverLog.NewBuffer(2 + len(r.RemoteAddr) + len(r.Method) + unescapedLen + len(uri))
+	buf := serverLog.NewBuffer(3 + len(r.RemoteAddr) + len(code) + len(r.Method) + unescapedLen + len(uri))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
+	buf = append(buf, ' ')                     // 1 byte
+	buf = append(buf, []byte(code)...)         // 3 bytes
 	buf = append(buf, ' ')                     // 1 byte
 	buf = append(buf, []byte(r.Method)...)     // ~ 3-4 bytes
 	buf = append(buf, ' ')                     // 1 byte

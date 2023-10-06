@@ -39,4 +39,12 @@ func TestIsTruthyEnvValue(t *testing.T) {
 	if !expect("0000", false) {
 		t.Error()
 	}
+
+	if !expect(" ", false) {
+		t.Error()
+	}
+
+	if !expect(" 0", false) {
+		t.Error()
+	}
 }

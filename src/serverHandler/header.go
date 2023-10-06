@@ -64,6 +64,6 @@ func (h *aliasHandler) getHeaders(reqUrlPath, reqFsPath string, doGetHeaders boo
 func header(w http.ResponseWriter, headers [][2]string) {
 	header := w.Header()
 	for i := range headers {
-		header.Add(headers[i][0], headers[i][1])
+		header.Set(headers[i][0], headers[i][1])
 	}
 }

@@ -21,7 +21,12 @@ func isTruthyEnvValue(value string) bool {
 	}
 
 	for i := 0; i < valueLen; i++ {
-		if value[i] != '0' {
+		if value[i] != '0' &&
+			value[i] != ' ' &&
+			value[i] != '\t' &&
+			value[i] != '\f' &&
+			value[i] != '\r' &&
+			value[i] != '\n' {
 			return true
 		}
 	}
