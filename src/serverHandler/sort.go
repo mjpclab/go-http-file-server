@@ -25,7 +25,7 @@ var cmpDirLast fnCompareDir = func(prev, next os.FileInfo) (less, ok bool) {
 	prevIsDir := prev.IsDir()
 	nextIsDir := next.IsDir()
 	if prevIsDir != nextIsDir {
-		return !prevIsDir, true
+		return nextIsDir, true
 	}
 	return true, false
 }
@@ -232,9 +232,9 @@ func (infos infosSizeAsc) Less(i, j int) bool {
 		return items[i].Size() < items[j].Size()
 	}
 
-	cmpResult := strings.Compare(items[i].Name(), items[j].Name())
-	if cmpResult != 0 {
-		return cmpResult < 0
+	less, ok = util.CompareNumInFilename([]byte(items[i].Name()), []byte(items[j].Name()))
+	if ok {
+		return less
 	}
 
 	return i < j
@@ -262,9 +262,9 @@ func (infos infosSizeDesc) Less(i, j int) bool {
 		return items[j].Size() < items[i].Size()
 	}
 
-	cmpResult := strings.Compare(items[j].Name(), items[i].Name())
-	if cmpResult != 0 {
-		return cmpResult < 0
+	less, ok = util.CompareNumInFilename([]byte(items[j].Name()), []byte(items[i].Name()))
+	if ok {
+		return less
 	}
 
 	return j < i
@@ -292,9 +292,9 @@ func (infos infosTimeAsc) Less(i, j int) bool {
 		return items[i].ModTime().Before(items[j].ModTime())
 	}
 
-	cmpResult := strings.Compare(items[i].Name(), items[j].Name())
-	if cmpResult != 0 {
-		return cmpResult < 0
+	less, ok = util.CompareNumInFilename([]byte(items[i].Name()), []byte(items[j].Name()))
+	if ok {
+		return less
 	}
 
 	return i < j
@@ -322,9 +322,9 @@ func (infos infosTimeDesc) Less(i, j int) bool {
 		return items[j].ModTime().Before(items[i].ModTime())
 	}
 
-	cmpResult := strings.Compare(items[j].Name(), items[i].Name())
-	if cmpResult != 0 {
-		return cmpResult < 0
+	less, ok = util.CompareNumInFilename([]byte(items[j].Name()), []byte(items[i].Name()))
+	if ok {
+		return less
 	}
 
 	return j < i

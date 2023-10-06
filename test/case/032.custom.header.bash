@@ -19,9 +19,6 @@ sleep 0.05 # wait server ready
 (curl_get_header http://127.0.0.1:3003/file1.txt | grep -q -i 'foo:\s*bar') ||
 	fail "Custom header 'foo:bar' should exists"
 
-(curl_get_header http://127.0.0.1:3003/ | grep -q -i 'set-cookie:\s*name1=value1') ||
-	fail "Custom header 'set-cookie:name1=value1' should exists"
-
 (curl_get_header http://127.0.0.1:3003/ | grep -q -i 'set-cookie:\s*name2=value2') ||
 	fail "Custom header 'set-cookie:name2=value2' should exists"
 

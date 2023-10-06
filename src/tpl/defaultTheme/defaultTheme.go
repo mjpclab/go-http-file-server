@@ -19,7 +19,7 @@ func init() {
 
 	DefaultTheme.Assets = theme.Assets{
 		"favicon.ico": {"image/x-icon", bytes.NewReader(frontend.DefaultFavicon)},
-		"index.css":   {"text/css", strings.NewReader(frontend.DefaultCss)},
-		"index.js":    {"application/javascript", strings.NewReader(frontend.DefaultJs)},
+		"index.css":   {"text/css; charset=utf-8", strings.NewReader(frontend.DefaultCss)},
+		"index.js":    {"application/javascript; charset=utf-8", strings.NewReader(frontend.DefaultJs)},
 	}
 }

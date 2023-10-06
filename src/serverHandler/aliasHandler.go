@@ -137,11 +137,11 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		header(w, data.Headers)
-
 		if data.CanCors {
 			cors(w)
 		}
+
+		header(w, data.Headers)
 
 		if data.IsMutate {
 			h.mutate(w, r, data)
