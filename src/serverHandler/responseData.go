@@ -413,12 +413,12 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	subItemPrefix := getSubItemPrefix(currDirRelPath, rawReqPath, tailSlash)
 
-	canUpload := authSuccess && h.getCanUpload(item, rawReqPath, reqFsPath)
-	canMkdir := authSuccess && h.getCanMkdir(item, rawReqPath, reqFsPath)
-	canDelete := authSuccess && h.getCanDelete(item, rawReqPath, reqFsPath)
+	canUpload := allowAccess && authSuccess && h.getCanUpload(item, rawReqPath, reqFsPath)
+	canMkdir := allowAccess && authSuccess && h.getCanMkdir(item, rawReqPath, reqFsPath)
+	canDelete := allowAccess && authSuccess && h.getCanDelete(item, rawReqPath, reqFsPath)
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
-	canArchive := authSuccess && h.getCanArchive(subItems, rawReqPath, reqFsPath)
-	canCors := authSuccess && h.getCanCors(rawReqPath, reqFsPath)
+	canArchive := allowAccess && authSuccess && h.getCanArchive(subItems, rawReqPath, reqFsPath)
+	canCors := allowAccess && authSuccess && h.getCanCors(rawReqPath, reqFsPath)
 	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
 	context := pathContext{
