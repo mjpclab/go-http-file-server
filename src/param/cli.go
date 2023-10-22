@@ -25,7 +25,7 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlags("emptyroot", []string{"-R", "--empty-root"}, "GHFS_EMPTY_ROOT", "use virtual empty root directory")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url><sep><path>, e.g. :/doc:/usr/share/doc")
+	err = options.AddFlagsValues("aliases", []string{"-a", "--alias"}, "", nil, "set alias path, <sep><url-path><sep><fs-path>, e.g. :/doc:/usr/share/doc")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("prefixurls", "--prefix", "", nil, "serve files under URL path instead of /")

@@ -102,7 +102,7 @@ func (param *Param) normalize() (errs []error) {
 	param.Root, err = filepath.Abs(param.Root)
 	errs = serverError.AppendError(errs, err)
 
-	// alias
+	// aliases
 	param.Aliases, es = normalizePathMaps(param.Aliases)
 	errs = append(errs, es...)
 
