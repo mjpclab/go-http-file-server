@@ -10,9 +10,7 @@ import (
 	"mjpclab.dev/ghfs/src/setting"
 	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
 	"mjpclab.dev/ghfs/src/tpl/theme"
-	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 )
 
@@ -129,20 +127,4 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 		vhostSvc:   vhSvc,
 		logFileMan: logFileMan,
 	}, nil
-}
-
-func writePidFile(pidFilename string) (errs []error) {
-	pidContent := strconv.Itoa(os.Getpid())
-	pidFile, err := os.OpenFile(pidFilename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-	if err != nil {
-		return []error{err}
-	}
-
-	_, err = pidFile.WriteString(pidContent)
-	errs = serverError.AppendError(errs, err)
-
-	err = pidFile.Close()
-	errs = serverError.AppendError(errs, err)
-
-	return
 }
