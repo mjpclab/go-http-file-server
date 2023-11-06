@@ -314,12 +314,16 @@ ghfs [options]
 ```
 
 ## Environment variables
+
+### GHFS_PID_FILE
+Specify PID file path. PID will be written into the file on application startup.
+
 ### GHFS_QUIET
 To prevent outputting additional information on console, like accessible URLs, etc,
 set value to "1".
 
-### GHFS_PID_FILE
-Specify PID file. PID will be written into the file on application startup.
+### GHFS_CPU_PROFILE_FILE
+Generate Go's CPU pprof profile to specific file path.
 
 ## Shortcut key for default theme
 - `←`, `→`: move focus between path items

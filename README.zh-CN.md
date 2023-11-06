@@ -305,11 +305,15 @@ ghfs [选项]
 ```
 
 ## 环境变量
+
+### GHFS_PID_FILE
+指定进程ID文件路径。进程ID会在应用启动时被写入文件。
+
 ### GHFS_QUIET
 为避免在控制台输出额外信息，例如可访问的URL等，可将值设为“1”。
 
-### GHFS_PID_FILE
-指定进程ID文件。进程ID会在应用启动时被写入文件。
+### GHFS_CPU_PROFILE_FILE
+生成Go的CPU pprof profile到指定的文件路径。
 
 ## 默认主题的快捷键
 - `←`, `→`：使焦点在路径项之间移动
