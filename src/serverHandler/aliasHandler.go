@@ -20,15 +20,15 @@ type pathStrings struct {
 }
 
 type aliasHandler struct {
-	root          string
-	emptyRoot     bool
-	forceDirSlash int
-	hsts          bool
-	hstsMaxAge    string
-	toHttps       bool
-	toHttpsPort   string // with prefix ":"
-	defaultSort   string
-	aliasPrefix   string
+	root         string
+	emptyRoot    bool
+	autoDirSlash int
+	hsts         bool
+	hstsMaxAge   string
+	toHttps      bool
+	toHttpsPort  string // with prefix ":"
+	defaultSort  string
+	aliasPrefix  string
 
 	users  *user.List
 	theme  theme.Theme
@@ -132,8 +132,11 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if data.NeedDirSlashRedirect {
-			h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
+		if data.redirectAction == addSlashSuffix {
+			redirect(w, r, data.prefixReqPath+"/", h.autoDirSlash)
+			return
+		} else if data.redirectAction == removeSlashSuffix {
+			redirect(w, r, data.prefixReqPath[:len(data.prefixReqPath)-1], h.autoDirSlash)
 			return
 		}
 
@@ -194,15 +197,15 @@ func newAliasHandler(
 	}
 
 	h := &aliasHandler{
-		root:          currentAlias.fs,
-		emptyRoot:     emptyRoot,
-		forceDirSlash: p.ForceDirSlash,
-		hsts:          p.Hsts,
-		hstsMaxAge:    strconv.Itoa(p.HstsMaxAge),
-		toHttps:       p.ToHttps,
-		toHttpsPort:   p.ToHttpsPort,
-		defaultSort:   p.DefaultSort,
-		aliasPrefix:   currentAlias.url,
+		root:         currentAlias.fs,
+		emptyRoot:    emptyRoot,
+		autoDirSlash: p.AutoDirSlash,
+		hsts:         p.Hsts,
+		hstsMaxAge:   strconv.Itoa(p.HstsMaxAge),
+		toHttps:      p.ToHttps,
+		toHttpsPort:  p.ToHttpsPort,
+		defaultSort:  p.DefaultSort,
+		aliasPrefix:  currentAlias.url,
 
 		users:  vhostCtx.users,
 		theme:  vhostCtx.theme,

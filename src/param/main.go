@@ -13,8 +13,8 @@ type Param struct {
 	Root      string
 	EmptyRoot bool
 
-	PrefixUrls    []string
-	ForceDirSlash int
+	PrefixUrls   []string
+	AutoDirSlash int
 
 	DefaultSort string
 	DirIndexes  []string
@@ -127,8 +127,8 @@ func (param *Param) normalize() (errs []error) {
 	param.PrefixUrls = NormalizeUrlPaths(param.PrefixUrls)
 
 	// // force dir slash
-	if param.ForceDirSlash != 0 {
-		param.ForceDirSlash = NormalizeRedirectCode(param.ForceDirSlash)
+	if param.AutoDirSlash != 0 {
+		param.AutoDirSlash = NormalizeRedirectCode(param.AutoDirSlash)
 	}
 
 	// dir indexes

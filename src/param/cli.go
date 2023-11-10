@@ -31,7 +31,7 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("prefixurls", "--prefix", "", nil, "serve files under URL path instead of /")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagsValue("forcedirslash", []string{"-/", "--force-dir-slash"}, "GHFS_FORCE_DIR_SLASH", "", "auto redirect directory with \"/\" suffix")
+	err = options.AddFlagsValue("autodirslash", []string{"-/", "--auto-dir-slash"}, "GHFS_AUTO_DIR_SLASH", "", "auto redirect directory with \"/\" suffix, or file without suffix")
 	serverError.CheckFatal(err)
 
 	opt = goNixArgParser.NewFlagValueOption("defaultsort", "--default-sort", "GHFS_DEFAULT_SORT", "/n", "default sort for files and directories")
@@ -303,12 +303,12 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.Aliases = SplitAllKeyValue(strAlias)
 
 		// force dir slash
-		if result.HasKey("forcedirslash") {
-			redirectCode, _ := result.GetInt("forcedirslash")
+		if result.HasKey("autodirslash") {
+			redirectCode, _ := result.GetInt("autodirslash")
 			if redirectCode == 0 {
 				redirectCode = http.StatusMovedPermanently
 			}
-			param.ForceDirSlash = redirectCode
+			param.AutoDirSlash = redirectCode
 		}
 
 		// dir indexes

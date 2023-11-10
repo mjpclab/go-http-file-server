@@ -25,11 +25,21 @@ type itemHtml struct {
 	DeleteUrl   string
 }
 
+type redirectAction int
+
+const (
+	noRedirect redirectAction = iota
+	addSlashSuffix
+	removeSlashSuffix
+)
+
 type responseData struct {
 	prefixReqPath  string
 	rawReqPath     string
 	handlerReqPath string
 	wantJson       bool
+
+	redirectAction redirectAction
 
 	NeedAuth     bool
 	requestAuth  bool
@@ -73,8 +83,6 @@ type responseData struct {
 	SubItemPrefix string
 	SortState     SortState
 	Context       pathContext
-
-	NeedDirSlashRedirect bool
 
 	Lang  string
 	Trans *i18n.Translation
@@ -368,9 +376,20 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		status = getStatusByErr(_statErr)
 	}
 
-	needDirSlashRedirect := h.forceDirSlash > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' && item != nil && item.IsDir()
+	redirectAction := noRedirect
+	if h.autoDirSlash > 0 && len(rawReqPath) > 1 && item != nil {
+		if item.IsDir() {
+			if prefixReqPath[len(prefixReqPath)-1] != '/' {
+				redirectAction = addSlashSuffix
+			}
+		} else {
+			if prefixReqPath[len(prefixReqPath)-1] == '/' {
+				redirectAction = removeSlashSuffix
+			}
+		}
+	}
 
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess && !needDirSlashRedirect)
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess && redirectAction == noRedirect)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -391,13 +410,13 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, authSuccess && !isMutate && !needDirSlashRedirect && allowAccess && NeedResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, allowAccess && authSuccess && !isMutate && redirectAction == noRedirect && NeedResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, authSuccess && !needDirSlashRedirect && allowAccess)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, allowAccess && authSuccess && redirectAction == noRedirect)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -408,9 +427,9 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		errs = append(errs, _dereferenceErrs...)
 	}
 
-	// update `needDirSlashRedirect` for dangling intermediate alias directory
-	if !needDirSlashRedirect && h.forceDirSlash > 0 && len(subItems) > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' {
-		needDirSlashRedirect = true
+	// set `redirectAction` to `addSlashSuffix` for dangling intermediate alias directory
+	if redirectAction == noRedirect && h.autoDirSlash > 0 && len(subItems) > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' {
+		redirectAction = addSlashSuffix
 	}
 
 	subItems = h.FilterItems(subItems)
@@ -442,6 +461,8 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		rawReqPath:     rawReqPath,
 		handlerReqPath: reqPath,
 		wantJson:       wantJson,
+
+		redirectAction: redirectAction,
 
 		NeedAuth:     needAuth,
 		requestAuth:  requestAuth,
@@ -485,7 +506,5 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		SubItemPrefix: subItemPrefix,
 		SortState:     sortState,
 		Context:       context,
-
-		NeedDirSlashRedirect: needDirSlashRedirect,
 	}, reqFsPath
 }
