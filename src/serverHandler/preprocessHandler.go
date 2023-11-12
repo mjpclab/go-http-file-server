@@ -14,7 +14,9 @@ type preprocessHandler struct {
 }
 
 func (pph preprocessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w = tryGetLoggableResponseWriter(w, r, pph.logger)
+	if pph.logger.CanLogAccess() {
+		w = loggableResponseWriter{w, r, pph.logger}
+	}
 	rw := serverCompress.NewResponseWriter(w, r)
 
 	if len(pph.preMiddlewares) > 0 {
