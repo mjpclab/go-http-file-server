@@ -132,9 +132,6 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("userssha512", "--user-sha512", "", nil, "user info: <username>:<sha512-password>")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlag("usermatchcase", "--user-match-case", "GHFS_USER_MATCH_CASE", "username should be case sensitive")
-	serverError.CheckFatal(err)
-
 	err = options.AddFlagsValues("certs", []string{"-c", "--cert"}, "GHFS_CERT", nil, "TLS certificate path")
 	serverError.CheckFatal(err)
 
@@ -291,7 +288,6 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.EmptyRoot = result.HasKey("emptyroot")
 		param.PrefixUrls, _ = result.GetStrings("prefixurls")
 		param.DefaultSort, _ = result.GetString("defaultsort")
-		param.UserMatchCase = result.HasKey("usermatchcase")
 		param.HostNames, _ = result.GetStrings("hostnames")
 		param.Theme, _ = result.GetString("theme")
 		param.ThemeDir, _ = result.GetString("themedir")

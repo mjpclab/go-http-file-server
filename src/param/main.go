@@ -56,13 +56,12 @@ type Param struct {
 	AuthUrls   []string
 	AuthDirs   []string
 	// value: [username, password]
-	UsersPlain    [][2]string
-	UsersBase64   [][2]string
-	UsersMd5      [][2]string
-	UsersSha1     [][2]string
-	UsersSha256   [][2]string
-	UsersSha512   [][2]string
-	UserMatchCase bool
+	UsersPlain  [][2]string
+	UsersBase64 [][2]string
+	UsersMd5    [][2]string
+	UsersSha1   [][2]string
+	UsersSha256 [][2]string
+	UsersSha512 [][2]string
 
 	Certificates []tls.Certificate
 	Listens      []string

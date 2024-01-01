@@ -38,7 +38,7 @@ func NewVhostHandler(
 	theme theme.Theme,
 ) (handler http.Handler, errs []error) {
 	// users
-	users := user.NewList(p.UserMatchCase)
+	users := user.NewList()
 	for _, u := range p.UsersPlain {
 		errs = serverError.AppendError(errs, users.AddPlain(u[0], u[1]))
 	}

@@ -2,12 +2,11 @@ package user
 
 import (
 	"errors"
-	"mjpclab.dev/ghfs/src/util"
+	"strings"
 )
 
 type List struct {
-	users          []user
-	namesEqualFunc util.StrEqualFunc
+	users []user
 }
 
 func (list *List) Len() int {
@@ -16,7 +15,7 @@ func (list *List) Len() int {
 
 func (list *List) FindIndex(username string) int {
 	for i := range list.users {
-		if list.namesEqualFunc(list.users[i].getName(), username) {
+		if strings.EqualFold(list.users[i].getName(), username) {
 			return i
 		}
 	}
@@ -95,12 +94,6 @@ func (list *List) Auth(username, password string) bool {
 	return list.users[index].auth(password)
 }
 
-func NewList(nameCaseSensitive bool) *List {
-	var namesEqualFunc util.StrEqualFunc
-	if nameCaseSensitive {
-		namesEqualFunc = util.IsStrEqualAccurate
-	} else {
-		namesEqualFunc = util.IsStrEqualNoCase
-	}
-	return &List{namesEqualFunc: namesEqualFunc}
+func NewList() *List {
+	return &List{}
 }
