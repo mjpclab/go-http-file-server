@@ -32,7 +32,7 @@ type responseData struct {
 	wantJson       bool
 
 	NeedAuth     bool
-	forceAuth    bool
+	requestAuth  bool
 	AuthUserName string
 	AuthSuccess  bool
 
@@ -310,7 +310,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	status := http.StatusOK
 
-	needAuth, forceAuth := h.needAuth(rawQuery, rawReqPath, reqFsPath)
+	needAuth, requestAuth := h.needAuth(rawQuery, rawReqPath, reqFsPath)
 	authUserName, authSuccess, _authErr := h.verifyAuth(r, needAuth)
 	if needAuth {
 		if _authErr != nil {
@@ -435,7 +435,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		wantJson:       wantJson,
 
 		NeedAuth:     needAuth,
-		forceAuth:    forceAuth,
+		requestAuth:  requestAuth,
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
 
