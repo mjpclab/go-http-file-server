@@ -4,13 +4,11 @@ import (
 	"context"
 	"mjpclab.dev/ghfs/src/goVirtualHost"
 	"mjpclab.dev/ghfs/src/param"
-	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/serverHandler"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/setting"
 	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
 	"mjpclab.dev/ghfs/src/tpl/theme"
-	"path/filepath"
 	"time"
 )
 
@@ -48,7 +46,7 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 
 	vhSvc := goVirtualHost.NewService()
 	logFileMan := serverLog.NewFileMan()
-	themes := make(map[string]theme.Theme)
+	themePool := make(map[string]theme.Theme)
 
 	for _, p := range params {
 		// logger
@@ -64,30 +62,17 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 		} else if len(p.Theme) == 0 {
 			themeInst = defaultTheme.DefaultTheme
 		} else {
-			themeKey, err := filepath.Abs(p.Theme)
-			errs = serverError.AppendError(errs, err)
-			if err != nil {
-				continue
-			}
-
-			var themeExists bool
-			themeInst, themeExists = themes[themeKey]
-			if !themeExists {
-				themeInst, err = theme.LoadMemTheme(p.Theme)
-				errs = serverError.AppendError(errs, err)
-				if err != nil {
-					continue
-				}
-				themes[themeKey] = themeInst
-			}
+			themeInst, errs = loadTheme(p.Theme, themePool)
 		}
 		if len(errs) > 0 {
+			logger.LogErrors(errs...)
 			return nil, errs
 		}
 
 		// vHost Handler
 		vhHandler, errs := serverHandler.NewVhostHandler(p, logger, themeInst)
 		if len(errs) > 0 {
+			logger.LogErrors(errs...)
 			return nil, errs
 		}
 
