@@ -38,7 +38,7 @@ func (aliases aliases) Less(i, j int) bool {
 		return iLen > jLen
 	}
 
-	return i < j
+	return i > j
 }
 
 func (aliases aliases) Swap(i, j int) {

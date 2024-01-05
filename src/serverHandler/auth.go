@@ -8,7 +8,7 @@ import (
 
 const authQueryParam = "auth"
 
-func (h *aliasHandler) needAuth(rawQuery, rawReqPath, reqFsPath string) (need, force bool) {
+func (h *aliasHandler) needAuth(rawQuery, rawReqPath, reqFsPath string) (needAuth, requestAuth bool) {
 	if strings.HasPrefix(rawQuery, authQueryParam) {
 		return true, true
 	}

@@ -117,7 +117,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if !data.AllowAccess {
 		if !h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
-			h.accessRestricted(w, data.Status)
+			h.page(w, r, data)
 		}
 		return
 	}
@@ -127,8 +127,8 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if data.AuthSuccess {
-		if data.forceAuth {
-			h.redirectWithoutForceAuth(w, r, data)
+		if data.requestAuth {
+			h.redirectWithoutRequestAuth(w, r, data)
 			return
 		}
 
