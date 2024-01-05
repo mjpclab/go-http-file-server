@@ -16,22 +16,10 @@ type loggableResponseWriter struct {
 
 func (w loggableResponseWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
-	logRequest(w.logger, w.request, statusCode)
-}
-
-func tryGetLoggableResponseWriter(w http.ResponseWriter, r *http.Request, logger *serverLog.Logger) http.ResponseWriter {
-	if logger.CanLogAccess() {
-		return loggableResponseWriter{w, r, logger}
-	} else {
-		return w
-	}
+	go logRequest(w.logger, w.request, statusCode)
 }
 
 func logRequest(logger *serverLog.Logger, r *http.Request, statusCode int) {
-	if !logger.CanLogAccess() {
-		return
-	}
-
 	code := strconv.Itoa(statusCode)
 
 	var unescapedUri []byte
@@ -60,7 +48,7 @@ func logRequest(logger *serverLog.Logger, r *http.Request, statusCode int) {
 	}
 	buf = append(buf, uri...)
 
-	go logger.LogAccess(buf)
+	logger.LogAccess(buf)
 }
 
 func (h *aliasHandler) logMutate(username, action, detail string, r *http.Request) {

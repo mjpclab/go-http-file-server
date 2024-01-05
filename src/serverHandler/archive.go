@@ -43,11 +43,18 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 }
 
 func (h *aliasHandler) visitTreeNode(
-	fsPath, rawReqPath, relPath string,
+	r *http.Request,
+	rawReqPath, fsPath, relPath string,
 	statNode bool,
 	childSelections []string,
 	archiveCallback archiveCallback,
 ) {
+	if needAuth, _ := h.needAuth("", rawReqPath, fsPath); needAuth {
+		if _, authSuccess, _ := h.verifyAuth(r, needAuth); !authSuccess {
+			return
+		}
+	}
+
 	var fInfo os.FileInfo
 	var childInfos []os.FileInfo
 	// wrap func to run defer ASAP
@@ -111,9 +118,9 @@ func (h *aliasHandler) visitTreeNode(
 			childRelPath := relPath + childPath
 
 			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
-				h.visitTreeNode(childAlias.fs, childRawReqPath, childRelPath, true, childChildSelections, archiveCallback)
+				h.visitTreeNode(r, childRawReqPath, childAlias.fs, childRelPath, true, childChildSelections, archiveCallback)
 			} else {
-				h.visitTreeNode(childFsPath, childRawReqPath, childRelPath, statNode, childChildSelections, archiveCallback)
+				h.visitTreeNode(r, childRawReqPath, childFsPath, childRelPath, statNode, childChildSelections, archiveCallback)
 			}
 		}
 	}
@@ -145,8 +152,9 @@ func (h *aliasHandler) archive(
 	}
 
 	h.visitTreeNode(
-		path.Clean(h.root+pageData.handlerReqPath),
+		r,
 		pageData.rawReqPath,
+		path.Clean(h.root+pageData.handlerReqPath),
 		"",
 		pageData.Item != nil, // not empty root
 		selections,

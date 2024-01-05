@@ -5,7 +5,7 @@ import "testing"
 func TestGetPathEntries(t *testing.T) {
 	var result []pathEntry
 
-	result = getPathEntries("./", "/", true)
+	result, _ = getPathEntries("./", "/", true)
 	if len(result) != 1 {
 		t.Errorf("%#v\n", result)
 	}
@@ -13,7 +13,7 @@ func TestGetPathEntries(t *testing.T) {
 		t.Error(result[0])
 	}
 
-	result = getPathEntries("./", "/a/b/c", false)
+	result, _ = getPathEntries("./", "/a/b/c", false)
 	if len(result) != 4 {
 		t.Error(len(result))
 	}
@@ -26,11 +26,11 @@ func TestGetPathEntries(t *testing.T) {
 	if result[2].Path != "./" || result[2].Name != "b" {
 		t.Error(result[2])
 	}
-	if result[3].Path != "./c/" || result[3].Name != "c" {
+	if result[3].Path != "./c" || result[3].Name != "c" {
 		t.Error(result[3])
 	}
 
-	result = getPathEntries("./", "/a/b/c", true)
+	result, _ = getPathEntries("./", "/a/b/c", true)
 	if len(result) != 4 {
 		t.Error(len(result))
 	}
@@ -47,7 +47,7 @@ func TestGetPathEntries(t *testing.T) {
 		t.Error(result[3])
 	}
 
-	result = getPathEntries("./foo", "/", true)
+	result, _ = getPathEntries("./foo", "/", true)
 	if len(result) != 1 {
 		t.Error(len(result))
 	}

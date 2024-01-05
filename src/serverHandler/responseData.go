@@ -33,7 +33,7 @@ type responseData struct {
 	wantJson       bool
 
 	NeedAuth     bool
-	forceAuth    bool
+	requestAuth  bool
 	AuthUserName string
 	AuthSuccess  bool
 
@@ -81,7 +81,7 @@ type responseData struct {
 	Trans *i18n.Translation
 }
 
-func getPathEntries(currDirRelPath, path string, tailSlash bool) []pathEntry {
+func getPathEntries(currDirRelPath, path string, tailSlash bool) (pathEntries []pathEntry, rootRelPath string) {
 	pathSegs := make([]string, 1, 12)
 	pathSegs[0] = "/"
 	for refPath := path[1:]; len(refPath) > 0; {
@@ -102,25 +102,35 @@ func getPathEntries(currDirRelPath, path string, tailSlash bool) []pathEntry {
 		pathDepth--
 	}
 
-	pathEntries := make([]pathEntry, pathCount)
-	for n := 1; n <= pathCount; n++ {
+	pathEntries = make([]pathEntry, pathCount)
+	for i := 0; i < pathCount; i++ {
+		depth := i + 1
 		var relPath string
-		if n < pathDepth {
-			relPath = strings.Repeat("../", pathDepth-n)
-		} else if n == pathDepth {
+		if depth < pathDepth {
+			if i == 0 {
+				relPath = strings.Repeat("../", pathDepth-depth)
+			} else {
+				// optimization: use existing string instead of generating new one
+				// should got same result as above `if` block
+				relPath = pathEntries[i-1].Path[3:]
+			}
+		} else if depth == pathDepth {
 			relPath = currDirRelPath
-		} else /*if n == pathDepth+1*/ {
+		} else /*if depth == pathDepth+1*/ {
 			relPath = currDirRelPath + pathSegs[pathDepth] + "/"
+			if !tailSlash {
+				relPath = relPath[:len(relPath)-1]
+			}
 		}
 
-		i := n - 1
 		pathEntries[i] = pathEntry{
 			Name: pathSegs[i],
 			Path: relPath,
 		}
 	}
+	rootRelPath = pathEntries[0].Path
 
-	return pathEntries
+	return
 }
 
 func stat(reqFsPath string, visitFs bool) (file *os.File, item os.FileInfo, err error) {
@@ -315,7 +325,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	status := http.StatusOK
 
-	needAuth, forceAuth := h.needAuth(rawQuery, rawReqPath, reqFsPath)
+	needAuth, requestAuth := h.needAuth(rawQuery, rawReqPath, reqFsPath)
 	authUserName, authSuccess, _authErr := h.verifyAuth(r, needAuth)
 	if needAuth {
 		if _authErr != nil {
@@ -355,8 +365,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	isRoot := rawReqPath == "/"
 
 	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
-	pathEntries := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
-	rootRelPath := pathEntries[0].Path
+	pathEntries, rootRelPath := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
 
 	file, item, _statErr := stat(reqFsPath, authSuccess && !h.emptyRoot)
 	if _statErr != nil {
@@ -418,12 +427,12 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	subItemPrefix := getSubItemPrefix(currDirRelPath, rawReqPath, tailSlash)
 
-	canUpload := authSuccess && h.getCanUpload(item, rawReqPath, reqFsPath)
-	canMkdir := authSuccess && h.getCanMkdir(item, rawReqPath, reqFsPath)
-	canDelete := authSuccess && h.getCanDelete(item, rawReqPath, reqFsPath)
+	canUpload := allowAccess && authSuccess && h.getCanUpload(item, rawReqPath, reqFsPath)
+	canMkdir := allowAccess && authSuccess && h.getCanMkdir(item, rawReqPath, reqFsPath)
+	canDelete := allowAccess && authSuccess && h.getCanDelete(item, rawReqPath, reqFsPath)
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
-	canArchive := authSuccess && h.getCanArchive(subItems, rawReqPath, reqFsPath)
-	canCors := authSuccess && h.getCanCors(rawReqPath, reqFsPath)
+	canArchive := allowAccess && authSuccess && h.getCanArchive(subItems, rawReqPath, reqFsPath)
+	canCors := allowAccess && authSuccess && h.getCanCors(rawReqPath, reqFsPath)
 	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
 	context := pathContext{
@@ -440,7 +449,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		wantJson:       wantJson,
 
 		NeedAuth:     needAuth,
-		forceAuth:    forceAuth,
+		requestAuth:  requestAuth,
 		AuthUserName: authUserName,
 		AuthSuccess:  authSuccess,
 

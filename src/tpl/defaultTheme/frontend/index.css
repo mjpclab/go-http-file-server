@@ -516,7 +516,17 @@ html.dragging::before {
 	background: #ffc;
 }
 
+@media only screen and (prefers-color-scheme: light) {
+	html {
+		color-scheme: light;
+	}
+}
+
 @media only screen and (prefers-color-scheme: dark) {
+	html {
+		color-scheme: dark;
+	}
+
 	html, body {
 		background: #111;
 	}

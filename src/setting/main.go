@@ -6,16 +6,16 @@ import (
 )
 
 type Setting struct {
-	Quiet   bool
 	PidFile string
+	Quiet   bool
 }
 
 func ParseFromEnv() *Setting {
-	quiet := util.GetBoolEnv("GHFS_QUIET")
 	pidFile := os.Getenv("GHFS_PID_FILE")
+	quiet := util.GetBoolEnv("GHFS_QUIET")
 
 	return &Setting{
-		Quiet:   quiet,
 		PidFile: pidFile,
+		Quiet:   quiet,
 	}
 }
