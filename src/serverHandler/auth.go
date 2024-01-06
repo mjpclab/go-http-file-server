@@ -27,8 +27,10 @@ func (h *aliasHandler) notifyAuth(w http.ResponseWriter, r *http.Request) {
 func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool) (username string, success bool, err error) {
 	user, pass, hasAuthReq := r.BasicAuth()
 
-	if hasAuthReq && h.users.Auth(user, pass) {
-		return user, true, nil
+	if hasAuthReq {
+		if username, success = h.users.Auth(user, pass); success {
+			return
+		}
 	}
 
 	if !needAuth {

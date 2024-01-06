@@ -85,13 +85,14 @@ func (list *List) AddSha512(username, password string) error {
 	return err
 }
 
-func (list *List) Auth(username, password string) bool {
+func (list *List) Auth(username, password string) (string, bool) {
 	index := list.FindIndex(username)
 	if index < 0 {
-		return false
+		return "", false
 	}
 
-	return list.users[index].auth(password)
+	u := list.users[index]
+	return u.getName(), u.auth(password)
 }
 
 func NewList() *List {

@@ -330,13 +330,11 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 
 	needAuth, requestAuth := h.needAuth(rawQuery, rawReqPath, reqFsPath)
 	authUserName, authSuccess, _authErr := h.verifyAuth(r, needAuth)
-	if needAuth {
-		if _authErr != nil {
-			errs = append(errs, _authErr)
-		}
-		if !authSuccess {
-			status = http.StatusUnauthorized
-		}
+	if needAuth && _authErr != nil {
+		errs = append(errs, _authErr)
+	}
+	if !authSuccess {
+		status = http.StatusUnauthorized
 	}
 
 	headers := h.getHeaders(rawReqPath, reqFsPath, authSuccess)
