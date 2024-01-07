@@ -11,18 +11,21 @@ import (
 
 type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error
 
-func matchSelection(info os.FileInfo, selections []string) (matchName, matchPrefix bool, childSelections []string) {
+func matchSelection(info os.FileInfo, selections []string) (match bool, childSelections []string) {
 	if len(selections) == 0 {
-		return true, false, nil
+		return true, nil
 	}
 
 	name := info.Name()
 	for _, selName := range selections {
 		if util.IsPathEqual(selName, name) {
-			matchName = true
+			match = true
 			continue
 		}
 
+		if !info.IsDir() {
+			continue
+		}
 		slashIndex := strings.IndexByte(selName, '/')
 		if slashIndex <= 0 {
 			continue
@@ -30,9 +33,9 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 
 		selNamePart1 := selName[:slashIndex]
 		if util.IsPathEqual(selNamePart1, name) {
+			match = true
 			childSel := selName[slashIndex+1:]
 			if len(childSel) > 0 {
-				matchPrefix = true
 				childSelections = append(childSelections, childSel)
 			}
 			continue
@@ -107,8 +110,8 @@ func (h *aliasHandler) visitTreeNode(
 
 		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
 		for _, childInfo := range childInfos {
-			matchChildName, matchChildPrefix, childChildSelections := matchSelection(childInfo, childSelections)
-			if !matchChildName && !matchChildPrefix {
+			matchChild, childChildSelections := matchSelection(childInfo, childSelections)
+			if !matchChild {
 				continue
 			}
 
