@@ -9,6 +9,7 @@ import (
 	"mjpclab.dev/ghfs/src/setting"
 	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
 	"mjpclab.dev/ghfs/src/tpl/theme"
+	"net/http"
 	"time"
 )
 
@@ -18,7 +19,14 @@ type App struct {
 }
 
 func (app *App) Open() []error {
-	return app.vhostSvc.Open()
+	errs := app.vhostSvc.Open()
+	es := make([]error, 0, len(errs))
+	for i := range errs {
+		if errs[i] != http.ErrServerClosed {
+			es = append(es, errs[i])
+		}
+	}
+	return es
 }
 
 func (app *App) Close() {
