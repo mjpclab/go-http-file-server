@@ -3,6 +3,8 @@ package serverHandler
 import (
 	"errors"
 	"io"
+	"mime"
+	"mime/multipart"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
@@ -40,6 +42,17 @@ func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) stri
 	return ""
 }
 
+// RFC 7578, Section 4.2 requires that if a filename is provided, the
+// directory path information must not be used.
+// Since Go 1.17, Part.FileName() will strip directory information.
+// However, the directory information is needed for uploading.
+// Parse manually instead.
+func getPartFilePath(part *multipart.Part) string {
+	cd := part.Header.Get("Content-Disposition")
+	_, params, _ := mime.ParseMediaType(cd)
+	return params["filename"]
+}
+
 func (h *aliasHandler) saveUploadFiles(authUserName, fsPrefix string, createDir, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	var errs []error
 
@@ -58,7 +71,7 @@ func (h *aliasHandler) saveUploadFiles(authUserName, fsPrefix string, createDir,
 			break
 		}
 
-		inputPartFilePath := part.FileName()
+		inputPartFilePath := getPartFilePath(part)
 		if len(inputPartFilePath) == 0 {
 			continue
 		}
