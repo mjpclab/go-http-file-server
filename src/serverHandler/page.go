@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-const TypeDir = template.HTML("dir")
-const TypeFile = template.HTML("file")
+const typeDir = template.HTML("dir")
+const typeFile = template.HTML("file")
 
 func updateSubItemsHtml(data *responseData) {
 	length := len(data.SubItems)
@@ -27,11 +27,11 @@ func updateSubItemsHtml(data *responseData) {
 
 		if info.IsDir() {
 			displayName = tplUtil.FormatFilename(name) + "/"
-			typ = TypeDir
+			typ = typeDir
 			url = data.SubItemPrefix + urlEscapedName + "/" + data.Context.QueryString()
 		} else {
 			displayName = tplUtil.FormatFilename(name)
-			typ = TypeFile
+			typ = typeFile
 			url = data.SubItemPrefix + urlEscapedName + data.Context.FileQueryString()
 			readableSize = tplUtil.FormatSize(info.Size())
 		}
