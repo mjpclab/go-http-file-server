@@ -33,24 +33,29 @@ const (
 	removeSlashSuffix
 )
 
-type responseData struct {
-	prefixReqPath  string
-	rawReqPath     string
-	handlerReqPath string
-	wantJson       bool
+type sessionContext struct {
+	prefixReqPath string
+	vhostReqPath  string
+	aliasReqPath  string
+	fsPath        string
+
+	allowAccess bool
+
+	needAuth     bool
+	requestAuth  bool
+	authUserName string
+	authSuccess  bool
 
 	redirectAction redirectAction
 
-	NeedAuth     bool
-	requestAuth  bool
-	AuthUserName string
-	AuthSuccess  bool
+	headers  [][2]string
+	wantJson bool
+	file     *os.File
 
-	RestrictAccess bool
-	AllowAccess    bool
+	errors []error
+}
 
-	Headers [][2]string
-
+type responseData struct {
 	IsDownload     bool
 	IsDownloadFile bool
 	IsUpload       bool
@@ -66,7 +71,6 @@ type responseData struct {
 	CanCors      bool
 	LoginAvail   bool
 
-	errors []error
 	Status int
 
 	IsRoot      bool
@@ -74,7 +78,6 @@ type responseData struct {
 	Paths       []pathEntry
 	RootRelPath string
 
-	File          *os.File
 	Item          os.FileInfo
 	ItemName      string
 	SubItems      []os.FileInfo
@@ -314,21 +317,21 @@ func dereferenceSymbolLinks(reqFsPath string, subItems []os.FileInfo) (errs []er
 	return
 }
 
-func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsPath string) {
+func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext, data *responseData) {
 	var errs []error
 
 	prefixReqPath := r.URL.RawPath // init by pathTransformHandler
-	rawReqPath := r.URL.Path
-	tailSlash := rawReqPath[len(rawReqPath)-1] == '/'
+	vhostReqPath := r.URL.Path
+	tailSlash := vhostReqPath[len(vhostReqPath)-1] == '/'
 
-	reqPath := util.CleanUrlPath(rawReqPath[len(h.aliasPrefix):])
-	reqFsPath := filepath.Clean(h.root + reqPath)
+	reqPath := util.CleanUrlPath(vhostReqPath[len(h.aliasPrefix):])
+	fsPath := filepath.Clean(h.root + reqPath)
 
 	rawQuery := r.URL.RawQuery
 
 	status := http.StatusOK
 
-	needAuth, requestAuth := h.needAuth(rawQuery, rawReqPath, reqFsPath)
+	needAuth, requestAuth := h.needAuth(rawQuery, vhostReqPath, fsPath)
 	authUserName, authSuccess, _authErr := h.verifyAuth(r, needAuth)
 	if needAuth && _authErr != nil {
 		errs = append(errs, _authErr)
@@ -337,7 +340,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		status = http.StatusUnauthorized
 	}
 
-	headers := h.getHeaders(rawReqPath, reqFsPath, authSuccess)
+	headers := h.getHeaders(vhostReqPath, fsPath, authSuccess)
 
 	isDownload := false
 	isDownloadFile := false
@@ -363,19 +366,19 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	}
 	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
 
-	isRoot := rawReqPath == "/"
+	isRoot := vhostReqPath == "/"
 
-	currDirRelPath := getCurrDirRelPath(rawReqPath, prefixReqPath)
-	pathEntries, rootRelPath := getPathEntries(currDirRelPath, rawReqPath, tailSlash)
+	currDirRelPath := getCurrDirRelPath(vhostReqPath, prefixReqPath)
+	pathEntries, rootRelPath := getPathEntries(currDirRelPath, vhostReqPath, tailSlash)
 
-	file, item, _statErr := stat(reqFsPath, authSuccess && !h.emptyRoot)
+	file, item, _statErr := stat(fsPath, authSuccess && !h.emptyRoot)
 	if _statErr != nil {
 		errs = append(errs, _statErr)
 		status = getStatusByErr(_statErr)
 	}
 
 	redirectAction := noRedirect
-	if h.autoDirSlash > 0 && len(rawReqPath) > 1 && item != nil {
+	if h.autoDirSlash > 0 && len(vhostReqPath) > 1 && item != nil {
 		if item.IsDir() {
 			if prefixReqPath[len(prefixReqPath)-1] != '/' {
 				redirectAction = addSlashSuffix
@@ -387,7 +390,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		}
 	}
 
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(rawReqPath, reqFsPath, item, authSuccess && redirectAction == noRedirect)
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, authSuccess && redirectAction == noRedirect)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -401,7 +404,7 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		}
 	}
 
-	allowAccess := h.isAllowAccess(r, rawReqPath, reqFsPath, file, item)
+	allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item)
 	if !allowAccess {
 		status = http.StatusForbidden
 	}
@@ -414,13 +417,13 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(rawReqPath, item, subItems, allowAccess && authSuccess && redirectAction == noRedirect)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, allowAccess && authSuccess && redirectAction == noRedirect)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
 	}
 
-	_dereferenceErrs := dereferenceSymbolLinks(reqFsPath, subItems)
+	_dereferenceErrs := dereferenceSymbolLinks(fsPath, subItems)
 	if len(_dereferenceErrs) > 0 {
 		errs = append(errs, _dereferenceErrs...)
 	}
@@ -433,18 +436,18 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 	subItems = h.FilterItems(subItems)
 	rawSortBy, sortState := sortInfos(subItems, rawQuery, h.defaultSort)
 
-	if h.emptyRoot && status == http.StatusOK && len(rawReqPath) > 1 {
+	if h.emptyRoot && status == http.StatusOK && len(vhostReqPath) > 1 {
 		status = http.StatusNotFound
 	}
 
-	subItemPrefix := getSubItemPrefix(currDirRelPath, rawReqPath, tailSlash)
+	subItemPrefix := getSubItemPrefix(currDirRelPath, vhostReqPath, tailSlash)
 
-	canUpload := allowAccess && authSuccess && h.getCanUpload(item, rawReqPath, reqFsPath)
-	canMkdir := allowAccess && authSuccess && h.getCanMkdir(item, rawReqPath, reqFsPath)
-	canDelete := allowAccess && authSuccess && h.getCanDelete(item, rawReqPath, reqFsPath)
+	canUpload := allowAccess && authSuccess && h.getCanUpload(item, vhostReqPath, fsPath)
+	canMkdir := allowAccess && authSuccess && h.getCanMkdir(item, vhostReqPath, fsPath)
+	canDelete := allowAccess && authSuccess && h.getCanDelete(item, vhostReqPath, fsPath)
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
-	canArchive := allowAccess && authSuccess && h.getCanArchive(subItems, rawReqPath, reqFsPath)
-	canCors := allowAccess && authSuccess && h.getCanCors(rawReqPath, reqFsPath)
+	canArchive := allowAccess && authSuccess && h.getCanArchive(subItems, vhostReqPath, fsPath)
+	canCors := allowAccess && authSuccess && h.getCanCors(vhostReqPath, fsPath)
 	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
 	context := pathContext{
@@ -454,24 +457,28 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		defaultSort:  h.defaultSort,
 	}
 
-	return &responseData{
-		prefixReqPath:  prefixReqPath,
-		rawReqPath:     rawReqPath,
-		handlerReqPath: reqPath,
-		wantJson:       wantJson,
+	session = &sessionContext{
+		prefixReqPath: prefixReqPath,
+		vhostReqPath:  vhostReqPath,
+		aliasReqPath:  reqPath,
+		fsPath:        fsPath,
+
+		allowAccess: allowAccess,
 
 		redirectAction: redirectAction,
 
-		NeedAuth:     needAuth,
+		needAuth:     needAuth,
 		requestAuth:  requestAuth,
-		AuthUserName: authUserName,
-		AuthSuccess:  authSuccess,
+		authUserName: authUserName,
+		authSuccess:  authSuccess,
 
-		RestrictAccess: h.restrictAccess,
-		AllowAccess:    allowAccess,
+		headers:  headers,
+		wantJson: wantJson,
+		file:     file,
 
-		Headers: headers,
-
+		errors: errs,
+	}
+	data = &responseData{
 		IsDownload:     isDownload,
 		IsDownloadFile: isDownloadFile,
 		IsUpload:       isUpload,
@@ -487,15 +494,13 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		CanCors:      canCors,
 		LoginAvail:   loginAvail,
 
-		errors: errs,
 		Status: status,
 
 		IsRoot:      isRoot,
-		Path:        rawReqPath,
+		Path:        vhostReqPath,
 		Paths:       pathEntries,
 		RootRelPath: rootRelPath,
 
-		File:          file,
 		Item:          item,
 		ItemName:      itemName,
 		SubItems:      subItems,
@@ -504,5 +509,6 @@ func (h *aliasHandler) getResponseData(r *http.Request) (data *responseData, fsP
 		SubItemPrefix: subItemPrefix,
 		SortState:     sortState,
 		Context:       context,
-	}, reqFsPath
+	}
+	return
 }

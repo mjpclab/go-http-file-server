@@ -103,40 +103,40 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// data
-	data, fsPath := h.getResponseData(r)
-	h.logErrors(data.errors)
-	if data.File != nil {
+	session, data := h.getSessionData(r)
+	h.logErrors(session.errors)
+	if session.file != nil {
 		defer func() {
-			data.File.Close()
+			session.file.Close()
 		}()
 	}
 
-	if h.applyMiddlewares(h.inMiddlewares, w, r, data, fsPath) {
+	if h.applyMiddlewares(h.inMiddlewares, w, r, session, data) {
 		return
 	}
 
-	if !data.AllowAccess {
-		if !h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
+	if !session.allowAccess {
+		if !h.applyMiddlewares(h.postMiddlewares, w, r, session, data) {
 			h.page(w, r, data)
 		}
 		return
 	}
 
-	if data.NeedAuth {
+	if session.needAuth {
 		h.notifyAuth(w, r)
 	}
 
-	if data.AuthSuccess {
-		if data.requestAuth {
-			h.redirectWithoutRequestAuth(w, r, data)
+	if session.authSuccess {
+		if session.requestAuth {
+			h.redirectWithoutRequestAuth(w, r, session, data)
 			return
 		}
 
-		if data.redirectAction == addSlashSuffix {
-			redirect(w, r, data.prefixReqPath+"/", h.autoDirSlash)
+		if session.redirectAction == addSlashSuffix {
+			redirect(w, r, session.prefixReqPath+"/", h.autoDirSlash)
 			return
-		} else if data.redirectAction == removeSlashSuffix {
-			redirect(w, r, data.prefixReqPath[:len(data.prefixReqPath)-1], h.autoDirSlash)
+		} else if session.redirectAction == removeSlashSuffix {
+			redirect(w, r, session.prefixReqPath[:len(session.prefixReqPath)-1], h.autoDirSlash)
 			return
 		}
 
@@ -144,10 +144,10 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			cors(w)
 		}
 
-		header(w, data.Headers)
+		header(w, session.headers)
 
 		if data.IsMutate {
-			h.mutate(w, r, data)
+			h.mutate(w, r, session, data)
 			return
 		}
 
@@ -155,27 +155,27 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if len(r.URL.RawQuery) >= 3 {
 			switch r.URL.RawQuery[:3] {
 			case "tar":
-				h.tar(w, r, data)
+				h.tar(w, r, session, data)
 				return
 			case "tgz":
-				h.tgz(w, r, data)
+				h.tgz(w, r, session, data)
 				return
 			case "zip":
-				h.zip(w, r, data)
+				h.zip(w, r, session, data)
 				return
 			}
 		}
 	}
 
-	if h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
+	if h.applyMiddlewares(h.postMiddlewares, w, r, session, data) {
 		return
 	}
 
 	// final process
-	if data.wantJson {
+	if session.wantJson {
 		h.json(w, r, data)
-	} else if shouldServeAsContent(data.File, data.Item) {
-		h.content(w, r, data)
+	} else if shouldServeAsContent(session.file, data.Item) {
+		h.content(w, r, session, data)
 	} else {
 		h.page(w, r, data)
 	}

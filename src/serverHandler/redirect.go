@@ -10,10 +10,10 @@ func redirect(w http.ResponseWriter, r *http.Request, path string, code int) {
 	http.Redirect(w, r, target, code)
 }
 
-func (h *aliasHandler) redirectWithoutRequestAuth(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) redirectWithoutRequestAuth(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
 	returnUrl := r.Header.Get("Referer")
 	if len(returnUrl) == 0 {
-		returnUrl = data.prefixReqPath + data.Context.QueryString()
+		returnUrl = session.prefixReqPath + data.Context.QueryString()
 	}
 
 	http.Redirect(w, r, returnUrl, http.StatusFound)

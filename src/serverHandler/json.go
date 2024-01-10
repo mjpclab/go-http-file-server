@@ -56,9 +56,6 @@ func getJsonData(data *responseData) *jsonResponseData {
 	}
 
 	return &jsonResponseData{
-		NeedAuth:           data.NeedAuth,
-		AuthUserName:       data.AuthUserName,
-		AuthSuccess:        data.AuthSuccess,
 		IsRoot:             data.IsRoot,
 		Path:               data.Path,
 		Paths:              data.Paths,

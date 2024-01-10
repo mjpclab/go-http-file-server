@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
 	header := w.Header()
 	header.Set("Vary", h.vary)
 	header.Set("X-Content-Type-Options", "nosniff")
@@ -14,7 +14,7 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, data *res
 	}
 
 	item := data.Item
-	file := data.File
+	file := session.file
 
 	http.ServeContent(w, r, item.Name(), item.ModTime(), file)
 }

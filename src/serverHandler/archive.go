@@ -132,19 +132,20 @@ func (h *aliasHandler) visitTreeNode(
 func (h *aliasHandler) archive(
 	w http.ResponseWriter,
 	r *http.Request,
-	pageData *responseData,
+	session *sessionContext,
+	data *responseData,
 	selections []string,
 	fileSuffix string,
 	contentType string,
 	cbWriteFile archiveCallback,
 ) {
 	var itemName string
-	_, hasAlias := h.aliases.byUrlPath(pageData.rawReqPath)
+	_, hasAlias := h.aliases.byUrlPath(session.vhostReqPath)
 	if hasAlias {
-		itemName = path.Base(pageData.rawReqPath)
+		itemName = path.Base(session.vhostReqPath)
 	}
 	if len(itemName) == 0 || itemName == "/" {
-		itemName = pageData.ItemName
+		itemName = data.ItemName
 	}
 
 	targetFilename := itemName + fileSuffix
@@ -156,10 +157,10 @@ func (h *aliasHandler) archive(
 
 	h.visitTreeNode(
 		r,
-		pageData.rawReqPath,
-		path.Clean(h.root+pageData.handlerReqPath),
+		session.vhostReqPath,
+		path.Clean(h.root+session.aliasReqPath),
 		"",
-		pageData.Item != nil, // not empty root
+		data.Item != nil, // not empty root
 		selections,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			h.logArchive(targetFilename, relPath, r)
