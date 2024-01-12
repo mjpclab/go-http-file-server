@@ -158,7 +158,7 @@ func (h *aliasHandler) archive(
 	h.visitTreeNode(
 		r,
 		session.vhostReqPath,
-		path.Clean(h.root+session.aliasReqPath),
+		path.Clean(h.fs+session.aliasReqPath),
 		"",
 		data.Item != nil, // not empty root
 		selections,

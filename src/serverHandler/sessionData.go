@@ -324,8 +324,8 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	vhostReqPath := r.URL.Path
 	tailSlash := vhostReqPath[len(vhostReqPath)-1] == '/'
 
-	reqPath := util.CleanUrlPath(vhostReqPath[len(h.aliasPrefix):])
-	fsPath := filepath.Clean(h.root + reqPath)
+	reqPath := util.CleanUrlPath(vhostReqPath[len(h.url):])
+	fsPath := filepath.Clean(h.fs + reqPath)
 
 	rawQuery := r.URL.RawQuery
 

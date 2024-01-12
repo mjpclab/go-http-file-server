@@ -14,13 +14,11 @@ import (
 
 var defaultHandler = http.NotFoundHandler()
 
-type pathStrings struct {
-	path    string
-	strings []string
-}
+type prefixFilter func(whole, prefix string) bool
 
 type aliasHandler struct {
-	root         string
+	alias
+
 	emptyRoot    bool
 	autoDirSlash int
 	hsts         bool
@@ -28,7 +26,6 @@ type aliasHandler struct {
 	toHttps      bool
 	toHttpsPort  string // with prefix ":"
 	defaultSort  string
-	aliasPrefix  string
 
 	users  *user.List
 	theme  theme.Theme
@@ -186,18 +183,11 @@ func newAliasHandler(
 	vhostCtx *vhostContext,
 	currentAlias alias,
 	allAliases aliases,
-) http.Handler {
+) *aliasHandler {
 	emptyRoot := p.EmptyRoot && currentAlias.url == "/"
 
-	aliases := aliases{}
-	for _, alias := range allAliases {
-		if alias.isSuccessorOf(currentAlias.url) {
-			aliases = append(aliases, alias)
-		}
-	}
-
 	h := &aliasHandler{
-		root:         currentAlias.fs,
+		alias:        currentAlias,
 		emptyRoot:    emptyRoot,
 		autoDirSlash: p.AutoDirSlash,
 		hsts:         p.Hsts,
@@ -205,14 +195,13 @@ func newAliasHandler(
 		toHttps:      p.ToHttps,
 		toHttpsPort:  p.ToHttpsPort,
 		defaultSort:  p.DefaultSort,
-		aliasPrefix:  currentAlias.url,
 
 		users:  vhostCtx.users,
 		theme:  vhostCtx.theme,
 		logger: vhostCtx.logger,
 
 		dirIndexes: p.DirIndexes,
-		aliases:    aliases,
+		aliases:    allAliases.filterSuccessor(currentAlias.url),
 
 		globalAuth: p.GlobalAuth,
 		authUrls:   p.AuthUrls,

@@ -16,15 +16,15 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *s
 	switch {
 	case data.IsUpload:
 		if data.CanUpload {
-			success = h.saveUploadFiles(session.authUserName, h.root+session.aliasReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
+			success = h.saveUploadFiles(session.authUserName, h.fs+session.aliasReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
 		}
 	case data.IsMkdir:
 		if data.CanMkdir && !h.logError(r.ParseForm()) {
-			success = h.mkdirs(session.authUserName, h.root+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
+			success = h.mkdirs(session.authUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	case data.IsDelete:
 		if data.CanDelete && !h.logError(r.ParseForm()) {
-			success = h.deleteItems(session.authUserName, h.root+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
+			success = h.deleteItems(session.authUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	}
 
