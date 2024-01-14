@@ -99,3 +99,31 @@ func (list pathHeadersList) filterSuccessor(matchPrefix prefixFilter, refPath st
 		return result
 	}
 }
+
+// []string
+
+func prefixMatched(list []string, matchPrefix prefixFilter, refPath string) bool {
+	for i := range list {
+		if matchPrefix(refPath, list[i]) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func filterSuccessor(list []string, matchPrefix prefixFilter, refPath string) []string {
+	var result []string
+
+	for _, v := range list {
+		if len(v) > len(refPath) && matchPrefix(v, refPath) {
+			result = append(result, v)
+		}
+	}
+
+	if len(list) == len(result) {
+		return list
+	} else {
+		return result
+	}
+}

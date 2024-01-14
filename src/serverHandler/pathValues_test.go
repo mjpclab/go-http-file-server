@@ -60,3 +60,24 @@ func TestPathHeaders(t *testing.T) {
 		t.Error(successors)
 	}
 }
+
+func TestPathList(t *testing.T) {
+	list := []string{
+		"/a", "/a/b", "/a/b/c", "/foo/bar",
+	}
+
+	if !prefixMatched(list, util.HasUrlPrefixDir, "/a/b") {
+		t.Error()
+	}
+	if !prefixMatched(list, util.HasUrlPrefixDir, "/a/b/c/d") {
+		t.Error()
+	}
+	if prefixMatched(list, util.HasUrlPrefixDir, "/lorem/ipsum") {
+		t.Error()
+	}
+
+	successors := filterSuccessor(list, util.HasUrlPrefixDir, "/a/b")
+	if len(successors) != 1 || successors[0] != "/a/b/c" {
+		t.Error(successors)
+	}
+}

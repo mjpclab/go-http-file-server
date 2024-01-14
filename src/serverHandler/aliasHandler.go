@@ -210,9 +210,9 @@ func newAliasHandler(
 		dirIndexes: p.DirIndexes,
 		aliases:    allAliases.filterSuccessor(currentAlias.url),
 
-		globalAuth: p.GlobalAuth,
-		authUrls:   p.AuthUrls,
-		authDirs:   p.AuthDirs,
+		globalAuth: p.GlobalAuth || prefixMatched(p.AuthUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
+		authUrls:   filterSuccessor(p.AuthUrls, util.HasUrlPrefixDir, currentAlias.url),
+		authDirs:   filterSuccessor(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
 
 		globalRestrictAccess: globalRestrictAccess,
 		restrictAccessUrls:   vhostCtx.restrictAccessUrls.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
@@ -222,25 +222,25 @@ func newAliasHandler(
 		headersUrls:   vhostCtx.headersUrls.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
 		headersDirs:   vhostCtx.headersDirs.filterSuccessor(util.HasFsPrefixDir, currentAlias.fs),
 
-		globalUpload: p.GlobalUpload,
-		uploadUrls:   p.UploadUrls,
-		uploadDirs:   p.UploadDirs,
+		globalUpload: p.GlobalUpload || prefixMatched(p.UploadUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.UploadDirs, util.HasFsPrefixDir, currentAlias.fs),
+		uploadUrls:   filterSuccessor(p.UploadUrls, util.HasUrlPrefixDir, currentAlias.url),
+		uploadDirs:   filterSuccessor(p.UploadDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		globalMkdir: p.GlobalMkdir,
-		mkdirUrls:   p.MkdirUrls,
-		mkdirDirs:   p.MkdirDirs,
+		globalMkdir: p.GlobalMkdir || prefixMatched(p.MkdirUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.MkdirDirs, util.HasFsPrefixDir, currentAlias.fs),
+		mkdirUrls:   filterSuccessor(p.MkdirUrls, util.HasUrlPrefixDir, currentAlias.url),
+		mkdirDirs:   filterSuccessor(p.MkdirDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		globalDelete: p.GlobalDelete,
-		deleteUrls:   p.DeleteUrls,
-		deleteDirs:   p.DeleteDirs,
+		globalDelete: p.GlobalDelete || prefixMatched(p.DeleteUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.DeleteDirs, util.HasFsPrefixDir, currentAlias.fs),
+		deleteUrls:   filterSuccessor(p.DeleteUrls, util.HasUrlPrefixDir, currentAlias.url),
+		deleteDirs:   filterSuccessor(p.DeleteDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		globalArchive: p.GlobalArchive,
-		archiveUrls:   p.ArchiveUrls,
-		archiveDirs:   p.ArchiveDirs,
+		globalArchive: p.GlobalArchive || prefixMatched(p.ArchiveUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.ArchiveDirs, util.HasFsPrefixDir, currentAlias.fs),
+		archiveUrls:   filterSuccessor(p.ArchiveUrls, util.HasUrlPrefixDir, currentAlias.url),
+		archiveDirs:   filterSuccessor(p.ArchiveDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		globalCors: p.GlobalCors,
-		corsUrls:   p.CorsUrls,
-		corsDirs:   p.CorsDirs,
+		globalCors: p.GlobalCors || prefixMatched(p.CorsUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.CorsDirs, util.HasFsPrefixDir, currentAlias.fs),
+		corsUrls:   filterSuccessor(p.CorsUrls, util.HasUrlPrefixDir, currentAlias.url),
+		corsDirs:   filterSuccessor(p.CorsDirs, util.HasFsPrefixDir, currentAlias.fs),
 
 		shows:     vhostCtx.shows,
 		showDirs:  vhostCtx.showDirs,
