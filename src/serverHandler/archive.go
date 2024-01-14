@@ -53,7 +53,7 @@ func (h *aliasHandler) visitTreeNode(
 	archiveCallback archiveCallback,
 ) {
 	if needAuth, _ := h.needAuth("", rawReqPath, fsPath); needAuth {
-		if _, authSuccess, _ := h.verifyAuth(r, needAuth); !authSuccess {
+		if _, _, err := h.verifyAuth(r, needAuth); err != nil {
 			return
 		}
 	}

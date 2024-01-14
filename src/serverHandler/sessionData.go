@@ -43,6 +43,7 @@ type sessionContext struct {
 
 	needAuth     bool
 	requestAuth  bool
+	authUserId   int
 	authUserName string
 	authSuccess  bool
 
@@ -332,8 +333,9 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	status := http.StatusOK
 
 	needAuth, requestAuth := h.needAuth(rawQuery, vhostReqPath, fsPath)
-	authUserName, authSuccess, _authErr := h.verifyAuth(r, needAuth)
-	if needAuth && _authErr != nil {
+	authUserId, authUserName, _authErr := h.verifyAuth(r, needAuth)
+	authSuccess := _authErr == nil
+	if needAuth && !authSuccess {
 		errs = append(errs, _authErr)
 	}
 	if !authSuccess {
@@ -469,6 +471,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 		needAuth:     needAuth,
 		requestAuth:  requestAuth,
+		authUserId:   authUserId,
 		authUserName: authUserName,
 		authSuccess:  authSuccess,
 

@@ -24,17 +24,18 @@ func (h *aliasHandler) notifyAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 
-func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool) (username string, success bool, err error) {
+func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool) (userid int, username string, err error) {
 	user, pass, hasAuthReq := r.BasicAuth()
 
 	if hasAuthReq {
-		if username, success = h.users.Auth(user, pass); success {
+		var success bool
+		if userid, username, success = h.users.Auth(user, pass); success {
 			return
 		}
 	}
 
 	if !needAuth {
-		return "", true, nil
+		return -1, "", nil
 	}
 
 	if !hasAuthReq {
