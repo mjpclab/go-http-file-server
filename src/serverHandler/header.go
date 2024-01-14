@@ -5,15 +5,10 @@ import (
 	"net/http"
 )
 
-type pathHeaders struct {
-	path    string
-	headers [][2]string
-}
+func newPathHeaders(pathHeadersEntries [][]string) pathHeadersList {
+	results := make(pathHeadersList, 0, len(pathHeadersEntries))
 
-func newPathHeaders(pathHeadersList [][]string) []pathHeaders {
-	results := make([]pathHeaders, 0, len(pathHeadersList))
-
-	for _, pathHeadersSeq := range pathHeadersList {
+	for _, pathHeadersSeq := range pathHeadersEntries {
 		if len(pathHeadersSeq) <= 1 { // no headers
 			continue
 		}

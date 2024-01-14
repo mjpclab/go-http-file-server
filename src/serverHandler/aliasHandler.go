@@ -49,8 +49,8 @@ type aliasHandler struct {
 	restrictAccessDirs   pathStringsList
 
 	globalHeaders [][2]string
-	headersUrls   []pathHeaders
-	headersDirs   []pathHeaders
+	headersUrls   pathHeadersList
+	headersDirs   pathHeadersList
 
 	globalUpload bool
 	uploadUrls   []string
@@ -189,6 +189,10 @@ func newAliasHandler(
 	globalRestrictAccess = vhostCtx.restrictAccessDirs.mergePrefixMatched(globalRestrictAccess, util.HasFsPrefixDir, currentAlias.fs)
 	globalRestrictAccess = util.InPlaceDedup(globalRestrictAccess)
 
+	globalHeaders := p.GlobalHeaders
+	globalHeaders = vhostCtx.headersUrls.mergePrefixMatched(globalHeaders, util.HasUrlPrefixDir, currentAlias.url)
+	globalHeaders = vhostCtx.headersDirs.mergePrefixMatched(globalHeaders, util.HasFsPrefixDir, currentAlias.fs)
+
 	h := &aliasHandler{
 		alias:        currentAlias,
 		emptyRoot:    emptyRoot,
@@ -214,9 +218,9 @@ func newAliasHandler(
 		restrictAccessUrls:   vhostCtx.restrictAccessUrls.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
 		restrictAccessDirs:   vhostCtx.restrictAccessDirs.filterSuccessor(util.HasFsPrefixDir, currentAlias.fs),
 
-		globalHeaders: p.GlobalHeaders,
-		headersUrls:   vhostCtx.headersUrls,
-		headersDirs:   vhostCtx.headersDirs,
+		globalHeaders: globalHeaders,
+		headersUrls:   vhostCtx.headersUrls.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
+		headersDirs:   vhostCtx.headersDirs.filterSuccessor(util.HasFsPrefixDir, currentAlias.fs),
 
 		globalUpload: p.GlobalUpload,
 		uploadUrls:   p.UploadUrls,

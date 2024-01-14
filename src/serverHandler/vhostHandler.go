@@ -25,8 +25,8 @@ type vhostContext struct {
 	restrictAccessUrls pathStringsList
 	restrictAccessDirs pathStringsList
 
-	headersUrls []pathHeaders
-	headersDirs []pathHeaders
+	headersUrls pathHeadersList
+	headersDirs pathHeadersList
 
 	vary string
 }

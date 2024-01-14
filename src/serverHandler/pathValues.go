@@ -51,3 +51,51 @@ func (list pathStringsList) filterSuccessor(matchPrefix prefixFilter, refPath st
 		return result
 	}
 }
+
+// pathHeaders
+
+type pathHeaders struct {
+	path    string
+	headers [][2]string
+}
+
+type pathHeadersList []pathHeaders
+
+func (list pathHeadersList) mergePrefixMatched(mergeWith [][2]string, matchPrefix prefixFilter, refPath string) [][2]string {
+	var result [][2]string
+	if mergeWith != nil {
+		result = make([][2]string, len(mergeWith))
+		copy(result, mergeWith)
+	}
+
+	for i := range list {
+		if matchPrefix(refPath, list[i].path) {
+			if result == nil {
+				result = [][2]string{}
+			}
+			result = append(result, list[i].headers...)
+		}
+	}
+
+	if mergeWith != nil && len(mergeWith) == len(result) {
+		return mergeWith
+	} else {
+		return result
+	}
+}
+
+func (list pathHeadersList) filterSuccessor(matchPrefix prefixFilter, refPath string) pathHeadersList {
+	var result pathHeadersList
+
+	for _, v := range list {
+		if len(v.path) > len(refPath) && matchPrefix(v.path, refPath) {
+			result = append(result, v)
+		}
+	}
+
+	if len(list) == len(result) {
+		return list
+	} else {
+		return result
+	}
+}
