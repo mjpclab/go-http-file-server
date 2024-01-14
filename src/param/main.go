@@ -136,6 +136,7 @@ func (param *Param) normalize() (errs []error) {
 	// global restrict access, nil to disable, non-nil to enable with allowed hosts
 	if param.GlobalRestrictAccess != nil {
 		param.GlobalRestrictAccess = util.ExtractHostsFromUrls(param.GlobalRestrictAccess)
+		param.GlobalRestrictAccess = util.InPlaceDedup(param.GlobalRestrictAccess)
 	}
 
 	// restrict access

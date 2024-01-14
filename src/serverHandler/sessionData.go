@@ -48,10 +48,12 @@ type sessionContext struct {
 	authSuccess  bool
 
 	redirectAction redirectAction
+	vary           string
+	headers        [][2]string
 
-	headers  [][2]string
 	wantJson bool
-	file     *os.File
+
+	file *os.File
 
 	errors []error
 }
@@ -406,7 +408,11 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		}
 	}
 
-	allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item)
+	restrictAccess, allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item)
+	vary := h.vary
+	if restrictAccess {
+		vary += ", referer, origin"
+	}
 	if !allowAccess {
 		status = http.StatusForbidden
 	}
@@ -467,17 +473,19 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 		allowAccess: allowAccess,
 
-		redirectAction: redirectAction,
-
 		needAuth:     needAuth,
 		requestAuth:  requestAuth,
 		authUserId:   authUserId,
 		authUserName: authUserName,
 		authSuccess:  authSuccess,
 
-		headers:  headers,
+		redirectAction: redirectAction,
+		vary:           vary,
+		headers:        headers,
+
 		wantJson: wantJson,
-		file:     file,
+
+		file: file,
 
 		errors: errs,
 	}

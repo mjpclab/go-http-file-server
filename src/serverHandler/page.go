@@ -62,9 +62,9 @@ func updateTranslation(r *http.Request, data *responseData) {
 	data.Trans = i18n.Dictionaries[index].Trans
 }
 
-func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
 	header := w.Header()
-	header.Set("Vary", h.vary)
+	header.Set("Vary", session.vary)
 	header.Set("X-Content-Type-Options", "nosniff")
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	if lacksHeader(header, "Cache-Control") {

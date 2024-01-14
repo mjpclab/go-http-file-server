@@ -6,6 +6,7 @@ import (
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -13,8 +14,6 @@ import (
 )
 
 var defaultHandler = http.NotFoundHandler()
-
-type prefixFilter func(whole, prefix string) bool
 
 type aliasHandler struct {
 	alias
@@ -45,10 +44,9 @@ type aliasHandler struct {
 	authUrls   []string
 	authDirs   []string
 
-	restrictAccess       bool
 	globalRestrictAccess []string
-	restrictAccessUrls   []pathStrings
-	restrictAccessDirs   []pathStrings
+	restrictAccessUrls   pathStringsList
+	restrictAccessDirs   pathStringsList
 
 	globalHeaders [][2]string
 	headersUrls   []pathHeaders
@@ -114,7 +112,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if !session.allowAccess {
 		if !h.applyMiddlewares(h.postMiddlewares, w, r, session, data) {
-			h.page(w, r, data)
+			h.page(w, r, session, data)
 		}
 		return
 	}
@@ -174,7 +172,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else if shouldServeAsContent(session.file, data.Item) {
 		h.content(w, r, session, data)
 	} else {
-		h.page(w, r, data)
+		h.page(w, r, session, data)
 	}
 }
 
@@ -185,6 +183,11 @@ func newAliasHandler(
 	allAliases aliases,
 ) *aliasHandler {
 	emptyRoot := p.EmptyRoot && currentAlias.url == "/"
+
+	globalRestrictAccess := p.GlobalRestrictAccess
+	globalRestrictAccess = vhostCtx.restrictAccessUrls.mergePrefixMatched(globalRestrictAccess, util.HasUrlPrefixDir, currentAlias.url)
+	globalRestrictAccess = vhostCtx.restrictAccessDirs.mergePrefixMatched(globalRestrictAccess, util.HasFsPrefixDir, currentAlias.fs)
+	globalRestrictAccess = util.InPlaceDedup(globalRestrictAccess)
 
 	h := &aliasHandler{
 		alias:        currentAlias,
@@ -207,10 +210,9 @@ func newAliasHandler(
 		authUrls:   p.AuthUrls,
 		authDirs:   p.AuthDirs,
 
-		restrictAccess:       vhostCtx.restrictAccess,
-		globalRestrictAccess: p.GlobalRestrictAccess,
-		restrictAccessUrls:   vhostCtx.restrictAccessUrls,
-		restrictAccessDirs:   vhostCtx.restrictAccessDirs,
+		globalRestrictAccess: globalRestrictAccess,
+		restrictAccessUrls:   vhostCtx.restrictAccessUrls.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
+		restrictAccessDirs:   vhostCtx.restrictAccessDirs.filterSuccessor(util.HasFsPrefixDir, currentAlias.fs),
 
 		globalHeaders: p.GlobalHeaders,
 		headersUrls:   vhostCtx.headersUrls,

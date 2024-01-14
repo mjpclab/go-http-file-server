@@ -22,9 +22,8 @@ type vhostContext struct {
 	hideDirs  *regexp.Regexp
 	hideFiles *regexp.Regexp
 
-	restrictAccess     bool
-	restrictAccessUrls []pathStrings
-	restrictAccessDirs []pathStrings
+	restrictAccessUrls pathStringsList
+	restrictAccessDirs pathStringsList
 
 	headersUrls []pathHeaders
 	headersDirs []pathHeaders
@@ -79,13 +78,9 @@ func NewVhostHandler(
 	// restrict access
 	restrictAccessUrls := newRestrictAccesses(p.RestrictAccessUrls)
 	restrictAccessDirs := newRestrictAccesses(p.RestrictAccessDirs)
-	restrictAccess := hasRestrictAccess(p.GlobalRestrictAccess, restrictAccessUrls, restrictAccessDirs)
 
 	// `Vary` header
 	vary := "accept-encoding"
-	if restrictAccess {
-		vary += ", referer, origin"
-	}
 
 	// alias param
 	vhostCtx := &vhostContext{
@@ -100,7 +95,6 @@ func NewVhostHandler(
 		hideDirs:  hideDirs,
 		hideFiles: hideFiles,
 
-		restrictAccess:     restrictAccess,
 		restrictAccessUrls: restrictAccessUrls,
 		restrictAccessDirs: restrictAccessDirs,
 

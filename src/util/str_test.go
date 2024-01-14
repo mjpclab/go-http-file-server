@@ -2,8 +2,25 @@ package util
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
 )
+
+func TestInPlaceDedup(t *testing.T) {
+	inputs := []string{"a", "b", "c", "b", "c", "d", "a", "e"}
+	deduped := InPlaceDedup(inputs)
+
+	if !reflect.DeepEqual(deduped, []string{"a", "b", "c", "d", "e"}) {
+		t.Error(deduped)
+	}
+	if !reflect.DeepEqual(inputs, []string{"a", "b", "c", "d", "e", "d", "a", "e"}) {
+		t.Error(inputs)
+	}
+
+	if InPlaceDedup(nil) != nil {
+		t.Error()
+	}
+}
 
 func TestReplaceControllingRune(t *testing.T) {
 	var str string
