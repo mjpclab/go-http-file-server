@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -45,4 +46,27 @@ func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool) (userid int, u
 	}
 
 	return
+}
+
+func (h *aliasHandler) redirectWithoutRequestAuth(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+	var returnUrl string
+	index := strings.Index(r.URL.RawQuery, authQueryParam+"=")
+	if index >= 0 {
+		returnUrl = r.URL.RawQuery[index+len(authQueryParam)+1:]
+		index = strings.LastIndexByte(returnUrl, '&')
+		if index >= 0 {
+			returnUrl = returnUrl[:index]
+		}
+		url, err := url.QueryUnescape(returnUrl)
+		if err == nil {
+			returnUrl = url
+		}
+	} else {
+		returnUrl = r.Header.Get("Referer")
+	}
+	if len(returnUrl) == 0 {
+		returnUrl = session.prefixReqPath + data.Context.QueryString()
+	}
+
+	http.Redirect(w, r, returnUrl, http.StatusFound)
 }

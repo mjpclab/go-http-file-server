@@ -155,5 +155,5 @@ curl -X POST -d 'name=dir1&name=dir2&name=dir3' 'http://localhost/tmp/?delete'
 # 登录
 发起登录认证，即使当前路径无需验证：
 ```
-GET <path>?auth
+GET <path>?auth[=return_url]
 ```
