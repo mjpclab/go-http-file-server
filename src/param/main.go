@@ -97,6 +97,11 @@ func (param *Param) normalize() (errs []error) {
 	var es []error
 	var err error
 
+	// listens
+	param.Listens = util.InPlaceDedup(param.Listens)
+	param.ListensPlain = util.InPlaceDedup(param.ListensPlain)
+	param.ListensTLS = util.InPlaceDedup(param.ListensTLS)
+
 	// root
 	param.Root, err = filepath.Abs(param.Root)
 	errs = serverError.AppendError(errs, err)

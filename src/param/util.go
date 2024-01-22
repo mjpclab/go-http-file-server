@@ -109,6 +109,8 @@ func NormalizeUrlPaths(inputs []string) []string {
 		outputs = append(outputs, util.CleanUrlPath(input))
 	}
 
+	outputs = util.InPlaceDedup(outputs)
+
 	return outputs
 }
 
@@ -127,6 +129,8 @@ func NormalizeFsPaths(inputs []string) []string {
 
 		outputs = append(outputs, abs)
 	}
+
+	outputs = util.InPlaceDedup(outputs)
 
 	return outputs
 }
