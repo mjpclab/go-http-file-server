@@ -6,6 +6,7 @@ import (
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
+	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -14,21 +15,16 @@ import (
 
 var defaultHandler = http.NotFoundHandler()
 
-type pathStrings struct {
-	path    string
-	strings []string
-}
-
 type aliasHandler struct {
-	root          string
-	emptyRoot     bool
-	forceDirSlash int
-	hsts          bool
-	hstsMaxAge    string
-	toHttps       bool
-	toHttpsPort   string // with prefix ":"
-	defaultSort   string
-	aliasPrefix   string
+	alias
+
+	emptyRoot    bool
+	autoDirSlash int
+	hsts         bool
+	hstsMaxAge   string
+	toHttps      bool
+	toHttpsPort  string // with prefix ":"
+	defaultSort  string
 
 	users  *user.List
 	theme  theme.Theme
@@ -48,14 +44,13 @@ type aliasHandler struct {
 	authUrls   []string
 	authDirs   []string
 
-	restrictAccess       bool
 	globalRestrictAccess []string
-	restrictAccessUrls   []pathStrings
-	restrictAccessDirs   []pathStrings
+	restrictAccessUrls   pathStringsList
+	restrictAccessDirs   pathStringsList
 
 	globalHeaders [][2]string
-	headersUrls   []pathHeaders
-	headersDirs   []pathHeaders
+	headersUrls   pathHeadersList
+	headersDirs   pathHeadersList
 
 	globalUpload bool
 	uploadUrls   []string
@@ -103,37 +98,40 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// data
-	data, fsPath := h.getResponseData(r)
-	h.logErrors(data.errors)
-	if data.File != nil {
+	session, data := h.getSessionData(r)
+	h.logErrors(session.errors)
+	if session.file != nil {
 		defer func() {
-			data.File.Close()
+			session.file.Close()
 		}()
 	}
 
-	if h.applyMiddlewares(h.inMiddlewares, w, r, data, fsPath) {
+	if h.applyMiddlewares(h.inMiddlewares, w, r, session, data) {
 		return
 	}
 
-	if !data.AllowAccess {
-		if !h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
-			h.page(w, r, data)
+	if !session.allowAccess {
+		if !h.applyMiddlewares(h.postMiddlewares, w, r, session, data) {
+			h.page(w, r, session, data)
 		}
 		return
 	}
 
-	if data.NeedAuth {
+	if session.needAuth {
 		h.notifyAuth(w, r)
 	}
 
-	if data.AuthSuccess {
-		if data.requestAuth {
-			h.redirectWithoutRequestAuth(w, r, data)
+	if session.authSuccess {
+		if session.requestAuth {
+			h.redirectWithoutRequestAuth(w, r, session, data)
 			return
 		}
 
-		if data.NeedDirSlashRedirect {
-			h.redirectWithSlashSuffix(w, r, data.prefixReqPath)
+		if session.redirectAction == addSlashSuffix {
+			redirect(w, r, session.prefixReqPath+"/", h.autoDirSlash)
+			return
+		} else if session.redirectAction == removeSlashSuffix {
+			redirect(w, r, session.prefixReqPath[:len(session.prefixReqPath)-1], h.autoDirSlash)
 			return
 		}
 
@@ -141,10 +139,10 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			cors(w)
 		}
 
-		header(w, data.Headers)
+		header(w, session.headers)
 
 		if data.IsMutate {
-			h.mutate(w, r, data)
+			h.mutate(w, r, session, data)
 			return
 		}
 
@@ -152,29 +150,29 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if len(r.URL.RawQuery) >= 3 {
 			switch r.URL.RawQuery[:3] {
 			case "tar":
-				h.tar(w, r, data)
+				h.tar(w, r, session, data)
 				return
 			case "tgz":
-				h.tgz(w, r, data)
+				h.tgz(w, r, session, data)
 				return
 			case "zip":
-				h.zip(w, r, data)
+				h.zip(w, r, session, data)
 				return
 			}
 		}
 	}
 
-	if h.applyMiddlewares(h.postMiddlewares, w, r, data, fsPath) {
+	if h.applyMiddlewares(h.postMiddlewares, w, r, session, data) {
 		return
 	}
 
 	// final process
-	if data.wantJson {
+	if session.wantJson {
 		h.json(w, r, data)
-	} else if shouldServeAsContent(data.File, data.Item) {
-		h.content(w, r, data)
+	} else if shouldServeAsContent(session.file, data.Item) {
+		h.content(w, r, session, data)
 	} else {
-		h.page(w, r, data)
+		h.page(w, r, session, data)
 	}
 }
 
@@ -183,66 +181,66 @@ func newAliasHandler(
 	vhostCtx *vhostContext,
 	currentAlias alias,
 	allAliases aliases,
-) http.Handler {
+) *aliasHandler {
 	emptyRoot := p.EmptyRoot && currentAlias.url == "/"
 
-	aliases := aliases{}
-	for _, alias := range allAliases {
-		if alias.isSuccessorOf(currentAlias.url) {
-			aliases = append(aliases, alias)
-		}
-	}
+	globalRestrictAccess := p.GlobalRestrictAccess
+	globalRestrictAccess = vhostCtx.restrictAccessUrls.mergePrefixMatched(globalRestrictAccess, util.HasUrlPrefixDir, currentAlias.url)
+	globalRestrictAccess = vhostCtx.restrictAccessDirs.mergePrefixMatched(globalRestrictAccess, util.HasFsPrefixDir, currentAlias.fs)
+	globalRestrictAccess = util.InPlaceDedup(globalRestrictAccess)
+
+	globalHeaders := p.GlobalHeaders
+	globalHeaders = vhostCtx.headersUrls.mergePrefixMatched(globalHeaders, util.HasUrlPrefixDir, currentAlias.url)
+	globalHeaders = vhostCtx.headersDirs.mergePrefixMatched(globalHeaders, util.HasFsPrefixDir, currentAlias.fs)
 
 	h := &aliasHandler{
-		root:          currentAlias.fs,
-		emptyRoot:     emptyRoot,
-		forceDirSlash: p.ForceDirSlash,
-		hsts:          p.Hsts,
-		hstsMaxAge:    strconv.Itoa(p.HstsMaxAge),
-		toHttps:       p.ToHttps,
-		toHttpsPort:   p.ToHttpsPort,
-		defaultSort:   p.DefaultSort,
-		aliasPrefix:   currentAlias.url,
+		alias:        currentAlias,
+		emptyRoot:    emptyRoot,
+		autoDirSlash: p.AutoDirSlash,
+		hsts:         p.Hsts,
+		hstsMaxAge:   strconv.Itoa(p.HstsMaxAge),
+		toHttps:      p.ToHttps,
+		toHttpsPort:  p.ToHttpsPort,
+		defaultSort:  p.DefaultSort,
 
 		users:  vhostCtx.users,
 		theme:  vhostCtx.theme,
 		logger: vhostCtx.logger,
 
 		dirIndexes: p.DirIndexes,
-		aliases:    aliases,
+		aliases:    allAliases.filterSuccessor(currentAlias.url),
 
-		globalAuth: p.GlobalAuth,
-		authUrls:   p.AuthUrls,
-		authDirs:   p.AuthDirs,
+		globalAuth: p.GlobalAuth || prefixMatched(p.AuthUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
+		authUrls:   filterSuccessor(p.AuthUrls, util.HasUrlPrefixDir, currentAlias.url),
+		authDirs:   filterSuccessor(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		restrictAccess:       vhostCtx.restrictAccess,
-		globalRestrictAccess: p.GlobalRestrictAccess,
-		restrictAccessUrls:   vhostCtx.restrictAccessUrls,
-		restrictAccessDirs:   vhostCtx.restrictAccessDirs,
+		globalRestrictAccess: globalRestrictAccess,
+		restrictAccessUrls:   vhostCtx.restrictAccessUrls.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
+		restrictAccessDirs:   vhostCtx.restrictAccessDirs.filterSuccessor(util.HasFsPrefixDir, currentAlias.fs),
 
-		globalHeaders: p.GlobalHeaders,
-		headersUrls:   vhostCtx.headersUrls,
-		headersDirs:   vhostCtx.headersDirs,
+		globalHeaders: globalHeaders,
+		headersUrls:   vhostCtx.headersUrls.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
+		headersDirs:   vhostCtx.headersDirs.filterSuccessor(util.HasFsPrefixDir, currentAlias.fs),
 
-		globalUpload: p.GlobalUpload,
-		uploadUrls:   p.UploadUrls,
-		uploadDirs:   p.UploadDirs,
+		globalUpload: p.GlobalUpload || prefixMatched(p.UploadUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.UploadDirs, util.HasFsPrefixDir, currentAlias.fs),
+		uploadUrls:   filterSuccessor(p.UploadUrls, util.HasUrlPrefixDir, currentAlias.url),
+		uploadDirs:   filterSuccessor(p.UploadDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		globalMkdir: p.GlobalMkdir,
-		mkdirUrls:   p.MkdirUrls,
-		mkdirDirs:   p.MkdirDirs,
+		globalMkdir: p.GlobalMkdir || prefixMatched(p.MkdirUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.MkdirDirs, util.HasFsPrefixDir, currentAlias.fs),
+		mkdirUrls:   filterSuccessor(p.MkdirUrls, util.HasUrlPrefixDir, currentAlias.url),
+		mkdirDirs:   filterSuccessor(p.MkdirDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		globalDelete: p.GlobalDelete,
-		deleteUrls:   p.DeleteUrls,
-		deleteDirs:   p.DeleteDirs,
+		globalDelete: p.GlobalDelete || prefixMatched(p.DeleteUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.DeleteDirs, util.HasFsPrefixDir, currentAlias.fs),
+		deleteUrls:   filterSuccessor(p.DeleteUrls, util.HasUrlPrefixDir, currentAlias.url),
+		deleteDirs:   filterSuccessor(p.DeleteDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		globalArchive: p.GlobalArchive,
-		archiveUrls:   p.ArchiveUrls,
-		archiveDirs:   p.ArchiveDirs,
+		globalArchive: p.GlobalArchive || prefixMatched(p.ArchiveUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.ArchiveDirs, util.HasFsPrefixDir, currentAlias.fs),
+		archiveUrls:   filterSuccessor(p.ArchiveUrls, util.HasUrlPrefixDir, currentAlias.url),
+		archiveDirs:   filterSuccessor(p.ArchiveDirs, util.HasFsPrefixDir, currentAlias.fs),
 
-		globalCors: p.GlobalCors,
-		corsUrls:   p.CorsUrls,
-		corsDirs:   p.CorsDirs,
+		globalCors: p.GlobalCors || prefixMatched(p.CorsUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.CorsDirs, util.HasFsPrefixDir, currentAlias.fs),
+		corsUrls:   filterSuccessor(p.CorsUrls, util.HasUrlPrefixDir, currentAlias.url),
+		corsDirs:   filterSuccessor(p.CorsDirs, util.HasFsPrefixDir, currentAlias.fs),
 
 		shows:     vhostCtx.shows,
 		showDirs:  vhostCtx.showDirs,

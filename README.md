@@ -129,9 +129,11 @@ ghfs [options]
     Could be useful if server is behind a reverse proxy and
     received the request without proxying path stripped.
 
--/|--force-dir-slash [<status-code>=301]
+-/|--auto-dir-slash [<status-code>=301]
     If a directory list page is requested without tailing "/" in the URL,
     redirect to the URL with the suffix.
+    If a file is requested with tailing "/" in the URL,
+    redirect to the URL without the suffix.
 
 --default-sort <sortBy>
     Default sort rule for files and directories.
@@ -246,8 +248,6 @@ ghfs [options]
 --user-sha256 [<username>]:<sha256-password> ...
 --user-sha512 [<username>]:<sha512-password> ...
     Specify users for Basic Auth, with encoded password.
---user-match-case
-    Username is case sensitive.
 
 -c|--cert <file> ...
     Specify TLS certificate file.
@@ -322,12 +322,16 @@ ghfs [options]
 ```
 
 ## Environment variables
+
+### GHFS_PID_FILE
+Specify PID file path. PID will be written into the file on application startup.
+
 ### GHFS_QUIET
 To prevent outputting additional information on console, like accessible URLs, etc,
 set value to "1".
 
-### GHFS_PID_FILE
-Specify PID file. PID will be written into the file on application startup.
+### GHFS_CPU_PROFILE_FILE
+Generate Go's CPU pprof profile to specific file path.
 
 ## Shortcut key for default theme
 - `←`, `→`: move focus between path items

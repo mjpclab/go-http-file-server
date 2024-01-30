@@ -80,22 +80,8 @@ func dedupPathValues(inputs []string) []string {
 		return inputs
 	}
 
-	values := inputs[1:]
-	endIndex := 1
-eachValue:
-	for i, length := 1, len(values); i < length; i++ {
-		for j := 0; j < endIndex; j++ {
-			if values[i] == values[j] {
-				continue eachValue
-			}
-		}
-		if endIndex != i {
-			values[endIndex] = values[i]
-		}
-		endIndex++
-	}
-
-	return inputs[:1+endIndex]
+	values := util.InPlaceDedup(inputs[1:])
+	return inputs[:1+len(values)]
 }
 
 func dedupAllPathValues(inputs [][]string) {

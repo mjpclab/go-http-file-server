@@ -20,13 +20,9 @@ func newRestrictAccesses(pathHostsList [][]string) []pathStrings {
 	return restricts
 }
 
-func hasRestrictAccess(globalRestrictAccesses []string, restrictAccessUrls, restrictAccessDirs []pathStrings) bool {
-	return globalRestrictAccesses != nil || len(restrictAccessUrls) > 0 || len(restrictAccessDirs) > 0
-}
-
-func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath string, file *os.File, item os.FileInfo) bool {
-	if !h.restrictAccess {
-		return true
+func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath string, file *os.File, item os.FileInfo) (restrict, allow bool) {
+	if h.globalRestrictAccess == nil && len(h.restrictAccessUrls) == 0 && len(h.restrictAccessDirs) == 0 {
+		return false, true
 	}
 
 	reqHeader := r.Header
@@ -36,17 +32,17 @@ func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath stri
 	}
 
 	if len(sourceHost) == 0 && !shouldServeAsContent(file, item) {
-		return true
+		return true, true
 	}
 
 	sourceHost = util.ExtractHostFromUrl(sourceHost)
 	selfHost := strings.ToLower(r.Host)
 	if sourceHost == selfHost {
-		return true
+		return true, true
 	}
 
 	if util.Contains(h.globalRestrictAccess, sourceHost) {
-		return true
+		return true, true
 	}
 
 	urlMatched := false
@@ -56,7 +52,7 @@ func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath stri
 		}
 		urlMatched = true
 		if util.Contains(h.restrictAccessUrls[i].strings, sourceHost) {
-			return true
+			return true, true
 		}
 	}
 
@@ -67,13 +63,13 @@ func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath stri
 		}
 		dirMatched = true
 		if util.Contains(h.restrictAccessDirs[i].strings, sourceHost) {
-			return true
+			return true, true
 		}
 	}
 
 	if h.globalRestrictAccess == nil && !urlMatched && !dirMatched {
-		return true
+		return true, true
 	}
 
-	return false
+	return true, false
 }

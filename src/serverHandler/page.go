@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-const TypeDir = template.HTML("dir")
-const TypeFile = template.HTML("file")
+const typeDir = template.HTML("dir")
+const typeFile = template.HTML("file")
 
 func updateSubItemsHtml(data *responseData) {
 	length := len(data.SubItems)
@@ -27,11 +27,11 @@ func updateSubItemsHtml(data *responseData) {
 
 		if info.IsDir() {
 			displayName = tplUtil.FormatFilename(name) + "/"
-			typ = TypeDir
+			typ = typeDir
 			url = data.SubItemPrefix + urlEscapedName + "/" + data.Context.QueryString()
 		} else {
 			displayName = tplUtil.FormatFilename(name)
-			typ = TypeFile
+			typ = typeFile
 			url = data.SubItemPrefix + urlEscapedName + data.Context.FileQueryString()
 			readableSize = tplUtil.FormatSize(info.Size())
 		}
@@ -62,9 +62,9 @@ func updateTranslation(r *http.Request, data *responseData) {
 	data.Trans = i18n.Dictionaries[index].Trans
 }
 
-func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
 	header := w.Header()
-	header.Set("Vary", h.vary)
+	header.Set("Vary", session.vary)
 	header.Set("X-Content-Type-Options", "nosniff")
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	if lacksHeader(header, "Cache-Control") {

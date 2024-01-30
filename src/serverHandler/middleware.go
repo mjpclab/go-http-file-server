@@ -5,26 +5,25 @@ import (
 	"net/http"
 )
 
-func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.ResponseWriter, r *http.Request, data *responseData, fsPath string) (processed bool) {
+func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) (processed bool) {
 	if len(mids) == 0 {
 		return
 	}
 
 	context := &middleware.Context{
-		PrefixReqPath: data.prefixReqPath,
-		VhostReqPath:  data.rawReqPath,
-		AliasReqPath:  data.handlerReqPath,
-		AliasFsPath:   fsPath,
-		AliasFsRoot:   h.root,
+		PrefixReqPath: session.prefixReqPath,
+		VhostReqPath:  session.vhostReqPath,
+		AliasReqPath:  session.aliasReqPath,
+		AliasFsPath:   session.fsPath,
+		AliasFsRoot:   h.fs,
 
-		WantJson: data.wantJson,
+		WantJson: session.wantJson,
 
-		RestrictAccess: data.RestrictAccess,
-		AllowAccess:    data.AllowAccess,
+		AllowAccess: session.allowAccess,
 
-		NeedAuth:     data.NeedAuth,
-		AuthUserName: data.AuthUserName,
-		AuthSuccess:  data.AuthSuccess,
+		NeedAuth:     session.needAuth,
+		AuthUserName: session.authUserName,
+		AuthSuccess:  session.authSuccess,
 
 		CanUpload:  &data.CanUpload,
 		CanMkdir:   &data.CanMkdir,
@@ -37,8 +36,8 @@ func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.Res
 		Logger: h.logger,
 	}
 
-	if data.File != nil {
-		context.File = &data.File
+	if session.file != nil {
+		context.File = &session.file
 	}
 	if data.Item != nil {
 		context.FileInfo = &data.Item

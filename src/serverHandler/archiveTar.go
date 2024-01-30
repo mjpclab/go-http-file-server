@@ -52,8 +52,8 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 	return nil
 }
 
-func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, pageData *responseData) {
-	if !pageData.CanArchive {
+func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+	if !data.CanArchive {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -72,7 +72,8 @@ func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, pageData *res
 	h.archive(
 		w,
 		r,
-		pageData,
+		session,
+		data,
 		selections,
 		".tar",
 		"application/octet-stream",
@@ -82,8 +83,8 @@ func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, pageData *res
 	)
 }
 
-func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, pageData *responseData) {
-	if !pageData.CanArchive {
+func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+	if !data.CanArchive {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -111,7 +112,8 @@ func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, pageData *res
 	h.archive(
 		w,
 		r,
-		pageData,
+		session,
+		data,
 		selections,
 		".tar.gz",
 		"application/octet-stream",
