@@ -3,6 +3,8 @@ package serverHandler
 import (
 	"errors"
 	"io"
+	"mime"
+	"mime/multipart"
 	"mjpclab.dev/ghfs/src/shimgo"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
@@ -12,9 +14,9 @@ import (
 	"strings"
 )
 
-const file = "file"
-const dirFile = "dirfile"
-const innerDirFile = "innerdirfile"
+const formFile = "file"
+const formDirFile = "dirfile"
+const formInnerDirFile = "innerdirfile"
 
 func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) string {
 	if len(fsPrefix) == 0 {
@@ -41,6 +43,17 @@ func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) stri
 	return ""
 }
 
+// RFC 7578, Section 4.2 requires that if a filename is provided, the
+// directory path information must not be used.
+// Since Go 1.17, Part.FileName() will strip directory information.
+// However, the directory information is needed for uploading.
+// Parse manually instead.
+func getPartFilePath(part *multipart.Part) string {
+	cd := part.Header.Get("Content-Disposition")
+	_, params, _ := mime.ParseMediaType(cd)
+	return params["filename"]
+}
+
 func (h *aliasHandler) saveUploadFiles(authUserName, fsPrefix string, createDir, overwriteExists bool, aliasSubItems []os.FileInfo, r *http.Request) bool {
 	var errs []error
 
@@ -59,7 +72,7 @@ func (h *aliasHandler) saveUploadFiles(authUserName, fsPrefix string, createDir,
 			break
 		}
 
-		inputPartFilePath := part.FileName()
+		inputPartFilePath := getPartFilePath(part)
 		if len(inputPartFilePath) == 0 {
 			continue
 		}
@@ -73,11 +86,11 @@ func (h *aliasHandler) saveUploadFiles(authUserName, fsPrefix string, createDir,
 
 		fsInfix := ""
 		formname := part.FormName()
-		if formname == dirFile {
+		if formname == formDirFile {
 			if filenameIndex > 0 {
 				fsInfix = partFilePath[0:filenameIndex]
 			}
-		} else if formname == innerDirFile { // get file path, strip first level of dir
+		} else if formname == formInnerDirFile { // get file path, strip first level of dir
 			if filenameIndex <= 0 {
 				continue
 			}
@@ -85,7 +98,7 @@ func (h *aliasHandler) saveUploadFiles(authUserName, fsPrefix string, createDir,
 			if prefixEndIndex := strings.IndexByte(filepath, '/'); prefixEndIndex > 0 {
 				fsInfix = filepath[prefixEndIndex+1:]
 			}
-		} else if formname == file {
+		} else if formname == formFile {
 			// noop
 		} else {
 			errs = append(errs, errors.New("upload: unknown mode "+formname))

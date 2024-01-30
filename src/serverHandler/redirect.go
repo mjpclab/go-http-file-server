@@ -2,20 +2,10 @@ package serverHandler
 
 import "net/http"
 
-func (h *aliasHandler) redirectWithSlashSuffix(w http.ResponseWriter, r *http.Request, pathWithoutSlashSuffix string) {
-	target := pathWithoutSlashSuffix + "/"
+func redirect(w http.ResponseWriter, r *http.Request, path string, code int) {
+	target := path
 	if len(r.URL.RawQuery) > 0 {
 		target += "?" + r.URL.RawQuery
 	}
-
-	http.Redirect(w, r, target, h.forceDirSlash)
-}
-
-func (h *aliasHandler) redirectWithoutRequestAuth(w http.ResponseWriter, r *http.Request, data *responseData) {
-	returnUrl := r.Header.Get("Referer")
-	if len(returnUrl) == 0 {
-		returnUrl = data.prefixReqPath + data.Context.QueryString()
-	}
-
-	http.Redirect(w, r, returnUrl, http.StatusFound)
+	http.Redirect(w, r, target, code)
 }

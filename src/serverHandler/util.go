@@ -58,8 +58,12 @@ func getCleanFilePath(requestPath string) (filePath string, ok bool) {
 }
 
 func getCleanDirFilePath(requestPath string) (filePath string, ok bool) {
-	filePath = path.Clean(strings.Replace(requestPath, "\\", "/", -1))
+	requestPath = strings.Replace(requestPath, "\\", "/", -1)
+	filePath = path.Clean(requestPath)
 	ok = filePath[0] != '/' && filePath != "." && filePath != ".." && !strings.HasPrefix(filePath, "../")
+	if ok && len(filePath) > 1 && requestPath[len(requestPath)-1] == '/' {
+		filePath += "/"
+	}
 
 	return
 }

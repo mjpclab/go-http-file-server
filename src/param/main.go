@@ -13,8 +13,8 @@ type Param struct {
 	Root      string
 	EmptyRoot bool
 
-	PrefixUrls    []string
-	ForceDirSlash int
+	PrefixUrls   []string
+	AutoDirSlash int
 
 	DefaultSort string
 	DirIndexes  []string
@@ -56,13 +56,12 @@ type Param struct {
 	AuthUrls   []string
 	AuthDirs   []string
 	// value: [username, password]
-	UsersPlain    [][2]string
-	UsersBase64   [][2]string
-	UsersMd5      [][2]string
-	UsersSha1     [][2]string
-	UsersSha256   [][2]string
-	UsersSha512   [][2]string
-	UserMatchCase bool
+	UsersPlain  [][2]string
+	UsersBase64 [][2]string
+	UsersMd5    [][2]string
+	UsersSha1   [][2]string
+	UsersSha256 [][2]string
+	UsersSha512 [][2]string
 
 	Certificates []tls.Certificate
 	Listens      []string
@@ -98,6 +97,11 @@ func (param *Param) normalize() (errs []error) {
 	var es []error
 	var err error
 
+	// listens
+	param.Listens = util.InPlaceDedup(param.Listens)
+	param.ListensPlain = util.InPlaceDedup(param.ListensPlain)
+	param.ListensTLS = util.InPlaceDedup(param.ListensTLS)
+
 	// root
 	param.Root, err = filepath.Abs(param.Root)
 	errs = serverError.AppendError(errs, err)
@@ -127,8 +131,8 @@ func (param *Param) normalize() (errs []error) {
 	param.PrefixUrls = NormalizeUrlPaths(param.PrefixUrls)
 
 	// // force dir slash
-	if param.ForceDirSlash != 0 {
-		param.ForceDirSlash = NormalizeRedirectCode(param.ForceDirSlash)
+	if param.AutoDirSlash != 0 {
+		param.AutoDirSlash = NormalizeRedirectCode(param.AutoDirSlash)
 	}
 
 	// dir indexes
@@ -137,6 +141,7 @@ func (param *Param) normalize() (errs []error) {
 	// global restrict access, nil to disable, non-nil to enable with allowed hosts
 	if param.GlobalRestrictAccess != nil {
 		param.GlobalRestrictAccess = util.ExtractHostsFromUrls(param.GlobalRestrictAccess)
+		param.GlobalRestrictAccess = util.InPlaceDedup(param.GlobalRestrictAccess)
 	}
 
 	// restrict access

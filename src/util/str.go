@@ -16,6 +16,28 @@ func IsStrEqualNoCase(a, b string) bool {
 	return strings.EqualFold(a, b)
 }
 
+func InPlaceDedup(inputs []string) []string {
+	if len(inputs) <= 1 {
+		return inputs
+	}
+
+	endIndex := 1
+eachValue:
+	for i, length := 1, len(inputs); i < length; i++ {
+		for j := 0; j < endIndex; j++ {
+			if inputs[i] == inputs[j] {
+				continue eachValue
+			}
+		}
+		if endIndex != i {
+			inputs[endIndex] = inputs[i]
+		}
+		endIndex++
+	}
+
+	return inputs[:endIndex]
+}
+
 func EscapeControllingRune(str string) []byte {
 	runeBytes := make([]byte, 4)
 	buf := make([]byte, 0, len(str))

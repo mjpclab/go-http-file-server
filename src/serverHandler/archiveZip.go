@@ -37,8 +37,8 @@ func writeZip(zw *zip.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 	return nil
 }
 
-func (h *aliasHandler) zip(w http.ResponseWriter, r *http.Request, pageData *responseData) {
-	if !pageData.CanArchive {
+func (h *aliasHandler) zip(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+	if !data.CanArchive {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -57,7 +57,8 @@ func (h *aliasHandler) zip(w http.ResponseWriter, r *http.Request, pageData *res
 	h.archive(
 		w,
 		r,
-		pageData,
+		session,
+		data,
 		selections,
 		".zip",
 		"application/zip",

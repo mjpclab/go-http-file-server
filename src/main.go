@@ -19,7 +19,6 @@ func cleanupOnEnd(appInst *app.App) {
 	go func() {
 		<-chSignal
 		appInst.Close()
-		os.Exit(0)
 	}()
 }
 
@@ -31,7 +30,10 @@ func reopenLogOnHup(appInst *app.App) {
 		for sig := range chSignal {
 			sig = sig // ignore iterate value
 			errs := appInst.ReOpenLog()
-			serverError.CheckFatal(errs...)
+			if serverError.CheckError(errs...) {
+				appInst.Close()
+				break
+			}
 		}
 	}()
 }
@@ -39,29 +41,42 @@ func reopenLogOnHup(appInst *app.App) {
 func Main() {
 	// params
 	params, printVersion, printHelp, errs := param.ParseFromCli()
-	serverError.CheckFatal(errs...)
+	if serverError.CheckError(errs...) {
+		return
+	}
 	if printVersion {
 		version.PrintVersion()
-		os.Exit(0)
+		return
 	}
 	if printHelp {
 		param.PrintHelp()
-		os.Exit(0)
+		return
 	}
 
-	// setting
-	setting := setting.ParseFromEnv()
+	// settings
+	settings := setting.ParseFromEnv()
+
+	// CPU profile
+	if len(settings.CPUProfileFile) > 0 {
+		cpuProfileFile, err := StartCPUProfile(settings.CPUProfileFile)
+		if serverError.CheckError(err) {
+			return
+		}
+		defer StopCPUProfile(cpuProfileFile)
+	}
 
 	// app
-	appInst, errs := app.NewApp(params, setting)
-	serverError.CheckFatal(errs...)
+	appInst, errs := app.NewApp(params, settings)
+	if serverError.CheckError(errs...) {
+		return
+	}
 	if appInst == nil {
-		serverError.CheckFatal(errors.New("failed to create application instance"))
+		serverError.CheckError(errors.New("failed to create application instance"))
+		return
 	}
 
 	cleanupOnEnd(appInst)
 	reopenLogOnHup(appInst)
 	errs = appInst.Open()
-	serverError.CheckFatal(errs...)
-	appInst.Close()
+	serverError.CheckError(errs...)
 }

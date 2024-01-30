@@ -17,8 +17,8 @@ func newAliases(entries [][2]string) aliases {
 	return aliases
 }
 
-func (aliases aliases) byUrlPath(urlPath string) (aliasItem alias, ok bool) {
-	for _, alias := range aliases {
+func (list aliases) byUrlPath(urlPath string) (aliasItem alias, ok bool) {
+	for _, alias := range list {
 		if alias.isMatch(urlPath) {
 			return alias, true
 		}
@@ -26,13 +26,25 @@ func (aliases aliases) byUrlPath(urlPath string) (aliasItem alias, ok bool) {
 	return alias{}, false
 }
 
-func (aliases aliases) Len() int {
-	return len(aliases)
+func (list aliases) filterSuccessor(url string) aliases {
+	var result aliases
+
+	for _, a := range list {
+		if a.isSuccessorOf(url) {
+			result = append(result, a)
+		}
+	}
+
+	return result
 }
 
-func (aliases aliases) Less(i, j int) bool {
-	iLen := len(aliases[i].url)
-	jLen := len(aliases[j].url)
+func (list aliases) Len() int {
+	return len(list)
+}
+
+func (list aliases) Less(i, j int) bool {
+	iLen := len(list[i].url)
+	jLen := len(list[j].url)
 	if iLen != jLen {
 		// longer is prior
 		return iLen > jLen
@@ -41,6 +53,6 @@ func (aliases aliases) Less(i, j int) bool {
 	return i > j
 }
 
-func (aliases aliases) Swap(i, j int) {
-	aliases[i], aliases[j] = aliases[j], aliases[i]
+func (list aliases) Swap(i, j int) {
+	list[i], list[j] = list[j], list[i]
 }

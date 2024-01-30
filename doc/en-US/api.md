@@ -158,5 +158,5 @@ curl -X POST -d 'name=dir1&name=dir2&name=dir3' 'http://localhost/tmp/?delete'
 # Login
 Perform a login authentication even not required by current path:
 ```
-GET <path>?auth
+GET <path>?auth[=return_url]
 ```

@@ -11,18 +11,21 @@ import (
 
 type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error
 
-func matchSelection(info os.FileInfo, selections []string) (matchName, matchPrefix bool, childSelections []string) {
+func matchSelection(info os.FileInfo, selections []string) (match bool, childSelections []string) {
 	if len(selections) == 0 {
-		return true, false, nil
+		return true, nil
 	}
 
 	name := info.Name()
 	for _, selName := range selections {
 		if util.IsPathEqual(selName, name) {
-			matchName = true
+			match = true
 			continue
 		}
 
+		if !info.IsDir() {
+			continue
+		}
 		slashIndex := strings.IndexByte(selName, '/')
 		if slashIndex <= 0 {
 			continue
@@ -30,9 +33,9 @@ func matchSelection(info os.FileInfo, selections []string) (matchName, matchPref
 
 		selNamePart1 := selName[:slashIndex]
 		if util.IsPathEqual(selNamePart1, name) {
+			match = true
 			childSel := selName[slashIndex+1:]
 			if len(childSel) > 0 {
-				matchPrefix = true
 				childSelections = append(childSelections, childSel)
 			}
 			continue
@@ -50,7 +53,7 @@ func (h *aliasHandler) visitTreeNode(
 	archiveCallback archiveCallback,
 ) {
 	if needAuth, _ := h.needAuth("", rawReqPath, fsPath); needAuth {
-		if _, authSuccess, _ := h.verifyAuth(r, needAuth); !authSuccess {
+		if _, _, err := h.verifyAuth(r, needAuth); err != nil {
 			return
 		}
 	}
@@ -107,8 +110,8 @@ func (h *aliasHandler) visitTreeNode(
 
 		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
 		for _, childInfo := range childInfos {
-			matchChildName, matchChildPrefix, childChildSelections := matchSelection(childInfo, childSelections)
-			if !matchChildName && !matchChildPrefix {
+			matchChild, childChildSelections := matchSelection(childInfo, childSelections)
+			if !matchChild {
 				continue
 			}
 
@@ -129,19 +132,20 @@ func (h *aliasHandler) visitTreeNode(
 func (h *aliasHandler) archive(
 	w http.ResponseWriter,
 	r *http.Request,
-	pageData *responseData,
+	session *sessionContext,
+	data *responseData,
 	selections []string,
 	fileSuffix string,
 	contentType string,
 	cbWriteFile archiveCallback,
 ) {
 	var itemName string
-	_, hasAlias := h.aliases.byUrlPath(pageData.rawReqPath)
+	_, hasAlias := h.aliases.byUrlPath(session.vhostReqPath)
 	if hasAlias {
-		itemName = path.Base(pageData.rawReqPath)
+		itemName = path.Base(session.vhostReqPath)
 	}
 	if len(itemName) == 0 || itemName == "/" {
-		itemName = pageData.ItemName
+		itemName = data.ItemName
 	}
 
 	targetFilename := itemName + fileSuffix
@@ -153,10 +157,10 @@ func (h *aliasHandler) archive(
 
 	h.visitTreeNode(
 		r,
-		pageData.rawReqPath,
-		path.Clean(h.root+pageData.handlerReqPath),
+		session.vhostReqPath,
+		path.Clean(h.fs+session.aliasReqPath),
 		"",
-		pageData.Item != nil, // not empty root
+		data.Item != nil, // not empty root
 		selections,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			h.logArchive(targetFilename, relPath, r)

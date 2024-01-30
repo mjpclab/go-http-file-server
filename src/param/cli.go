@@ -31,7 +31,7 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("prefixurls", "--prefix", "", nil, "serve files under URL path instead of /")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagsValue("forcedirslash", []string{"-/", "--force-dir-slash"}, "GHFS_FORCE_DIR_SLASH", "", "auto redirect directory with \"/\" suffix")
+	err = options.AddFlagsValue("autodirslash", []string{"-/", "--auto-dir-slash"}, "GHFS_AUTO_DIR_SLASH", "", "auto redirect directory with \"/\" suffix, or file without suffix")
 	serverError.CheckFatal(err)
 
 	opt = goNixArgParser.NewFlagValueOption("defaultsort", "--default-sort", "GHFS_DEFAULT_SORT", "/n", "default sort for files and directories")
@@ -130,9 +130,6 @@ func NewCliCmd() *goNixArgParser.Command {
 	serverError.CheckFatal(err)
 
 	err = options.AddFlagValues("userssha512", "--user-sha512", "", nil, "user info: <username>:<sha512-password>")
-	serverError.CheckFatal(err)
-
-	err = options.AddFlag("usermatchcase", "--user-match-case", "GHFS_USER_MATCH_CASE", "username should be case sensitive")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("certs", []string{"-c", "--cert"}, "GHFS_CERT", nil, "TLS certificate path")
@@ -291,7 +288,6 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.EmptyRoot = result.HasKey("emptyroot")
 		param.PrefixUrls, _ = result.GetStrings("prefixurls")
 		param.DefaultSort, _ = result.GetString("defaultsort")
-		param.UserMatchCase = result.HasKey("usermatchcase")
 		param.HostNames, _ = result.GetStrings("hostnames")
 		param.Theme, _ = result.GetString("theme")
 		param.ThemeDir, _ = result.GetString("themedir")
@@ -303,12 +299,12 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.Aliases = SplitAllKeyValue(strAlias)
 
 		// force dir slash
-		if result.HasKey("forcedirslash") {
-			redirectCode, _ := result.GetInt("forcedirslash")
+		if result.HasKey("autodirslash") {
+			redirectCode, _ := result.GetInt("autodirslash")
 			if redirectCode == 0 {
 				redirectCode = http.StatusMovedPermanently
 			}
-			param.ForceDirSlash = redirectCode
+			param.AutoDirSlash = redirectCode
 		}
 
 		// dir indexes

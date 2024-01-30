@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, data *responseData) {
+func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
 	if r.Method != shimgo.Net_Http_MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -17,19 +17,19 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, data *resp
 	switch {
 	case data.IsUpload:
 		if data.CanUpload {
-			success = h.saveUploadFiles(data.AuthUserName, h.root+data.handlerReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
+			success = h.saveUploadFiles(session.authUserName, h.fs+session.aliasReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
 		}
 	case data.IsMkdir:
 		if data.CanMkdir && !h.logError(r.ParseForm()) {
-			success = h.mkdirs(data.AuthUserName, h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems, r)
+			success = h.mkdirs(session.authUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	case data.IsDelete:
 		if data.CanDelete && !h.logError(r.ParseForm()) {
-			success = h.deleteItems(data.AuthUserName, h.root+data.handlerReqPath, r.Form["name"], data.AliasSubItems, r)
+			success = h.deleteItems(session.authUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
 		}
 	}
 
-	if data.wantJson {
+	if session.wantJson {
 		header := w.Header()
 		header.Set("Content-Type", "application/json; charset=utf-8")
 		header.Set("Cache-Control", "public, max-age=0")
