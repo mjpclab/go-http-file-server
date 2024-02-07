@@ -27,6 +27,8 @@
 - Go 1.17 supports OSX 10.13 High Sierra or later
 - Go 1.20 is the last release supports OSX 10.13 High Sierra and 10.14 Mojave
 - Go 1.21 supports OSX 10.15 Catalina or later
+- Go 1.22 is the last release supports OSX 10.15 Catalina
+- Go 1.23 supports OSX 11.0 Big Sur or later
 
 ## Windows platform
 - Go 1.10 is the last release supports Windows XP
