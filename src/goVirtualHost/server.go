@@ -49,21 +49,19 @@ func (server *server) updateDefaultVhost() {
 }
 
 func (server *server) updateHttpServerTLSConfig() {
-	var tlsConfig *tls.Config
-
-	if server.useTLS {
-		certs := []tls.Certificate{}
-
-		for _, vhost := range server.vhosts {
-			certs = append(certs, vhost.certs...)
-		}
-
-		tlsConfig = &tls.Config{
-			Certificates: certs,
-		}
+	if !server.useTLS {
+		return
 	}
 
-	server.httpServer.TLSConfig = tlsConfig
+	certs := make([]tls.Certificate, 0, len(server.vhosts))
+
+	for _, vhost := range server.vhosts {
+		certs = append(certs, vhost.certs...)
+	}
+
+	server.httpServer.TLSConfig = &tls.Config{
+		Certificates: certs,
+	}
 }
 
 func (server *server) updateHttpServerHandler() {
