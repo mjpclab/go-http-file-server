@@ -2,7 +2,6 @@ package util
 
 import (
 	"path"
-	"path/filepath"
 	"strings"
 )
 
@@ -17,22 +16,6 @@ func CleanUrlPath(urlPath string) string {
 	urlPath = path.Clean(urlPath)
 
 	return urlPath
-}
-
-func HasUrlPrefixDirAccurate(urlPath, prefix string) bool {
-	return hasPrefixDirAccurate(urlPath, prefix, '/')
-}
-
-func HasUrlPrefixDirNoCase(urlPath, prefix string) bool {
-	return hasPrefixDirNoCase(urlPath, prefix, '/')
-}
-
-func HasFsPrefixDirAccurate(fsPath, prefix string) bool {
-	return hasPrefixDirAccurate(fsPath, prefix, filepath.Separator)
-}
-
-func HasFsPrefixDirNoCase(fsPath, prefix string) bool {
-	return hasPrefixDirNoCase(fsPath, prefix, filepath.Separator)
 }
 
 func hasPrefixDirAccurate(absPath, prefix string, separator byte) bool {

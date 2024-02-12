@@ -3,7 +3,19 @@
 
 package util
 
-var IsPathEqual = IsStrEqualNoCase
+import (
+	"path/filepath"
+	"strings"
+)
 
-var HasUrlPrefixDir = HasUrlPrefixDirNoCase
-var HasFsPrefixDir = HasFsPrefixDirNoCase
+func IsPathEqual(a, b string) bool {
+	return strings.EqualFold(a, b)
+}
+
+func HasUrlPrefixDir(urlPath, prefix string) bool {
+	return hasPrefixDirNoCase(urlPath, prefix, '/')
+}
+
+func HasFsPrefixDir(fsPath, prefix string) bool {
+	return hasPrefixDirNoCase(fsPath, prefix, filepath.Separator)
+}
