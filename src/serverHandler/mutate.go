@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"net/http"
-	"strings"
 )
 
 func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
@@ -41,11 +40,7 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *s
 			w.Write([]byte(`{"success":false}`))
 		}
 	} else {
-		reqPath := r.RequestURI
-		qsIndex := strings.IndexByte(reqPath, '?')
-		if qsIndex >= 0 {
-			reqPath = reqPath[:qsIndex]
-		}
+		reqPath := session.prefixReqPath
 
 		ctxQsList := r.Form["contextquerystring"]
 		ctxQsListLen := len(ctxQsList)
