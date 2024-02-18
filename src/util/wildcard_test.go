@@ -1,11 +1,18 @@
 package util
 
-import "testing"
+import (
+	"runtime"
+	"testing"
+)
 
 func TestWildcardToStrRegexp(t *testing.T) {
 	wildcard := "file.{name}*.txt"
 	regexp := WildcardToStrRegexp(wildcard)
-	if regexp != `^file\.\{name\}.*?\.txt$` {
-		t.Error(regexp)
+	expected := `^file\.\{name\}.*?\.txt$`
+	if runtime.GOOS == "windows" {
+		expected = "(?i)" + expected
+	}
+	if regexp != expected {
+		t.Error(regexp + " <= " + expected)
 	}
 }
