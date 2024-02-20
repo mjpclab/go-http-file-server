@@ -40,9 +40,11 @@ type aliasHandler struct {
 	dirIndexes []string
 	aliases    aliases
 
-	globalAuth bool
-	authUrls   []string
-	authDirs   []string
+	globalAuth    bool
+	authUrls      []string
+	authUrlsUsers pathIntsList
+	authDirs      []string
+	authDirsUsers pathIntsList
 
 	globalRestrictAccess []string
 	restrictAccessUrls   pathStringsList

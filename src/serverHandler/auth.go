@@ -9,7 +9,7 @@ import (
 
 const authQueryParam = "auth"
 
-func (h *aliasHandler) needAuth(rawQuery, rawReqPath, reqFsPath string) (needAuth, requestAuth bool) {
+func (h *aliasHandler) needAuth(rawQuery, vhostReqPath, reqFsPath string) (needAuth, requestAuth bool) {
 	if strings.HasPrefix(rawQuery, authQueryParam) {
 		return true, true
 	}
@@ -18,19 +18,33 @@ func (h *aliasHandler) needAuth(rawQuery, rawReqPath, reqFsPath string) (needAut
 		return true, false
 	}
 
-	return hasUrlOrDirPrefix(h.authUrls, rawReqPath, h.authDirs, reqFsPath), false
+	if hasUrlOrDirPrefix(h.authUrls, vhostReqPath, h.authDirs, reqFsPath) {
+		return true, false
+	}
+
+	if matchPath, _ := hasUrlOrDirPrefixUsers(h.authUrlsUsers, vhostReqPath, h.authDirsUsers, reqFsPath, -1); matchPath {
+		return true, false
+	}
+
+	return false, false
 }
 
 func (h *aliasHandler) notifyAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 
-func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool) (userid int, username string, err error) {
+func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool, vhostReqPath, reqFsPath string) (userid int, username string, err error) {
 	user, pass, hasAuthReq := r.BasicAuth()
 
 	if hasAuthReq {
 		var success bool
-		if userid, username, success = h.users.Auth(user, pass); success {
+		userid, username, success = h.users.Auth(user, pass)
+		if success && userid >= 0 && (len(h.authUrlsUsers) > 0 || len(h.authDirsUsers) > 0) {
+			if matchPrefix, match := hasUrlOrDirPrefixUsers(h.authUrlsUsers, vhostReqPath, h.authDirsUsers, reqFsPath, userid); matchPrefix {
+				success = match
+			}
+		}
+		if success {
 			return
 		}
 	}

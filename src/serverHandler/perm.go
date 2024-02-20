@@ -21,6 +21,42 @@ func hasUrlOrDirPrefix(urls []string, reqUrl string, dirs []string, reqDir strin
 	return false
 }
 
+func hasUrlOrDirPrefixUsers(urlsUsers pathIntsList, reqUrl string, dirsUsers pathIntsList, reqDir string, userId int) (matchPrefix, match bool) {
+	for i := range urlsUsers {
+		if !util.HasUrlPrefixDir(reqUrl, urlsUsers[i].path) {
+			continue
+		}
+		matchPrefix = true
+		if userId < 0 {
+			continue
+		}
+		for _, uid := range urlsUsers[i].ints {
+			if uid == userId {
+				match = true
+				return
+			}
+		}
+	}
+
+	for i := range dirsUsers {
+		if !util.HasFsPrefixDir(reqDir, dirsUsers[i].path) {
+			continue
+		}
+		matchPrefix = true
+		if userId < 0 {
+			continue
+		}
+		for _, uid := range dirsUsers[i].ints {
+			if uid == userId {
+				match = true
+				return
+			}
+		}
+	}
+
+	return
+}
+
 func (h *aliasHandler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string) bool {
 	if info == nil || !info.IsDir() {
 		return false

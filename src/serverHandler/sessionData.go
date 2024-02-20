@@ -335,7 +335,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	status := http.StatusOK
 
 	needAuth, requestAuth := h.needAuth(rawQuery, vhostReqPath, fsPath)
-	authUserId, authUserName, _authErr := h.verifyAuth(r, needAuth)
+	authUserId, authUserName, _authErr := h.verifyAuth(r, needAuth, vhostReqPath, fsPath)
 	authSuccess := _authErr == nil
 	if needAuth && !authSuccess {
 		errs = append(errs, _authErr)
