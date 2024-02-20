@@ -4,6 +4,54 @@ package serverHandler
 
 type prefixFilter func(whole, prefix string) bool
 
+// pathInts
+
+type pathInts struct {
+	path string
+	ints []int
+}
+
+type pathIntsList []pathInts
+
+func (list pathIntsList) mergePrefixMatched(mergeWith []int, matchPrefix prefixFilter, refPath string) []int {
+	var result []int
+	if mergeWith != nil {
+		result = make([]int, len(mergeWith))
+		copy(result, mergeWith)
+	}
+
+	for i := range list {
+		if matchPrefix(refPath, list[i].path) {
+			if result == nil {
+				result = []int{}
+			}
+			result = append(result, list[i].ints...)
+		}
+	}
+
+	if mergeWith != nil && len(mergeWith) == len(result) {
+		return mergeWith
+	} else {
+		return result
+	}
+}
+
+func (list pathIntsList) filterSuccessor(matchPrefix prefixFilter, refPath string) pathIntsList {
+	var result pathIntsList
+
+	for i := range list {
+		if len(list[i].path) > len(refPath) && matchPrefix(list[i].path, refPath) {
+			result = append(result, list[i])
+		}
+	}
+
+	if len(list) == len(result) {
+		return list
+	} else {
+		return result
+	}
+}
+
 // pathStrings
 
 type pathStrings struct {

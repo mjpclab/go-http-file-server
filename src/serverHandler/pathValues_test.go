@@ -5,6 +5,34 @@ import (
 	"testing"
 )
 
+func TestPathInts(t *testing.T) {
+	ps := pathIntsList{
+		{"/a", []int{1}},
+		{"/a/b", []int{2}},
+		{"/a/b/c", []int{3}},
+		{"/foo/bar", []int{99}},
+	}
+
+	mergeWith := []int{199, 299}
+	merged := ps.mergePrefixMatched(mergeWith, util.HasUrlPrefixDir, "/a/b")
+	if len(mergeWith) != 2 {
+		t.Error()
+	}
+	if len(merged) != 4 || merged[2] != 1 || merged[3] != 2 {
+		t.Error(merged)
+	}
+
+	merged = ps.mergePrefixMatched(nil, util.HasUrlPrefixDir, "/lorem/ipsum")
+	if merged != nil {
+		t.Error(merged)
+	}
+
+	successors := ps.filterSuccessor(util.HasUrlPrefixDir, "/a/b")
+	if len(successors) != 1 || successors[0].path != "/a/b/c" {
+		t.Error(successors)
+	}
+}
+
 func TestPathStrings(t *testing.T) {
 	ps := pathStringsList{
 		{"/a", []string{"a"}},
