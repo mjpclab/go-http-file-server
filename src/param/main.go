@@ -18,17 +18,29 @@ type Param struct {
 
 	DefaultSort string
 	DirIndexes  []string
-	// value: [url-path, fs-path]
-	Aliases [][2]string
+	Aliases     [][2]string // [][url-path, fs-path]
+
+	// [][username, password]
+	UsersPlain  [][2]string
+	UsersBase64 [][2]string
+	UsersMd5    [][2]string
+	UsersSha1   [][2]string
+	UsersSha256 [][2]string
+	UsersSha512 [][2]string
+
+	GlobalAuth    bool
+	AuthUrls      []string
+	AuthUrlsUsers [][]string // [][path, user...]
+	AuthDirs      []string
+	AuthDirsUsers [][]string // [][path, user...]
 
 	GlobalRestrictAccess []string
-	// value: [restrict-path, allow-hosts...]
+	// [][restrict-path, allow-hosts...]
 	RestrictAccessUrls [][]string
 	RestrictAccessDirs [][]string
 
-	// value: [name, value]
-	GlobalHeaders [][2]string
-	// value: [path, (name, value)...]
+	GlobalHeaders [][2]string // [][name, value]
+	// [][path, (name, value)...]
 	HeadersUrls [][]string
 	HeadersDirs [][]string
 
@@ -51,17 +63,6 @@ type Param struct {
 	GlobalCors bool
 	CorsUrls   []string
 	CorsDirs   []string
-
-	GlobalAuth bool
-	AuthUrls   []string
-	AuthDirs   []string
-	// value: [username, password]
-	UsersPlain  [][2]string
-	UsersBase64 [][2]string
-	UsersMd5    [][2]string
-	UsersSha1   [][2]string
-	UsersSha256 [][2]string
-	UsersSha512 [][2]string
 
 	Certificates []tls.Certificate
 	Listens      []string
@@ -137,6 +138,21 @@ func (param *Param) normalize() (errs []error) {
 
 	// dir indexes
 	param.DirIndexes = normalizeFilenames(param.DirIndexes)
+
+	// auth users
+	param.AuthUrlsUsers, es = normalizeAllPathValues(param.AuthUrlsUsers, true, util.NormalizeUrlPath, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.AuthUrlsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+
+	param.AuthDirsUsers, es = normalizeAllPathValues(param.AuthDirsUsers, true, filepath.Abs, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.AuthDirsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
 
 	// global restrict access, nil to disable, non-nil to enable with allowed hosts
 	if param.GlobalRestrictAccess != nil {

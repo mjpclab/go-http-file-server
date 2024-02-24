@@ -22,6 +22,9 @@ type vhostContext struct {
 	hideDirs  *regexp.Regexp
 	hideFiles *regexp.Regexp
 
+	authUrlsUsers pathIntsList
+	authDirsUsers pathIntsList
+
 	restrictAccessUrls pathStringsList
 	restrictAccessDirs pathStringsList
 
@@ -75,6 +78,10 @@ func NewVhostHandler(
 		return nil, errs
 	}
 
+	// auth urls users
+	authUrlsUsers := pathUsernamesToPathUids(users, p.AuthUrlsUsers)
+	authDirsUsers := pathUsernamesToPathUids(users, p.AuthDirsUsers)
+
 	// restrict access
 	restrictAccessUrls := newRestrictAccesses(p.RestrictAccessUrls)
 	restrictAccessDirs := newRestrictAccesses(p.RestrictAccessDirs)
@@ -84,9 +91,12 @@ func NewVhostHandler(
 
 	// alias param
 	vhostCtx := &vhostContext{
-		users:  users,
 		theme:  theme,
 		logger: logger,
+
+		users:         users,
+		authUrlsUsers: authUrlsUsers,
+		authDirsUsers: authDirsUsers,
 
 		shows:     shows,
 		showDirs:  showDirs,

@@ -212,9 +212,11 @@ func newAliasHandler(
 		dirIndexes: p.DirIndexes,
 		aliases:    allAliases.filterSuccessor(currentAlias.url),
 
-		globalAuth: p.GlobalAuth || prefixMatched(p.AuthUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
-		authUrls:   filterSuccessor(p.AuthUrls, util.HasUrlPrefixDir, currentAlias.url),
-		authDirs:   filterSuccessor(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
+		globalAuth:    p.GlobalAuth || prefixMatched(p.AuthUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
+		authUrls:      filterSuccessor(p.AuthUrls, util.HasUrlPrefixDir, currentAlias.url),
+		authUrlsUsers: vhostCtx.authUrlsUsers.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
+		authDirs:      filterSuccessor(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
+		authDirsUsers: vhostCtx.authDirsUsers.filterSuccessor(util.HasFsPrefixDir, currentAlias.fs),
 
 		globalRestrictAccess: globalRestrictAccess,
 		restrictAccessUrls:   vhostCtx.restrictAccessUrls.filterSuccessor(util.HasUrlPrefixDir, currentAlias.url),
