@@ -27,8 +27,12 @@ func TestPathInts(t *testing.T) {
 		t.Error(merged)
 	}
 
-	successors := ps.filterSuccessor(util.HasUrlPrefixDir, "/a/b")
+	successors := ps.filterSuccessor(false, util.HasUrlPrefixDir, "/a/b")
 	if len(successors) != 1 || successors[0].path != "/a/b/c" {
+		t.Error(successors)
+	}
+	successors = ps.filterSuccessor(true, util.HasUrlPrefixDir, "/a/b")
+	if len(successors) != 2 || successors[0].path != "/a/b" || successors[1].path != "/a/b/c" {
 		t.Error(successors)
 	}
 }
@@ -55,8 +59,12 @@ func TestPathStrings(t *testing.T) {
 		t.Error(merged)
 	}
 
-	successors := ps.filterSuccessor(util.HasUrlPrefixDir, "/a/b")
+	successors := ps.filterSuccessor(false, util.HasUrlPrefixDir, "/a/b")
 	if len(successors) != 1 || successors[0].path != "/a/b/c" {
+		t.Error(successors)
+	}
+	successors = ps.filterSuccessor(true, util.HasUrlPrefixDir, "/a/b")
+	if len(successors) != 2 || successors[0].path != "/a/b" || successors[1].path != "/a/b/c" {
 		t.Error(successors)
 	}
 }
@@ -83,8 +91,12 @@ func TestPathHeaders(t *testing.T) {
 		t.Error(merged)
 	}
 
-	successors := ps.filterSuccessor(util.HasUrlPrefixDir, "/a/b")
+	successors := ps.filterSuccessor(false, util.HasUrlPrefixDir, "/a/b")
 	if len(successors) != 1 || successors[0].path != "/a/b/c" {
+		t.Error(successors)
+	}
+	successors = ps.filterSuccessor(true, util.HasUrlPrefixDir, "/a/b")
+	if len(successors) != 2 || successors[0].path != "/a/b" || successors[1].path != "/a/b/c" {
 		t.Error(successors)
 	}
 }

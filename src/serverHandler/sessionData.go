@@ -450,9 +450,9 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 	subItemPrefix := getSubItemPrefix(currDirRelPath, vhostReqPath, tailSlash)
 
-	canUpload := allowAccess && authSuccess && h.getCanUpload(item, vhostReqPath, fsPath)
-	canMkdir := allowAccess && authSuccess && h.getCanMkdir(item, vhostReqPath, fsPath)
-	canDelete := allowAccess && authSuccess && h.getCanDelete(item, vhostReqPath, fsPath)
+	canUpload := allowAccess && authSuccess && h.getCanUpload(item, vhostReqPath, fsPath, authUserId)
+	canMkdir := allowAccess && authSuccess && h.getCanMkdir(item, vhostReqPath, fsPath, authUserId)
+	canDelete := allowAccess && authSuccess && h.getCanDelete(item, vhostReqPath, fsPath, authUserId)
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
 	canArchive := allowAccess && authSuccess && h.getCanArchive(subItems, vhostReqPath, fsPath)
 	canCors := allowAccess && authSuccess && h.getCanCors(vhostReqPath, fsPath)

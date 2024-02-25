@@ -57,7 +57,7 @@ func hasUrlOrDirPrefixUsers(urlsUsers pathIntsList, reqUrl string, dirsUsers pat
 	return
 }
 
-func (h *aliasHandler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
 	if info == nil || !info.IsDir() {
 		return false
 	}
@@ -66,10 +66,20 @@ func (h *aliasHandler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath stri
 		return true
 	}
 
-	return hasUrlOrDirPrefix(h.uploadUrls, rawReqPath, h.uploadDirs, reqFsPath)
+	if hasUrlOrDirPrefix(h.uploadUrls, rawReqPath, h.uploadDirs, reqFsPath) {
+		return true
+	}
+
+	if userId >= 0 {
+		if _, match := hasUrlOrDirPrefixUsers(h.uploadUrlsUsers, rawReqPath, h.uploadDirsUsers, reqFsPath, userId); match {
+			return true
+		}
+	}
+
+	return false
 }
 
-func (h *aliasHandler) getCanMkdir(info os.FileInfo, rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanMkdir(info os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
 	if info == nil || !info.IsDir() {
 		return false
 	}
@@ -78,10 +88,20 @@ func (h *aliasHandler) getCanMkdir(info os.FileInfo, rawReqPath, reqFsPath strin
 		return true
 	}
 
-	return hasUrlOrDirPrefix(h.mkdirUrls, rawReqPath, h.mkdirDirs, reqFsPath)
+	if hasUrlOrDirPrefix(h.mkdirUrls, rawReqPath, h.mkdirDirs, reqFsPath) {
+		return true
+	}
+
+	if userId >= 0 {
+		if _, match := hasUrlOrDirPrefixUsers(h.mkdirUrlsUsers, rawReqPath, h.mkdirDirsUsers, reqFsPath, userId); match {
+			return true
+		}
+	}
+
+	return false
 }
 
-func (h *aliasHandler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
 	if info == nil || !info.IsDir() {
 		return false
 	}
@@ -90,7 +110,17 @@ func (h *aliasHandler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath stri
 		return true
 	}
 
-	return hasUrlOrDirPrefix(h.deleteUrls, rawReqPath, h.deleteDirs, reqFsPath)
+	if hasUrlOrDirPrefix(h.deleteUrls, rawReqPath, h.deleteDirs, reqFsPath) {
+		return true
+	}
+
+	if userId >= 0 {
+		if _, match := hasUrlOrDirPrefixUsers(h.deleteUrlsUsers, rawReqPath, h.deleteDirsUsers, reqFsPath, userId); match {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (h *aliasHandler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath string) bool {

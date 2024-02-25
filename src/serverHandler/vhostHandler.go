@@ -22,8 +22,14 @@ type vhostContext struct {
 	hideDirs  *regexp.Regexp
 	hideFiles *regexp.Regexp
 
-	authUrlsUsers pathIntsList
-	authDirsUsers pathIntsList
+	authUrlsUsers   pathIntsList
+	authDirsUsers   pathIntsList
+	uploadUrlsUsers pathIntsList
+	uploadDirsUsers pathIntsList
+	mkdirUrlsUsers  pathIntsList
+	mkdirDirsUsers  pathIntsList
+	deleteUrlsUsers pathIntsList
+	deleteDirsUsers pathIntsList
 
 	restrictAccessUrls pathStringsList
 	restrictAccessDirs pathStringsList
@@ -78,9 +84,15 @@ func NewVhostHandler(
 		return nil, errs
 	}
 
-	// auth urls users
+	// auth/upload/mkdir/delete urls/dirs users
 	authUrlsUsers := pathUsernamesToPathUids(users, p.AuthUrlsUsers)
 	authDirsUsers := pathUsernamesToPathUids(users, p.AuthDirsUsers)
+	uploadUrlsUsers := pathUsernamesToPathUids(users, p.UploadUrlsUsers)
+	uploadDirsUsers := pathUsernamesToPathUids(users, p.UploadDirsUsers)
+	mkdirUrlsUsers := pathUsernamesToPathUids(users, p.MkdirUrlsUsers)
+	mkdirDirsUsers := pathUsernamesToPathUids(users, p.MkdirDirsUsers)
+	deleteUrlsUsers := pathUsernamesToPathUids(users, p.DeleteUrlsUsers)
+	deleteDirsUsers := pathUsernamesToPathUids(users, p.DeleteDirsUsers)
 
 	// restrict access
 	restrictAccessUrls := newRestrictAccesses(p.RestrictAccessUrls)
@@ -94,9 +106,15 @@ func NewVhostHandler(
 		theme:  theme,
 		logger: logger,
 
-		users:         users,
-		authUrlsUsers: authUrlsUsers,
-		authDirsUsers: authDirsUsers,
+		users:           users,
+		authUrlsUsers:   authUrlsUsers,
+		authDirsUsers:   authDirsUsers,
+		uploadUrlsUsers: uploadUrlsUsers,
+		uploadDirsUsers: uploadDirsUsers,
+		mkdirUrlsUsers:  mkdirUrlsUsers,
+		mkdirDirsUsers:  mkdirDirsUsers,
+		deleteUrlsUsers: deleteUrlsUsers,
+		deleteDirsUsers: deleteDirsUsers,
 
 		shows:     shows,
 		showDirs:  showDirs,

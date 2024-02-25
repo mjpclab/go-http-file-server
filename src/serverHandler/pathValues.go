@@ -36,11 +36,14 @@ func (list pathIntsList) mergePrefixMatched(mergeWith []int, matchPrefix prefixF
 	}
 }
 
-func (list pathIntsList) filterSuccessor(matchPrefix prefixFilter, refPath string) pathIntsList {
+func (list pathIntsList) filterSuccessor(includeSelf bool, matchPrefix prefixFilter, refPath string) pathIntsList {
 	var result pathIntsList
 
 	for i := range list {
-		if len(list[i].path) > len(refPath) && matchPrefix(list[i].path, refPath) {
+		if !includeSelf && len(list[i].path) == len(refPath) {
+			continue
+		}
+		if matchPrefix(list[i].path, refPath) {
 			result = append(result, list[i])
 		}
 	}
@@ -84,11 +87,14 @@ func (list pathStringsList) mergePrefixMatched(mergeWith []string, matchPrefix p
 	}
 }
 
-func (list pathStringsList) filterSuccessor(matchPrefix prefixFilter, refPath string) pathStringsList {
+func (list pathStringsList) filterSuccessor(includeSelf bool, matchPrefix prefixFilter, refPath string) pathStringsList {
 	var result pathStringsList
 
 	for i := range list {
-		if len(list[i].path) > len(refPath) && matchPrefix(list[i].path, refPath) {
+		if !includeSelf && len(list[i].path) == len(refPath) {
+			continue
+		}
+		if matchPrefix(list[i].path, refPath) {
 			result = append(result, list[i])
 		}
 	}
@@ -132,12 +138,15 @@ func (list pathHeadersList) mergePrefixMatched(mergeWith [][2]string, matchPrefi
 	}
 }
 
-func (list pathHeadersList) filterSuccessor(matchPrefix prefixFilter, refPath string) pathHeadersList {
+func (list pathHeadersList) filterSuccessor(includeSelf bool, matchPrefix prefixFilter, refPath string) pathHeadersList {
 	var result pathHeadersList
 
-	for _, v := range list {
-		if len(v.path) > len(refPath) && matchPrefix(v.path, refPath) {
-			result = append(result, v)
+	for i := range list {
+		if !includeSelf && len(list[i].path) == len(refPath) {
+			continue
+		}
+		if matchPrefix(list[i].path, refPath) {
+			result = append(result, list[i])
 		}
 	}
 
