@@ -82,7 +82,6 @@ type aliasHandler struct {
 
 	vary string
 
-	inMiddlewares   []middleware.Middleware
 	postMiddlewares []middleware.Middleware
 }
 
@@ -112,10 +111,6 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			session.file.Close()
 		}()
-	}
-
-	if h.applyMiddlewares(h.inMiddlewares, w, r, session, data) {
-		return
 	}
 
 	if !session.allowAccess {
@@ -267,7 +262,6 @@ func newAliasHandler(
 
 		vary: vhostCtx.vary,
 
-		inMiddlewares:   p.InMiddlewares,
 		postMiddlewares: p.PostMiddlewares,
 	}
 	return h

@@ -94,7 +94,6 @@ type Param struct {
 	ErrorLog  string
 
 	PreMiddlewares  []middleware.Middleware
-	InMiddlewares   []middleware.Middleware
 	PostMiddlewares []middleware.Middleware
 }
 
