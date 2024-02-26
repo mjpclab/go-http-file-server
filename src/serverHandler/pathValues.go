@@ -7,8 +7,8 @@ type prefixFilter func(whole, prefix string) bool
 // pathInts
 
 type pathInts struct {
-	path string
-	ints []int
+	path   string
+	values []int
 }
 
 type pathIntsList []pathInts
@@ -25,7 +25,7 @@ func (list pathIntsList) mergePrefixMatched(mergeWith []int, matchPrefix prefixF
 			if result == nil {
 				result = []int{}
 			}
-			result = append(result, list[i].ints...)
+			result = append(result, list[i].values...)
 		}
 	}
 
@@ -58,8 +58,8 @@ func (list pathIntsList) filterSuccessor(includeSelf bool, matchPrefix prefixFil
 // pathStrings
 
 type pathStrings struct {
-	path    string
-	strings []string
+	path   string
+	values []string
 }
 
 type pathStringsList []pathStrings
@@ -76,7 +76,7 @@ func (list pathStringsList) mergePrefixMatched(mergeWith []string, matchPrefix p
 			if result == nil {
 				result = []string{}
 			}
-			result = append(result, list[i].strings...)
+			result = append(result, list[i].values...)
 		}
 	}
 
@@ -109,8 +109,8 @@ func (list pathStringsList) filterSuccessor(includeSelf bool, matchPrefix prefix
 // pathHeaders
 
 type pathHeaders struct {
-	path    string
-	headers [][2]string
+	path   string
+	values [][2]string
 }
 
 type pathHeadersList []pathHeaders
@@ -127,7 +127,7 @@ func (list pathHeadersList) mergePrefixMatched(mergeWith [][2]string, matchPrefi
 			if result == nil {
 				result = [][2]string{}
 			}
-			result = append(result, list[i].headers...)
+			result = append(result, list[i].values...)
 		}
 	}
 

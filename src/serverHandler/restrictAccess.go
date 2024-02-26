@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-func newRestrictAccesses(pathHostsList [][]string) []pathStrings {
-	restricts := make([]pathStrings, 0, len(pathHostsList))
+func newRestrictAccesses(pathHostsList [][]string) pathStringsList {
+	restricts := make(pathStringsList, 0, len(pathHostsList))
 
 	for _, pathHosts := range pathHostsList {
 		if len(pathHosts) == 0 {
@@ -51,7 +51,7 @@ func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath stri
 			continue
 		}
 		urlMatched = true
-		if util.Contains(h.restrictAccessUrls[i].strings, sourceHost) {
+		if util.Contains(h.restrictAccessUrls[i].values, sourceHost) {
 			return true, true
 		}
 	}
@@ -62,7 +62,7 @@ func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath stri
 			continue
 		}
 		dirMatched = true
-		if util.Contains(h.restrictAccessDirs[i].strings, sourceHost) {
+		if util.Contains(h.restrictAccessDirs[i].values, sourceHost) {
 			return true, true
 		}
 	}

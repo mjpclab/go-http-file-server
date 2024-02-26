@@ -30,7 +30,7 @@ func hasUrlOrDirPrefixUsers(urlsUsers pathIntsList, reqUrl string, dirsUsers pat
 		if userId < 0 {
 			continue
 		}
-		for _, uid := range urlsUsers[i].ints {
+		for _, uid := range urlsUsers[i].values {
 			if uid == userId {
 				match = true
 				return
@@ -46,7 +46,7 @@ func hasUrlOrDirPrefixUsers(urlsUsers pathIntsList, reqUrl string, dirsUsers pat
 		if userId < 0 {
 			continue
 		}
-		for _, uid := range dirsUsers[i].ints {
+		for _, uid := range dirsUsers[i].values {
 			if uid == userId {
 				match = true
 				return

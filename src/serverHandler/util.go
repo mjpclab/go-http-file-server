@@ -17,13 +17,13 @@ func pathUsernamesToPathUids(users *user.List, pathsUsernames [][]string) pathIn
 			continue
 		}
 		pathIds := pathInts{
-			path: pathUsernames[0],
-			ints: make([]int, 0, len(pathUsernames)-1),
+			path:   pathUsernames[0],
+			values: make([]int, 0, len(pathUsernames)-1),
 		}
 		for _, username := range pathUsernames[1:] {
 			uid := users.FindIndex(username)
 			if uid >= 0 {
-				pathIds.ints = append(pathIds.ints, uid)
+				pathIds.values = append(pathIds.values, uid)
 			}
 		}
 		list = append(list, pathIds)
