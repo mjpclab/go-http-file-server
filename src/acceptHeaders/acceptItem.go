@@ -7,7 +7,7 @@ import (
 
 const qualitySign = ";q="
 const defaultQuality = 1000
-const maxQualityDigits = 3
+const maxQualityDecimals = 3
 
 type acceptItem struct {
 	value   string
@@ -15,47 +15,52 @@ type acceptItem struct {
 }
 
 func parseAcceptItem(input string) acceptItem {
-	indexQSign := strings.Index(input, qualitySign)
-	if indexQSign < 0 {
-		return acceptItem{input, defaultQuality}
+	value := input
+	if semiColonIndex := strings.IndexByte(value, ';'); semiColonIndex >= 0 {
+		value = value[:semiColonIndex]
 	}
 
-	value := input[:indexQSign]
-	strQuality := input[indexQSign+len(qualitySign):]
-	if semiColonIndex := strings.IndexByte(strQuality, ';'); semiColonIndex >= 0 {
-		strQuality = strQuality[:semiColonIndex]
-	}
-	strQualityLen := len(strQuality)
-
-	if strQualityLen == 0 {
+	rest := input[len(value):]
+	qSignIndex := strings.Index(rest, qualitySign)
+	if qSignIndex < 0 {
 		return acceptItem{value, defaultQuality}
 	}
-	if strQualityLen > 1 && strQuality[1] != '.' {
+
+	rest = rest[qSignIndex+len(qualitySign):]
+	if semiColonIndex := strings.IndexByte(rest, ';'); semiColonIndex >= 0 {
+		rest = rest[:semiColonIndex]
+	}
+	qLen := len(rest)
+
+	if qLen == 0 {
+		return acceptItem{value, defaultQuality}
+	}
+	if qLen > 1 && rest[1] != '.' {
 		return acceptItem{value, defaultQuality}
 	}
 
 	// "q=1" or q is an invalid value
-	if strQuality[0] != '0' {
+	if rest[0] != '0' {
 		return acceptItem{value, defaultQuality}
 	}
 
 	// "q=0."
-	if strQualityLen <= 2 {
+	if qLen <= 2 {
 		return acceptItem{value, 0}
 	}
 
-	strRest := strQuality[2:]
-	strRestLen := len(strRest)
-	if strRestLen > maxQualityDigits {
-		strRestLen = maxQualityDigits
-		strRest = strRest[:strRestLen]
+	rest = rest[2:]
+	qDecimalLen := len(rest)
+	if qDecimalLen > maxQualityDecimals {
+		qDecimalLen = maxQualityDecimals
+		rest = rest[:qDecimalLen]
 	}
 
-	quality, err := strconv.Atoi(strRest)
+	quality, err := strconv.Atoi(rest)
 	if err != nil {
 		quality = defaultQuality
 	} else {
-		missingDigits := maxQualityDigits - strRestLen
+		missingDigits := maxQualityDecimals - qDecimalLen
 		for i := 0; i < missingDigits; i++ {
 			quality *= 10
 		}
