@@ -7,23 +7,25 @@ import (
 )
 
 type Asset struct {
+	Path        string
 	ContentType string
 	ReadSeeker  io.ReadSeeker
 }
 
-type Assets map[string]Asset
+type Assets []Asset
 
-func (assets Assets) Set(path string, content []byte) error {
+func (assets Assets) Append(path string, content []byte) (Assets, error) {
 	rd := bytes.NewReader(content)
 	ctype, err := util.GetContentType(path, rd)
 	if err != nil {
-		return err
+		return assets, err
 	}
 
-	asset := Asset{
+	assets = append(assets, Asset{
+		Path:        path,
 		ContentType: ctype,
 		ReadSeeker:  rd,
-	}
-	assets[path] = asset
-	return nil
+	})
+
+	return assets, nil
 }

@@ -9,14 +9,14 @@ import (
 //go:embed frontend/index.html
 var defaultTplStr string
 
-//go:embed frontend/favicon.ico
-var defaultFavicon []byte
-
 //go:embed frontend/index.css
 var defaultCss []byte
 
 //go:embed frontend/index.js
 var defaultJs []byte
+
+//go:embed frontend/favicon.ico
+var defaultFavicon []byte
 
 var DefaultTheme theme.MemTheme
 
@@ -29,8 +29,8 @@ func init() {
 	}
 
 	DefaultTheme.Assets = theme.Assets{
-		"favicon.ico": {"image/x-icon", bytes.NewReader(defaultFavicon)},
-		"index.css":   {"text/css; charset=utf-8", bytes.NewReader(defaultCss)},
-		"index.js":    {"application/javascript; charset=utf-8", bytes.NewReader(defaultJs)},
+		{"index.css", "text/css; charset=utf-8", bytes.NewReader(defaultCss)},
+		{"index.js", "application/javascript; charset=utf-8", bytes.NewReader(defaultJs)},
+		{"favicon.ico", "image/x-icon", bytes.NewReader(defaultFavicon)},
 	}
 }
