@@ -43,13 +43,13 @@ func (h *aliasHandler) getHeaders(reqUrlPath, reqFsPath string, doGetHeaders boo
 
 	for i := range h.headersUrls {
 		if util.HasUrlPrefixDir(reqUrlPath, h.headersUrls[i].path) {
-			headers = append(headers, h.headersUrls[i].headers...)
+			headers = append(headers, h.headersUrls[i].values...)
 		}
 	}
 
 	for i := range h.headersDirs {
 		if util.HasFsPrefixDir(reqFsPath, h.headersDirs[i].path) {
-			headers = append(headers, h.headersDirs[i].headers...)
+			headers = append(headers, h.headersDirs[i].values...)
 		}
 	}
 

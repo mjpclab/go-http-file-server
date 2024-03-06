@@ -2,7 +2,6 @@ package serverHandler
 
 import (
 	"net/http"
-	"strings"
 )
 
 func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
@@ -17,14 +16,23 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *s
 	case data.IsUpload:
 		if data.CanUpload {
 			success = h.saveUploadFiles(session.authUserName, h.fs+session.aliasReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	case data.IsMkdir:
 		if data.CanMkdir && !h.logError(r.ParseForm()) {
 			success = h.mkdirs(session.authUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	case data.IsDelete:
 		if data.CanDelete && !h.logError(r.ParseForm()) {
 			success = h.deleteItems(session.authUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	}
 
@@ -41,11 +49,7 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *s
 			w.Write([]byte(`{"success":false}`))
 		}
 	} else {
-		reqPath := r.RequestURI
-		qsIndex := strings.IndexByte(reqPath, '?')
-		if qsIndex >= 0 {
-			reqPath = reqPath[:qsIndex]
-		}
+		reqPath := session.prefixReqPath
 
 		ctxQsList := r.Form["contextquerystring"]
 		ctxQsListLen := len(ctxQsList)

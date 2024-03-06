@@ -15,6 +15,15 @@ func TestParseAcceptItem(t *testing.T) {
 		t.Error(output.quality)
 	}
 
+	input = "en-US;level=3"
+	output = parseAcceptItem(input)
+	if output.value != "en-US" {
+		t.Error(output.value)
+	}
+	if output.quality != 1000 {
+		t.Error(output.quality)
+	}
+
 	input = "en-US;q=1"
 	output = parseAcceptItem(input)
 	if output.value != "en-US" {
@@ -48,6 +57,15 @@ func TestParseAcceptItem(t *testing.T) {
 		t.Error(output.value)
 	}
 	if output.quality != 970 {
+		t.Error(output.quality)
+	}
+
+	input = "en-US;v=7;q=0.66"
+	output = parseAcceptItem(input)
+	if output.value != "en-US" {
+		t.Error(output.value)
+	}
+	if output.quality != 660 {
 		t.Error(output.quality)
 	}
 

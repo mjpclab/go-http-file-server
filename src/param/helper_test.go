@@ -3,6 +3,7 @@ package param
 import (
 	"mjpclab.dev/ghfs/src/util"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -89,8 +90,14 @@ func TestNormalizePathMaps(t *testing.T) {
 		t.Error(results)
 	}
 	fsPath, _ = filepath.Abs("/usr/lib")
-	if !expectStrings(results[0][:], "/data/lib", fsPath) {
-		t.Error(results[0])
+	if runtime.GOOS == "windows" {
+		if !expectStrings(results[0][:], "/data/lib", `\\usr\lib`) {
+			t.Error(results[0])
+		}
+	} else {
+		if !expectStrings(results[0][:], "/data/lib", fsPath) {
+			t.Error(results[0])
+		}
 	}
 
 	results, _ = normalizePathMaps([][2]string{{"/data/lib", "//usr/lib"}, {"foo", "bar/baz"}})
@@ -98,8 +105,14 @@ func TestNormalizePathMaps(t *testing.T) {
 		t.Error(results)
 	}
 	fsPath, _ = filepath.Abs("/usr/lib")
-	if !expectStrings(results[0][:], "/data/lib", fsPath) {
-		t.Error(results[0])
+	if runtime.GOOS == "windows" {
+		if !expectStrings(results[0][:], "/data/lib", `\\usr\lib`) {
+			t.Error(results[0])
+		}
+	} else {
+		if !expectStrings(results[0][:], "/data/lib", fsPath) {
+			t.Error(results[0])
+		}
 	}
 	fsPath, _ = filepath.Abs("bar/baz")
 	if !expectStrings(results[1][:], "/foo", fsPath) {

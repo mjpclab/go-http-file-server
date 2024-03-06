@@ -3,7 +3,16 @@
 
 package util
 
-var IsPathEqual = IsStrEqualAccurate
+import "path/filepath"
 
-var HasUrlPrefixDir = HasUrlPrefixDirAccurate
-var HasFsPrefixDir = HasFsPrefixDirAccurate
+func IsPathEqual(a, b string) bool {
+	return a == b
+}
+
+func HasUrlPrefixDir(urlPath, prefix string) bool {
+	return hasPrefixDirAccurate(urlPath, prefix, '/')
+}
+
+func HasFsPrefixDir(fsPath, prefix string) bool {
+	return hasPrefixDirAccurate(fsPath, prefix, filepath.Separator)
+}

@@ -47,13 +47,13 @@ func matchSelection(info os.FileInfo, selections []string) (match bool, childSel
 
 func (h *aliasHandler) visitTreeNode(
 	r *http.Request,
-	rawReqPath, fsPath, relPath string,
+	urlPath, fsPath, relPath string,
 	statNode bool,
 	childSelections []string,
 	archiveCallback archiveCallback,
 ) {
-	if needAuth, _ := h.needAuth("", rawReqPath, fsPath); needAuth {
-		if _, _, err := h.verifyAuth(r, needAuth); err != nil {
+	if needAuth, _ := h.needAuth("", urlPath, fsPath); needAuth {
+		if _, _, err := h.verifyAuth(r, needAuth, urlPath, fsPath); err != nil {
 			return
 		}
 	}
@@ -105,7 +105,7 @@ func (h *aliasHandler) visitTreeNode(
 	}
 
 	if fInfo.IsDir() {
-		childInfos, _, _ := h.mergeAlias(rawReqPath, fInfo, childInfos, true)
+		childInfos, _, _ := h.mergeAlias(urlPath, fInfo, childInfos, true)
 		childInfos = h.FilterItems(childInfos)
 
 		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
@@ -117,7 +117,7 @@ func (h *aliasHandler) visitTreeNode(
 
 			childPath := "/" + childInfo.Name()
 			childFsPath := fsPath + childPath
-			childRawReqPath := util.CleanUrlPath(rawReqPath + childPath)
+			childRawReqPath := util.CleanUrlPath(urlPath + childPath)
 			childRelPath := relPath + childPath
 
 			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {

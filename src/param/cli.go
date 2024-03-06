@@ -42,22 +42,37 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagsValues("dirindexes", []string{"-I", "--dir-index"}, "GHFS_DIR_INDEX", nil, "default index page for directory")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("globalrestrictaccess", "--global-restrict-access", "GHFS_GLOBAL_RESTRICT_ACCESS", []string{}, "restrict access to all url paths from current host, with optional extra allow list")
+	err = options.AddFlagValues("users", "--user", "", nil, "user info: <username>:<password>")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("restrictaccessurls", "--restrict-access", "", []string{}, "restrict access to specific url paths from current host, with optional extra allow list")
+	err = options.AddFlagValues("usersbase64", "--user-base64", "", nil, "user info: <username>:<base64-password>")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("restrictaccessdirs", "--restrict-access-dir", "", []string{}, "restrict access to specific file system paths from current host, with optional extra allow list")
+	err = options.AddFlagValues("usersmd5", "--user-md5", "", nil, "user info: <username>:<md5-password>")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("globalheaders", "--global-header", "GHFS_GLOBAL_HEADER", []string{}, "custom headers for all url paths, e.g. <name>:<value>")
+	err = options.AddFlagValues("userssha1", "--user-sha1", "", nil, "user info: <username>:<sha1-password>")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("headersurls", "--header", "", []string{}, "url path for custom headers, <sep><url><sep><name><sep><value>")
+	err = options.AddFlagValues("userssha256", "--user-sha256", "", nil, "user info: <username>:<sha256-password>")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("headersdirs", "--header-dir", "", []string{}, "file system path for custom headers, <sep><dir><sep><name><sep><value>")
+	err = options.AddFlagValues("userssha512", "--user-sha512", "", nil, "user info: <username>:<sha512-password>")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlag("globalauth", "--global-auth", "GHFS_GLOBAL_AUTH", "require Basic Auth for all directories")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("authurls", "--auth", "", nil, "url path that require Basic Auth")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("authurlsusers", "--auth-user", "", nil, "url path that require Basic Auth for specific users, <sep><url-path>[<sep><user>...]")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("authdirs", "--auth-dir", "", nil, "file system path that require Basic Auth")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("authdirsusers", "--auth-dir-user", "", nil, "file system path that require Basic Auth for specific users, <sep><fs-path>[<sep><user>...]")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
@@ -66,7 +81,13 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagsValues("uploadurls", []string{"-u", "--upload"}, "", nil, "url path that allow upload files")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagValues("uploadurlsusers", "--upload-user", "", nil, "url path that allow upload files for specific users, <sep><url-path>[<sep><user>...]")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlagsValues("uploaddirs", []string{"-p", "--upload-dir"}, "", nil, "file system path that allow upload files")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("uploaddirsusers", "--upload-dir-user", "", nil, "file system path that allow upload files for specific users, <sep><fs-path>[<sep><user>...]")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globalmkdir", "--global-mkdir", "", "allow mkdir files for all url paths")
@@ -75,7 +96,13 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("mkdirurls", "--mkdir", "", nil, "url path that allow mkdir files")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagValues("mkdirurlsusers", "--mkdir-user", "", nil, "url path that allow mkdir files for specific users, <sep><url-path>[<sep><user>...]")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlagValues("mkdirdirs", "--mkdir-dir", "", nil, "file system path that allow mkdir files")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("mkdirdirsusers", "--mkdir-dir-user", "", nil, "file system path that allow mkdir files for specific users, <sep><fs-path>[<sep><user>...]")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globaldelete", "--global-delete", "", "allow delete files for all url paths")
@@ -84,7 +111,13 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("deleteurls", "--delete", "", nil, "url path that allow delete files")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagValues("deleteurlsusers", "--delete-user", "", nil, "url path that allow delete files for specific users, <sep><url-path>[<sep><user>...]")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlagValues("deletedirs", "--delete-dir", "", nil, "file system path that allow delete files")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("deletedirsusers", "--delete-dir-user", "", nil, "file system path that allow delete files for specific users, <sep><fs-path>[<sep><user>...]")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlags("globalarchive", []string{"-A", "--global-archive"}, "GHFS_GLOBAL_ARCHIVE", "enable download archive for all directories")
@@ -105,31 +138,22 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("corsdirs", "--cors-dir", "", nil, "file system path that enable CORS headers")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlag("globalauth", "--global-auth", "GHFS_GLOBAL_AUTH", "require Basic Auth for all directories")
+	err = options.AddFlagValues("globalrestrictaccess", "--global-restrict-access", "GHFS_GLOBAL_RESTRICT_ACCESS", []string{}, "restrict access to all url paths from current host, with optional extra allow list")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("authurls", "--auth", "", nil, "url path that require Basic Auth")
+	err = options.AddFlagValues("restrictaccessurls", "--restrict-access", "", []string{}, "restrict access to specific url paths from current host, with optional extra allow list, <sep><url-path>[<sep><allowed-host>...]")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("authdirs", "--auth-dir", "", nil, "file system path that require Basic Auth")
+	err = options.AddFlagValues("restrictaccessdirs", "--restrict-access-dir", "", []string{}, "restrict access to specific file system paths from current host, with optional extra allow list, <sep><fs-path>[<sep><allowed-host>...]")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("users", "--user", "", nil, "user info: <username>:<password>")
+	err = options.AddFlagValues("globalheaders", "--global-header", "GHFS_GLOBAL_HEADER", []string{}, "custom headers for all url paths, e.g. <name>:<value>")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("usersbase64", "--user-base64", "", nil, "user info: <username>:<base64-password>")
+	err = options.AddFlagValues("headersurls", "--header", "", []string{}, "url path for custom headers, <sep><url><sep><name><sep><value>")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValues("usersmd5", "--user-md5", "", nil, "user info: <username>:<md5-password>")
-	serverError.CheckFatal(err)
-
-	err = options.AddFlagValues("userssha1", "--user-sha1", "", nil, "user info: <username>:<sha1-password>")
-	serverError.CheckFatal(err)
-
-	err = options.AddFlagValues("userssha256", "--user-sha256", "", nil, "user info: <username>:<sha256-password>")
-	serverError.CheckFatal(err)
-
-	err = options.AddFlagValues("userssha512", "--user-sha512", "", nil, "user info: <username>:<sha512-password>")
+	err = options.AddFlagValues("headersdirs", "--header-dir", "", []string{}, "file system path for custom headers, <sep><dir><sep><name><sep><value>")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlagsValues("certs", []string{"-c", "--cert"}, "GHFS_CERT", nil, "TLS certificate path")
@@ -310,6 +334,70 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		// dir indexes
 		param.DirIndexes, _ = result.GetStrings("dirindexes")
 
+		// users
+		arrUsersPlain, _ := result.GetStrings("users")
+		param.UsersPlain = entriesToUsers(arrUsersPlain)
+		arrUsersBase64, _ := result.GetStrings("usersbase64")
+		param.UsersBase64 = entriesToUsers(arrUsersBase64)
+		arrUsersMd5, _ := result.GetStrings("usersmd5")
+		param.UsersMd5 = entriesToUsers(arrUsersMd5)
+		arrUsersSha1, _ := result.GetStrings("userssha1")
+		param.UsersSha1 = entriesToUsers(arrUsersSha1)
+		arrUsersSha256, _ := result.GetStrings("userssha256")
+		param.UsersSha256 = entriesToUsers(arrUsersSha256)
+		arrUsersSha512, _ := result.GetStrings("userssha512")
+		param.UsersSha512 = entriesToUsers(arrUsersSha512)
+
+		// auth/upload/mkdir/delete/archive/cors urls/dirs
+		param.GlobalAuth = result.HasKey("globalauth")
+		param.AuthUrls, _ = result.GetStrings("authurls")
+		param.AuthDirs, _ = result.GetStrings("authdirs")
+
+		param.GlobalUpload = result.HasKey("globalupload")
+		param.UploadUrls, _ = result.GetStrings("uploadurls")
+		param.UploadDirs, _ = result.GetStrings("uploaddirs")
+
+		param.GlobalMkdir = result.HasKey("globalmkdir")
+		param.MkdirUrls, _ = result.GetStrings("mkdirurls")
+		param.MkdirDirs, _ = result.GetStrings("mkdirdirs")
+
+		param.GlobalDelete = result.HasKey("globaldelete")
+		param.DeleteUrls, _ = result.GetStrings("deleteurls")
+		param.DeleteDirs, _ = result.GetStrings("deletedirs")
+
+		param.GlobalArchive = result.HasKey("globalarchive")
+		param.ArchiveUrls, _ = result.GetStrings("archiveurls")
+		param.ArchiveDirs, _ = result.GetStrings("archivedirs")
+
+		param.GlobalCors = result.HasKey("globalcors")
+		param.CorsUrls, _ = result.GetStrings("corsurls")
+		param.CorsDirs, _ = result.GetStrings("corsdirs")
+
+		// auth/upload/mkdir/delete urls/dirs urls users
+		authUrlsUsers, _ := result.GetStrings("authurlsusers")
+		param.AuthUrlsUsers = SplitAllKeyValues(authUrlsUsers)
+
+		authDirsUsers, _ := result.GetStrings("authdirsusers")
+		param.AuthDirsUsers = SplitAllKeyValues(authDirsUsers)
+
+		uploadUrlsUsers, _ := result.GetStrings("uploadurlsusers")
+		param.UploadUrlsUsers = SplitAllKeyValues(uploadUrlsUsers)
+
+		uploadDirsUsers, _ := result.GetStrings("uploaddirsusers")
+		param.UploadDirsUsers = SplitAllKeyValues(uploadDirsUsers)
+
+		mkdirUrlsUsers, _ := result.GetStrings("mkdirurlsusers")
+		param.MkdirUrlsUsers = SplitAllKeyValues(mkdirUrlsUsers)
+
+		mkdirDirsUsers, _ := result.GetStrings("mkdirdirsusers")
+		param.MkdirDirsUsers = SplitAllKeyValues(mkdirDirsUsers)
+
+		deleteUrlsUsers, _ := result.GetStrings("deleteurlsusers")
+		param.DeleteUrlsUsers = SplitAllKeyValues(deleteUrlsUsers)
+
+		deleteDirsUsers, _ := result.GetStrings("deletedirsusers")
+		param.DeleteDirsUsers = SplitAllKeyValues(deleteDirsUsers)
+
 		// global restrict access
 		if result.HasKey("globalrestrictaccess") {
 			param.GlobalRestrictAccess, _ = result.GetStrings("globalrestrictaccess")
@@ -341,45 +429,6 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		certs, es := goVirtualHost.LoadCertificates(certFiles, keyFiles)
 		errs = append(errs, es...)
 		param.Certificates = certs
-
-		// upload/mkdir/delete/archive/cors/auth urls/dirs
-		param.GlobalUpload = result.HasKey("globalupload")
-		param.UploadUrls, _ = result.GetStrings("uploadurls")
-		param.UploadDirs, _ = result.GetStrings("uploaddirs")
-
-		param.GlobalMkdir = result.HasKey("globalmkdir")
-		param.MkdirUrls, _ = result.GetStrings("mkdirurls")
-		param.MkdirDirs, _ = result.GetStrings("mkdirdirs")
-
-		param.GlobalDelete = result.HasKey("globaldelete")
-		param.DeleteUrls, _ = result.GetStrings("deleteurls")
-		param.DeleteDirs, _ = result.GetStrings("deletedirs")
-
-		param.GlobalArchive = result.HasKey("globalarchive")
-		param.ArchiveUrls, _ = result.GetStrings("archiveurls")
-		param.ArchiveDirs, _ = result.GetStrings("archivedirs")
-
-		param.GlobalCors = result.HasKey("globalcors")
-		param.CorsUrls, _ = result.GetStrings("corsurls")
-		param.CorsDirs, _ = result.GetStrings("corsdirs")
-
-		param.GlobalAuth = result.HasKey("globalauth")
-		param.AuthUrls, _ = result.GetStrings("authurls")
-		param.AuthDirs, _ = result.GetStrings("authdirs")
-
-		// users
-		arrUsersPlain, _ := result.GetStrings("users")
-		param.UsersPlain = entriesToUsers(arrUsersPlain)
-		arrUsersBase64, _ := result.GetStrings("usersbase64")
-		param.UsersBase64 = entriesToUsers(arrUsersBase64)
-		arrUsersMd5, _ := result.GetStrings("usersmd5")
-		param.UsersMd5 = entriesToUsers(arrUsersMd5)
-		arrUsersSha1, _ := result.GetStrings("userssha1")
-		param.UsersSha1 = entriesToUsers(arrUsersSha1)
-		arrUsersSha256, _ := result.GetStrings("userssha256")
-		param.UsersSha256 = entriesToUsers(arrUsersSha256)
-		arrUsersSha512, _ := result.GetStrings("userssha512")
-		param.UsersSha512 = entriesToUsers(arrUsersSha512)
 
 		// listen
 		listens, _ := result.GetStrings("listens")
