@@ -62,7 +62,7 @@ func TestParseAccepts2(t *testing.T) {
 }
 
 func TestGetPreferredValue(t *testing.T) {
-	acceptEncoding := "gzip;q=0.9, deflate"
+	acceptEncoding := "gzip;v=b3;q=0.9, deflate"
 	accepts := ParseAccepts(acceptEncoding)
 
 	var index int

@@ -4,11 +4,62 @@ package serverHandler
 
 type prefixFilter func(whole, prefix string) bool
 
+// pathInts
+
+type pathInts struct {
+	path   string
+	values []int
+}
+
+type pathIntsList []pathInts
+
+func (list pathIntsList) mergePrefixMatched(mergeWith []int, matchPrefix prefixFilter, refPath string) []int {
+	var result []int
+	if mergeWith != nil {
+		result = make([]int, len(mergeWith))
+		copy(result, mergeWith)
+	}
+
+	for i := range list {
+		if matchPrefix(refPath, list[i].path) {
+			if result == nil {
+				result = []int{}
+			}
+			result = append(result, list[i].values...)
+		}
+	}
+
+	if mergeWith != nil && len(mergeWith) == len(result) {
+		return mergeWith
+	} else {
+		return result
+	}
+}
+
+func (list pathIntsList) filterSuccessor(includeSelf bool, matchPrefix prefixFilter, refPath string) pathIntsList {
+	var result pathIntsList
+
+	for i := range list {
+		if !includeSelf && len(list[i].path) == len(refPath) {
+			continue
+		}
+		if matchPrefix(list[i].path, refPath) {
+			result = append(result, list[i])
+		}
+	}
+
+	if len(list) == len(result) {
+		return list
+	} else {
+		return result
+	}
+}
+
 // pathStrings
 
 type pathStrings struct {
-	path    string
-	strings []string
+	path   string
+	values []string
 }
 
 type pathStringsList []pathStrings
@@ -25,7 +76,7 @@ func (list pathStringsList) mergePrefixMatched(mergeWith []string, matchPrefix p
 			if result == nil {
 				result = []string{}
 			}
-			result = append(result, list[i].strings...)
+			result = append(result, list[i].values...)
 		}
 	}
 
@@ -36,11 +87,14 @@ func (list pathStringsList) mergePrefixMatched(mergeWith []string, matchPrefix p
 	}
 }
 
-func (list pathStringsList) filterSuccessor(matchPrefix prefixFilter, refPath string) pathStringsList {
+func (list pathStringsList) filterSuccessor(includeSelf bool, matchPrefix prefixFilter, refPath string) pathStringsList {
 	var result pathStringsList
 
 	for i := range list {
-		if len(list[i].path) > len(refPath) && matchPrefix(list[i].path, refPath) {
+		if !includeSelf && len(list[i].path) == len(refPath) {
+			continue
+		}
+		if matchPrefix(list[i].path, refPath) {
 			result = append(result, list[i])
 		}
 	}
@@ -55,8 +109,8 @@ func (list pathStringsList) filterSuccessor(matchPrefix prefixFilter, refPath st
 // pathHeaders
 
 type pathHeaders struct {
-	path    string
-	headers [][2]string
+	path   string
+	values [][2]string
 }
 
 type pathHeadersList []pathHeaders
@@ -73,7 +127,7 @@ func (list pathHeadersList) mergePrefixMatched(mergeWith [][2]string, matchPrefi
 			if result == nil {
 				result = [][2]string{}
 			}
-			result = append(result, list[i].headers...)
+			result = append(result, list[i].values...)
 		}
 	}
 
@@ -84,12 +138,15 @@ func (list pathHeadersList) mergePrefixMatched(mergeWith [][2]string, matchPrefi
 	}
 }
 
-func (list pathHeadersList) filterSuccessor(matchPrefix prefixFilter, refPath string) pathHeadersList {
+func (list pathHeadersList) filterSuccessor(includeSelf bool, matchPrefix prefixFilter, refPath string) pathHeadersList {
 	var result pathHeadersList
 
-	for _, v := range list {
-		if len(v.path) > len(refPath) && matchPrefix(v.path, refPath) {
-			result = append(result, v)
+	for i := range list {
+		if !includeSelf && len(list[i].path) == len(refPath) {
+			continue
+		}
+		if matchPrefix(list[i].path, refPath) {
+			result = append(result, list[i])
 		}
 	}
 

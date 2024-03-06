@@ -2,6 +2,7 @@ package serverHandler
 
 import (
 	"mjpclab.dev/ghfs/src/shimgo"
+	"mjpclab.dev/ghfs/src/user"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
@@ -9,6 +10,27 @@ import (
 	"regexp"
 	"strings"
 )
+
+func pathUsernamesToPathUids(users *user.List, pathsUsernames [][]string) pathIntsList {
+	list := make(pathIntsList, 0, len(pathsUsernames))
+	for _, pathUsernames := range pathsUsernames {
+		if len(pathUsernames) < 1 {
+			continue
+		}
+		pathIds := pathInts{
+			path:   pathUsernames[0],
+			values: make([]int, 0, len(pathUsernames)-1),
+		}
+		for _, username := range pathUsernames[1:] {
+			uid := users.FindIndex(username)
+			if uid >= 0 {
+				pathIds.values = append(pathIds.values, uid)
+			}
+		}
+		list = append(list, pathIds)
+	}
+	return list
+}
 
 func wildcardToRegexp(wildcards []string) (*regexp.Regexp, error) {
 	if len(wildcards) == 0 {

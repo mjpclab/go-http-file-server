@@ -18,11 +18,6 @@ type MemTheme struct {
 var initTime = time.Now()
 
 func LoadMemTheme(themePath string) (theme MemTheme, err error) {
-	var currentTheme = MemTheme{
-		Template: nil,
-		Assets:   make(Assets, 3),
-	}
-
 	// assume to be a zip file
 	var zipRd *zip.ReadCloser
 	zipRd, err = zip.OpenReader(themePath)
@@ -30,6 +25,11 @@ func LoadMemTheme(themePath string) (theme MemTheme, err error) {
 		return
 	}
 	defer zipRd.Close()
+
+	currentTheme := MemTheme{
+		Template: nil,
+		Assets:   make(Assets, 0, len(zipRd.File)-1), // exclude template file
+	}
 
 	for _, f := range zipRd.File {
 		var rd io.ReadCloser
@@ -49,7 +49,7 @@ func LoadMemTheme(themePath string) (theme MemTheme, err error) {
 				return
 			}
 		} else {
-			currentTheme.Assets.Set(f.Name, raw)
+			currentTheme.Assets, _ = currentTheme.Assets.Append(f.Name, raw)
 		}
 	}
 
@@ -67,12 +67,16 @@ func (theme MemTheme) RenderPage(w io.Writer, data interface{}) error {
 }
 
 func (theme MemTheme) RenderAsset(w http.ResponseWriter, r *http.Request, assetPath string) {
-	asset, ok := theme.Assets[assetPath]
-	if !ok {
-		w.WriteHeader(http.StatusNotFound)
+	assets := theme.Assets
+	for i := range assets {
+		if assets[i].Path != assetPath {
+			continue
+		}
+		w.Header().Set("Content-Type", assets[i].ContentType)
+		http.ServeContent(w, r, assetPath, initTime, assets[i].ReadSeeker)
 		return
 	}
 
-	w.Header().Set("Content-Type", asset.ContentType)
-	http.ServeContent(w, r, assetPath, initTime, asset.ReadSeeker)
+	w.WriteHeader(http.StatusNotFound)
+	return
 }

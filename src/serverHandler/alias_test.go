@@ -1,6 +1,9 @@
 package serverHandler
 
-import "testing"
+import (
+	"runtime"
+	"testing"
+)
 
 func TestAlias(t *testing.T) {
 	alias := createAlias("/hello/world/foo", "/tmp")
@@ -10,7 +13,7 @@ func TestAlias(t *testing.T) {
 		t.Error()
 	}
 
-	if alias.isMatch("/Hello/world/foo") {
+	if alias.isMatch("/Hello/world/foo") != (runtime.GOOS == "windows") {
 		t.Error()
 	}
 
@@ -35,7 +38,7 @@ func TestAlias(t *testing.T) {
 		t.Error()
 	}
 
-	if alias.isSuccessorOf("/HELLO/world/") {
+	if alias.isSuccessorOf("/HELLO/world/") != (runtime.GOOS == "windows") {
 		t.Error()
 	}
 

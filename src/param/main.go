@@ -18,31 +18,49 @@ type Param struct {
 
 	DefaultSort string
 	DirIndexes  []string
-	// value: [url-path, fs-path]
-	Aliases [][2]string
+	Aliases     [][2]string // [][url-path, fs-path]
+
+	// [][username, password]
+	UsersPlain  [][2]string
+	UsersBase64 [][2]string
+	UsersMd5    [][2]string
+	UsersSha1   [][2]string
+	UsersSha256 [][2]string
+	UsersSha512 [][2]string
+
+	GlobalAuth    bool
+	AuthUrls      []string
+	AuthUrlsUsers [][]string // [][path, user...]
+	AuthDirs      []string
+	AuthDirsUsers [][]string // [][path, user...]
 
 	GlobalRestrictAccess []string
-	// value: [restrict-path, allow-hosts...]
+	// [][restrict-path, allow-hosts...]
 	RestrictAccessUrls [][]string
 	RestrictAccessDirs [][]string
 
-	// value: [name, value]
-	GlobalHeaders [][2]string
-	// value: [path, (name, value)...]
+	GlobalHeaders [][2]string // [][name, value]
+	// [][path, (name, value)...]
 	HeadersUrls [][]string
 	HeadersDirs [][]string
 
-	GlobalUpload bool
-	UploadUrls   []string
-	UploadDirs   []string
+	GlobalUpload    bool
+	UploadUrls      []string
+	UploadUrlsUsers [][]string // [][path, user...]
+	UploadDirs      []string
+	UploadDirsUsers [][]string // [][path, user...]
 
-	GlobalMkdir bool
-	MkdirUrls   []string
-	MkdirDirs   []string
+	GlobalMkdir    bool
+	MkdirUrls      []string
+	MkdirUrlsUsers [][]string // [][path, user...]
+	MkdirDirs      []string
+	MkdirDirsUsers [][]string // [][path, user...]
 
-	GlobalDelete bool
-	DeleteUrls   []string
-	DeleteDirs   []string
+	GlobalDelete    bool
+	DeleteUrls      []string
+	DeleteUrlsUsers [][]string // [][path, user...]
+	DeleteDirs      []string
+	DeleteDirsUsers [][]string // [][path, user...]
 
 	GlobalArchive bool
 	ArchiveUrls   []string
@@ -51,17 +69,6 @@ type Param struct {
 	GlobalCors bool
 	CorsUrls   []string
 	CorsDirs   []string
-
-	GlobalAuth bool
-	AuthUrls   []string
-	AuthDirs   []string
-	// value: [username, password]
-	UsersPlain  [][2]string
-	UsersBase64 [][2]string
-	UsersMd5    [][2]string
-	UsersSha1   [][2]string
-	UsersSha256 [][2]string
-	UsersSha512 [][2]string
 
 	Certificates []tls.Certificate
 	Listens      []string
@@ -87,7 +94,6 @@ type Param struct {
 	ErrorLog  string
 
 	PreMiddlewares  []middleware.Middleware
-	InMiddlewares   []middleware.Middleware
 	PostMiddlewares []middleware.Middleware
 }
 
@@ -138,6 +144,73 @@ func (param *Param) normalize() (errs []error) {
 	// dir indexes
 	param.DirIndexes = normalizeFilenames(param.DirIndexes)
 
+	// auth/upload/mkdir/delete/archive/cors urls/dirs
+	param.AuthUrls = NormalizeUrlPaths(param.AuthUrls)
+	param.AuthDirs = NormalizeFsPaths(param.AuthDirs)
+	param.UploadUrls = NormalizeUrlPaths(param.UploadUrls)
+	param.UploadDirs = NormalizeFsPaths(param.UploadDirs)
+	param.MkdirUrls = NormalizeUrlPaths(param.MkdirUrls)
+	param.MkdirDirs = NormalizeFsPaths(param.MkdirDirs)
+	param.DeleteUrls = NormalizeUrlPaths(param.DeleteUrls)
+	param.DeleteDirs = NormalizeFsPaths(param.DeleteDirs)
+	param.ArchiveUrls = NormalizeUrlPaths(param.ArchiveUrls)
+	param.ArchiveDirs = NormalizeFsPaths(param.ArchiveDirs)
+	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
+	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)
+
+	// auth/upload/mkdir/delete urls/dirs users
+	param.AuthUrlsUsers, es = normalizeAllPathValues(param.AuthUrlsUsers, true, util.NormalizeUrlPath, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.AuthUrlsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+	param.AuthDirsUsers, es = normalizeAllPathValues(param.AuthDirsUsers, true, filepath.Abs, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.AuthDirsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+
+	param.UploadUrlsUsers, es = normalizeAllPathValues(param.UploadUrlsUsers, false, util.NormalizeUrlPath, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.UploadUrlsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+	param.UploadDirsUsers, es = normalizeAllPathValues(param.UploadDirsUsers, false, filepath.Abs, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.UploadDirsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+
+	param.MkdirUrlsUsers, es = normalizeAllPathValues(param.MkdirUrlsUsers, false, util.NormalizeUrlPath, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.MkdirUrlsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+	param.MkdirDirsUsers, es = normalizeAllPathValues(param.MkdirDirsUsers, false, filepath.Abs, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.MkdirDirsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+
+	param.DeleteUrlsUsers, es = normalizeAllPathValues(param.DeleteUrlsUsers, false, util.NormalizeUrlPath, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.DeleteUrlsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+	param.DeleteDirsUsers, es = normalizeAllPathValues(param.DeleteDirsUsers, false, filepath.Abs, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.DeleteDirsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+
 	// global restrict access, nil to disable, non-nil to enable with allowed hosts
 	if param.GlobalRestrictAccess != nil {
 		param.GlobalRestrictAccess = util.ExtractHostsFromUrls(param.GlobalRestrictAccess)
@@ -165,20 +238,6 @@ func (param *Param) normalize() (errs []error) {
 
 	param.HeadersDirs, es = normalizeAllPathValues(param.HeadersDirs, false, filepath.Abs, normalizeHeaders)
 	errs = append(errs, es...)
-
-	// upload/mkdir/delete/archive/cors/auth urls/dirs
-	param.UploadUrls = NormalizeUrlPaths(param.UploadUrls)
-	param.UploadDirs = NormalizeFsPaths(param.UploadDirs)
-	param.MkdirUrls = NormalizeUrlPaths(param.MkdirUrls)
-	param.MkdirDirs = NormalizeFsPaths(param.MkdirDirs)
-	param.DeleteUrls = NormalizeUrlPaths(param.DeleteUrls)
-	param.DeleteDirs = NormalizeFsPaths(param.DeleteDirs)
-	param.ArchiveUrls = NormalizeUrlPaths(param.ArchiveUrls)
-	param.ArchiveDirs = NormalizeFsPaths(param.ArchiveDirs)
-	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
-	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)
-	param.AuthUrls = NormalizeUrlPaths(param.AuthUrls)
-	param.AuthDirs = NormalizeFsPaths(param.AuthDirs)
 
 	// hsts & https
 	if param.Hsts {
