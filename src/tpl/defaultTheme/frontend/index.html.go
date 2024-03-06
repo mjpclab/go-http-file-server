@@ -23,7 +23,9 @@ const DefaultTplStr = `
 	<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 	{{end}}
 </ol>
-
+{{if .LoginAvail}}
+<a class="login" href="{{if ne .Status 401}}{{.RootRelPath}}?auth={{.Path}}{{$contextQueryString}}{{end}}">{{.Trans.LoginLabel}}</a>
+{{end}}
 {{if .CanUpload}}
 <div class="upload-status">
 	<span class="label info">
