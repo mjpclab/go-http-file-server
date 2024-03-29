@@ -44,9 +44,9 @@ func (app *App) ReOpenLog() []error {
 	return app.logFileMan.Reopen()
 }
 
-func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
-	if len(setting.PidFile) > 0 {
-		errs := writePidFile(setting.PidFile)
+func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
+	if len(settings.PidFile) > 0 {
+		errs := writePidFile(settings.PidFile)
 		if len(errs) > 0 {
 			return nil, errs
 		}
@@ -112,7 +112,7 @@ func NewApp(params param.Params, setting *setting.Setting) (*App, []error) {
 		}
 	}
 
-	if !setting.Quiet {
+	if !settings.Quiet {
 		go printAccessibleURLs(vhSvc, params)
 	}
 
