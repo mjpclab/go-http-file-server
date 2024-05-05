@@ -44,6 +44,10 @@ func (app *App) ReOpenLog() []error {
 	return app.logFileMan.Reopen()
 }
 
+func (app *App) GetAccessibleOrigins(includeLoopback bool) [][]string {
+	return app.vhostSvc.GetAccessibleURLs(includeLoopback)
+}
+
 func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 	if len(settings.PidFile) > 0 {
 		errs := writePidFile(settings.PidFile)
