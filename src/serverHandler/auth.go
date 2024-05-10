@@ -29,7 +29,7 @@ func (h *aliasHandler) needAuth(rawQuery, vhostReqPath, reqFsPath string) (needA
 	return false, false
 }
 
-func (h *aliasHandler) notifyAuth(w http.ResponseWriter, r *http.Request) {
+func (h *aliasHandler) notifyAuth(w http.ResponseWriter) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 

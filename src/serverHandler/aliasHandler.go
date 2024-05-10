@@ -121,7 +121,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if session.needAuth {
-		h.notifyAuth(w, r)
+		h.notifyAuth(w)
 	}
 
 	if session.authSuccess {
