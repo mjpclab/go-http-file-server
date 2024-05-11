@@ -86,8 +86,6 @@ type aliasHandler struct {
 	headersUrls   pathHeadersList
 	headersDirs   pathHeadersList
 
-	vary string
-
 	postMiddlewares []middleware.Middleware
 }
 
@@ -177,7 +175,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// final process
 	if session.wantJson {
-		h.json(w, r, data)
+		h.json(w, r, session, data)
 	} else if shouldServeAsContent(session.file, data.Item) {
 		h.content(w, r, session, data)
 	} else {
@@ -271,8 +269,6 @@ func newAliasHandler(
 		hides:     vhostCtx.hides,
 		hideDirs:  vhostCtx.hideDirs,
 		hideFiles: vhostCtx.hideFiles,
-
-		vary: vhostCtx.vary,
 
 		postMiddlewares: p.PostMiddlewares,
 	}
