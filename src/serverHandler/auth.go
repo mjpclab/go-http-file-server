@@ -33,19 +33,18 @@ func (h *aliasHandler) notifyAuth(w http.ResponseWriter) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 
-func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool, vhostReqPath, reqFsPath string) (userid int, username string, err error) {
-	user, pass, hasAuthReq := r.BasicAuth()
+func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool, vhostReqPath, reqFsPath string) (authUserId int, authUserName string, err error) {
+	inputUser, inputPass, hasAuthReq := r.BasicAuth()
 
 	if hasAuthReq {
-		var success bool
-		userid, username, success = h.users.Auth(user, pass)
+		userid, username, success := h.users.Auth(inputUser, inputPass)
 		if success && userid >= 0 && (len(h.authUrlsUsers) > 0 || len(h.authDirsUsers) > 0) {
 			if matchPrefix, match := hasUrlOrDirPrefixUsers(h.authUrlsUsers, vhostReqPath, h.authDirsUsers, reqFsPath, userid); matchPrefix {
 				success = match
 			}
 		}
 		if success {
-			return
+			return userid, username, nil
 		}
 	}
 

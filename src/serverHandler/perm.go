@@ -57,6 +57,24 @@ func hasUrlOrDirPrefixUsers(urlsUsers pathIntsList, reqUrl string, dirsUsers pat
 	return
 }
 
+func (h *aliasHandler) getCanIndex(rawReqPath, reqFsPath string, userId int) bool {
+	if h.globalIndex {
+		return true
+	}
+
+	if hasUrlOrDirPrefix(h.indexUrls, rawReqPath, h.indexDirs, reqFsPath) {
+		return true
+	}
+
+	if userId >= 0 {
+		if _, match := hasUrlOrDirPrefixUsers(h.indexUrlsUsers, rawReqPath, h.indexDirsUsers, reqFsPath, userId); match {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (h *aliasHandler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
 	if info == nil || !info.IsDir() {
 		return false

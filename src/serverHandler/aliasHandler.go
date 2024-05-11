@@ -46,6 +46,12 @@ type aliasHandler struct {
 	authDirs      []string
 	authDirsUsers pathIntsList
 
+	globalIndex    bool
+	indexUrls      []string
+	indexUrlsUsers pathIntsList
+	indexDirs      []string
+	indexDirsUsers pathIntsList
+
 	globalUpload    bool
 	uploadUrls      []string
 	uploadUrlsUsers pathIntsList
@@ -218,6 +224,12 @@ func newAliasHandler(
 		authUrlsUsers: vhostCtx.authUrlsUsers.filterSuccessor(true, util.HasUrlPrefixDir, currentAlias.url),
 		authDirs:      filterSuccessor(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
 		authDirsUsers: vhostCtx.authDirsUsers.filterSuccessor(true, util.HasFsPrefixDir, currentAlias.fs),
+
+		globalIndex:    prefixMatched(p.IndexUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.IndexDirs, util.HasFsPrefixDir, currentAlias.fs),
+		indexUrls:      filterSuccessor(p.IndexUrls, util.HasUrlPrefixDir, currentAlias.url),
+		indexUrlsUsers: vhostCtx.indexUrlsUsers.filterSuccessor(true, util.HasUrlPrefixDir, currentAlias.url),
+		indexDirs:      filterSuccessor(p.IndexDirs, util.HasFsPrefixDir, currentAlias.fs),
+		indexDirsUsers: vhostCtx.indexDirsUsers.filterSuccessor(true, util.HasFsPrefixDir, currentAlias.fs),
 
 		globalUpload:    p.GlobalUpload || prefixMatched(p.UploadUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.UploadDirs, util.HasFsPrefixDir, currentAlias.fs),
 		uploadUrls:      filterSuccessor(p.UploadUrls, util.HasUrlPrefixDir, currentAlias.url),
