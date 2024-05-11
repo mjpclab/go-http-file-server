@@ -36,14 +36,15 @@ func (list pathValuesList[T]) mergePrefixMatched(mergeWith []T, matchPrefix pref
 	}
 }
 
-func (list pathValuesList[T]) filterSuccessor(includeSelf bool, matchPrefix prefixFilter, refPath string) pathValuesList[T] {
+func (list pathValuesList[T]) filterSuccessor(includeSelfPredecessor bool, matchPrefix prefixFilter, refPath string) pathValuesList[T] {
 	var result pathValuesList[T]
 
 	for i := range list {
-		if !includeSelf && len(list[i].path) == len(refPath) {
-			continue
-		}
-		if matchPrefix(list[i].path, refPath) {
+		if len(list[i].path) <= len(refPath) {
+			if includeSelfPredecessor && matchPrefix(refPath, list[i].path) {
+				result = append(result, list[i])
+			}
+		} else if matchPrefix(list[i].path, refPath) {
 			result = append(result, list[i])
 		}
 	}
