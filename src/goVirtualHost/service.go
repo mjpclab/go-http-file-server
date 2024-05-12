@@ -9,10 +9,10 @@ var alreadyOpened = errors.New("already opened")
 
 func NewService() *Service {
 	service := &Service{
-		state:     statePrepare,
-		listeners: listeners{},
-		servers:   servers{},
-		vhosts:    vhosts{},
+		state:       statePrepare,
+		listenables: listenables{},
+		serveables:  serveables{},
+		vhosts:      vhosts{},
 	}
 
 	return service
@@ -20,24 +20,23 @@ func NewService() *Service {
 
 func (svc *Service) addVhostToServers(vhost *vhost, params params) {
 	for _, param := range params {
-		// listeners, servers
-		var listener *listener
-		var server *server
+		var l *listenable
+		var s *serveable
 
-		listener = svc.listeners.find(param.proto, param.ip, param.port)
-		if listener != nil {
-			server = listener.server
+		l = svc.listenables.find(param.proto, param.ip, param.port)
+		if l != nil {
+			s = l.serveable
 		} else {
-			server = newServer(param.useTLS)
-			listener = newListener(param.proto, param.ip, param.port)
-			listener.server = server
+			s = newServeable(param.useTLS)
+			l = newListenable(param.proto, param.ip, param.port)
+			l.serveable = s
 
-			svc.listeners = append(svc.listeners, listener)
-			svc.servers = append(svc.servers, server)
+			svc.listenables = append(svc.listenables, l)
+			svc.serveables = append(svc.serveables, s)
 		}
 
-		// server -> vhost
-		server.vhosts = append(server.vhosts, vhost)
+		// serveable -> vhost
+		s.vhosts = append(s.vhosts, vhost)
 	}
 }
 
@@ -67,8 +66,8 @@ func (svc *Service) Add(info *HostInfo) (errs, warns []error) {
 }
 
 func (svc *Service) openListeners() (errs []error) {
-	for _, listener := range svc.listeners {
-		err := listener.open()
+	for _, l := range svc.listenables {
+		err := l.open()
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -82,11 +81,11 @@ func (svc *Service) openServers() (errs []error) {
 
 	go func() {
 		wg := &sync.WaitGroup{}
-		for _, listener := range svc.listeners {
+		for _, lis := range svc.listenables {
 			wg.Add(1)
-			l := listener
+			l := lis
 			go func() {
-				err := l.server.open(l)
+				err := l.serveable.open(l)
 				if err != nil {
 					chServeErr <- err
 				}
@@ -116,7 +115,7 @@ func (svc *Service) Open() (errs []error) {
 
 	svc.params = nil // release unused data
 
-	for _, s := range svc.servers {
+	for _, s := range svc.serveables {
 		s.updateDefaultVhost()
 		s.updateHttpServerTLSConfig()
 		s.updateHttpServerHandler()
@@ -142,11 +141,11 @@ func (svc *Service) Close() {
 	svc.state = stateClosed
 	svc.mu.Unlock()
 
-	for _, listener := range svc.listeners {
-		if listener.server != nil {
-			listener.server.close()
+	for _, l := range svc.listenables {
+		if l.serveable != nil {
+			l.serveable.close()
 		}
-		listener.close()
+		l.close()
 	}
 }
 
@@ -156,24 +155,24 @@ func (svc *Service) GetAccessibleURLs(includeLoopback bool) [][]string {
 	var allHostNameUrls []string
 	vhUrls := make(map[*vhost][]string)
 
-	for _, listener := range svc.listeners {
-		server := listener.server
-		defaultVh := server.getDefaultVhost()
+	for _, l := range svc.listenables {
+		s := l.serveable
+		defaultVh := s.getDefaultVhost()
 
 		port := ""
-		if !isDefaultPort(listener.port, server.useTLS) {
-			port = listener.port
+		if !isDefaultPort(l.port, s.useTLS) {
+			port = l.port
 		}
 
-		for _, vh := range server.vhosts {
-			if listener.proto == unix {
-				url := "unix:" + listener.port
+		for _, vh := range s.vhosts {
+			if l.proto == unix {
+				url := "unix:" + l.port
 				vhUrls[vh] = append(vhUrls[vh], url)
 				continue
 			}
 			for _, hostname := range vh.hostNames {
 				var url string
-				if server.useTLS {
+				if s.useTLS {
 					url = httpsUrl
 				} else {
 					url = httpUrl
@@ -186,13 +185,13 @@ func (svc *Service) GetAccessibleURLs(includeLoopback bool) [][]string {
 			}
 			if vh == defaultVh {
 				var url string
-				if server.useTLS {
+				if s.useTLS {
 					url = httpsUrl
 				} else {
 					url = httpUrl
 				}
-				if len(listener.ip) > 0 {
-					url = url + listener.ip + port
+				if len(l.ip) > 0 {
+					url = url + l.ip + port
 					vhUrls[vh] = append(vhUrls[vh], url)
 				} else {
 					if !gotIPList {
@@ -200,7 +199,7 @@ func (svc *Service) GetAccessibleURLs(includeLoopback bool) [][]string {
 						ipv46s, ipv4s, ipv6s = getAllIfaceIPs(includeLoopback)
 					}
 					var ips []string
-					switch listener.proto {
+					switch l.proto {
 					case tcp46:
 						ips = ipv46s
 					case tcp4:

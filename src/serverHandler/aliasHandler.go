@@ -46,6 +46,12 @@ type aliasHandler struct {
 	authDirs      []string
 	authDirsUsers pathIntsList
 
+	globalIndex    bool
+	indexUrls      []string
+	indexUrlsUsers pathIntsList
+	indexDirs      []string
+	indexDirsUsers pathIntsList
+
 	globalUpload    bool
 	uploadUrls      []string
 	uploadUrlsUsers pathIntsList
@@ -79,8 +85,6 @@ type aliasHandler struct {
 	globalHeaders [][2]string
 	headersUrls   pathHeadersList
 	headersDirs   pathHeadersList
-
-	vary string
 
 	postMiddlewares []middleware.Middleware
 }
@@ -121,7 +125,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if session.needAuth {
-		h.notifyAuth(w, r)
+		h.notifyAuth(w)
 	}
 
 	if session.authSuccess {
@@ -171,7 +175,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// final process
 	if session.wantJson {
-		h.json(w, r, data)
+		h.json(w, r, session, data)
 	} else if shouldServeAsContent(session.file, data.Item) {
 		h.content(w, r, session, data)
 	} else {
@@ -219,6 +223,12 @@ func newAliasHandler(
 		authDirs:      filterSuccessor(p.AuthDirs, util.HasFsPrefixDir, currentAlias.fs),
 		authDirsUsers: vhostCtx.authDirsUsers.filterSuccessor(true, util.HasFsPrefixDir, currentAlias.fs),
 
+		globalIndex:    prefixMatched(p.IndexUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.IndexDirs, util.HasFsPrefixDir, currentAlias.fs),
+		indexUrls:      filterSuccessor(p.IndexUrls, util.HasUrlPrefixDir, currentAlias.url),
+		indexUrlsUsers: vhostCtx.indexUrlsUsers.filterSuccessor(true, util.HasUrlPrefixDir, currentAlias.url),
+		indexDirs:      filterSuccessor(p.IndexDirs, util.HasFsPrefixDir, currentAlias.fs),
+		indexDirsUsers: vhostCtx.indexDirsUsers.filterSuccessor(true, util.HasFsPrefixDir, currentAlias.fs),
+
 		globalUpload:    p.GlobalUpload || prefixMatched(p.UploadUrls, util.HasUrlPrefixDir, currentAlias.url) || prefixMatched(p.UploadDirs, util.HasFsPrefixDir, currentAlias.fs),
 		uploadUrls:      filterSuccessor(p.UploadUrls, util.HasUrlPrefixDir, currentAlias.url),
 		uploadUrlsUsers: vhostCtx.uploadUrlsUsers.filterSuccessor(true, util.HasUrlPrefixDir, currentAlias.url),
@@ -259,8 +269,6 @@ func newAliasHandler(
 		hides:     vhostCtx.hides,
 		hideDirs:  vhostCtx.hideDirs,
 		hideFiles: vhostCtx.hideFiles,
-
-		vary: vhostCtx.vary,
 
 		postMiddlewares: p.PostMiddlewares,
 	}

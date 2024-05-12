@@ -75,6 +75,18 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("authdirsusers", "--auth-dir-user", "", nil, "file system path that require Basic Auth for specific users, <sep><fs-path>[<sep><user>...]")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagValues("indexurls", "--index", "", []string{"/"}, "url path that allow directory index")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("indexurlsusers", "--index-user", "", nil, "url path that allow index files for specific users, <sep><url-path>[<sep><user>...]")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("indexdirs", "--index-dir", "", nil, "file system path that allow index files")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("indexdirsusers", "--index-dir-user", "", nil, "file system path that allow index files for specific users, <sep><fs-path>[<sep><user>...]")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlags("globalupload", []string{"-U", "--global-upload"}, "", "allow upload files for all url paths")
 	serverError.CheckFatal(err)
 
@@ -348,10 +360,13 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		arrUsersSha512, _ := result.GetStrings("userssha512")
 		param.UsersSha512 = entriesToUsers(arrUsersSha512)
 
-		// auth/upload/mkdir/delete/archive/cors urls/dirs
+		// auth/index/upload/mkdir/delete/archive/cors urls/dirs
 		param.GlobalAuth = result.HasKey("globalauth")
 		param.AuthUrls, _ = result.GetStrings("authurls")
 		param.AuthDirs, _ = result.GetStrings("authdirs")
+
+		param.IndexUrls, _ = result.GetStrings("indexurls")
+		param.IndexDirs, _ = result.GetStrings("indexdirs")
 
 		param.GlobalUpload = result.HasKey("globalupload")
 		param.UploadUrls, _ = result.GetStrings("uploadurls")
@@ -379,6 +394,12 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 
 		authDirsUsers, _ := result.GetStrings("authdirsusers")
 		param.AuthDirsUsers = SplitAllKeyValues(authDirsUsers)
+
+		indexUrlsUsers, _ := result.GetStrings("indexurlsusers")
+		param.IndexUrlsUsers = SplitAllKeyValues(indexUrlsUsers)
+
+		indexDirsUsers, _ := result.GetStrings("indexdirsusers")
+		param.IndexDirsUsers = SplitAllKeyValues(indexDirsUsers)
 
 		uploadUrlsUsers, _ := result.GetStrings("uploadurlsusers")
 		param.UploadUrlsUsers = SplitAllKeyValues(uploadUrlsUsers)

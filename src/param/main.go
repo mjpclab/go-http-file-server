@@ -44,6 +44,11 @@ type Param struct {
 	HeadersUrls [][]string
 	HeadersDirs [][]string
 
+	IndexUrls      []string
+	IndexUrlsUsers [][]string // [][path, user...]
+	IndexDirs      []string
+	IndexDirsUsers [][]string // [][path, user...]
+
 	GlobalUpload    bool
 	UploadUrls      []string
 	UploadUrlsUsers [][]string // [][path, user...]
@@ -144,9 +149,11 @@ func (param *Param) normalize() (errs []error) {
 	// dir indexes
 	param.DirIndexes = normalizeFilenames(param.DirIndexes)
 
-	// auth/upload/mkdir/delete/archive/cors urls/dirs
+	// auth/index/upload/mkdir/delete/archive/cors urls/dirs
 	param.AuthUrls = NormalizeUrlPaths(param.AuthUrls)
 	param.AuthDirs = NormalizeFsPaths(param.AuthDirs)
+	param.IndexUrls = NormalizeUrlPaths(param.IndexUrls)
+	param.IndexDirs = NormalizeFsPaths(param.IndexDirs)
 	param.UploadUrls = NormalizeUrlPaths(param.UploadUrls)
 	param.UploadDirs = NormalizeFsPaths(param.UploadDirs)
 	param.MkdirUrls = NormalizeUrlPaths(param.MkdirUrls)
@@ -158,7 +165,7 @@ func (param *Param) normalize() (errs []error) {
 	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
 	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)
 
-	// auth/upload/mkdir/delete urls/dirs users
+	// auth/index/upload/mkdir/delete urls/dirs users
 	param.AuthUrlsUsers, es = normalizeAllPathValues(param.AuthUrlsUsers, true, util.NormalizeUrlPath, nil)
 	if len(es) == 0 {
 		dedupAllPathValues(param.AuthUrlsUsers)
@@ -168,6 +175,19 @@ func (param *Param) normalize() (errs []error) {
 	param.AuthDirsUsers, es = normalizeAllPathValues(param.AuthDirsUsers, true, filepath.Abs, nil)
 	if len(es) == 0 {
 		dedupAllPathValues(param.AuthDirsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+
+	param.IndexUrlsUsers, es = normalizeAllPathValues(param.IndexUrlsUsers, false, util.NormalizeUrlPath, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.IndexUrlsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+	param.IndexDirsUsers, es = normalizeAllPathValues(param.IndexDirsUsers, false, filepath.Abs, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.IndexDirsUsers)
 	} else {
 		errs = append(errs, es...)
 	}

@@ -1,7 +1,7 @@
 package goVirtualHost
 
-func (listeners listeners) find(proto, ip, port string) *listener {
-	for _, l := range listeners {
+func (ls listenables) find(proto, ip, port string) *listenable {
+	for _, l := range ls {
 		if l.proto == proto && l.ip == ip && l.port == port {
 			return l
 		}
