@@ -52,16 +52,16 @@ func (h *aliasHandler) visitTreeNode(
 	childSelections []string,
 	archiveCallback archiveCallback,
 ) {
-	if needAuth, _ := h.needAuth("", urlPath, fsPath); needAuth {
-		if _, _, err := h.verifyAuth(r, needAuth, urlPath, fsPath); err != nil {
-			return
-		}
+	needAuth, _ := h.needAuth("", urlPath, fsPath)
+	userId, _, err := h.verifyAuth(r, needAuth, urlPath, fsPath)
+	if needAuth && err != nil {
+		return
 	}
 
 	var fInfo os.FileInfo
 	var childInfos []os.FileInfo
 	// wrap func to run defer ASAP
-	err := func() error {
+	err = func() error {
 		var f *os.File
 		var err error
 		if statNode {
@@ -104,7 +104,7 @@ func (h *aliasHandler) visitTreeNode(
 		return
 	}
 
-	if fInfo.IsDir() {
+	if fInfo.IsDir() && h.getCanIndex(urlPath, fsPath, userId) {
 		childInfos, _, _ := h.mergeAlias(urlPath, fInfo, childInfos, true)
 		childInfos = h.FilterItems(childInfos)
 

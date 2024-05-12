@@ -66,6 +66,7 @@ type responseData struct {
 	IsDelete       bool
 	IsMutate       bool
 
+	CanIndex     bool
 	CanUpload    bool
 	CanMkdir     bool
 	CanDelete    bool
@@ -394,7 +395,8 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		}
 	}
 
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, authSuccess && redirectAction == noRedirect)
+	canIndex := authSuccess && h.getCanIndex(vhostReqPath, fsPath, authUserId)
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex && redirectAction == noRedirect)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -409,7 +411,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	restrictAccess, allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item)
-	vary := h.vary
+	vary := "accept-encoding"
 	if restrictAccess {
 		vary += ", referer, origin"
 	}
@@ -417,15 +419,17 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		status = http.StatusForbidden
 	}
 
+	canIndex = canIndex && allowAccess
+
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, allowAccess && authSuccess && !isMutate && redirectAction == noRedirect && NeedResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, canIndex && !isMutate && redirectAction == noRedirect && NeedResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, allowAccess && authSuccess && redirectAction == noRedirect)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, canIndex && redirectAction == noRedirect)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -497,6 +501,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		IsDelete:       isDelete,
 		IsMutate:       isMutate,
 
+		CanIndex:     canIndex,
 		CanUpload:    canUpload,
 		CanMkdir:     canMkdir,
 		CanDelete:    canDelete,

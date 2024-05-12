@@ -11,9 +11,20 @@ import (
 )
 
 type vhostContext struct {
-	users  *user.List
-	theme  theme.Theme
 	logger *serverLog.Logger
+	theme  theme.Theme
+
+	users           *user.List
+	authUrlsUsers   pathIntsList
+	authDirsUsers   pathIntsList
+	indexUrlsUsers  pathIntsList
+	indexDirsUsers  pathIntsList
+	uploadUrlsUsers pathIntsList
+	uploadDirsUsers pathIntsList
+	mkdirUrlsUsers  pathIntsList
+	mkdirDirsUsers  pathIntsList
+	deleteUrlsUsers pathIntsList
+	deleteDirsUsers pathIntsList
 
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
@@ -22,22 +33,11 @@ type vhostContext struct {
 	hideDirs  *regexp.Regexp
 	hideFiles *regexp.Regexp
 
-	authUrlsUsers   pathIntsList
-	authDirsUsers   pathIntsList
-	uploadUrlsUsers pathIntsList
-	uploadDirsUsers pathIntsList
-	mkdirUrlsUsers  pathIntsList
-	mkdirDirsUsers  pathIntsList
-	deleteUrlsUsers pathIntsList
-	deleteDirsUsers pathIntsList
-
 	restrictAccessUrls pathStringsList
 	restrictAccessDirs pathStringsList
 
 	headersUrls pathHeadersList
 	headersDirs pathHeadersList
-
-	vary string
 }
 
 func NewVhostHandler(
@@ -84,37 +84,22 @@ func NewVhostHandler(
 		return nil, errs
 	}
 
-	// auth/upload/mkdir/delete urls/dirs users
-	authUrlsUsers := pathUsernamesToPathUids(users, p.AuthUrlsUsers)
-	authDirsUsers := pathUsernamesToPathUids(users, p.AuthDirsUsers)
-	uploadUrlsUsers := pathUsernamesToPathUids(users, p.UploadUrlsUsers)
-	uploadDirsUsers := pathUsernamesToPathUids(users, p.UploadDirsUsers)
-	mkdirUrlsUsers := pathUsernamesToPathUids(users, p.MkdirUrlsUsers)
-	mkdirDirsUsers := pathUsernamesToPathUids(users, p.MkdirDirsUsers)
-	deleteUrlsUsers := pathUsernamesToPathUids(users, p.DeleteUrlsUsers)
-	deleteDirsUsers := pathUsernamesToPathUids(users, p.DeleteDirsUsers)
-
-	// restrict access
-	restrictAccessUrls := newRestrictAccesses(p.RestrictAccessUrls)
-	restrictAccessDirs := newRestrictAccesses(p.RestrictAccessDirs)
-
-	// `Vary` header
-	vary := "accept-encoding"
-
 	// alias param
 	vhostCtx := &vhostContext{
 		theme:  theme,
 		logger: logger,
 
 		users:           users,
-		authUrlsUsers:   authUrlsUsers,
-		authDirsUsers:   authDirsUsers,
-		uploadUrlsUsers: uploadUrlsUsers,
-		uploadDirsUsers: uploadDirsUsers,
-		mkdirUrlsUsers:  mkdirUrlsUsers,
-		mkdirDirsUsers:  mkdirDirsUsers,
-		deleteUrlsUsers: deleteUrlsUsers,
-		deleteDirsUsers: deleteDirsUsers,
+		authUrlsUsers:   pathUsernamesToPathUids(users, p.AuthUrlsUsers),
+		authDirsUsers:   pathUsernamesToPathUids(users, p.AuthDirsUsers),
+		indexUrlsUsers:  pathUsernamesToPathUids(users, p.IndexUrlsUsers),
+		indexDirsUsers:  pathUsernamesToPathUids(users, p.IndexDirsUsers),
+		uploadUrlsUsers: pathUsernamesToPathUids(users, p.UploadUrlsUsers),
+		uploadDirsUsers: pathUsernamesToPathUids(users, p.UploadDirsUsers),
+		mkdirUrlsUsers:  pathUsernamesToPathUids(users, p.MkdirUrlsUsers),
+		mkdirDirsUsers:  pathUsernamesToPathUids(users, p.MkdirDirsUsers),
+		deleteUrlsUsers: pathUsernamesToPathUids(users, p.DeleteUrlsUsers),
+		deleteDirsUsers: pathUsernamesToPathUids(users, p.DeleteDirsUsers),
 
 		shows:     shows,
 		showDirs:  showDirs,
@@ -123,13 +108,11 @@ func NewVhostHandler(
 		hideDirs:  hideDirs,
 		hideFiles: hideFiles,
 
-		restrictAccessUrls: restrictAccessUrls,
-		restrictAccessDirs: restrictAccessDirs,
+		restrictAccessUrls: newRestrictAccesses(p.RestrictAccessUrls),
+		restrictAccessDirs: newRestrictAccesses(p.RestrictAccessDirs),
 
 		headersUrls: newPathHeaders(p.HeadersUrls),
 		headersDirs: newPathHeaders(p.HeadersDirs),
-
-		vary: vary,
 	}
 
 	handler = newMultiplexHandler(p, vhostCtx)
