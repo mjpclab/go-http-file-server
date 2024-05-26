@@ -41,11 +41,10 @@ type sessionContext struct {
 
 	allowAccess bool
 
-	needAuth     bool
-	requestAuth  bool
-	authUserId   int
-	authUserName string
-	authSuccess  bool
+	needAuth    bool
+	requestAuth bool
+	authUserId  int
+	authSuccess bool
 
 	redirectAction redirectAction
 	vary           string
@@ -59,6 +58,8 @@ type sessionContext struct {
 }
 
 type responseData struct {
+	AuthUserName string
+
 	IsDownload     bool
 	IsDownloadFile bool
 	IsUpload       bool
@@ -336,13 +337,11 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	status := http.StatusOK
 
 	needAuth, requestAuth := h.needAuth(rawQuery, vhostReqPath, fsPath)
-	authUserId, authUserName, _authErr := h.verifyAuth(r, needAuth, vhostReqPath, fsPath)
-	authSuccess := _authErr == nil
-	if needAuth && !authSuccess {
-		errs = append(errs, _authErr)
-	}
+	authUserId, authUserName, _authErr := h.verifyAuth(r, vhostReqPath, fsPath)
+	authSuccess := !needAuth || _authErr == nil
 	if !authSuccess {
 		status = http.StatusUnauthorized
+		errs = append(errs, _authErr)
 	}
 
 	headers := h.getHeaders(vhostReqPath, fsPath, authSuccess)
@@ -477,11 +476,10 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 		allowAccess: allowAccess,
 
-		needAuth:     needAuth,
-		requestAuth:  requestAuth,
-		authUserId:   authUserId,
-		authUserName: authUserName,
-		authSuccess:  authSuccess,
+		needAuth:    needAuth,
+		requestAuth: requestAuth,
+		authUserId:  authUserId,
+		authSuccess: authSuccess,
 
 		redirectAction: redirectAction,
 		vary:           vary,
@@ -494,6 +492,8 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		errors: errs,
 	}
 	data = &responseData{
+		AuthUserName: authUserName,
+
 		IsDownload:     isDownload,
 		IsDownloadFile: isDownloadFile,
 		IsUpload:       isUpload,

@@ -22,7 +22,7 @@ func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.Res
 		AllowAccess: session.allowAccess,
 
 		NeedAuth:     session.needAuth,
-		AuthUserName: session.authUserName,
+		AuthUserName: data.AuthUserName,
 		AuthSuccess:  session.authSuccess,
 
 		CanUpload:  &data.CanUpload,

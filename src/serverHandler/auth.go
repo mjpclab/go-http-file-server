@@ -33,7 +33,7 @@ func (h *aliasHandler) notifyAuth(w http.ResponseWriter) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 
-func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool, vhostReqPath, reqFsPath string) (authUserId int, authUserName string, err error) {
+func (h *aliasHandler) verifyAuth(r *http.Request, vhostReqPath, reqFsPath string) (authUserId int, authUserName string, err error) {
 	inputUser, inputPass, hasAuthReq := r.BasicAuth()
 
 	if hasAuthReq {
@@ -46,18 +46,12 @@ func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool, vhostReqPath, 
 		if success {
 			return userid, username, nil
 		}
-	}
-
-	if !needAuth {
-		return -1, "", nil
-	}
-
-	if !hasAuthReq {
-		err = errors.New(r.RemoteAddr + " missing auth info")
-	} else {
 		err = errors.New(r.RemoteAddr + " auth failed")
+	} else {
+		err = errors.New(r.RemoteAddr + " missing auth info")
 	}
 
+	authUserId = -1
 	return
 }
 
