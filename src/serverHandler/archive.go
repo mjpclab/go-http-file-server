@@ -129,7 +129,7 @@ func (h *aliasHandler) visitTreeNode(
 	}
 }
 
-func (h *aliasHandler) archive(
+func (h *aliasHandler) archiveFiles(
 	w http.ResponseWriter,
 	r *http.Request,
 	session *sessionContext,

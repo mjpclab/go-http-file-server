@@ -5,6 +5,29 @@ import (
 	"os"
 )
 
+type hierarchyAvailability struct {
+	global    bool
+	urls      []string
+	urlsUsers pathIntsList
+	dirs      []string
+	dirsUsers pathIntsList
+}
+
+func newHierarchyAvailability(
+	baseUrl, baseDir string,
+	global bool,
+	allUrls []string, allUrlsUsers pathIntsList,
+	allDirs []string, allDirsUsers pathIntsList,
+) *hierarchyAvailability {
+	return &hierarchyAvailability{
+		global:    global || prefixMatched(allUrls, util.HasUrlPrefixDir, baseUrl) || prefixMatched(allDirs, util.HasFsPrefixDir, baseDir),
+		urls:      filterSuccessor(allUrls, util.HasUrlPrefixDir, baseUrl),
+		urlsUsers: allUrlsUsers.filterSuccessor(true, util.HasUrlPrefixDir, baseUrl),
+		dirs:      filterSuccessor(allDirs, util.HasFsPrefixDir, baseDir),
+		dirsUsers: allDirsUsers.filterSuccessor(true, util.HasFsPrefixDir, baseDir),
+	}
+}
+
 func hasUrlOrDirPrefix(urls []string, reqUrl string, dirs []string, reqDir string) bool {
 	for _, url := range urls {
 		if util.HasUrlPrefixDir(reqUrl, url) {
@@ -58,16 +81,16 @@ func hasUrlOrDirPrefixUsers(urlsUsers pathIntsList, reqUrl string, dirsUsers pat
 }
 
 func (h *aliasHandler) getCanIndex(rawReqPath, reqFsPath string, userId int) bool {
-	if h.globalIndex {
+	if h.index.global {
 		return true
 	}
 
-	if hasUrlOrDirPrefix(h.indexUrls, rawReqPath, h.indexDirs, reqFsPath) {
+	if hasUrlOrDirPrefix(h.index.urls, rawReqPath, h.index.dirs, reqFsPath) {
 		return true
 	}
 
 	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.indexUrlsUsers, rawReqPath, h.indexDirsUsers, reqFsPath, userId); match {
+		if _, match := hasUrlOrDirPrefixUsers(h.index.urlsUsers, rawReqPath, h.index.dirsUsers, reqFsPath, userId); match {
 			return true
 		}
 	}
@@ -80,16 +103,16 @@ func (h *aliasHandler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath stri
 		return false
 	}
 
-	if h.globalUpload {
+	if h.upload.global {
 		return true
 	}
 
-	if hasUrlOrDirPrefix(h.uploadUrls, rawReqPath, h.uploadDirs, reqFsPath) {
+	if hasUrlOrDirPrefix(h.upload.urls, rawReqPath, h.upload.dirs, reqFsPath) {
 		return true
 	}
 
 	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.uploadUrlsUsers, rawReqPath, h.uploadDirsUsers, reqFsPath, userId); match {
+		if _, match := hasUrlOrDirPrefixUsers(h.upload.urlsUsers, rawReqPath, h.upload.dirsUsers, reqFsPath, userId); match {
 			return true
 		}
 	}
@@ -102,16 +125,16 @@ func (h *aliasHandler) getCanMkdir(info os.FileInfo, rawReqPath, reqFsPath strin
 		return false
 	}
 
-	if h.globalMkdir {
+	if h.mkdir.global {
 		return true
 	}
 
-	if hasUrlOrDirPrefix(h.mkdirUrls, rawReqPath, h.mkdirDirs, reqFsPath) {
+	if hasUrlOrDirPrefix(h.mkdir.urls, rawReqPath, h.mkdir.dirs, reqFsPath) {
 		return true
 	}
 
 	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.mkdirUrlsUsers, rawReqPath, h.mkdirDirsUsers, reqFsPath, userId); match {
+		if _, match := hasUrlOrDirPrefixUsers(h.mkdir.urlsUsers, rawReqPath, h.mkdir.dirsUsers, reqFsPath, userId); match {
 			return true
 		}
 	}
@@ -124,16 +147,16 @@ func (h *aliasHandler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath stri
 		return false
 	}
 
-	if h.globalDelete {
+	if h.delete.global {
 		return true
 	}
 
-	if hasUrlOrDirPrefix(h.deleteUrls, rawReqPath, h.deleteDirs, reqFsPath) {
+	if hasUrlOrDirPrefix(h.delete.urls, rawReqPath, h.delete.dirs, reqFsPath) {
 		return true
 	}
 
 	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.deleteUrlsUsers, rawReqPath, h.deleteDirsUsers, reqFsPath, userId); match {
+		if _, match := hasUrlOrDirPrefixUsers(h.delete.urlsUsers, rawReqPath, h.delete.dirsUsers, reqFsPath, userId); match {
 			return true
 		}
 	}
@@ -146,17 +169,17 @@ func (h *aliasHandler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPa
 		return false
 	}
 
-	if h.globalArchive {
+	if h.archive.global {
 		return true
 	}
 
-	return hasUrlOrDirPrefix(h.archiveUrls, rawReqPath, h.archiveDirs, reqFsPath)
+	return hasUrlOrDirPrefix(h.archive.urls, rawReqPath, h.archive.dirs, reqFsPath)
 }
 
 func (h *aliasHandler) getCanCors(rawReqPath, reqFsPath string) bool {
-	if h.globalCors {
+	if h.cors.global {
 		return true
 	}
 
-	return hasUrlOrDirPrefix(h.corsUrls, rawReqPath, h.corsDirs, reqFsPath)
+	return hasUrlOrDirPrefix(h.cors.urls, rawReqPath, h.cors.dirs, reqFsPath)
 }
