@@ -394,7 +394,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		}
 	}
 
-	canIndex := authSuccess && h.getCanIndex(vhostReqPath, fsPath, authUserId)
+	canIndex := authSuccess && h.index.match(vhostReqPath, fsPath, authUserId)
 	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex && redirectAction == noRedirect)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
@@ -453,12 +453,13 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 	subItemPrefix := getSubItemPrefix(currDirRelPath, vhostReqPath, tailSlash)
 
-	canUpload := allowAccess && authSuccess && h.getCanUpload(item, vhostReqPath, fsPath, authUserId)
-	canMkdir := allowAccess && authSuccess && h.getCanMkdir(item, vhostReqPath, fsPath, authUserId)
-	canDelete := allowAccess && authSuccess && h.getCanDelete(item, vhostReqPath, fsPath, authUserId)
+	isDir := item != nil && item.IsDir()
+	canUpload := allowAccess && authSuccess && isDir && h.upload.match(vhostReqPath, fsPath, authUserId)
+	canMkdir := allowAccess && authSuccess && isDir && h.mkdir.match(vhostReqPath, fsPath, authUserId)
+	canDelete := allowAccess && authSuccess && isDir && h.delete.match(vhostReqPath, fsPath, authUserId)
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
-	canArchive := allowAccess && authSuccess && h.getCanArchive(subItems, vhostReqPath, fsPath, authUserId)
-	canCors := allowAccess && authSuccess && h.getCanCors(vhostReqPath, fsPath)
+	canArchive := allowAccess && authSuccess && h.archive.match(vhostReqPath, fsPath, authUserId)
+	canCors := allowAccess && authSuccess && h.cors.match(vhostReqPath, fsPath, authUserId)
 	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
 	context := pathContext{

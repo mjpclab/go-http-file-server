@@ -1,9 +1,6 @@
 package serverHandler
 
-import (
-	"mjpclab.dev/ghfs/src/util"
-	"os"
-)
+import "mjpclab.dev/ghfs/src/util"
 
 type hierarchyAvailability struct {
 	global    bool
@@ -26,6 +23,24 @@ func newHierarchyAvailability(
 		dirs:      filterSuccessor(allDirs, util.HasFsPrefixDir, baseDir),
 		dirsUsers: allDirsUsers.filterSuccessor(true, util.HasFsPrefixDir, baseDir),
 	}
+}
+
+func (ha *hierarchyAvailability) match(urlPath, fsPath string, userId int) bool {
+	if ha.global {
+		return true
+	}
+
+	if hasUrlOrDirPrefix(ha.urls, urlPath, ha.dirs, fsPath) {
+		return true
+	}
+
+	if userId >= 0 {
+		if _, match := hasUrlOrDirPrefixUsers(ha.urlsUsers, urlPath, ha.dirsUsers, fsPath, userId); match {
+			return true
+		}
+	}
+
+	return false
 }
 
 func hasUrlOrDirPrefix(urls []string, reqUrl string, dirs []string, reqDir string) bool {
@@ -78,118 +93,4 @@ func hasUrlOrDirPrefixUsers(urlsUsers pathIntsList, reqUrl string, dirsUsers pat
 	}
 
 	return
-}
-
-func (h *aliasHandler) getCanIndex(rawReqPath, reqFsPath string, userId int) bool {
-	if h.index.global {
-		return true
-	}
-
-	if hasUrlOrDirPrefix(h.index.urls, rawReqPath, h.index.dirs, reqFsPath) {
-		return true
-	}
-
-	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.index.urlsUsers, rawReqPath, h.index.dirsUsers, reqFsPath, userId); match {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (h *aliasHandler) getCanUpload(info os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
-	if info == nil || !info.IsDir() {
-		return false
-	}
-
-	if h.upload.global {
-		return true
-	}
-
-	if hasUrlOrDirPrefix(h.upload.urls, rawReqPath, h.upload.dirs, reqFsPath) {
-		return true
-	}
-
-	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.upload.urlsUsers, rawReqPath, h.upload.dirsUsers, reqFsPath, userId); match {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (h *aliasHandler) getCanMkdir(info os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
-	if info == nil || !info.IsDir() {
-		return false
-	}
-
-	if h.mkdir.global {
-		return true
-	}
-
-	if hasUrlOrDirPrefix(h.mkdir.urls, rawReqPath, h.mkdir.dirs, reqFsPath) {
-		return true
-	}
-
-	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.mkdir.urlsUsers, rawReqPath, h.mkdir.dirsUsers, reqFsPath, userId); match {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (h *aliasHandler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
-	if info == nil || !info.IsDir() {
-		return false
-	}
-
-	if h.delete.global {
-		return true
-	}
-
-	if hasUrlOrDirPrefix(h.delete.urls, rawReqPath, h.delete.dirs, reqFsPath) {
-		return true
-	}
-
-	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.delete.urlsUsers, rawReqPath, h.delete.dirsUsers, reqFsPath, userId); match {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (h *aliasHandler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
-	if len(subInfos) == 0 {
-		return false
-	}
-
-	if h.archive.global {
-		return true
-	}
-
-	if hasUrlOrDirPrefix(h.archive.urls, rawReqPath, h.archive.dirs, reqFsPath) {
-		return true
-	}
-
-	if userId >= 0 {
-		if _, match := hasUrlOrDirPrefixUsers(h.archive.urlsUsers, rawReqPath, h.archive.dirsUsers, reqFsPath, userId); match {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (h *aliasHandler) getCanCors(rawReqPath, reqFsPath string) bool {
-	if h.cors.global {
-		return true
-	}
-
-	return hasUrlOrDirPrefix(h.cors.urls, rawReqPath, h.cors.dirs, reqFsPath)
 }

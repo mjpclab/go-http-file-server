@@ -104,7 +104,7 @@ func (h *aliasHandler) visitTreeNode(
 		return
 	}
 
-	if fInfo.IsDir() && h.getCanIndex(urlPath, fsPath, userId) {
+	if fInfo.IsDir() && h.index.match(urlPath, fsPath, userId) {
 		childInfos, _, _ := h.mergeAlias(urlPath, fInfo, childInfos, true)
 		childInfos = h.FilterItems(childInfos)
 
