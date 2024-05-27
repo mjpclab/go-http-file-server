@@ -192,7 +192,7 @@ func newAliasHandler(
 		upload:  newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalUpload, p.UploadUrls, vhostCtx.uploadUrlsUsers, p.UploadDirs, vhostCtx.uploadDirsUsers),
 		mkdir:   newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalMkdir, p.MkdirUrls, vhostCtx.mkdirUrlsUsers, p.MkdirDirs, vhostCtx.mkdirDirsUsers),
 		delete:  newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalDelete, p.DeleteUrls, vhostCtx.deleteUrlsUsers, p.DeleteDirs, vhostCtx.deleteDirsUsers),
-		archive: newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalArchive, p.ArchiveUrls, nil, p.ArchiveDirs, nil),
+		archive: newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalArchive, p.ArchiveUrls, vhostCtx.archiveUrlsUsers, p.ArchiveDirs, vhostCtx.archiveDirsUsers),
 		cors:    newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalCors, p.CorsUrls, nil, p.CorsDirs, nil),
 
 		globalRestrictAccess: globalRestrictAccess,

@@ -164,7 +164,7 @@ func (h *aliasHandler) getCanDelete(info os.FileInfo, rawReqPath, reqFsPath stri
 	return false
 }
 
-func (h *aliasHandler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath string) bool {
+func (h *aliasHandler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPath string, userId int) bool {
 	if len(subInfos) == 0 {
 		return false
 	}
@@ -173,7 +173,17 @@ func (h *aliasHandler) getCanArchive(subInfos []os.FileInfo, rawReqPath, reqFsPa
 		return true
 	}
 
-	return hasUrlOrDirPrefix(h.archive.urls, rawReqPath, h.archive.dirs, reqFsPath)
+	if hasUrlOrDirPrefix(h.archive.urls, rawReqPath, h.archive.dirs, reqFsPath) {
+		return true
+	}
+
+	if userId >= 0 {
+		if _, match := hasUrlOrDirPrefixUsers(h.archive.urlsUsers, rawReqPath, h.archive.dirsUsers, reqFsPath, userId); match {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (h *aliasHandler) getCanCors(rawReqPath, reqFsPath string) bool {

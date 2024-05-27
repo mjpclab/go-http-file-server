@@ -34,16 +34,6 @@ type Param struct {
 	AuthDirs      []string
 	AuthDirsUsers [][]string // [][path, user...]
 
-	GlobalRestrictAccess []string
-	// [][restrict-path, allow-hosts...]
-	RestrictAccessUrls [][]string
-	RestrictAccessDirs [][]string
-
-	GlobalHeaders [][2]string // [][name, value]
-	// [][path, (name, value)...]
-	HeadersUrls [][]string
-	HeadersDirs [][]string
-
 	IndexUrls      []string
 	IndexUrlsUsers [][]string // [][path, user...]
 	IndexDirs      []string
@@ -67,13 +57,25 @@ type Param struct {
 	DeleteDirs      []string
 	DeleteDirsUsers [][]string // [][path, user...]
 
-	GlobalArchive bool
-	ArchiveUrls   []string
-	ArchiveDirs   []string
+	GlobalArchive    bool
+	ArchiveUrls      []string
+	ArchiveUrlsUsers [][]string // [][path, user...]
+	ArchiveDirs      []string
+	ArchiveDirsUsers [][]string // [][path, user...]
 
 	GlobalCors bool
 	CorsUrls   []string
 	CorsDirs   []string
+
+	GlobalRestrictAccess []string
+	// [][restrict-path, allow-hosts...]
+	RestrictAccessUrls [][]string
+	RestrictAccessDirs [][]string
+
+	GlobalHeaders [][2]string // [][name, value]
+	// [][path, (name, value)...]
+	HeadersUrls [][]string
+	HeadersDirs [][]string
 
 	Certificates []tls.Certificate
 	Listens      []string
@@ -165,7 +167,7 @@ func (param *Param) normalize() (errs []error) {
 	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
 	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)
 
-	// auth/index/upload/mkdir/delete urls/dirs users
+	// auth/index/upload/mkdir/delete/archive urls/dirs users
 	param.AuthUrlsUsers, es = normalizeAllPathValues(param.AuthUrlsUsers, true, util.NormalizeUrlPath, nil)
 	if len(es) == 0 {
 		dedupAllPathValues(param.AuthUrlsUsers)
@@ -227,6 +229,19 @@ func (param *Param) normalize() (errs []error) {
 	param.DeleteDirsUsers, es = normalizeAllPathValues(param.DeleteDirsUsers, false, filepath.Abs, nil)
 	if len(es) == 0 {
 		dedupAllPathValues(param.DeleteDirsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+
+	param.ArchiveUrlsUsers, es = normalizeAllPathValues(param.ArchiveUrlsUsers, false, util.NormalizeUrlPath, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.ArchiveUrlsUsers)
+	} else {
+		errs = append(errs, es...)
+	}
+	param.ArchiveDirsUsers, es = normalizeAllPathValues(param.ArchiveDirsUsers, false, filepath.Abs, nil)
+	if len(es) == 0 {
+		dedupAllPathValues(param.ArchiveDirsUsers)
 	} else {
 		errs = append(errs, es...)
 	}

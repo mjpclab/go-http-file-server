@@ -138,7 +138,13 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("archiveurls", "--archive", "", nil, "url path that enable download as archive for specific directories")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagValues("archiveurlsusers", "--archive-user", "", nil, "url path that allow archive files for specific users, <sep><url-path>[<sep><user>...]")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlagValues("archivedirs", "--archive-dir", "", nil, "file system path that enable download as archive for specific directories")
+	serverError.CheckFatal(err)
+
+	err = options.AddFlagValues("archivedirsusers", "--archive-dir-user", "", nil, "file system path that allow archive files for specific users, <sep><fs-path>[<sep><user>...]")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globalcors", "--global-cors", "GHFS_GLOBAL_CORS", "enable CORS headers for all directories")
@@ -388,7 +394,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.CorsUrls, _ = result.GetStrings("corsurls")
 		param.CorsDirs, _ = result.GetStrings("corsdirs")
 
-		// auth/upload/mkdir/delete urls/dirs urls users
+		// auth/upload/mkdir/delete/archive urls/dirs urls users
 		authUrlsUsers, _ := result.GetStrings("authurlsusers")
 		param.AuthUrlsUsers = SplitAllKeyValues(authUrlsUsers)
 
@@ -418,6 +424,12 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 
 		deleteDirsUsers, _ := result.GetStrings("deletedirsusers")
 		param.DeleteDirsUsers = SplitAllKeyValues(deleteDirsUsers)
+
+		archiveUrlsUsers, _ := result.GetStrings("archiveurlsusers")
+		param.ArchiveUrlsUsers = SplitAllKeyValues(archiveUrlsUsers)
+
+		archiveDirsUsers, _ := result.GetStrings("archivedirsusers")
+		param.ArchiveDirsUsers = SplitAllKeyValues(archiveDirsUsers)
 
 		// global restrict access
 		if result.HasKey("globalrestrictaccess") {

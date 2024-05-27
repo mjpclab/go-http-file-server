@@ -14,17 +14,19 @@ type vhostContext struct {
 	logger *serverLog.Logger
 	theme  theme.Theme
 
-	users           *user.List
-	authUrlsUsers   pathIntsList
-	authDirsUsers   pathIntsList
-	indexUrlsUsers  pathIntsList
-	indexDirsUsers  pathIntsList
-	uploadUrlsUsers pathIntsList
-	uploadDirsUsers pathIntsList
-	mkdirUrlsUsers  pathIntsList
-	mkdirDirsUsers  pathIntsList
-	deleteUrlsUsers pathIntsList
-	deleteDirsUsers pathIntsList
+	users            *user.List
+	authUrlsUsers    pathIntsList
+	authDirsUsers    pathIntsList
+	indexUrlsUsers   pathIntsList
+	indexDirsUsers   pathIntsList
+	uploadUrlsUsers  pathIntsList
+	uploadDirsUsers  pathIntsList
+	mkdirUrlsUsers   pathIntsList
+	mkdirDirsUsers   pathIntsList
+	deleteUrlsUsers  pathIntsList
+	deleteDirsUsers  pathIntsList
+	archiveUrlsUsers pathIntsList
+	archiveDirsUsers pathIntsList
 
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
@@ -89,17 +91,19 @@ func NewVhostHandler(
 		theme:  theme,
 		logger: logger,
 
-		users:           users,
-		authUrlsUsers:   pathUsernamesToPathUids(users, p.AuthUrlsUsers),
-		authDirsUsers:   pathUsernamesToPathUids(users, p.AuthDirsUsers),
-		indexUrlsUsers:  pathUsernamesToPathUids(users, p.IndexUrlsUsers),
-		indexDirsUsers:  pathUsernamesToPathUids(users, p.IndexDirsUsers),
-		uploadUrlsUsers: pathUsernamesToPathUids(users, p.UploadUrlsUsers),
-		uploadDirsUsers: pathUsernamesToPathUids(users, p.UploadDirsUsers),
-		mkdirUrlsUsers:  pathUsernamesToPathUids(users, p.MkdirUrlsUsers),
-		mkdirDirsUsers:  pathUsernamesToPathUids(users, p.MkdirDirsUsers),
-		deleteUrlsUsers: pathUsernamesToPathUids(users, p.DeleteUrlsUsers),
-		deleteDirsUsers: pathUsernamesToPathUids(users, p.DeleteDirsUsers),
+		users:            users,
+		authUrlsUsers:    pathUsernamesToPathUids(users, p.AuthUrlsUsers),
+		authDirsUsers:    pathUsernamesToPathUids(users, p.AuthDirsUsers),
+		indexUrlsUsers:   pathUsernamesToPathUids(users, p.IndexUrlsUsers),
+		indexDirsUsers:   pathUsernamesToPathUids(users, p.IndexDirsUsers),
+		uploadUrlsUsers:  pathUsernamesToPathUids(users, p.UploadUrlsUsers),
+		uploadDirsUsers:  pathUsernamesToPathUids(users, p.UploadDirsUsers),
+		mkdirUrlsUsers:   pathUsernamesToPathUids(users, p.MkdirUrlsUsers),
+		mkdirDirsUsers:   pathUsernamesToPathUids(users, p.MkdirDirsUsers),
+		deleteUrlsUsers:  pathUsernamesToPathUids(users, p.DeleteUrlsUsers),
+		deleteDirsUsers:  pathUsernamesToPathUids(users, p.DeleteDirsUsers),
+		archiveUrlsUsers: pathUsernamesToPathUids(users, p.ArchiveUrlsUsers),
+		archiveDirsUsers: pathUsernamesToPathUids(users, p.ArchiveDirsUsers),
 
 		shows:     shows,
 		showDirs:  showDirs,

@@ -457,7 +457,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	canMkdir := allowAccess && authSuccess && h.getCanMkdir(item, vhostReqPath, fsPath, authUserId)
 	canDelete := allowAccess && authSuccess && h.getCanDelete(item, vhostReqPath, fsPath, authUserId)
 	hasDeletable := canDelete && len(subItems) > len(aliasSubItems)
-	canArchive := allowAccess && authSuccess && h.getCanArchive(subItems, vhostReqPath, fsPath)
+	canArchive := allowAccess && authSuccess && h.getCanArchive(subItems, vhostReqPath, fsPath, authUserId)
 	canCors := allowAccess && authSuccess && h.getCanCors(vhostReqPath, fsPath)
 	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
