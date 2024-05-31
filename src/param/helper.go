@@ -72,6 +72,7 @@ eachInput:
 		results = append(results, entry)
 	}
 
+	dedupAllPathValues(results)
 	return
 }
 

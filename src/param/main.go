@@ -169,82 +169,34 @@ func (param *Param) normalize() (errs []error) {
 
 	// auth/index/upload/mkdir/delete/archive urls/dirs users
 	param.AuthUrlsUsers, es = normalizeAllPathValues(param.AuthUrlsUsers, true, util.NormalizeUrlPath, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.AuthUrlsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 	param.AuthDirsUsers, es = normalizeAllPathValues(param.AuthDirsUsers, true, filepath.Abs, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.AuthDirsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 
 	param.IndexUrlsUsers, es = normalizeAllPathValues(param.IndexUrlsUsers, false, util.NormalizeUrlPath, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.IndexUrlsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 	param.IndexDirsUsers, es = normalizeAllPathValues(param.IndexDirsUsers, false, filepath.Abs, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.IndexDirsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 
 	param.UploadUrlsUsers, es = normalizeAllPathValues(param.UploadUrlsUsers, false, util.NormalizeUrlPath, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.UploadUrlsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 	param.UploadDirsUsers, es = normalizeAllPathValues(param.UploadDirsUsers, false, filepath.Abs, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.UploadDirsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 
 	param.MkdirUrlsUsers, es = normalizeAllPathValues(param.MkdirUrlsUsers, false, util.NormalizeUrlPath, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.MkdirUrlsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 	param.MkdirDirsUsers, es = normalizeAllPathValues(param.MkdirDirsUsers, false, filepath.Abs, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.MkdirDirsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 
 	param.DeleteUrlsUsers, es = normalizeAllPathValues(param.DeleteUrlsUsers, false, util.NormalizeUrlPath, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.DeleteUrlsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 	param.DeleteDirsUsers, es = normalizeAllPathValues(param.DeleteDirsUsers, false, filepath.Abs, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.DeleteDirsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 
 	param.ArchiveUrlsUsers, es = normalizeAllPathValues(param.ArchiveUrlsUsers, false, util.NormalizeUrlPath, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.ArchiveUrlsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 	param.ArchiveDirsUsers, es = normalizeAllPathValues(param.ArchiveDirsUsers, false, filepath.Abs, nil)
-	if len(es) == 0 {
-		dedupAllPathValues(param.ArchiveDirsUsers)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 
 	// global restrict access, nil to disable, non-nil to enable with allowed hosts
 	if param.GlobalRestrictAccess != nil {
@@ -254,23 +206,13 @@ func (param *Param) normalize() (errs []error) {
 
 	// restrict access
 	param.RestrictAccessUrls, es = normalizeAllPathValues(param.RestrictAccessUrls, true, util.NormalizeUrlPath, util.ExtractHostsFromUrls)
-	if len(es) == 0 {
-		dedupAllPathValues(param.RestrictAccessUrls)
-	} else {
-		errs = append(errs, es...)
-	}
-
+	errs = append(errs, es...)
 	param.RestrictAccessDirs, es = normalizeAllPathValues(param.RestrictAccessDirs, true, filepath.Abs, util.ExtractHostsFromUrls)
-	if len(es) == 0 {
-		dedupAllPathValues(param.RestrictAccessDirs)
-	} else {
-		errs = append(errs, es...)
-	}
+	errs = append(errs, es...)
 
 	// headers
 	param.HeadersUrls, es = normalizeAllPathValues(param.HeadersUrls, false, util.NormalizeUrlPath, normalizeHeaders)
 	errs = append(errs, es...)
-
 	param.HeadersDirs, es = normalizeAllPathValues(param.HeadersDirs, false, filepath.Abs, normalizeHeaders)
 	errs = append(errs, es...)
 
@@ -278,7 +220,6 @@ func (param *Param) normalize() (errs []error) {
 	if param.Hsts {
 		param.Hsts = validateHstsPort(param.ListensPlain, param.ListensTLS)
 	}
-
 	if param.ToHttps {
 		param.ToHttpsPort, param.ToHttps = normalizeToHttpsPort(param.ToHttpsPort, param.ListensTLS)
 	}
