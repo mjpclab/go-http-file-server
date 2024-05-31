@@ -69,7 +69,7 @@ func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sess
 		h.logError(err)
 	}()
 
-	h.archive(
+	h.archiveFiles(
 		w,
 		r,
 		session,
@@ -109,7 +109,7 @@ func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sess
 		h.logError(err)
 	}()
 
-	h.archive(
+	h.archiveFiles(
 		w,
 		r,
 		session,

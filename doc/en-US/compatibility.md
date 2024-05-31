@@ -43,4 +43,4 @@
 
 # See also
 
-https://github.com/golang/go/wiki/MinimumRequirements#microarchitecture-support
+https://go.dev/wiki/MinimumRequirements

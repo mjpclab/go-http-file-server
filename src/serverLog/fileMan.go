@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-const chanBuffer = 31
+const chanBuffer = 128
 const fileMode = 0660
 const logEnding = '\n'
 

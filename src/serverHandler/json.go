@@ -15,9 +15,6 @@ type jsonItem struct {
 }
 
 type jsonResponseData struct {
-	NeedAuth           bool        `json:"needAuth"`
-	AuthUserName       string      `json:"authUserName"`
-	AuthSuccess        bool        `json:"authSuccess"`
 	IsRoot             bool        `json:"isRoot"`
 	Path               string      `json:"path"`
 	Paths              []pathEntry `json:"paths"`

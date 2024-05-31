@@ -54,7 +54,7 @@ func (h *aliasHandler) zip(w http.ResponseWriter, r *http.Request, session *sess
 		h.logError(err)
 	}()
 
-	h.archive(
+	h.archiveFiles(
 		w,
 		r,
 		session,
