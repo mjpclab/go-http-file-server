@@ -53,7 +53,7 @@ func (h *aliasHandler) visitTreeNode(
 	archiveCallback archiveCallback,
 ) {
 	needAuth, _ := h.needAuth("", urlPath, fsPath)
-	userId, _, err := h.verifyAuth(r, needAuth, urlPath, fsPath)
+	userId, _, err := h.verifyAuth(r, urlPath, fsPath)
 	if needAuth && err != nil {
 		return
 	}
@@ -104,7 +104,7 @@ func (h *aliasHandler) visitTreeNode(
 		return
 	}
 
-	if fInfo.IsDir() && h.getCanIndex(urlPath, fsPath, userId) {
+	if fInfo.IsDir() && h.index.match(urlPath, fsPath, userId) {
 		childInfos, _, _ := h.mergeAlias(urlPath, fInfo, childInfos, true)
 		childInfos = h.FilterItems(childInfos)
 
@@ -129,7 +129,7 @@ func (h *aliasHandler) visitTreeNode(
 	}
 }
 
-func (h *aliasHandler) archive(
+func (h *aliasHandler) archiveFiles(
 	w http.ResponseWriter,
 	r *http.Request,
 	session *sessionContext,
@@ -158,7 +158,7 @@ func (h *aliasHandler) archive(
 	h.visitTreeNode(
 		r,
 		session.vhostReqPath,
-		path.Clean(h.fs+session.aliasReqPath),
+		session.fsPath,
 		"",
 		data.Item != nil, // not empty root
 		selections,

@@ -15,15 +15,15 @@ func (h *aliasHandler) needAuth(rawQuery, vhostReqPath, reqFsPath string) (needA
 		return true, true
 	}
 
-	if h.globalAuth {
+	if h.auth.global {
 		return true, false
 	}
 
-	if hasUrlOrDirPrefix(h.authUrls, vhostReqPath, h.authDirs, reqFsPath) {
+	if hasUrlOrDirPrefix(h.auth.urls, vhostReqPath, h.auth.dirs, reqFsPath) {
 		return true, false
 	}
 
-	if matchPath, _ := hasUrlOrDirPrefixUsers(h.authUrlsUsers, vhostReqPath, h.authDirsUsers, reqFsPath, -1); matchPath {
+	if matchPath, _ := hasUrlOrDirPrefixUsers(h.auth.urlsUsers, vhostReqPath, h.auth.dirsUsers, reqFsPath, -1); matchPath {
 		return true, false
 	}
 
@@ -34,31 +34,25 @@ func (h *aliasHandler) notifyAuth(w http.ResponseWriter) {
 	w.Header().Set("WWW-Authenticate", "Basic realm=\"files\"")
 }
 
-func (h *aliasHandler) verifyAuth(r *http.Request, needAuth bool, vhostReqPath, reqFsPath string) (authUserId int, authUserName string, err error) {
+func (h *aliasHandler) verifyAuth(r *http.Request, vhostReqPath, reqFsPath string) (authUserId int, authUserName string, err error) {
 	inputUser, inputPass, hasAuthReq := shimgo.Net_Http_BasicAuth(r)
 
 	if hasAuthReq {
 		userid, username, success := h.users.Auth(inputUser, inputPass)
-		if success && userid >= 0 && (len(h.authUrlsUsers) > 0 || len(h.authDirsUsers) > 0) {
-			if matchPrefix, match := hasUrlOrDirPrefixUsers(h.authUrlsUsers, vhostReqPath, h.authDirsUsers, reqFsPath, userid); matchPrefix {
+		if success && userid >= 0 && (len(h.auth.urlsUsers) > 0 || len(h.auth.dirsUsers) > 0) {
+			if matchPrefix, match := hasUrlOrDirPrefixUsers(h.auth.urlsUsers, vhostReqPath, h.auth.dirsUsers, reqFsPath, userid); matchPrefix {
 				success = match
 			}
 		}
 		if success {
 			return userid, username, nil
 		}
-	}
-
-	if !needAuth {
-		return -1, "", nil
-	}
-
-	if !hasAuthReq {
-		err = errors.New(r.RemoteAddr + " missing auth info")
-	} else {
 		err = errors.New(r.RemoteAddr + " auth failed")
+	} else {
+		err = errors.New(r.RemoteAddr + " missing auth info")
 	}
 
+	authUserId = -1
 	return
 }
 

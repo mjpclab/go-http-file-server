@@ -131,7 +131,7 @@ var translationZhTrad = Translation{
 	UploadingLabel:         "上傳中……",
 	UploadSuccessLabel:     "上傳成功",
 	UploadFailLabel:        "上傳失敗",
-	UploadDirFailMessage:   "無法上傳目錄。 請確保mkdir已啟用，並使用受支援的流覽器。",
+	UploadDirFailMessage:   "無法上傳目錄。 請確保mkdir已啟用，並使用受支援的瀏覽器。",
 
 	ListDirLabel:  "目錄",
 	ListNameLabel: "名稱",

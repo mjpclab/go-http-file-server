@@ -25,6 +25,8 @@ const DefaultTplStr = `
 </ol>
 {{if .LoginAvail}}
 <a class="login" href="{{if ne .Status 401}}{{.RootRelPath}}?auth={{.Path}}{{$contextQueryString}}{{end}}">{{.Trans.LoginLabel}}</a>
+{{else if .AuthUserName}}
+<span class="login">[{{.AuthUserName}}]</span>
 {{end}}
 {{if .CanUpload}}
 <div class="upload-status">
