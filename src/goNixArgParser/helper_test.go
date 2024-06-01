@@ -2,7 +2,7 @@ package goNixArgParser
 
 import "testing"
 
-func TestRemoveEmpetyInplace(t *testing.T) {
+func TestRemoveEmptyInplace(t *testing.T) {
 	var output []string
 
 	output = removeEmptyInplace([]string{"aa", "", "bb", "cc"})
