@@ -2,3 +2,4 @@
 /output
 /test/bin/
 /test/**/*.tmp
+/static
