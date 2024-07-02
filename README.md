@@ -3,7 +3,7 @@ Simple command line based HTTP file server to share local file system.
 
 ![Go HTTP File Server pages](doc/ghfs.gif)
 
-## Features
+## Usage Features
 - More friendly UI than Apache/Nginx directory index page
 - Adapt for mobile display
 - Single executable file
@@ -11,6 +11,11 @@ Simple command line based HTTP file server to share local file system.
 - Can upload files to current directory if enabled
 - Can specify a custom theme for page rendering
 - Support location alias(mount another directory to url location)
+
+# Tech Features
+- Monolithic architecture
+- Stateless
+- Zero third party dependency
 
 ## Compile
 Minimal required Go version is 1.18.
