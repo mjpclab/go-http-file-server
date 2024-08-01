@@ -1,7 +1,6 @@
 package param
 
 import (
-	"crypto/tls"
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/util"
@@ -77,7 +76,7 @@ type Param struct {
 	HeadersUrls [][]string
 	HeadersDirs [][]string
 
-	Certificates []tls.Certificate
+	CertKeyPaths [][2]string
 	Listens      []string
 	ListensPlain []string
 	ListensTLS   []string
