@@ -495,7 +495,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.HideDirs, _ = result.GetStrings("hidedirs")
 		param.HideFiles, _ = result.GetStrings("hidefiles")
 
-		es = param.normalize()
+		es = param.Normalize()
 		errs = append(errs, es...)
 
 		params = append(params, param)

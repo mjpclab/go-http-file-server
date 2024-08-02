@@ -105,7 +105,7 @@ type Param struct {
 
 type Params []*Param
 
-func (param *Param) normalize() (errs []error) {
+func (param *Param) Normalize() (errs []error) {
 	var es []error
 	var err error
 
@@ -232,7 +232,7 @@ func NewParams(paramList []Param) (params Params, errs []error) {
 	for i := range params {
 		copiedParam := paramList[i]
 		params[i] = &copiedParam
-		errs = append(errs, params[i].normalize()...)
+		errs = append(errs, params[i].Normalize()...)
 	}
 
 	return
