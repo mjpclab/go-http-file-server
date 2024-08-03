@@ -1,6 +1,3 @@
-// Logger maintains access log and error log objects for each virtual host.
-// It also determines what a "-" file means, Stdout or Stderr, depends on the loggerChan's role.
-
 package serverLog
 
 type Logger struct {

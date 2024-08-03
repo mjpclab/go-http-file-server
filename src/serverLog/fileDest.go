@@ -77,16 +77,10 @@ func (dest *fileDest) serve() {
 			os.Stderr.WriteString(e.Error() + "\n")
 		}
 	}
-	if dest.info != nil { // not Stdout or Stderr
-		dest.file.Close()
-	}
+	dest.file.Close()
 }
 
 func (dest *fileDest) reopen() error {
-	if dest.info == nil { // Stdout or Stderr
-		return nil
-	}
-
 	matched := false
 	file, info, err := getFileInfoIfNotMatch(dest.fsPath, func(info os.FileInfo) bool {
 		matched = os.SameFile(info, dest.info)
