@@ -44,6 +44,10 @@ func (app *App) ReOpenLog() []error {
 	return app.logFileMan.Reopen()
 }
 
+func (app *App) ReLoadCertificates() []error {
+	return app.vhostSvc.ReloadCertificates()
+}
+
 func (app *App) GetAccessibleOrigins(includeLoopback bool) [][]string {
 	return app.vhostSvc.GetAccessibleURLs(includeLoopback)
 }
