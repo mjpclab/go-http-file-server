@@ -4,6 +4,13 @@
 
 	var classNone = 'none';
 	var classHeader = 'header';
+
+	var selectorNone = '.' + classNone;
+	var selectorNotNone = ':not(' + selectorNone + ')';
+	var selectorItem = '.item-list > li:not(.' + classHeader + '):not(.parent)';
+	var selectorItemNone = selectorItem + selectorNone;
+	var selectorItemNotNone = selectorItem + selectorNotNone;
+
 	var leavingEvent = typeof window.onpagehide !== strUndef ? 'pagehide' : 'beforeunload';
 
 	var Enter = 'Enter';
@@ -99,12 +106,6 @@
 		}();
 
 		var clear = filter.querySelector('button');
-
-		var selectorNone = '.' + classNone;
-		var selectorNotNone = ':not(' + selectorNone + ')';
-		var selectorItem = '.item-list > li:not(.' + classHeader + '):not(.parent)';
-		var selectorItemNone = selectorItem + selectorNone;
-		var selectorItemNotNone = selectorItem + selectorNotNone;
 
 		// event handler
 		var timeoutId;
@@ -225,6 +226,56 @@
 		}
 		if (input.value) {
 			doFilter();
+		}
+	}
+
+	function focusChildOnNavUp() {
+		if (!document.querySelector) return;
+
+		function extractCleanUrl(url) {
+			var sepIndex = url.indexOf('?');
+			if (sepIndex < 0) sepIndex = url.indexOf('#');
+			if (sepIndex >= 0) {
+				url = url.substring(0, sepIndex);
+			}
+			return url;
+		}
+
+		var prevUrl = document.referrer;
+		if (!prevUrl) return;
+		prevUrl = extractCleanUrl(prevUrl);
+
+		var currUrl = extractCleanUrl(location.href);
+
+		if (prevUrl.length <= currUrl.length) return;
+		if (prevUrl.substring(0, currUrl.length) !== currUrl) return;
+		var goesUp = prevUrl.substring(currUrl.length);
+		if (currUrl[currUrl.length - 1] !== '/' && goesUp[0] !== '/') return;
+		var matchInfo = /[^/]+/.exec(goesUp);
+		if (!matchInfo) return;
+		var prevChildName = matchInfo[0];
+		if (!prevChildName) return;
+		prevChildName = decodeURIComponent(prevChildName);
+
+		var items = document.body.querySelectorAll(selectorItem);
+		items = Array.prototype.slice.call(items);
+		var selectorName = '.field.name';
+		var selectorLink = 'a';
+		for (var i = 0, len = items.length; i < len; i++) {
+			var item = items[i];
+			var elName = item.querySelector(selectorName);
+			if (!elName) continue;
+			var text = elName.textContent;
+			if (text[text.length - 1] === '/') {
+				text = text.substring(0, text.length - 1);
+			}
+			if (text !== prevChildName) continue;
+			var elLink = item.querySelector(selectorLink);
+			if (elLink) {
+				elLink.focus();
+				elLink.scrollIntoView({block: 'center'});
+			}
+			break;
 		}
 	}
 
@@ -1265,6 +1316,7 @@
 	}
 
 	enableFilter();
+	focusChildOnNavUp();
 	enableKeyboardNavigate();
 	enhanceUpload();
 	enableNonRefreshDelete();
