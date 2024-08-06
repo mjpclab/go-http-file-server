@@ -72,6 +72,8 @@
 	} catch (err) {
 	}
 
+	var lastFocused;
+
 	function enableFilter() {
 		if (!document.querySelector) {
 			var filter = document.getElementById && document.getElementById('panel-filter');
@@ -229,6 +231,19 @@
 		}
 	}
 
+	function keepFocusOnBackwardForward() {
+		if (window.onpageshow === undefined || !document.querySelector) return;
+		document.body.querySelector('.item-list').addEventListener('focusin', function (e) {
+			lastFocused = e.target;
+		});
+		window.addEventListener('pageshow', function () {
+			if (lastFocused && lastFocused !== document.activeElement) {
+				lastFocused.focus();
+				lastFocused.scrollIntoView({block: 'center'});
+			}
+		});
+	}
+
 	function focusChildOnNavUp() {
 		if (!document.querySelector) return;
 
@@ -272,6 +287,7 @@
 			if (text !== prevChildName) continue;
 			var elLink = item.querySelector(selectorLink);
 			if (elLink) {
+				lastFocused = elLink;
 				elLink.focus();
 				elLink.scrollIntoView({block: 'center'});
 			}
@@ -1316,6 +1332,7 @@
 	}
 
 	enableFilter();
+	keepFocusOnBackwardForward();
 	focusChildOnNavUp();
 	enableKeyboardNavigate();
 	enhanceUpload();
