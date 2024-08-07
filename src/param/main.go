@@ -1,7 +1,6 @@
 package param
 
 import (
-	"crypto/tls"
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/util"
@@ -77,7 +76,7 @@ type Param struct {
 	HeadersUrls [][]string
 	HeadersDirs [][]string
 
-	Certificates []tls.Certificate
+	CertKeyPaths [][2]string
 	Listens      []string
 	ListensPlain []string
 	ListensTLS   []string
@@ -106,7 +105,7 @@ type Param struct {
 
 type Params []*Param
 
-func (param *Param) normalize() (errs []error) {
+func (param *Param) Normalize() (errs []error) {
 	var es []error
 	var err error
 
@@ -233,7 +232,7 @@ func NewParams(paramList []Param) (params Params, errs []error) {
 	for i := range params {
 		copiedParam := paramList[i]
 		params[i] = &copiedParam
-		errs = append(errs, params[i].normalize()...)
+		errs = append(errs, params[i].Normalize()...)
 	}
 
 	return

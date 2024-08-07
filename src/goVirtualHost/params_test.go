@@ -68,7 +68,7 @@ func TestParamsValidateParam(t *testing.T) {
 		ip:     "",
 		port:   ":80",
 		useTLS: true,
-		certs:  []tls.Certificate{},
+		certs:  []*tls.Certificate{},
 	}
 	errs = ps.validateParam(p)
 	if len(errs) == 0 {

@@ -22,7 +22,7 @@ func cleanupOnEnd(appInst *app.App) {
 	}()
 }
 
-func reopenLogOnHup(appInst *app.App) {
+func reInitOnHup(appInst *app.App) {
 	chSignal := make(chan os.Signal)
 	signal.Notify(chSignal, syscall.SIGHUP)
 
@@ -30,6 +30,11 @@ func reopenLogOnHup(appInst *app.App) {
 		for sig := range chSignal {
 			sig = sig // ignore iterate value
 			errs := appInst.ReOpenLog()
+			if serverError.CheckError(errs...) {
+				appInst.Close()
+				break
+			}
+			errs = appInst.ReLoadCertificates()
 			if serverError.CheckError(errs...) {
 				appInst.Close()
 				break
@@ -76,7 +81,7 @@ func Main() (ok bool) {
 	}
 
 	cleanupOnEnd(appInst)
-	reopenLogOnHup(appInst)
+	reInitOnHup(appInst)
 	errs = appInst.Open()
 	if serverError.CheckError(errs...) {
 		return

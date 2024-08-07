@@ -33,7 +33,7 @@ buildByDocker() {
         apt-get update;
         apt-get install -yq git zip;
       elif [ -e /etc/apk/repositories ]; then
-        sed -i "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apk/repositories;
+        sed -i -e "s;://[^/ ]*;://mirrors.aliyun.com;" /etc/apk/repositories;
         apk add bash git zip;
       fi
       git config --global safe.directory "*"

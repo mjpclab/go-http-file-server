@@ -34,13 +34,13 @@ func TestParamValidate(t *testing.T) {
 		t.Error(errs)
 	}
 
-	p.certs = []tls.Certificate{}
+	p.certs = []*tls.Certificate{}
 	errs = p.validate()
 	if len(errs) == 0 {
 		t.Error(errs)
 	}
 
-	p.certs = append(p.certs, tls.Certificate{})
+	p.certs = append(p.certs, &tls.Certificate{})
 	errs = p.validate()
 	if len(errs) > 0 {
 		t.Error(errs)

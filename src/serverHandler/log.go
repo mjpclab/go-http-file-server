@@ -34,7 +34,7 @@ func logRequest(logger *serverLog.Logger, r *http.Request, statusCode int) {
 
 	uri := util.EscapeControllingRune(r.RequestURI)
 
-	buf := serverLog.NewBuffer(3 + len(r.RemoteAddr) + len(code) + len(r.Method) + unescapedLen + len(uri))
+	buf := serverLog.NewBuffer(3 + len(r.RemoteAddr) + len(code) + len(r.Method) + len(r.Host) + unescapedLen + len(uri))
 
 	buf = append(buf, []byte(r.RemoteAddr)...) // ~ 9-47 bytes, mainly 21 bytes
 	buf = append(buf, ' ')                     // 1 byte
@@ -42,6 +42,7 @@ func logRequest(logger *serverLog.Logger, r *http.Request, statusCode int) {
 	buf = append(buf, ' ')                     // 1 byte
 	buf = append(buf, []byte(r.Method)...)     // ~ 3-4 bytes
 	buf = append(buf, ' ')                     // 1 byte
+	buf = append(buf, []byte(r.Host)...)
 	if unescapedLen > 0 {
 		buf = append(buf, unescapedUri...)
 		buf = append(buf, ' ', '<', '=', '>', ' ') // 5 bytes

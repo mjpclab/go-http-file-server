@@ -320,6 +320,8 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 }
 
 func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, errs []error) {
+	var es []error
+
 	// init param data
 	params = make(Params, 0, len(results))
 	for _, result := range results {
@@ -459,9 +461,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
-		certs, es := goVirtualHost.LoadCertificates(certFiles, keyFiles)
-		errs = append(errs, es...)
-		param.Certificates = certs
+		param.CertKeyPaths, es = goVirtualHost.CertsKeysToPairs(certFiles, keyFiles)
 
 		// listen
 		listens, _ := result.GetStrings("listens")
@@ -495,7 +495,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.HideDirs, _ = result.GetStrings("hidedirs")
 		param.HideFiles, _ = result.GetStrings("hidefiles")
 
-		es = param.normalize()
+		es = param.Normalize()
 		errs = append(errs, es...)
 
 		params = append(params, param)

@@ -11,8 +11,8 @@ import (
 )
 
 type App struct {
-	vhostSvc   *goVirtualHost.Service
-	logFileMan *serverLog.FileMan
+	vhostSvc *goVirtualHost.Service
+	logMan   *serverLog.Man
 }
 
 func (app *App) Open() []error {
@@ -21,11 +21,15 @@ func (app *App) Open() []error {
 
 func (app *App) Close() {
 	app.vhostSvc.Close()
-	app.logFileMan.Close()
+	app.logMan.CloseFiles()
 }
 
 func (app *App) ReOpenLog() []error {
-	return app.logFileMan.Reopen()
+	return app.logMan.ReOpenFiles()
+}
+
+func (app *App) ReLoadCertificates() []error {
+	return app.vhostSvc.ReloadCertificates()
 }
 
 func (app *App) GetAccessibleOrigins(includeLoopback bool) [][]string {
@@ -41,12 +45,12 @@ func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 	}
 
 	vhSvc := goVirtualHost.NewService()
-	logFileMan := serverLog.NewFileMan()
+	logMan := serverLog.NewMan()
 	themePool := make(map[string]theme.Theme)
 
 	for _, p := range params {
 		// logger
-		logger, errs := logFileMan.NewLogger(p.AccessLog, p.ErrorLog)
+		logger, errs := logMan.NewLogger(p.AccessLog, p.ErrorLog)
 		if len(errs) > 0 {
 			return nil, errs
 		}
@@ -75,7 +79,7 @@ func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 		// init vhost
 		listens := p.Listens
 		if len(listens) == 0 && len(p.ListensPlain) == 0 && len(p.ListensTLS) == 0 {
-			if len(p.Certificates) == 0 {
+			if len(p.CertKeyPaths) == 0 {
 				listens = []string{":80"}
 			} else {
 				listens = []string{":443"}
@@ -87,7 +91,7 @@ func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 			Listens:      listens,
 			ListensPlain: p.ListensPlain,
 			ListensTLS:   p.ListensTLS,
-			Certs:        p.Certificates,
+			CertKeyPaths: p.CertKeyPaths,
 			HostNames:    p.HostNames,
 			Handler:      vhHandler,
 		})
@@ -105,7 +109,7 @@ func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 	}
 
 	return &App{
-		vhostSvc:   vhSvc,
-		logFileMan: logFileMan,
+		vhostSvc: vhSvc,
+		logMan:   logMan,
 	}, nil
 }

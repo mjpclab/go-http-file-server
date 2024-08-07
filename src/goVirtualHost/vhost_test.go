@@ -6,7 +6,7 @@ func TestMatchHostName(t *testing.T) {
 
 	var vh *vhost
 
-	vh = newVhost(nil, []string{"www.example.com"}, nil)
+	vh = newVhost([]string{"www.example.com"}, nil, nil, nil)
 	if !vh.matchHostName("www.example.com") {
 		t.Error()
 	}
@@ -14,7 +14,7 @@ func TestMatchHostName(t *testing.T) {
 		t.Error()
 	}
 
-	vh = newVhost(nil, []string{".example.com"}, nil)
+	vh = newVhost([]string{".example.com"}, nil, nil, nil)
 	if !vh.matchHostName("www.example.com") {
 		t.Error()
 	}
@@ -22,7 +22,7 @@ func TestMatchHostName(t *testing.T) {
 		t.Error()
 	}
 
-	vh = newVhost(nil, []string{".example.com", "example.com"}, nil)
+	vh = newVhost([]string{".example.com", "example.com"}, nil, nil, nil)
 	if !vh.matchHostName("www.example.com") {
 		t.Error()
 	}
@@ -30,7 +30,7 @@ func TestMatchHostName(t *testing.T) {
 		t.Error()
 	}
 
-	vh = newVhost(nil, []string{"example."}, nil)
+	vh = newVhost([]string{"example."}, nil, nil, nil)
 	if !vh.matchHostName("example.com") {
 		t.Error()
 	}
