@@ -19,7 +19,7 @@ func NewService() *Service {
 	return service
 }
 
-func (svc *Service) addVhostToServers(vhost *vhost, params params) {
+func (svc *Service) addVhostToServeable(vhost *vhost, params params) {
 	for _, param := range params {
 		var l *listenable
 		var s *serveable
@@ -50,7 +50,7 @@ func (svc *Service) Add(info *HostInfo) (errs, warns []error) {
 		return
 	}
 
-	hostNames, vhostParams, certs := info.parse()
+	vhostParams, hostNames, certKeyPaths, certs := info.parse()
 
 	errs, warns = svc.params.validate(vhostParams)
 	if len(errs) > 0 {
@@ -58,10 +58,10 @@ func (svc *Service) Add(info *HostInfo) (errs, warns []error) {
 	}
 	svc.params = append(svc.params, vhostParams...)
 
-	vhost := newVhost(certs, hostNames, info.Handler)
+	vhost := newVhost(hostNames, certKeyPaths, certs, info.Handler)
 	svc.vhosts = append(svc.vhosts, vhost)
 
-	svc.addVhostToServers(vhost, vhostParams)
+	svc.addVhostToServeable(vhost, vhostParams)
 
 	return
 }
@@ -117,9 +117,11 @@ func (svc *Service) Open() (errs []error) {
 	svc.params = nil // release unused data
 
 	for _, s := range svc.serveables {
-		s.updateDefaultVhost()
-		s.updateHttpServerTLSConfig()
-		s.updateHttpServerHandler()
+		es := s.init()
+		errs = append(errs, es...)
+	}
+	if len(errs) > 0 {
+		return
 	}
 
 	defer svc.Close()
@@ -130,6 +132,14 @@ func (svc *Service) Open() (errs []error) {
 	}
 
 	errs = svc.openServers()
+	return
+}
+
+func (svc *Service) ReloadCertificates() (errs []error) {
+	for _, s := range svc.serveables {
+		es := s.loadCertificates()
+		errs = append(errs, es...)
+	}
 	return
 }
 

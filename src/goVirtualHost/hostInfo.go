@@ -1,29 +1,35 @@
 package goVirtualHost
 
-import "crypto/tls"
-
 func (info *HostInfo) toParam(listen string, useTLS bool) *param {
 	proto, ip, port := splitListen(listen, false)
-	var certs []tls.Certificate
+	var certKeyPaths certKeyPairs
+	var certs certs
 	if useTLS {
+		certKeyPaths = info.CertKeyPaths
 		certs = info.Certs
 	}
 
 	param := &param{
-		proto:  proto,
-		ip:     ip,
-		port:   port,
-		useTLS: useTLS,
-		certs:  certs,
+		proto:        proto,
+		ip:           ip,
+		port:         port,
+		useTLS:       useTLS,
+		certKeyPaths: certKeyPaths,
+		certs:        certs,
 	}
 
 	return param
 }
 
-func (info *HostInfo) parse() (hostNames []string, params params, certs certs) {
+func (info *HostInfo) parse() (params params, hostNames []string, certKeyPaths certKeyPairs, certs certs) {
 	hostNames = normalizeHostNames(info.HostNames)
 
-	useTLSForListen := len(info.Certs) > 0
+	useTLSForListen := len(info.CertKeyPaths)+len(info.Certs) > 0
+	if (useTLSForListen && len(info.Listens) > 0) || len(info.ListensTLS) > 0 {
+		certKeyPaths = info.CertKeyPaths
+		certs = info.Certs
+	}
+
 	for _, listen := range info.Listens {
 		param := info.toParam(listen, useTLSForListen)
 		param.hostNames = hostNames
@@ -40,10 +46,6 @@ func (info *HostInfo) parse() (hostNames []string, params params, certs certs) {
 		param := info.toParam(listen, true)
 		param.hostNames = hostNames
 		params = append(params, param)
-	}
-
-	if (useTLSForListen && len(info.Listens) > 0) || len(info.ListensTLS) > 0 {
-		certs = append(info.Certs)
 	}
 
 	return

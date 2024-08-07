@@ -2,6 +2,7 @@ package serverHandler
 
 import (
 	"html/template"
+	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
@@ -10,6 +11,21 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+const (
+	noRedirect redirectAction = iota
+	addSlashSuffix
+	removeSlashSuffix
+)
+
+const contentTypeJson = "application/json"
+
+var acceptContentTypes = []string{
+	contentTypeJson,
+	"text/html",
+	"application/xhtml+xml",
+	"application/xml",
+}
 
 type pathEntry struct {
 	Name string `json:"name"`
@@ -26,12 +42,6 @@ type itemHtml struct {
 }
 
 type redirectAction int
-
-const (
-	noRedirect redirectAction = iota
-	addSlashSuffix
-	removeSlashSuffix
-)
 
 type sessionContext struct {
 	prefixReqPath string
@@ -368,7 +378,10 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		isDelete = true
 		isMutate = true
 	}
-	wantJson := strings.HasPrefix(rawQuery, "json") || strings.Contains(rawQuery, "&json")
+
+	accepts := acceptHeaders.ParseAccepts(r.Header.Get("Accept"))
+	_, preferredContentType, _ := accepts.GetPreferredValue(acceptContentTypes)
+	wantJson := preferredContentType == contentTypeJson
 
 	isRoot := vhostReqPath == "/"
 
@@ -410,7 +423,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	restrictAccess, allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item)
-	vary := "accept-encoding"
+	vary := "accept, accept-encoding"
 	if restrictAccess {
 		vary += ", referer, origin"
 	}

@@ -4,6 +4,13 @@
 
 	var classNone = 'none';
 	var classHeader = 'header';
+
+	var selectorNone = '.' + classNone;
+	var selectorNotNone = ':not(' + selectorNone + ')';
+	var selectorItem = '.item-list > li:not(.' + classHeader + '):not(.parent)';
+	var selectorItemNone = selectorItem + selectorNone;
+	var selectorItemNotNone = selectorItem + selectorNotNone;
+
 	var leavingEvent = typeof window.onpagehide !== strUndef ? 'pagehide' : 'beforeunload';
 
 	var Enter = 'Enter';
@@ -65,6 +72,8 @@
 	} catch (err) {
 	}
 
+	var lastFocused;
+
 	function enableFilter() {
 		if (!document.querySelector) {
 			var filter = document.getElementById && document.getElementById('panel-filter');
@@ -99,12 +108,6 @@
 		}();
 
 		var clear = filter.querySelector('button');
-
-		var selectorNone = '.' + classNone;
-		var selectorNotNone = ':not(' + selectorNone + ')';
-		var selectorItem = '.item-list > li:not(.' + classHeader + '):not(.parent)';
-		var selectorItemNone = selectorItem + selectorNone;
-		var selectorItemNotNone = selectorItem + selectorNotNone;
 
 		// event handler
 		var timeoutId;
@@ -225,6 +228,70 @@
 		}
 		if (input.value) {
 			doFilter();
+		}
+	}
+
+	function keepFocusOnBackwardForward() {
+		if (window.onpageshow === undefined || !document.querySelector) return;
+		document.body.querySelector('.item-list').addEventListener('focusin', function (e) {
+			lastFocused = e.target;
+		});
+		window.addEventListener('pageshow', function () {
+			if (lastFocused && lastFocused !== document.activeElement) {
+				lastFocused.focus();
+				lastFocused.scrollIntoView({block: 'center'});
+			}
+		});
+	}
+
+	function focusChildOnNavUp() {
+		if (!document.querySelector) return;
+
+		function extractCleanUrl(url) {
+			var sepIndex = url.indexOf('?');
+			if (sepIndex < 0) sepIndex = url.indexOf('#');
+			if (sepIndex >= 0) {
+				url = url.substring(0, sepIndex);
+			}
+			return url;
+		}
+
+		var prevUrl = document.referrer;
+		if (!prevUrl) return;
+		prevUrl = extractCleanUrl(prevUrl);
+
+		var currUrl = extractCleanUrl(location.href);
+
+		if (prevUrl.length <= currUrl.length) return;
+		if (prevUrl.substring(0, currUrl.length) !== currUrl) return;
+		var goesUp = prevUrl.substring(currUrl.length);
+		if (currUrl[currUrl.length - 1] !== '/' && goesUp[0] !== '/') return;
+		var matchInfo = /[^/]+/.exec(goesUp);
+		if (!matchInfo) return;
+		var prevChildName = matchInfo[0];
+		if (!prevChildName) return;
+		prevChildName = decodeURIComponent(prevChildName);
+
+		var items = document.body.querySelectorAll(selectorItem);
+		items = Array.prototype.slice.call(items);
+		var selectorName = '.field.name';
+		var selectorLink = 'a';
+		for (var i = 0, len = items.length; i < len; i++) {
+			var item = items[i];
+			var elName = item.querySelector(selectorName);
+			if (!elName) continue;
+			var text = elName.textContent;
+			if (text[text.length - 1] === '/') {
+				text = text.substring(0, text.length - 1);
+			}
+			if (text !== prevChildName) continue;
+			var elLink = item.querySelector(selectorLink);
+			if (elLink) {
+				lastFocused = elLink;
+				elLink.focus();
+				elLink.scrollIntoView({block: 'center'});
+			}
+			break;
 		}
 	}
 
@@ -376,16 +443,16 @@
 			lookupTimer = setTimeout(clearLookupContext, 850);
 		}
 
-		function lookup(key, isBackward) {
+		function lookup(container, key, isBackward) {
 			key = key.toLowerCase();
 
 			var currentLookupStartA;
 			if (key === lookupKey) {
 				// same as last key, lookup next for the same key as prefix
-				currentLookupStartA = itemList.querySelector(':focus');
+				currentLookupStartA = container.querySelector(':focus');
 			} else {
 				if (!lookupStartA) {
-					lookupStartA = itemList.querySelector(':focus');
+					lookupStartA = container.querySelector(':focus');
 				}
 				currentLookupStartA = lookupStartA;
 				if (lookupKey === undefined) {
@@ -397,7 +464,7 @@
 				lookupBuffer += key;
 			}
 			delayClearLookupContext();
-			return getMatchedFocusableSibling(itemList, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
+			return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
 		}
 
 		var canArrowMove;
@@ -457,7 +524,7 @@
 					}
 				}
 				if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
-					return lookup(e.key, e.shiftKey);
+					return lookup(itemList, e.key, e.shiftKey);
 				}
 			} else if (e.keyCode) {
 				if (canArrowMove(e)) {
@@ -489,7 +556,7 @@
 					}
 				}
 				if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.keyCode >= 32 && e.keyCode <= 126) {
-					return lookup(String.fromCharCode(e.keyCode), e.shiftKey);
+					return lookup(itemList, String.fromCharCode(e.keyCode), e.shiftKey);
 				}
 			}
 		}
@@ -1265,6 +1332,8 @@
 	}
 
 	enableFilter();
+	keepFocusOnBackwardForward();
+	focusChildOnNavUp();
 	enableKeyboardNavigate();
 	enhanceUpload();
 	enableNonRefreshDelete();

@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+const chanBuffer = 128
+const logEnding = '\n'
+
 func NewBuffer(cap int) []byte {
 	// prefix: 20 bytes, suffix '\n' 1 byte
 	buf := make([]byte, 0, 21+cap)

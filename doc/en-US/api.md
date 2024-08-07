@@ -28,12 +28,13 @@ curl 'http://localhost/ghfs/?sort=/T'
 
 # Get JSON data of specified path
 ```
-GET <path>?json[&sort=key]
+GET <path>[?sort=key]
+Accept: application/json
 ```
 
 Example:
 ```sh
-curl 'http://localhost/ghfs/?json'
+curl -H 'Accept: application/json' 'http://localhost/ghfs/'
 ```
 
 # Render page for downloading
@@ -103,7 +104,8 @@ curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file
 # Create directories in specific path
 Only work when "mkdir" is enabled.
 ```
-POST <path>?mkdir[&json]
+POST <path>?mkdir
+[Accept: application/json]
 
 name=<dir1path>&name=<dir2path>&...name=<dirNpath>
 ```
@@ -116,7 +118,8 @@ curl -X POST -d 'name=dir1&name=dir2&name=foo/bar/baz' 'http://localhost/tmp/?mk
 # Upload files to specific path
 Only work when "upload" is enabled.
 ```
-POST <path>?upload[&json]
+POST <path>?upload
+[Accept: application/json]
 ```
 - Must use `POST` method
 - Must use `multipart/form-data` encoding type
@@ -145,7 +148,8 @@ curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' 'http://
 Only work when "delete" is enabled.
 Directories will be deleted recursively.
 ```
-POST <path>?delete[&json]
+POST <path>?delete
+[Accept: application/json]
 
 name=<dir1>&name=<dir2>&...name=<dirN>
 ```

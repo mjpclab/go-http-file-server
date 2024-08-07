@@ -28,12 +28,13 @@ curl 'http://localhost/ghfs/?sort=/T'
 
 # 获取指定路径JSON形式的数据
 ```
-GET <path>?json[&sort=key]
+GET <path>[?sort=key]
+Accept: application/json
 ```
 
 举例：
 ```sh
-curl 'http://localhost/ghfs/?json'
+curl -H 'Accept: application/json' 'http://localhost/ghfs/'
 ```
 
 # 显示用于下载的页面
@@ -100,7 +101,8 @@ curl -X POST -d 'name=subdir1&name=subdir2/subdir21&name=file1&name=subdir3/file
 # 在指定路径下创建目录
 仅在“mkdir”选项启用时有效。
 ```
-POST <path>?mkdir[&json]
+POST <path>?mkdir
+[Accept: application/json]
 
 name=<dir1path>&name=<dir2path>&...name=<dirNpath>
 ```
@@ -113,7 +115,8 @@ curl -X POST -d 'name=dir1&name=dir2&name=foo/bar/baz' 'http://localhost/tmp/?mk
 # 上传文件到指定路径
 仅在“upload”选项启用时有效。
 ```
-POST <path>?upload[&json]
+POST <path>?upload
+[Accept: application/json]
 ```
 - 必须使用`POST`方法
 - 必须使用`multipart/form-data`编码
@@ -142,7 +145,8 @@ curl -F 'innerdirfile=@file1.txt;filename=subdir/childdir/filename.txt' 'http://
 仅在“delete”选项启用时有效。
 目录将被递归删除。
 ```
-POST <path>?delete[&json]
+POST <path>?delete
+[Accept: application/json]
 
 name=<dir1>&name=<dir2>&...name=<dirN>
 ```

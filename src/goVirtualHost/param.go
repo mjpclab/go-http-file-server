@@ -38,7 +38,7 @@ func (param *param) stacksEqual(other *param) bool {
 }
 
 func (param *param) validate() (errs []error) {
-	if param.useTLS && len(param.certs) == 0 {
+	if param.useTLS && len(param.certKeyPaths)+len(param.certs) == 0 {
 		err := wrapError(CertificateNotFound, fmt.Sprintf("certificate not found for TLS listens: %+v", param))
 		errs = append(errs, err)
 	}
