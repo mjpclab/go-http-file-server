@@ -376,16 +376,16 @@
 			lookupTimer = setTimeout(clearLookupContext, 850);
 		}
 
-		function lookup(key, isBackward) {
+		function lookup(container, key, isBackward) {
 			key = key.toLowerCase();
 
 			var currentLookupStartA;
 			if (key === lookupKey) {
 				// same as last key, lookup next for the same key as prefix
-				currentLookupStartA = itemList.querySelector(':focus');
+				currentLookupStartA = container.querySelector(':focus');
 			} else {
 				if (!lookupStartA) {
-					lookupStartA = itemList.querySelector(':focus');
+					lookupStartA = container.querySelector(':focus');
 				}
 				currentLookupStartA = lookupStartA;
 				if (lookupKey === undefined) {
@@ -397,7 +397,7 @@
 				lookupBuffer += key;
 			}
 			delayClearLookupContext();
-			return getMatchedFocusableSibling(itemList, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
+			return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
 		}
 
 		var canArrowMove;
@@ -457,7 +457,7 @@
 					}
 				}
 				if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
-					return lookup(e.key, e.shiftKey);
+					return lookup(itemList, e.key, e.shiftKey);
 				}
 			} else if (e.keyCode) {
 				if (canArrowMove(e)) {
@@ -489,7 +489,7 @@
 					}
 				}
 				if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.keyCode >= 32 && e.keyCode <= 126) {
-					return lookup(String.fromCharCode(e.keyCode), e.shiftKey);
+					return lookup(itemList, String.fromCharCode(e.keyCode), e.shiftKey);
 				}
 			}
 		}
