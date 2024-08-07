@@ -80,12 +80,17 @@ func (serveable *serveable) updateHttpServerTLSConfig() (errs []error) {
 		return
 	}
 
-	serveable.server.TLSConfig = &tls.Config{
-		GetCertificate: func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-			vh := serveable.lookupVhost(hello.ServerName)
-			return vh.lookupCertificate(hello)
-		},
+	certs := make([]tls.Certificate, 0, len(serveable.vhosts))
+	for _, vh := range serveable.vhosts {
+		for _, cert := range vh.certs {
+			certs = append(certs, *cert)
+		}
 	}
+
+	serveable.server.TLSConfig = &tls.Config{
+		Certificates: certs,
+	}
+	serveable.server.TLSConfig.BuildNameToCertificate()
 
 	return
 }
