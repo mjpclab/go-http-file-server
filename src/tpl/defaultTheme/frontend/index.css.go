@@ -426,10 +426,6 @@ html.dragging::before {
 	zoom: 1;
 }
 
-.item-list li:hover {
-	background: #f5f5f5;
-}
-
 .item-list a {
 	padding: 0.6em;
 }
@@ -497,10 +493,6 @@ html.dragging::before {
 
 .item-list .delete button:hover {
 	background: #fee;
-}
-
-.item-list .header:hover {
-	background: none;
 }
 
 .item-list .header .detail {
@@ -594,10 +586,6 @@ html.dragging::before {
 		border-color: #555;
 	}
 
-	.item-list li:hover {
-		background: #222;
-	}
-
 	.item-list .detail,
 	.item-list .delete {
 		border-bottom-color: #222;
@@ -611,11 +599,11 @@ html.dragging::before {
 		color: #666;
 	}
 
-	.item-list .delete {
+	.item-list .delete button {
 		color: #f99;
 	}
 
-	.item-list .delete:hover {
+	.item-list .delete button:hover {
 		background-color: #433;
 	}
 
