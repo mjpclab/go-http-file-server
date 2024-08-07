@@ -1,9 +1,6 @@
 package goVirtualHost
 
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"errors"
 	"net/http"
 	"strings"
 )
@@ -48,30 +45,4 @@ func (vh *vhost) loadCertificates() []error {
 	vh.loadedCerts = append(vh.loadedCerts, vh.certs...)
 
 	return errs
-}
-
-func (vh *vhost) lookupCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	certLen := len(vh.loadedCerts)
-	if certLen == 1 {
-		return vh.loadedCerts[0], nil
-	}
-
-	for _, cert := range vh.loadedCerts {
-		if cert.Leaf == nil {
-			cert.Leaf, _ = x509.ParseCertificate(cert.Certificate[0])
-			if cert.Leaf == nil {
-				continue
-			}
-		}
-		err := cert.Leaf.VerifyHostname(hello.ServerName)
-		if err == nil {
-			return cert, err
-		}
-	}
-
-	if certLen > 0 {
-		return vh.loadedCerts[0], nil
-	}
-
-	return nil, errors.New("cannot find proper certificate for " + hello.ServerName)
 }
