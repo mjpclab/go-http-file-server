@@ -37,15 +37,16 @@ func writeZip(zw *zip.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 	return nil
 }
 
-func (h *aliasHandler) zip(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+func (h *aliasHandler) zip(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) bool {
 	if !data.CanArchive {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		data.Status = http.StatusBadRequest
+		return false
 	}
 
 	selections, ok := h.normalizeArchiveSelections(r)
 	if !ok {
-		return
+		data.Status = http.StatusBadRequest
+		return false
 	}
 
 	zipWriter := zip.NewWriter(w)
@@ -66,4 +67,5 @@ func (h *aliasHandler) zip(w http.ResponseWriter, r *http.Request, session *sess
 			return writeZip(zipWriter, f, fInfo, relPath)
 		},
 	)
+	return true
 }
