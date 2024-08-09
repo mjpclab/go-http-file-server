@@ -118,23 +118,22 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		header(w, session.headers)
 
-		if data.IsMutate {
-			h.mutate(w, r, session, data)
+		if data.IsMutate && h.mutate(w, r, session, data) {
 			return
-		}
-
-		// archive
-		if len(r.URL.RawQuery) >= 3 {
+		} else if len(r.URL.RawQuery) >= 3 {
 			switch r.URL.RawQuery[:3] {
 			case "tar":
-				h.tar(w, r, session, data)
-				return
+				if h.tar(w, r, session, data) {
+					return
+				}
 			case "tgz":
-				h.tgz(w, r, session, data)
-				return
+				if h.tgz(w, r, session, data) {
+					return
+				}
 			case "zip":
-				h.zip(w, r, session, data)
-				return
+				if h.zip(w, r, session, data) {
+					return
+				}
 			}
 		}
 	}

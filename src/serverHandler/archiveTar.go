@@ -52,14 +52,15 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 	return nil
 }
 
-func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) (ok bool) {
 	if !data.CanArchive {
-		w.WriteHeader(http.StatusBadRequest)
+		data.Status = http.StatusBadRequest
 		return
 	}
 
 	selections, ok := h.normalizeArchiveSelections(r)
 	if !ok {
+		data.Status = http.StatusBadRequest
 		return
 	}
 
@@ -81,21 +82,24 @@ func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sess
 			return writeTar(tw, f, fInfo, relPath)
 		},
 	)
+	return
 }
 
-func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) (ok bool) {
 	if !data.CanArchive {
-		w.WriteHeader(http.StatusBadRequest)
+		data.Status = http.StatusBadRequest
 		return
 	}
 
 	selections, ok := h.normalizeArchiveSelections(r)
 	if !ok {
+		data.Status = http.StatusBadRequest
 		return
 	}
 
 	gzw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 	if h.logError(err) {
+		data.Status = http.StatusInternalServerError
 		return
 	}
 	defer func() {
@@ -121,4 +125,5 @@ func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sess
 			return writeTar(tw, f, fInfo, relPath)
 		},
 	)
+	return
 }
