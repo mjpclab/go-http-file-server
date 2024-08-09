@@ -1296,7 +1296,7 @@
 				if (status >= 200 && status <= 299) {
 					var elItem = form;
 					while (elItem && elItem.nodeName !== 'LI') {
-						elItem = elItem.parentNode;
+						elItem = elItem.parentElement;
 					}
 					if (!elItem) {
 						return;
