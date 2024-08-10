@@ -120,8 +120,8 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if data.IsMutate && h.mutate(w, r, session, data) {
 			return
-		} else if len(r.URL.RawQuery) >= 3 {
-			switch r.URL.RawQuery[:3] {
+		} else if data.IsArchive {
+			switch data.ArchiveFormat {
 			case "tar":
 				if h.tar(w, r, session, data) {
 					return

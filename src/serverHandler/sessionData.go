@@ -76,6 +76,8 @@ type responseData struct {
 	IsMkdir        bool
 	IsDelete       bool
 	IsMutate       bool
+	IsArchive      bool
+	ArchiveFormat  string
 
 	CanIndex     bool
 	CanUpload    bool
@@ -379,6 +381,23 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		isMutate = true
 	}
 
+	isArchive := false
+	archiveFormat := ""
+	if len(rawQuery) == 3 || (len(rawQuery) > 3 && rawQuery[3] == '&') {
+		rawQuery3 := rawQuery[:3]
+		switch rawQuery3 {
+		case "tar":
+			isArchive = true
+			archiveFormat = rawQuery3
+		case "tgz":
+			isArchive = true
+			archiveFormat = rawQuery3
+		case "zip":
+			isArchive = true
+			archiveFormat = rawQuery3
+		}
+	}
+
 	accepts := acceptHeaders.ParseAccepts(r.Header.Get("Accept"))
 	_, preferredContentType, _ := accepts.GetPreferredValue(acceptContentTypes)
 	wantJson := preferredContentType == contentTypeJson
@@ -407,8 +426,8 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		}
 	}
 
-	canIndex := authSuccess && h.index.match(vhostReqPath, fsPath, authUserId)
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex && redirectAction == noRedirect)
+	canIndex := authSuccess && redirectAction == noRedirect && h.index.match(vhostReqPath, fsPath, authUserId)
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -435,13 +454,13 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 	itemName := getItemName(item, r)
 
-	subItems, _readdirErr := readdir(file, item, canIndex && !isMutate && redirectAction == noRedirect && NeedResponseBody(r.Method))
+	subItems, _readdirErr := readdir(file, item, canIndex && !isMutate && !isArchive && NeedResponseBody(r.Method))
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, canIndex && redirectAction == noRedirect)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, canIndex)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -514,6 +533,8 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		IsMkdir:        isMkdir,
 		IsDelete:       isDelete,
 		IsMutate:       isMutate,
+		IsArchive:      isArchive,
+		ArchiveFormat:  archiveFormat,
 
 		CanIndex:     canIndex,
 		CanUpload:    canUpload,
