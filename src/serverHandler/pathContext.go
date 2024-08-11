@@ -10,7 +10,7 @@ type pathContext struct {
 func (ctx pathContext) QueryString() string {
 	// ?downloadfile&sort=x/&
 	buffer := make([]byte, 1, 22)
-	buffer[0] = '?'
+	buffer[0] = '?' // 1 byte
 
 	switch {
 	case ctx.downloadfile:
@@ -29,16 +29,16 @@ func (ctx pathContext) QueryString() string {
 	return string(buffer)
 }
 
+func (ctx pathContext) QueryStringOfSort(sort string) string {
+	copiedCtx := ctx
+	copiedCtx.sort = &sort
+	return copiedCtx.QueryString()
+}
+
 func (ctx pathContext) FileQueryString() string {
 	if ctx.downloadfile {
 		return "?downloadfile"
 	}
 
 	return ""
-}
-
-func (ctx pathContext) QueryStringOfSort(sort string) string {
-	copiedCtx := ctx
-	copiedCtx.sort = &sort
-	return copiedCtx.QueryString()
 }
