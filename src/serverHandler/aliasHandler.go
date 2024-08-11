@@ -118,19 +118,19 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		header(w, session.headers)
 
-		if data.IsMutate && h.mutate(w, r, session, data) {
+		if session.isMutate && h.mutate(w, r, session, data) {
 			return
-		} else if data.IsArchive {
-			switch data.ArchiveFormat {
-			case "tar":
+		} else if session.isArchive {
+			switch session.archiveFormat {
+			case tarFmt:
 				if h.tar(w, r, session, data) {
 					return
 				}
-			case "tgz":
+			case tgzFmt:
 				if h.tgz(w, r, session, data) {
 					return
 				}
-			case "zip":
+			case zipFmt:
 				if h.zip(w, r, session, data) {
 					return
 				}

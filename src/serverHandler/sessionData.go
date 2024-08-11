@@ -12,10 +12,20 @@ import (
 	"strings"
 )
 
+type redirectAction int
+
 const (
 	noRedirect redirectAction = iota
 	addSlashSuffix
 	removeSlashSuffix
+)
+
+type archiveFormat int
+
+const (
+	tarFmt archiveFormat = iota
+	tgzFmt
+	zipFmt
 )
 
 const contentTypeJson = "application/json"
@@ -41,8 +51,6 @@ type itemHtml struct {
 	DeleteUrl   string
 }
 
-type redirectAction int
-
 type sessionContext struct {
 	prefixReqPath string
 	vhostReqPath  string
@@ -62,6 +70,14 @@ type sessionContext struct {
 
 	wantJson bool
 
+	isUpload bool
+	isMkdir  bool
+	isDelete bool
+	isMutate bool
+
+	isArchive     bool
+	archiveFormat archiveFormat
+
 	file *os.File
 
 	errors []error
@@ -72,12 +88,6 @@ type responseData struct {
 
 	IsDownload     bool
 	IsDownloadFile bool
-	IsUpload       bool
-	IsMkdir        bool
-	IsDelete       bool
-	IsMutate       bool
-	IsArchive      bool
-	ArchiveFormat  string
 
 	CanIndex     bool
 	CanUpload    bool
@@ -382,19 +392,18 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	isArchive := false
-	archiveFormat := ""
+	var arFmt archiveFormat
 	if len(rawQuery) == 3 || (len(rawQuery) > 3 && rawQuery[3] == '&') {
-		rawQuery3 := rawQuery[:3]
-		switch rawQuery3 {
+		switch rawQuery[:3] {
 		case "tar":
 			isArchive = true
-			archiveFormat = rawQuery3
+			arFmt = tarFmt
 		case "tgz":
 			isArchive = true
-			archiveFormat = rawQuery3
+			arFmt = tgzFmt
 		case "zip":
 			isArchive = true
-			archiveFormat = rawQuery3
+			arFmt = zipFmt
 		}
 	}
 
@@ -494,13 +503,6 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	canCors := allowAccess && authSuccess && h.cors.match(vhostReqPath, fsPath, authUserId)
 	loginAvail := len(authUserName) == 0 && h.users.Len() > 0
 
-	context := pathContext{
-		download:     isDownload,
-		downloadfile: isDownloadFile,
-		sort:         rawSortBy,
-		defaultSort:  h.defaultSort,
-	}
-
 	session = &sessionContext{
 		prefixReqPath: prefixReqPath,
 		vhostReqPath:  vhostReqPath,
@@ -520,6 +522,14 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 		wantJson: wantJson,
 
+		isUpload: isUpload,
+		isMkdir:  isMkdir,
+		isDelete: isDelete,
+		isMutate: isMutate,
+
+		isArchive:     isArchive,
+		archiveFormat: arFmt,
+
 		file: file,
 
 		errors: errs,
@@ -529,12 +539,6 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 		IsDownload:     isDownload,
 		IsDownloadFile: isDownloadFile,
-		IsUpload:       isUpload,
-		IsMkdir:        isMkdir,
-		IsDelete:       isDelete,
-		IsMutate:       isMutate,
-		IsArchive:      isArchive,
-		ArchiveFormat:  archiveFormat,
 
 		CanIndex:     canIndex,
 		CanUpload:    canUpload,
@@ -559,7 +563,12 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		SubItemsHtml:  nil,
 		SubItemPrefix: subItemPrefix,
 		SortState:     sortState,
-		Context:       context,
+		Context: pathContext{
+			download:     isDownload,
+			downloadfile: isDownloadFile,
+			sort:         rawSortBy,
+			defaultSort:  h.defaultSort,
+		},
 	}
 	return
 }
