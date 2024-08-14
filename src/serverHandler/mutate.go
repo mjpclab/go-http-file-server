@@ -4,34 +4,32 @@ import (
 	"net/http"
 )
 
-func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) (ok bool) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		data.Status = http.StatusMethodNotAllowed
 		return
 	}
 
-	success := false
-
 	switch {
-	case data.IsUpload:
+	case session.isUpload:
 		if data.CanUpload {
-			success = h.saveUploadFiles(data.AuthUserName, h.fs+session.aliasReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
+			ok = h.saveUploadFiles(data.AuthUserName, h.fs+session.aliasReqPath, data.CanMkdir, data.CanDelete, data.AliasSubItems, r)
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
+			data.Status = http.StatusBadRequest
 			return
 		}
-	case data.IsMkdir:
+	case session.isMkdir:
 		if data.CanMkdir && !h.logError(r.ParseForm()) {
-			success = h.mkdirs(data.AuthUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
+			ok = h.mkdirs(data.AuthUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
+			data.Status = http.StatusBadRequest
 			return
 		}
-	case data.IsDelete:
+	case session.isDelete:
 		if data.CanDelete && !h.logError(r.ParseForm()) {
-			success = h.deleteItems(data.AuthUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
+			ok = h.deleteItems(data.AuthUserName, h.fs+session.aliasReqPath, r.Form["name"], data.AliasSubItems, r)
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
+			data.Status = http.StatusBadRequest
 			return
 		}
 	}
@@ -39,18 +37,19 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *s
 	if session.wantJson {
 		header := w.Header()
 		header.Set("Content-Type", "application/json; charset=utf-8")
-		header.Set("Cache-Control", "public, max-age=0")
 
-		if success {
+		if ok {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"success":true}`))
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(`{"success":false}`))
 		}
-	} else {
-		reqPath := session.prefixReqPath
+		return true
+	}
 
+	if ok {
+		reqPath := session.prefixReqPath
 		ctxQsList := r.Form["contextquerystring"]
 		ctxQsListLen := len(ctxQsList)
 		if ctxQsListLen > 0 {
@@ -59,11 +58,10 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *s
 				reqPath += ctxQs
 			}
 		}
-
-		if success {
-			http.Redirect(w, r, reqPath, http.StatusFound)
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
+		http.Redirect(w, r, reqPath, http.StatusFound)
+		return
 	}
+
+	data.Status = http.StatusInternalServerError
+	return
 }

@@ -52,15 +52,16 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 	return nil
 }
 
-func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) bool {
 	if !data.CanArchive {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		data.Status = http.StatusBadRequest
+		return false
 	}
 
 	selections, ok := h.normalizeArchiveSelections(r)
 	if !ok {
-		return
+		data.Status = http.StatusBadRequest
+		return false
 	}
 
 	tw := tar.NewWriter(w)
@@ -81,22 +82,25 @@ func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sess
 			return writeTar(tw, f, fInfo, relPath)
 		},
 	)
+	return true
 }
 
-func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) {
+func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) bool {
 	if !data.CanArchive {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		data.Status = http.StatusBadRequest
+		return false
 	}
 
 	selections, ok := h.normalizeArchiveSelections(r)
 	if !ok {
-		return
+		data.Status = http.StatusBadRequest
+		return false
 	}
 
 	gzw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 	if h.logError(err) {
-		return
+		data.Status = http.StatusInternalServerError
+		return false
 	}
 	defer func() {
 		err := gzw.Close()
@@ -121,4 +125,5 @@ func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sess
 			return writeTar(tw, f, fInfo, relPath)
 		},
 	)
+	return true
 }
