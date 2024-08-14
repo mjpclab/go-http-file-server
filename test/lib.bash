@@ -58,5 +58,5 @@ curl_upload_content() {
 	local name="$2"
 	local value="$3"
 	local filename="$4"
-	curl -s -k -F "$name=$value;filename=$filename" "$url"
+	curl -s -k -F "$name=$value;filename=$filename" "$url" > /dev/null
 }

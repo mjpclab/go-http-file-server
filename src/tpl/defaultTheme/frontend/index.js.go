@@ -236,9 +236,19 @@ const DefaultJs = `
 
 	function keepFocusOnBackwardForward() {
 		if (window.onpageshow === undefined || !document.querySelector) return;
-		document.body.querySelector('.item-list').addEventListener('focusin', function (e) {
-			lastFocused = e.target;
-		});
+
+		function onFocus(e) {
+			var link = e.target;
+			while (link && !(link instanceof HTMLAnchorElement)) {
+				link = link.parentElement;
+			}
+			if (!link || link === lastFocused) return;
+			lastFocused = link;
+		}
+
+		var itemList = document.body.querySelector('.item-list');
+		itemList.addEventListener('focusin', onFocus);
+		itemList.addEventListener('click', onFocus);
 		window.addEventListener('pageshow', function () {
 			if (lastFocused && lastFocused !== document.activeElement) {
 				lastFocused.focus();
@@ -1299,7 +1309,7 @@ const DefaultJs = `
 				if (status >= 200 && status <= 299) {
 					var elItem = form;
 					while (elItem && elItem.nodeName !== 'LI') {
-						elItem = elItem.parentNode;
+						elItem = elItem.parentElement;
 					}
 					if (!elItem) {
 						return;

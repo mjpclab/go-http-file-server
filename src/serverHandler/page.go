@@ -14,11 +14,16 @@ const typeFile = template.HTML("file")
 
 func updateSubItemsHtml(data *responseData) {
 	length := len(data.SubItems)
+	if length == 0 {
+		return
+	}
 	data.SubItemsHtml = make([]itemHtml, length)
+
+	dirSuffix := "/" + data.Context.QueryString()
+	fileSuffix := data.Context.FileQueryString()
 
 	for i, info := range data.SubItems {
 		name := info.Name()
-		urlEscapedName := tplUtil.FormatFileUrl(name)
 
 		var displayName template.HTML
 		var typ template.HTML
@@ -28,11 +33,11 @@ func updateSubItemsHtml(data *responseData) {
 		if info.IsDir() {
 			displayName = tplUtil.FormatFilename(name) + "/"
 			typ = typeDir
-			url = data.SubItemPrefix + urlEscapedName + "/" + data.Context.QueryString()
+			url = data.SubItemPrefix + tplUtil.FormatFileUrl(name) + dirSuffix
 		} else {
 			displayName = tplUtil.FormatFilename(name)
 			typ = typeFile
-			url = data.SubItemPrefix + urlEscapedName + data.Context.FileQueryString()
+			url = data.SubItemPrefix + tplUtil.FormatFileUrl(name) + fileSuffix
 			readableSize = tplUtil.FormatSize(info.Size())
 		}
 
