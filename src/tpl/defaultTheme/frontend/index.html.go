@@ -131,15 +131,17 @@ const DefaultTplStr = `
 	{{end}}
 </ul>
 
+{{if ne .Status 200}}<div class="error">{{.Status}}
 {{if eq .Status 401}}
-<div class="error">{{.Trans.Error401}}</div>
+ {{.Trans.Error401}}
 {{else if eq .Status 403}}
-<div class="error">{{.Trans.Error403}}</div>
+ {{.Trans.Error403}}
 {{else if eq .Status 404}}
-<div class="error">{{.Trans.Error404}}</div>
-{{else if eq .Status 500}}
-<div class="error">{{.Trans.Error500}}</div>
+ {{.Trans.Error404}}
+{{else}}
+ {{.Trans.ErrorStatus}}</div>
 {{end}}
+</div>{{end}}
 
 <script type="text/javascript" src="{{.RootRelPath}}?asset=index.js" defer="defer" async="async"></script>
 </body>
