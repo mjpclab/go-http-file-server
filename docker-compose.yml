@@ -1,0 +1,8 @@
+version: "3"
+services:
+  ghfs:
+    build: .
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./static:/app/static:ro
