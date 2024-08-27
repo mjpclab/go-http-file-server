@@ -8,6 +8,50 @@ import (
 
 const fileMode = 0660
 
+func openLogFile(fsPath string) (*os.File, error) {
+	return os.OpenFile(fsPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, fileMode)
+}
+
+func matchOrOpenFile(fsPath string, match func(info os.FileInfo) bool) (file *os.File, info os.FileInfo, err error) {
+	info, err = os.Stat(fsPath)
+
+	if os.IsNotExist(err) {
+		file, err = openLogFile(fsPath)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		info, err = file.Stat()
+		if err != nil {
+			file.Close()
+			return nil, nil, err
+		}
+
+		return
+	}
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if info.IsDir() {
+		err = errors.New("should not be a directory")
+		return nil, nil, err
+	}
+
+	if match(info) {
+		return nil, nil, nil
+	}
+
+	// use existing info, get file
+	file, err = openLogFile(fsPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return
+}
+
 type FileMan struct {
 	wg    *sync.WaitGroup
 	dests []*fileDest
@@ -17,9 +61,16 @@ func (fMan *FileMan) ReOpen() []error {
 	var errs []error
 
 	for _, dest := range fMan.dests {
-		err := dest.reopen()
+		file, info, err := matchOrOpenFile(dest.fsPath, func(info os.FileInfo) bool {
+			return os.SameFile(info, dest.info)
+		})
 		if err != nil {
 			errs = append(errs, err)
+			continue
+		}
+		if file != nil && info != nil {
+			dest.file = file
+			dest.info = info
 		}
 	}
 
@@ -43,7 +94,7 @@ func (fMan *FileMan) getWritingCh(fsPath string) (chan<- []byte, error) {
 	var err error
 
 	var ch chan<- []byte
-	file, info, err = getFileInfoIfNotMatch(fsPath, func(info os.FileInfo) bool {
+	file, info, err = matchOrOpenFile(fsPath, func(info os.FileInfo) bool {
 		for _, dest := range fMan.dests {
 			if os.SameFile(info, dest.info) {
 				ch = dest.ch
