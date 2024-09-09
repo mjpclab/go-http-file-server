@@ -35,9 +35,11 @@ Start server on port 8080, root directory is /usr/share/doc:
 ghfs -l 8080 -r /usr/share/doc
 ```
 
-Start server on default port, root directory is /tmp, and allow upload files to file system directory /tmp/data:
+Start server on default port, root directory is /var/tmp, and allow upload files into ./data:
 ```sh
-ghfs -r /tmp -u /data
+ghfs -r /var/tmp -u /data
+# or
+ghfs -r /var/tmp --upload-dir /var/tmp/data
 ```
 
 Share files from /etc, but also mount /usr/share/doc to url path /doc
@@ -67,6 +69,11 @@ Http Basic Auth:
 - username: user2, password: pass2
 ```sh
 ghfs --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
+```
+
+Share /data, grant upload permission on /data/upload to user "admin" and "root", others are read only:
+```sh
+ghfs -r /data --user admin:adminpass root:rootpass user1:user1pass user2:user2pass --upload-user :/upload:admin:root
 ```
 
 Start 2 virtual hosts:
