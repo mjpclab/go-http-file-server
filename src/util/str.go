@@ -1,6 +1,7 @@
 package util
 
 import (
+	"strings"
 	"unicode"
 	"unicode/utf8"
 )
@@ -27,6 +28,12 @@ eachValue:
 	}
 
 	return inputs[:endIndex]
+}
+
+func InPlaceTrim(inputs []string) {
+	for i := range inputs {
+		inputs[i] = strings.TrimSpace(inputs[i])
+	}
 }
 
 func EscapeControllingRune(str string) []byte {
