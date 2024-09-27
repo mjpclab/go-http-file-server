@@ -10,6 +10,13 @@ type WriterMan struct {
 	dests []*writerDest
 }
 
+func (wMan *WriterMan) Close() {
+	for _, dest := range wMan.dests {
+		dest.close()
+	}
+	wMan.wg.Wait()
+}
+
 func (wMan *WriterMan) getWritingCh(w io.Writer) (chan<- []byte, error) {
 	for _, dest := range wMan.dests {
 		if w == dest.w {

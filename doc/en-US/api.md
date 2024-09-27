@@ -37,14 +37,12 @@ Example:
 curl -H 'Accept: application/json' 'http://localhost/ghfs/'
 ```
 
-# Render page for downloading
+# Render page in simple mode
 ```
-GET <path>?download[&sort=key]
-GET <path>?downloadfile[&sort=key]
+GET <path>?simple[&sort=key]
 ```
-Similar to regular page rendering, but hide path list,
-sortable list header,
-and parent directory link.
+Similar to regular page rendering, but
+hide path list, sortable list header, and parent directory link.
 It's convenient for tools like "wget" to download files recursively.
 
 Example:
@@ -52,14 +50,18 @@ Example:
 wget --recursive -nc -nH -np 'http://localhost/dir/?download'
 ```
 
-Option `downloadfile` makes file links downloadable instead of displaying content.
+# Add download param to file
+```
+GET <path>?download[&sort=key]
+```
+Add download parameter to file links in the page, which
+make them downloadable instead of displaying content.
 
 # Download a file
 Notify user agent download a file rather than displaying its content,
 by outputting `Content-Disposition` header.
 ```
 GET <path/to/file>?download
-GET <path/to/file>?downloadfile
 ```
 
 Example:

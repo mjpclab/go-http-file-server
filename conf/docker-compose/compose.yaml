@@ -1,0 +1,12 @@
+services:
+  ghfs:
+    build:
+      context: ../../
+      dockerfile: ./build/build-docker-image-dockerfile
+      args:
+        https_proxy:
+    volumes:
+      - ../../:/var/ghfs
+    ports:
+      - "8080:8080"
+      - "8443:8443"

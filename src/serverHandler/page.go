@@ -20,7 +20,7 @@ func updateSubItemsHtml(data *responseData) {
 	data.SubItemsHtml = make([]itemHtml, length)
 
 	dirSuffix := "/" + data.Context.QueryString()
-	fileSuffix := data.Context.FileQueryString()
+	fileSuffix := data.Context.SubFileQueryString()
 
 	for i, info := range data.SubItems {
 		name := info.Name()

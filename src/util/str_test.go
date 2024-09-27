@@ -22,6 +22,15 @@ func TestInPlaceDedup(t *testing.T) {
 	}
 }
 
+func TestInPlaceTrim(t *testing.T) {
+	inputs := []string{"a", "b", "  c", "d  ", "\te f \n"}
+	InPlaceTrim(inputs)
+
+	if !reflect.DeepEqual(inputs, []string{"a", "b", "c", "d", "e f"}) {
+		t.Error(inputs)
+	}
+}
+
 func TestReplaceControllingRune(t *testing.T) {
 	var str string
 	buf := make([]byte, 0, 64)

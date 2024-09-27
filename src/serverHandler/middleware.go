@@ -25,14 +25,8 @@ func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.Res
 		AuthUserName: data.AuthUserName,
 		AuthSuccess:  session.authSuccess,
 
-		CanUpload:  &data.CanUpload,
-		CanMkdir:   &data.CanMkdir,
-		CanDelete:  &data.CanDelete,
-		CanArchive: &data.CanArchive,
-
 		Status: &data.Status,
 
-		Users:  h.users,
 		Logger: h.logger,
 	}
 
