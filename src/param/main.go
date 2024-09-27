@@ -72,7 +72,7 @@ type Param struct {
 	RestrictAccessDirs [][]string
 
 	GlobalHeaders [][2]string // [][name, value]
-	// [][path, (name, value)...]
+	// [][path, name1, value1, ..., nameN, valueN]
 	HeadersUrls [][]string
 	HeadersDirs [][]string
 
@@ -210,10 +210,15 @@ func (param *Param) Normalize() (errs []error) {
 	errs = append(errs, es...)
 
 	// headers
+	TrimKVs(param.GlobalHeaders)
+
 	param.HeadersUrls, es = normalizeAllPathValues(param.HeadersUrls, false, util.NormalizeUrlPath, normalizeHeaders)
 	errs = append(errs, es...)
+	TrimValuesAfterKey(param.HeadersUrls)
+
 	param.HeadersDirs, es = normalizeAllPathValues(param.HeadersDirs, false, filepath.Abs, normalizeHeaders)
 	errs = append(errs, es...)
+	TrimValuesAfterKey(param.HeadersDirs)
 
 	// hsts & https
 	if param.Hsts {

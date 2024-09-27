@@ -135,6 +135,20 @@ func NormalizeFsPaths(inputs []string) []string {
 	return outputs
 }
 
+// TrimValuesAfterKey
+// only trim values in [][key, value, value, ...]
+func TrimValuesAfterKey(inputs [][]string) {
+	for i := range inputs {
+		util.InPlaceTrim(inputs[i][1:])
+	}
+}
+
+func TrimKVs(inputs [][2]string) {
+	for i := range inputs {
+		util.InPlaceTrim(inputs[i][:])
+	}
+}
+
 func NormalizeRedirectCode(code int) int {
 	if code <= 300 || code > 399 {
 		return 301

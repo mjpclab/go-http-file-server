@@ -5,8 +5,8 @@ source "$root"/lib.bash
 "$ghfs" -l 3003 -r "$fs"/vhost1 -a :shortcut/vhost2:"$fs"/vhost2/ \
 	--global-header foo:bar \
 	--global-header 'set-cookie:name1=value1' \
-	--global-header 'set-cookie:name2=value2' \
-	--header '|hello|X-Hello-Name|X-Hello-Value' \
+	--global-header '  set-cookie  : 		name2=value2 		' \
+	--header '|hello|  X-Hello-Name  |  X-Hello-Value  ' \
 	--header '|/shortcut|X-Sc-Name|X-Sc-Value' \
 	--header-dir ":$fs/vhost1/world:X-World-Name:X-World-Value" \
 	--header-dir ":$fs/vhost2:X-Vh2-Name:X-Vh2-Value" \

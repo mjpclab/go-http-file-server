@@ -1,20 +1,22 @@
 package serverHandler
 
 type pathContext struct {
-	download     bool
-	downloadfile bool
-	sort         *string // keep different for param is not specified or is empty
-	defaultSort  string
+	simple      bool
+	download    bool
+	sort        *string // keep different for param is not specified or is empty
+	defaultSort string
 }
 
 func (ctx pathContext) QueryString() string {
-	// ?downloadfile&sort=x/&
-	buffer := make([]byte, 1, 22)
+	// ?simpledownload&sort=x/&
+	buffer := make([]byte, 1, 24)
 	buffer[0] = '?' // 1 byte
 
 	switch {
-	case ctx.downloadfile:
-		buffer = append(buffer, []byte("downloadfile&")...) // 13 bytes
+	case ctx.simple && ctx.download:
+		buffer = append(buffer, []byte("simpledownload&")...) // 15 bytes
+	case ctx.simple:
+		buffer = append(buffer, []byte("simple&")...) // 7 bytes
 	case ctx.download:
 		buffer = append(buffer, []byte("download&")...) // 9 bytes
 	}
@@ -35,9 +37,9 @@ func (ctx pathContext) QueryStringOfSort(sort string) string {
 	return copiedCtx.QueryString()
 }
 
-func (ctx pathContext) FileQueryString() string {
-	if ctx.downloadfile {
-		return "?downloadfile"
+func (ctx pathContext) SubFileQueryString() string {
+	if ctx.download {
+		return "?download"
 	}
 
 	return ""

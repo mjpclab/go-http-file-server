@@ -43,9 +43,11 @@ ghfs -l 8080
 ghfs -l 8080 -r /usr/share/doc
 ```
 
-在默认端口启动服务器，根目录为/tmp，并允许上传文件到/tmp/data：
+在默认端口启动服务器，根目录为/var/tmp，并允许上传文件到./data：
 ```sh
-ghfs -r /tmp -u /data
+ghfs -r /var/tmp -u /data
+# 或
+ghfs -r /var/tmp --upload-dir /var/tmp/data
 ```
 
 共享/etc下的文件，同时把/usr/share/doc挂载到URL路径/doc下：
@@ -74,6 +76,11 @@ http基本验证：
 - 用户名：user2，密码：pass2
 ```sh
 ghfs --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
+```
+
+共享/data，授予用户“admin”和“root”在/data/upload的上传权限，其他用户只读：
+```sh
+ghfs -r /data --user admin:adminpass root:rootpass user1:user1pass user2:user2pass --upload-user :/upload:admin:root
 ```
 
 启动2台虚拟主机：

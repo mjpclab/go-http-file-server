@@ -7,7 +7,6 @@ import (
 func TestPathContext(t *testing.T) {
 	var result string
 	var sort string
-	var download bool
 
 	result = (&pathContext{}).QueryString()
 	if result != "" {
@@ -38,29 +37,47 @@ func TestPathContext(t *testing.T) {
 		t.Error(result)
 	}
 
-	download = false
-	result = (&pathContext{download: download}).QueryString()
+	result = (&pathContext{simple: false}).QueryString()
 	if result != "" {
 		t.Error(result)
 	}
 
-	download = false
-	sort = "/n"
-	result = (&pathContext{download: download, sort: &sort}).QueryString()
-	if result != "?sort=/n" {
+	result = (&pathContext{simple: true}).QueryString()
+	if result != "?simple" {
 		t.Error(result)
 	}
 
-	download = true
-	result = (&pathContext{download: download}).QueryString()
+	result = (&pathContext{download: true}).QueryString()
 	if result != "?download" {
 		t.Error(result)
 	}
 
-	download = true
+	result = (&pathContext{simple: true, download: true}).QueryString()
+	if result != "?simpledownload" {
+		t.Error(result)
+	}
+
 	sort = "/n"
-	result = (&pathContext{download: download, sort: &sort}).QueryString()
+	result = (&pathContext{simple: false, sort: &sort}).QueryString()
+	if result != "?sort=/n" {
+		t.Error(result)
+	}
+
+	sort = "/n"
+	result = (&pathContext{simple: true, sort: &sort}).QueryString()
+	if result != "?simple&sort=/n" {
+		t.Error(result)
+	}
+
+	sort = "/n"
+	result = (&pathContext{download: true, sort: &sort}).QueryString()
 	if result != "?download&sort=/n" {
+		t.Error(result)
+	}
+
+	sort = "/n"
+	result = (&pathContext{simple: true, download: true, sort: &sort}).QueryString()
+	if result != "?simpledownload&sort=/n" {
 		t.Error(result)
 	}
 }
