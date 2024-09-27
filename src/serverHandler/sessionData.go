@@ -86,8 +86,8 @@ type sessionContext struct {
 type responseData struct {
 	AuthUserName string
 
-	IsDownload     bool
-	IsDownloadFile bool
+	IsSimple   bool
+	IsDownload bool
 
 	CanIndex     bool
 	CanUpload    bool
@@ -368,16 +368,18 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 	headers := h.getHeaders(vhostReqPath, fsPath, authSuccess)
 
+	isSimple := false
 	isDownload := false
-	isDownloadFile := false
 	isUpload := false
 	isMkdir := false
 	isDelete := false
 	isMutate := false
 	switch {
-	case strings.HasPrefix(rawQuery, "downloadfile"):
+	case strings.HasPrefix(rawQuery, "simpledownload"):
+		isSimple = true
 		isDownload = true
-		isDownloadFile = true
+	case strings.HasPrefix(rawQuery, "simple"):
+		isSimple = true
 	case strings.HasPrefix(rawQuery, "download"):
 		isDownload = true
 	case strings.HasPrefix(rawQuery, "upload") && r.Method == http.MethodPost:
@@ -537,8 +539,8 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	data = &responseData{
 		AuthUserName: authUserName,
 
-		IsDownload:     isDownload,
-		IsDownloadFile: isDownloadFile,
+		IsSimple:   isSimple,
+		IsDownload: isDownload,
 
 		CanIndex:     canIndex,
 		CanUpload:    canUpload,
@@ -564,10 +566,10 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		SubItemPrefix: subItemPrefix,
 		SortState:     sortState,
 		Context: pathContext{
-			download:     isDownload,
-			downloadfile: isDownloadFile,
-			sort:         rawSortBy,
-			defaultSort:  h.defaultSort,
+			simple:      isSimple,
+			download:    isDownload,
+			sort:        rawSortBy,
+			defaultSort: h.defaultSort,
 		},
 	}
 	return
