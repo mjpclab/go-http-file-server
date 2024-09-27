@@ -15,9 +15,9 @@ const DefaultTplStr = `
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 {{$contextQueryString := .Context.QueryString}}
-{{$isDownload := .IsDownload}}
+{{$isSimple := .IsSimple}}
 {{$SubItemPrefix := .SubItemPrefix}}
-{{if not $isDownload}}
+{{if not $isSimple}}
 <ol class="path-list" translate="no">
 	{{range .Paths}}
 	<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
@@ -101,7 +101,7 @@ const DefaultTplStr = `
 </div>
 {{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
-	{{if not $isDownload}}
+	{{if not $isSimple}}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
 		<span class="detail">
 		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">{{.Trans.ListDirLabel}}{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
@@ -126,7 +126,7 @@ const DefaultTplStr = `
 			<span class="field size">{{.DisplaySize}}</span>
 			<span class="field time">{{.DisplayTime}}</span>
 		</a>
-		{{if and (not $isDownload) .DeleteUrl}}<form class="delete" method="post" action="{{$SubItemPrefix}}?delete" onsubmit="return confirmDelete(this)"><input type="hidden" name="name" value="{{.DeleteUrl}}"/><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/><button type="submit">x</button></form>{{end}}
+		{{if and (not $isSimple) .DeleteUrl}}<form class="delete" method="post" action="{{$SubItemPrefix}}?delete" onsubmit="return confirmDelete(this)"><input type="hidden" name="name" value="{{.DeleteUrl}}"/><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/><button type="submit">x</button></form>{{end}}
 	</li>
 	{{end}}
 </ul>
