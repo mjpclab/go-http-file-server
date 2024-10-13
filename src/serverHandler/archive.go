@@ -176,7 +176,7 @@ func writeArchiveHeader(w http.ResponseWriter, contentType, filename string) {
 
 	header := w.Header()
 	header.Set("Content-Type", contentType)
-	header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+filename)
+	header.Set("Content-Disposition", "attachment; filename="+filename+"; filename*=UTF-8''"+filename)
 	header.Set("Cache-Control", "public, max-age=0")
 	w.WriteHeader(http.StatusOK)
 }

@@ -10,7 +10,8 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, session *
 	header.Set("Vary", session.vary)
 	header.Set("X-Content-Type-Options", "nosniff")
 	if data.IsDownload {
-		header.Set("Content-Disposition", "attachment; filename*=UTF-8''"+url.PathEscape(data.ItemName))
+		filename := url.PathEscape(data.ItemName)
+		header.Set("Content-Disposition", "attachment; filename="+filename+"; filename*=UTF-8''"+filename)
 	}
 
 	item := data.Item
