@@ -14,10 +14,6 @@ const contentEncDeflate = "deflate"
 var encodings = []string{contentEncGzip, contentEncDeflate}
 
 func GetWriter(w http.ResponseWriter, r *http.Request) (wc io.WriteCloser, ok bool) {
-	if len(r.Header.Get("Range")) > 0 {
-		return nil, false
-	}
-
 	header := w.Header()
 	if len(header.Get("Content-Encoding")) > 0 {
 		return nil, false
