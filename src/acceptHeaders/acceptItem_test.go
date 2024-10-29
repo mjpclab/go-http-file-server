@@ -159,3 +159,44 @@ func TestParseAcceptItem(t *testing.T) {
 		t.Error(output.quality)
 	}
 }
+
+func TestAcceptItemMatch(t *testing.T) {
+	var item acceptItem
+
+	item = acceptItem{"text/html", 1000, 0}
+	if !item.match("text/html") {
+		t.Error()
+	}
+	if item.match("text/plain") {
+		t.Error()
+	}
+
+	item = acceptItem{"text/*", 1000, 1}
+	if !item.match("text/*") {
+		t.Error()
+	}
+	if !item.match("text/html") {
+		t.Error()
+	}
+	if !item.match("text/plain") {
+		t.Error()
+	}
+	if item.match("image/png") {
+		t.Error()
+	}
+
+	item = acceptItem{"*/*", 1000, 2}
+	if !item.match("text/*") {
+		t.Error()
+	}
+	if !item.match("text/html") {
+		t.Error()
+	}
+	if !item.match("text/plain") {
+		t.Error()
+	}
+	if !item.match("image/png") {
+		t.Error()
+	}
+
+}

@@ -31,11 +31,12 @@ const (
 const contentTypeJson = "application/json"
 
 var acceptContentTypes = []string{
-	contentTypeJson,
 	"text/html",
 	"application/xhtml+xml",
 	"application/xml",
+	contentTypeJson,
 }
+var acceptJsonIndex = len(acceptContentTypes) - 1
 
 type pathEntry struct {
 	Name string `json:"name"`
@@ -410,8 +411,8 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	accepts := acceptHeaders.ParseAccepts(r.Header.Get("Accept"))
-	_, preferredContentType, _ := accepts.GetPreferredValue(acceptContentTypes)
-	wantJson := preferredContentType == contentTypeJson
+	acceptIndex, _, _ := accepts.GetPreferredValue(acceptContentTypes)
+	wantJson := acceptIndex == acceptJsonIndex
 
 	isRoot := vhostReqPath == "/"
 
