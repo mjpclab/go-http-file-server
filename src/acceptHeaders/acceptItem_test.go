@@ -51,7 +51,7 @@ func TestParseAcceptItem(t *testing.T) {
 		t.Error(output.quality)
 	}
 
-	input = "en-US;q=0.97"
+	input = "en-US; q=0.97"
 	output = parseAcceptItem(input)
 	if output.value != "en-US" {
 		t.Error(output.value)

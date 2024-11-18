@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseAccept(t *testing.T) {
-	accept := "text/html, */*;q=0.6, text/plain;q=0.9, application/json;q=0.7, image/*;q=0.8, image/png;q=0.8"
+	accept := "text/html, */*;q=0.6, text/plain; q=0.9, application/json;q=0.7, image/*;q=0.8, image/png;q=0.8"
 	accepts := ParseAccepts(accept)
 	if len(accepts) != 6 {
 		t.Error(len(accepts))
