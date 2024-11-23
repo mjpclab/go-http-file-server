@@ -127,11 +127,12 @@ func TestParseAcceptEncoding(t *testing.T) {
 }
 
 func TestParseAcceptEncoding2(t *testing.T) {
-	acceptEncoding := "gzip;v=b3;q=0.9, deflate"
+	acceptEncoding := "gzip;v=b3;q=0.9, deflate, br;q=0.0, zstd;  q=0, "
 	accepts := ParseAccepts(acceptEncoding)
 
 	var index int
 	var preferred string
+	var ok bool
 	index, preferred, _ = accepts.GetPreferredValue([]string{"gzip"})
 	if index != 0 {
 		t.Error(index)
@@ -185,6 +186,25 @@ func TestParseAcceptEncoding2(t *testing.T) {
 		t.Error(index)
 	}
 	if preferred != "deflate" {
+		t.Error(preferred)
+	}
+
+	index, preferred, ok = accepts.GetPreferredValue([]string{"zstd", "br"})
+	if index != -1 {
+		t.Error(index)
+	}
+	if ok {
+		t.Error(preferred)
+	}
+
+	index, preferred, ok = accepts.GetPreferredValue([]string{"zstd", "br", "gzip"})
+	if index != 2 {
+		t.Error(index)
+	}
+	if preferred != "gzip" {
+		t.Error(preferred)
+	}
+	if !ok {
 		t.Error(preferred)
 	}
 }
