@@ -45,7 +45,7 @@ func logRequest(logger *serverLog.Logger, r *http.Request, statusCode int) {
 	buf = append(buf, []byte(r.Host)...)
 	if unescapedLen > 0 {
 		buf = append(buf, unescapedUri...)
-		buf = append(buf, ' ', '<', '=', '>', ' ') // 5 bytes
+		buf = append(buf, []byte(" <=> ")...) // 5 bytes
 	}
 	buf = append(buf, uri...)
 
