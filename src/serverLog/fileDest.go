@@ -12,7 +12,7 @@ type fileDest struct {
 }
 
 func newFileDest(fsPath string, file *os.File, info os.FileInfo) *fileDest {
-	ch := make(chan []byte, chanBuffer)
+	ch := make(chan []byte, logQueueSize)
 
 	dest := &fileDest{
 		fsPath: fsPath,

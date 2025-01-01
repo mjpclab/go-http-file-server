@@ -11,7 +11,7 @@ type writerDest struct {
 }
 
 func newWriterDest(w io.Writer) *writerDest {
-	ch := make(chan []byte, chanBuffer)
+	ch := make(chan []byte, logQueueSize)
 
 	dest := &writerDest{
 		w:  w,
