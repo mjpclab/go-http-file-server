@@ -16,7 +16,7 @@ type loggableResponseWriter struct {
 
 func (w loggableResponseWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
-	go logRequest(w.logger, w.request, statusCode)
+	logRequest(w.logger, w.request, statusCode)
 }
 
 func logRequest(logger *serverLog.Logger, r *http.Request, statusCode int) {
@@ -70,7 +70,7 @@ func (h *aliasHandler) logMutate(username, action, detail string, r *http.Reques
 	buf = append(buf, ':', ' ')          // 2 bytes
 	buf = append(buf, []byte(detail)...)
 
-	go h.logger.LogAccess(buf)
+	h.logger.LogAccess(buf)
 }
 
 func (h *aliasHandler) logUpload(username, filename, fsPath string, r *http.Request) {
@@ -91,7 +91,7 @@ func (h *aliasHandler) logUpload(username, filename, fsPath string, r *http.Requ
 	buf = append(buf, []byte(" -> ")...) // 4 bytes
 	buf = append(buf, []byte(fsPath)...)
 
-	go h.logger.LogAccess(buf)
+	h.logger.LogAccess(buf)
 }
 
 func (h *aliasHandler) logArchive(filename, relPath string, r *http.Request) {
@@ -107,7 +107,7 @@ func (h *aliasHandler) logArchive(filename, relPath string, r *http.Request) {
 	buf = append(buf, []byte(" <- ")...) // 4 bytes
 	buf = append(buf, []byte(relPath)...)
 
-	go h.logger.LogAccess(buf)
+	h.logger.LogAccess(buf)
 }
 
 func (h *aliasHandler) logErrors(errs []error) (hasError bool) {
@@ -116,14 +116,9 @@ func (h *aliasHandler) logErrors(errs []error) (hasError bool) {
 	}
 
 	if h.logger.CanLogError() {
-		go func(errs []error) {
-			for i := range errs {
-				errBytes := util.EscapeControllingRune(errs[i].Error())
-				buf := serverLog.NewBuffer(len(errBytes))
-				buf = append(buf, errBytes...)
-				h.logger.LogError(buf)
-			}
-		}(errs)
+		for _, err := range errs {
+			h.logErrorBytes(err)
+		}
 	}
 
 	return true
@@ -135,13 +130,15 @@ func (h *aliasHandler) logError(err error) (hasError bool) {
 	}
 
 	if h.logger.CanLogError() {
-		go func(err error) {
-			errBytes := util.EscapeControllingRune(err.Error())
-			buf := serverLog.NewBuffer(len(errBytes))
-			buf = append(buf, errBytes...)
-			h.logger.LogError(buf)
-		}(err)
+		h.logErrorBytes(err)
 	}
 
 	return true
+}
+
+func (h *aliasHandler) logErrorBytes(err error) {
+	errBytes := util.EscapeControllingRune(err.Error())
+	buf := serverLog.NewBuffer(len(errBytes))
+	buf = append(buf, errBytes...)
+	h.logger.LogError(buf)
 }
