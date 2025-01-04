@@ -12,22 +12,22 @@ func TestParseAccept(t *testing.T) {
 		t.Error(len(accepts))
 	}
 
-	if !reflect.DeepEqual(accepts[0], acceptItem{"text/html", 1000, 0}) {
+	if !reflect.DeepEqual(accepts[0], acceptItem{"text/html", 1000}) {
 		t.Error(accepts[0])
 	}
-	if !reflect.DeepEqual(accepts[1], acceptItem{"text/plain", 900, 0}) {
+	if !reflect.DeepEqual(accepts[1], acceptItem{"text/plain", 900}) {
 		t.Error(accepts[1])
 	}
-	if !reflect.DeepEqual(accepts[2], acceptItem{"image/png", 800, 0}) {
+	if !reflect.DeepEqual(accepts[2], acceptItem{"image/png", 800}) {
 		t.Error(accepts[2])
 	}
-	if !reflect.DeepEqual(accepts[3], acceptItem{"image/*", 800, 1}) {
+	if !reflect.DeepEqual(accepts[3], acceptItem{"image/*", 800}) {
 		t.Error(accepts[3])
 	}
-	if !reflect.DeepEqual(accepts[4], acceptItem{"application/json", 700, 0}) {
+	if !reflect.DeepEqual(accepts[4], acceptItem{"application/json", 700}) {
 		t.Error(accepts[4])
 	}
-	if !reflect.DeepEqual(accepts[5], acceptItem{"*/*", 600, 2}) {
+	if !reflect.DeepEqual(accepts[5], acceptItem{"*/*", 600}) {
 		t.Error(accepts[5])
 	}
 

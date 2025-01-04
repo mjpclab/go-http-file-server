@@ -11,35 +11,39 @@ const defaultQuality = 1000
 const maxQualityDecimals = 3
 
 type acceptItem struct {
-	value     string
-	quality   int
-	wildcards int
+	value   string
+	quality int
 }
 
 func (item acceptItem) less(other acceptItem) bool {
 	if item.quality != other.quality {
 		return item.quality > other.quality
 	}
-	return item.wildcards < other.wildcards
+
+	if item.value != other.value {
+		if other.value == "*/*" {
+			return true
+		} else if strings.HasSuffix(other.value, "/*") && !strings.HasPrefix(item.value, "/*") {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (item acceptItem) match(value string) bool {
 	if item.value == value {
 		return true
 	}
-
-	switch item.wildcards {
-	case 0:
-		return false
-	case 1:
-		slashIndex := strings.IndexByte(item.value, '/')
-		itemPrefix := item.value[:slashIndex+1]
-		return strings.HasPrefix(value, itemPrefix)
-	case 2:
+	if item.value == "*/*" {
 		return true
 	}
+	if !strings.HasSuffix(item.value, "/*") {
+		return false
+	}
 
-	return false
+	itemPrefix := item.value[:len(item.value)-1]
+	return strings.HasPrefix(value, itemPrefix)
 }
 
 func parseAcceptItem(input string) acceptItem {
@@ -60,14 +64,7 @@ func parseAcceptItem(input string) acceptItem {
 		}
 	}
 
-	wildcards := 0
-	if value == "*/*" {
-		wildcards = 2
-	} else if strings.HasSuffix(value, "/*") {
-		wildcards = 1
-	}
-
-	return acceptItem{value, quality, wildcards}
+	return acceptItem{value, quality}
 }
 
 func parseQuality(input string) (quality int) {

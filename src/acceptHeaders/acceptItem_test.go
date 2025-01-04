@@ -163,7 +163,7 @@ func TestParseAcceptItem(t *testing.T) {
 func TestAcceptItemMatch(t *testing.T) {
 	var item acceptItem
 
-	item = acceptItem{"text/html", 1000, 0}
+	item = acceptItem{"text/html", 1000}
 	if !item.match("text/html") {
 		t.Error()
 	}
@@ -171,7 +171,7 @@ func TestAcceptItemMatch(t *testing.T) {
 		t.Error()
 	}
 
-	item = acceptItem{"text/*", 1000, 1}
+	item = acceptItem{"text/*", 1000}
 	if !item.match("text/*") {
 		t.Error()
 	}
@@ -185,7 +185,7 @@ func TestAcceptItemMatch(t *testing.T) {
 		t.Error()
 	}
 
-	item = acceptItem{"*/*", 1000, 2}
+	item = acceptItem{"*/*", 1000}
 	if !item.match("text/*") {
 		t.Error()
 	}
