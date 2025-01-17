@@ -51,7 +51,7 @@ func TestParseAcceptItem(t *testing.T) {
 		t.Error(output.quality)
 	}
 
-	input = "en-US;q=0.97"
+	input = "en-US; q=0.97"
 	output = parseAcceptItem(input)
 	if output.value != "en-US" {
 		t.Error(output.value)
@@ -158,4 +158,45 @@ func TestParseAcceptItem(t *testing.T) {
 	if output.quality != 1000 {
 		t.Error(output.quality)
 	}
+}
+
+func TestAcceptItemMatch(t *testing.T) {
+	var item acceptItem
+
+	item = acceptItem{"text/html", 1000}
+	if !item.match("text/html") {
+		t.Error()
+	}
+	if item.match("text/plain") {
+		t.Error()
+	}
+
+	item = acceptItem{"text/*", 1000}
+	if !item.match("text/*") {
+		t.Error()
+	}
+	if !item.match("text/html") {
+		t.Error()
+	}
+	if !item.match("text/plain") {
+		t.Error()
+	}
+	if item.match("image/png") {
+		t.Error()
+	}
+
+	item = acceptItem{"*/*", 1000}
+	if !item.match("text/*") {
+		t.Error()
+	}
+	if !item.match("text/html") {
+		t.Error()
+	}
+	if !item.match("text/plain") {
+		t.Error()
+	}
+	if !item.match("image/png") {
+		t.Error()
+	}
+
 }

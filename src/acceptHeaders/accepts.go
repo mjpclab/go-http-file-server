@@ -16,18 +16,20 @@ func (accepts Accepts) Swap(i, j int) {
 }
 
 func (accepts Accepts) Less(i, j int) bool {
-	return accepts[i].quality > accepts[j].quality
+	return accepts[i].less(accepts[j])
 }
 
 // make sure `accepts` is sorted
 func (accepts Accepts) GetPreferredValue(availables []string) (index int, value string, ok bool) {
 	for _, accept := range accepts {
 		for i, avail := range availables {
-			if accept.value == avail {
+			if accept.match(avail) {
 				return i, avail, true
 			}
 		}
 	}
+
+	index = -1
 	return
 }
 
@@ -38,9 +40,19 @@ func ParseAccepts(input string) Accepts {
 		return nil
 	}
 
-	accepts := make(Accepts, entryCount)
+	accepts := make(Accepts, 0, entryCount)
 	for i := 0; i < entryCount; i++ {
-		accepts[i] = parseAcceptItem(strings.TrimSpace(entries[i]))
+		input := strings.TrimSpace(entries[i])
+		if len(input) == 0 {
+			continue
+		}
+
+		accept := parseAcceptItem(input)
+		if accept.quality <= 0 {
+			continue
+		}
+
+		accepts = append(accepts, accept)
 	}
 	sort.Sort(accepts)
 	return accepts

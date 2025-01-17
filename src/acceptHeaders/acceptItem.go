@@ -1,11 +1,12 @@
 package acceptHeaders
 
 import (
+	"mjpclab.dev/ghfs/src/util"
 	"strconv"
 	"strings"
 )
 
-const qualitySign = ";q="
+const qualitySign = "q="
 const defaultQuality = 1000
 const maxQualityDecimals = 3
 
@@ -14,49 +15,86 @@ type acceptItem struct {
 	quality int
 }
 
+func (item acceptItem) less(other acceptItem) bool {
+	if item.quality != other.quality {
+		return item.quality > other.quality
+	}
+
+	if item.value != other.value {
+		if other.value == "*/*" {
+			return true
+		} else if strings.HasSuffix(other.value, "/*") && !strings.HasPrefix(item.value, "/*") {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (item acceptItem) match(value string) bool {
+	if item.value == value {
+		return true
+	}
+	if item.value == "*/*" {
+		return true
+	}
+	if !strings.HasSuffix(item.value, "/*") {
+		return false
+	}
+
+	itemPrefix := item.value[:len(item.value)-1]
+	return strings.HasPrefix(value, itemPrefix)
+}
+
 func parseAcceptItem(input string) acceptItem {
-	value := input
-	if semiColonIndex := strings.IndexByte(value, ';'); semiColonIndex >= 0 {
-		value = value[:semiColonIndex]
+	entries := strings.Split(input, ";")
+	if len(entries) == 0 {
+		return acceptItem{}
+	}
+	util.InPlaceTrim(entries)
+
+	value := entries[0]
+	entries = entries[1:]
+
+	quality := defaultQuality
+	for _, entry := range entries {
+		entry = strings.TrimSpace(entry)
+		if strings.HasPrefix(entry, qualitySign) {
+			quality = parseQuality(entry[len(qualitySign):])
+		}
 	}
 
-	rest := input[len(value):]
-	qSignIndex := strings.Index(rest, qualitySign)
-	if qSignIndex < 0 {
-		return acceptItem{value, defaultQuality}
-	}
+	return acceptItem{value, quality}
+}
 
-	rest = rest[qSignIndex+len(qualitySign):]
-	if semiColonIndex := strings.IndexByte(rest, ';'); semiColonIndex >= 0 {
-		rest = rest[:semiColonIndex]
-	}
-	qLen := len(rest)
+func parseQuality(input string) (quality int) {
+	qLen := len(input)
 
 	if qLen == 0 {
-		return acceptItem{value, defaultQuality}
+		return defaultQuality
 	}
-	if qLen > 1 && rest[1] != '.' {
-		return acceptItem{value, defaultQuality}
-	}
-
-	// "q=1" or q is an invalid value
-	if rest[0] != '0' {
-		return acceptItem{value, defaultQuality}
+	if qLen > 1 && input[1] != '.' {
+		return defaultQuality
 	}
 
-	// "q=0."
+	// q is "1" or q is an invalid value
+	if input[0] != '0' {
+		return defaultQuality
+	}
+
+	// "0."
 	if qLen <= 2 {
-		return acceptItem{value, 0}
+		return 0
 	}
 
-	rest = rest[2:]
-	qDecimalLen := len(rest)
+	input = input[2:]
+	qDecimalLen := len(input)
 	if qDecimalLen > maxQualityDecimals {
 		qDecimalLen = maxQualityDecimals
-		rest = rest[:qDecimalLen]
+		input = input[:qDecimalLen]
 	}
 
-	quality, err := strconv.Atoi(rest)
+	quality, err := strconv.Atoi(input)
 	if err != nil {
 		quality = defaultQuality
 	} else {
@@ -65,5 +103,5 @@ func parseAcceptItem(input string) acceptItem {
 			quality *= 10
 		}
 	}
-	return acceptItem{value, quality}
+	return quality
 }
