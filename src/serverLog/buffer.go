@@ -5,8 +5,13 @@ import (
 	"time"
 )
 
-const chanBuffer = 128
 const logEnding = '\n'
+
+var logQueueSize = 256
+
+func SetLogQueueSize(size int) {
+	logQueueSize = size
+}
 
 func NewBuffer(cap int) []byte {
 	// prefix: 20 bytes, suffix '\n' 1 byte

@@ -1,8 +1,73 @@
 package acceptHeaders
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
-func TestParseAccepts(t *testing.T) {
+func TestParseAccept(t *testing.T) {
+	accept := "text/html, */*;q=0.6, text/plain; q=0.9, application/json;q=0.7, image/*;q=0.8, image/png;q=0.8"
+	accepts := ParseAccepts(accept)
+	if len(accepts) != 6 {
+		t.Error(len(accepts))
+	}
+
+	if !reflect.DeepEqual(accepts[0], acceptItem{"text/html", 1000}) {
+		t.Error(accepts[0])
+	}
+	if !reflect.DeepEqual(accepts[1], acceptItem{"text/plain", 900}) {
+		t.Error(accepts[1])
+	}
+	if !reflect.DeepEqual(accepts[2], acceptItem{"image/png", 800}) {
+		t.Error(accepts[2])
+	}
+	if !reflect.DeepEqual(accepts[3], acceptItem{"image/*", 800}) {
+		t.Error(accepts[3])
+	}
+	if !reflect.DeepEqual(accepts[4], acceptItem{"application/json", 700}) {
+		t.Error(accepts[4])
+	}
+	if !reflect.DeepEqual(accepts[5], acceptItem{"*/*", 600}) {
+		t.Error(accepts[5])
+	}
+
+	var index int
+	var preferred string
+
+	index, preferred, _ = accepts.GetPreferredValue([]string{"text/plain", "text/html"})
+	if index != 1 {
+		t.Error(index)
+	}
+	if preferred != "text/html" {
+		t.Error(preferred)
+	}
+
+	index, preferred, _ = accepts.GetPreferredValue([]string{"image/jpeg", "image/png"})
+	if index != 1 {
+		t.Error(index)
+	}
+	if preferred != "image/png" {
+		t.Error(preferred)
+	}
+
+	index, preferred, _ = accepts.GetPreferredValue([]string{"image/png", "image/jpeg"})
+	if index != 0 {
+		t.Error(index)
+	}
+	if preferred != "image/png" {
+		t.Error(preferred)
+	}
+
+	index, preferred, _ = accepts.GetPreferredValue([]string{"image/webp", "image/jpeg"})
+	if index != 0 {
+		t.Error(index)
+	}
+	if preferred != "image/webp" {
+		t.Error(preferred)
+	}
+}
+
+func TestParseAcceptLanguage(t *testing.T) {
 	acceptLanguage := "zh;q=0.9,zh-CN,en;q=0.7,en-US;q=0.8"
 	accepts := ParseAccepts(acceptLanguage)
 	if len(accepts) != 4 {
@@ -38,7 +103,7 @@ func TestParseAccepts(t *testing.T) {
 	}
 }
 
-func TestParseAccepts2(t *testing.T) {
+func TestParseAcceptEncoding(t *testing.T) {
 	acceptEncoding := "gzip, deflate"
 	accepts := ParseAccepts(acceptEncoding)
 
@@ -61,12 +126,13 @@ func TestParseAccepts2(t *testing.T) {
 	}
 }
 
-func TestGetPreferredValue(t *testing.T) {
-	acceptEncoding := "gzip;v=b3;q=0.9, deflate"
+func TestParseAcceptEncoding2(t *testing.T) {
+	acceptEncoding := "gzip;v=b3;q=0.9, deflate, br;q=0.0, zstd;  q=0, "
 	accepts := ParseAccepts(acceptEncoding)
 
 	var index int
 	var preferred string
+	var ok bool
 	index, preferred, _ = accepts.GetPreferredValue([]string{"gzip"})
 	if index != 0 {
 		t.Error(index)
@@ -120,6 +186,25 @@ func TestGetPreferredValue(t *testing.T) {
 		t.Error(index)
 	}
 	if preferred != "deflate" {
+		t.Error(preferred)
+	}
+
+	index, preferred, ok = accepts.GetPreferredValue([]string{"zstd", "br"})
+	if index != -1 {
+		t.Error(index)
+	}
+	if ok {
+		t.Error(preferred)
+	}
+
+	index, preferred, ok = accepts.GetPreferredValue([]string{"zstd", "br", "gzip"})
+	if index != 2 {
+		t.Error(index)
+	}
+	if preferred != "gzip" {
+		t.Error(preferred)
+	}
+	if !ok {
 		t.Error(preferred)
 	}
 }

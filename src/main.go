@@ -5,10 +5,12 @@ import (
 	"mjpclab.dev/ghfs/src/app"
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverError"
+	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/setting"
 	"mjpclab.dev/ghfs/src/version"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 )
 
@@ -68,6 +70,14 @@ func Main() (ok bool) {
 			return
 		}
 		defer StopCPUProfile(cpuProfileFile)
+	}
+
+	// log queue size
+	if len(settings.LogQueueSize) > 0 {
+		logQueueSize, err := strconv.Atoi(settings.LogQueueSize)
+		if err == nil && logQueueSize > 0 {
+			serverLog.SetLogQueueSize(logQueueSize)
+		}
 	}
 
 	// app
