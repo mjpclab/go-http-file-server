@@ -4,6 +4,7 @@ import (
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/serverLog"
+	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
 	"net/http"
@@ -86,10 +87,18 @@ func NewVhostHandler(
 		return nil, errs
 	}
 
+	if logger == nil {
+		logger = &serverLog.Logger{}
+	}
+
+	if theme == nil {
+		theme = defaultTheme.DefaultTheme
+	}
+
 	// alias param
 	vhostCtx := &vhostContext{
-		theme:  theme,
 		logger: logger,
+		theme:  theme,
 
 		users:            users,
 		authUrlsUsers:    pathUsernamesToPathUids(users, p.AuthUrlsUsers),

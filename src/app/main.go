@@ -7,7 +7,6 @@ import (
 	"mjpclab.dev/ghfs/src/serverHandler"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/setting"
-	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"net/http"
 	"time"
@@ -77,14 +76,12 @@ func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 		var themeInst theme.Theme
 		if len(p.ThemeDir) > 0 {
 			themeInst = theme.DirTheme(p.ThemeDir)
-		} else if len(p.Theme) == 0 {
-			themeInst = defaultTheme.DefaultTheme
-		} else {
+		} else if len(p.Theme) > 0 {
 			themeInst, errs = loadTheme(p.Theme, themePool)
-		}
-		if len(errs) > 0 {
-			logger.LogErrors(errs...)
-			return nil, errs
+			if len(errs) > 0 {
+				logger.LogErrors(errs...)
+				return nil, errs
+			}
 		}
 
 		// vHost Handler
