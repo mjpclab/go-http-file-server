@@ -71,6 +71,14 @@ func Main() (ok bool) {
 		defer StopCPUProfile(cpuProfileFile)
 	}
 
+	// pid file
+	if len(settings.PidFile) > 0 {
+		errs = writePidFile(settings.PidFile)
+		if serverError.CheckError(errs...) {
+			return
+		}
+	}
+
 	// log queue size
 	if len(settings.LogQueueSize) > 0 {
 		logQueueSize, err := strconv.Atoi(settings.LogQueueSize)
