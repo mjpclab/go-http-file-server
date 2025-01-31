@@ -88,7 +88,7 @@ func Main() (ok bool) {
 	}
 
 	// app
-	appInst, errs := app.NewApp(params, settings)
+	appInst, errs := app.NewApp(params)
 	if serverError.CheckError(errs...) {
 		return
 	}
@@ -99,6 +99,9 @@ func Main() (ok bool) {
 
 	cleanupOnEnd(appInst)
 	reInitOnHup(appInst)
+	if !settings.Quiet {
+		printAccessibleURLs(appInst.GetAccessibleUrls(false))
+	}
 	errs = appInst.Open()
 	if serverError.CheckError(errs...) {
 		return

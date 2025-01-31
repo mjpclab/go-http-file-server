@@ -6,13 +6,13 @@ import (
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverHandler"
 	"mjpclab.dev/ghfs/src/serverLog"
-	"mjpclab.dev/ghfs/src/setting"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"net/http"
 	"time"
 )
 
 type App struct {
+	params   param.Params
 	vhostSvc *goVirtualHost.Service
 	logMan   *serverLog.Man
 }
@@ -49,11 +49,7 @@ func (app *App) ReLoadCertificates() []error {
 	return app.vhostSvc.ReloadCertificates()
 }
 
-func (app *App) GetAccessibleOrigins(includeLoopback bool) [][]string {
-	return app.vhostSvc.GetAccessibleURLs(includeLoopback)
-}
-
-func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
+func NewApp(params param.Params) (*App, []error) {
 	vhSvc := goVirtualHost.NewService()
 	logMan := serverLog.NewMan()
 	themePool := make(map[string]theme.Theme)
@@ -112,11 +108,8 @@ func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 		}
 	}
 
-	if !settings.Quiet {
-		go printAccessibleURLs(vhSvc, params)
-	}
-
 	return &App{
+		params:   params,
 		vhostSvc: vhSvc,
 		logMan:   logMan,
 	}, nil
