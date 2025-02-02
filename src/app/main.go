@@ -35,8 +35,10 @@ func (app *App) Close() {
 }
 
 func (app *App) Shutdown() {
-	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*100)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
 	app.vhostSvc.Shutdown(ctx)
+	cancel()
+
 	app.logMan.CloseFiles()
 }
 
