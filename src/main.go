@@ -29,19 +29,29 @@ func Main() (ok bool) {
 	// settings
 	settings := setting.ParseFromEnv()
 
+	// start
+	errs = Start(settings, params)
+	if serverError.CheckError(errs...) {
+		return
+	}
+
+	return true
+}
+
+func Start(settings *setting.Setting, params param.Params) (errs []error) {
 	// CPU profile
 	if len(settings.CPUProfileFile) > 0 {
-		cpuProfileFile, err := StartCPUProfile(settings.CPUProfileFile)
-		if serverError.CheckError(err) {
-			return
+		cpuProfileFile, err := startCPUProfile(settings.CPUProfileFile)
+		if err != nil {
+			return []error{err}
 		}
-		defer StopCPUProfile(cpuProfileFile)
+		defer stopCPUProfile(cpuProfileFile)
 	}
 
 	// pid file
 	if len(settings.PidFile) > 0 {
 		errs = writePidFile(settings.PidFile)
-		if serverError.CheckError(errs...) {
+		if len(errs) > 0 {
 			return
 		}
 	}
@@ -56,11 +66,11 @@ func Main() (ok bool) {
 
 	// app
 	appInst, errs := app.NewApp(params)
-	if serverError.CheckError(errs...) {
+	if len(errs) > 0 {
 		return
 	}
 	if appInst == nil {
-		serverError.CheckError(errors.New("failed to create application instance"))
+		errs = []error{errors.New("failed to create application instance")}
 		return
 	}
 
@@ -70,9 +80,5 @@ func Main() (ok bool) {
 		printAccessibleURLs(appInst.GetAccessibleUrls(false))
 	}
 	errs = appInst.Open()
-	if serverError.CheckError(errs...) {
-		return
-	}
-
-	return true
+	return
 }
