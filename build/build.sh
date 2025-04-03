@@ -21,11 +21,16 @@ for build in "$@"; do
 	fi
 	OS_SUFFIX="${arg[2]}"
 
-	BIN="$TMP/$MAINNAME$(go env GOEXE)"
-	rm -f "$BIN"
-	echo "Building: $GOOS$OS_SUFFIX $ARCH"
-	go build -ldflags "$(getLdFlags)" -o "$BIN" ../main.go
+	TMP=$(mktemp -d)
 
-	OUT="$OUTDIR/$MAINNAME-$VERSION-$GOOS$OS_SUFFIX-$GOARCH$ARCH_OPT".zip
-	zip -j "$OUT" "$BIN" "$LICENSE"
+	echo "Building: $GOOS$OS_SUFFIX $ARCH"
+	go build -ldflags "$(getLdFlags)" -o "$TMP/$MAINNAME$(go env GOEXE)" ../main.go
+	cp ../LICENSE "$TMP"
+
+	OUTFILE="$OUTDIR/$MAINNAME-$VERSION-$GOOS$OS_SUFFIX-$GOARCH$ARCH_OPT"
+	if [ "$GOOS" == "windows" ]; then
+		zip -qrj "${OUTFILE}.zip" "$TMP/"
+	else
+		tar --owner=0 --group=0 -zcf "${OUTFILE}.tar.gz" -C "$TMP" $(ls -A1 "$TMP")
+	fi
 done
