@@ -8,41 +8,8 @@ import (
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/setting"
 	"mjpclab.dev/ghfs/src/version"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 )
-
-func cleanupOnEnd(appInst *app.App) {
-	chSignal := make(chan os.Signal)
-	signal.Notify(chSignal, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-chSignal
-		appInst.Shutdown()
-	}()
-}
-
-func reInitOnHup(appInst *app.App) {
-	chSignal := make(chan os.Signal)
-	signal.Notify(chSignal, syscall.SIGHUP)
-
-	go func() {
-		for range chSignal {
-			errs := appInst.ReOpenLog()
-			if serverError.CheckError(errs...) {
-				appInst.Shutdown()
-				break
-			}
-			errs = appInst.ReLoadCertificates()
-			if serverError.CheckError(errs...) {
-				appInst.Shutdown()
-				break
-			}
-		}
-	}()
-}
 
 func Main() (ok bool) {
 	// params
@@ -62,13 +29,31 @@ func Main() (ok bool) {
 	// settings
 	settings := setting.ParseFromEnv()
 
+	// start
+	errs = Start(settings, params)
+	if serverError.CheckError(errs...) {
+		return
+	}
+
+	return true
+}
+
+func Start(settings *setting.Setting, params param.Params) (errs []error) {
 	// CPU profile
 	if len(settings.CPUProfileFile) > 0 {
-		cpuProfileFile, err := StartCPUProfile(settings.CPUProfileFile)
-		if serverError.CheckError(err) {
+		cpuProfileFile, err := startCPUProfile(settings.CPUProfileFile)
+		if err != nil {
+			return []error{err}
+		}
+		defer stopCPUProfile(cpuProfileFile)
+	}
+
+	// pid file
+	if len(settings.PidFile) > 0 {
+		errs = writePidFile(settings.PidFile)
+		if len(errs) > 0 {
 			return
 		}
-		defer StopCPUProfile(cpuProfileFile)
 	}
 
 	// log queue size
@@ -80,21 +65,20 @@ func Main() (ok bool) {
 	}
 
 	// app
-	appInst, errs := app.NewApp(params, settings)
-	if serverError.CheckError(errs...) {
+	appInst, errs := app.NewApp(params)
+	if len(errs) > 0 {
 		return
 	}
 	if appInst == nil {
-		serverError.CheckError(errors.New("failed to create application instance"))
+		errs = []error{errors.New("failed to create application instance")}
 		return
 	}
 
 	cleanupOnEnd(appInst)
 	reInitOnHup(appInst)
-	errs = appInst.Open()
-	if serverError.CheckError(errs...) {
-		return
+	if !settings.Quiet {
+		printAccessibleURLs(appInst.GetAccessibleUrls(false))
 	}
-
-	return true
+	errs = appInst.Open()
+	return
 }

@@ -1,5 +1,9 @@
 # Compiler compatibility
 
+## Linux platform
+- Go 1.23 is the last release supports kernel 2.6.32+
+- Go 1.24 supports kernel 3.2+
+
 ## FreeBSD platform
 - Go 1.9 is the last release supports FreeBSD 9.3
 - Go 1.10 supports FreeBSD 10.3+
@@ -28,7 +32,9 @@
 - Go 1.20 is the last release supports OSX 10.13 High Sierra and 10.14 Mojave
 - Go 1.21 supports OSX 10.15 Catalina or later
 - Go 1.22 is the last release supports OSX 10.15 Catalina
-- Go 1.23 supports OSX 11.0 Big Sur or later
+- Go 1.23 supports OSX 11 Big Sur or later
+- Go 1.24 is the last release supports OSX 11 Big Sur
+- Go 1.25 supports OSX 12 Monterey or later
 
 ## Windows platform
 - Go 1.10 is the last release supports Windows XP
