@@ -1,4 +1,4 @@
-package app
+package src
 
 import (
 	"mjpclab.dev/ghfs/src/serverError"
@@ -7,12 +7,12 @@ import (
 )
 
 func writePidFile(pidFilePath string) (errs []error) {
-	pidContent := strconv.Itoa(os.Getpid())
 	pidFile, err := os.OpenFile(pidFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return []error{err}
 	}
 
+	pidContent := strconv.Itoa(os.Getpid())
 	_, err = pidFile.WriteString(pidContent)
 	errs = serverError.AppendError(errs, err)
 

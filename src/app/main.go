@@ -5,12 +5,11 @@ import (
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverHandler"
 	"mjpclab.dev/ghfs/src/serverLog"
-	"mjpclab.dev/ghfs/src/setting"
-	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 )
 
 type App struct {
+	params   param.Params
 	vhostSvc *goVirtualHost.Service
 	logMan   *serverLog.Man
 }
@@ -32,18 +31,7 @@ func (app *App) ReLoadCertificates() []error {
 	return app.vhostSvc.ReloadCertificates()
 }
 
-func (app *App) GetAccessibleOrigins(includeLoopback bool) [][]string {
-	return app.vhostSvc.GetAccessibleURLs(includeLoopback)
-}
-
-func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
-	if len(settings.PidFile) > 0 {
-		errs := writePidFile(settings.PidFile)
-		if len(errs) > 0 {
-			return nil, errs
-		}
-	}
-
+func NewApp(params param.Params) (*App, []error) {
 	vhSvc := goVirtualHost.NewService()
 	logMan := serverLog.NewMan()
 	themePool := make(map[string]theme.Theme)
@@ -59,14 +47,12 @@ func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 		var themeInst theme.Theme
 		if len(p.ThemeDir) > 0 {
 			themeInst = theme.DirTheme(p.ThemeDir)
-		} else if len(p.Theme) == 0 {
-			themeInst = defaultTheme.DefaultTheme
-		} else {
+		} else if len(p.Theme) > 0 {
 			themeInst, errs = loadTheme(p.Theme, themePool)
-		}
-		if len(errs) > 0 {
-			logger.LogErrors(errs...)
-			return nil, errs
+			if len(errs) > 0 {
+				logger.LogErrors(errs...)
+				return nil, errs
+			}
 		}
 
 		// vHost Handler
@@ -104,11 +90,8 @@ func NewApp(params param.Params, settings *setting.Setting) (*App, []error) {
 		}
 	}
 
-	if !settings.Quiet {
-		go printAccessibleURLs(vhSvc, params)
-	}
-
 	return &App{
+		params:   params,
 		vhostSvc: vhSvc,
 		logMan:   logMan,
 	}, nil

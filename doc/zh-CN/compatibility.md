@@ -1,5 +1,9 @@
 # 编译器兼容性
 
+## Linux平台
+- Go 1.23是最后支持2.6.32+内核的版本
+- Go 1.24支持3.2+内核
+
 ## FreeBSD平台
 - Go 1.9是最后支持FreeBSD 9.3的版本
 - Go 1.10支持FreeBSD 10.3+
@@ -28,7 +32,9 @@
 - Go 1.20是最后支持OSX 10.13 High Sierra和10.14 Mojave的版本
 - Go 1.21支持OSX 10.15 Catalina及后续版本
 - Go 1.22是最后支持OSX 10.15 Catalina的版本
-- Go 1.23支持OSX 11.0 Big Sur及后续版本
+- Go 1.23支持OSX 11 Big Sur及后续版本
+- Go 1.24是最后支持OSX 11 Big Sur的版本
+- Go 1.25支持OSX 12 Monterey及后续版本
 
 ## Windows平台
 - Go 1.10是最后支持Windows XP的版本

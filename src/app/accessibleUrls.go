@@ -1,27 +1,23 @@
 package app
 
-import (
-	"mjpclab.dev/ghfs/src/goVirtualHost"
-	"mjpclab.dev/ghfs/src/param"
-	"mjpclab.dev/ghfs/src/util"
-	"strconv"
-)
+func (app *App) GetAccessibleUrls(includeLoopback bool) (allUrls [][]string) {
+	allOrigins := app.vhostSvc.GetAccessibleURLs(includeLoopback)
+	allUrls = make([][]string, len(allOrigins))
 
-func printAccessibleURLs(vhSvc *goVirtualHost.Service, params param.Params) {
-	vhostsUrls := vhSvc.GetAccessibleURLs(false)
-	file, teardown := util.GetTTYFile()
-
-	for vhIndex := range vhostsUrls {
-		prefix := ""
-		if len(params[vhIndex].PrefixUrls) > 0 {
-			prefix = params[vhIndex].PrefixUrls[0]
+	for vhIndex, vhOrigins := range allOrigins {
+		vhPrefixes := app.params[vhIndex].PrefixUrls
+		if len(vhPrefixes) == 0 {
+			vhPrefixes = []string{""}
 		}
 
-		file.WriteString("Host " + strconv.Itoa(vhIndex) + " may be accessed by URLs:\n")
-		for urlIndex := range vhostsUrls[vhIndex] {
-			file.WriteString("  " + vhostsUrls[vhIndex][urlIndex] + prefix + "/\n")
+		allUrls[vhIndex] = make([]string, 0, len(vhOrigins)*len(vhPrefixes))
+
+		for _, origin := range vhOrigins {
+			for _, prefix := range vhPrefixes {
+				allUrls[vhIndex] = append(allUrls[vhIndex], origin+prefix+"/")
+			}
 		}
 	}
 
-	teardown()
+	return
 }

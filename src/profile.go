@@ -5,7 +5,7 @@ import (
 	"runtime/pprof"
 )
 
-func StartCPUProfile(profileFilePath string) (*os.File, error) {
+func startCPUProfile(profileFilePath string) (*os.File, error) {
 	profileFile, err := os.OpenFile(profileFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
@@ -20,7 +20,7 @@ func StartCPUProfile(profileFilePath string) (*os.File, error) {
 	return profileFile, nil
 }
 
-func StopCPUProfile(profileFile *os.File) error {
+func stopCPUProfile(profileFile *os.File) error {
 	pprof.StopCPUProfile()
 	return profileFile.Close()
 }

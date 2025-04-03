@@ -167,7 +167,7 @@ func (svc *Service) GetAccessibleURLs(includeLoopback bool) [][]string {
 
 	for _, l := range svc.listenables {
 		s := l.serveable
-		defaultVh := s.getDefaultVhost()
+		s.updateDefaultVhost()
 
 		port := ""
 		if !isDefaultPort(l.port, s.useTLS) {
@@ -193,34 +193,39 @@ func (svc *Service) GetAccessibleURLs(includeLoopback bool) [][]string {
 					vhUrls[vh] = append(vhUrls[vh], url)
 				}
 			}
-			if vh == defaultVh {
-				var url string
-				if s.useTLS {
-					url = httpsUrl
-				} else {
-					url = httpUrl
-				}
-				if len(l.ip) > 0 {
-					url = url + l.ip + port
-					vhUrls[vh] = append(vhUrls[vh], url)
-				} else {
-					if !gotIPList {
-						gotIPList = true
-						ipv46s, ipv4s, ipv6s = getAllIfaceIPs(includeLoopback)
-					}
-					var ips []string
-					switch l.proto {
-					case tcp46:
-						ips = ipv46s
-					case tcp4:
-						ips = ipv4s
-					case tcp6:
-						ips = ipv6s
-					}
-					for _, ip := range ips {
-						ipUrl := url + ip + port
-						vhUrls[vh] = append(vhUrls[vh], ipUrl)
-					}
+
+			if vh != s.defaultVhost {
+				continue
+			}
+			var url string
+			if s.useTLS {
+				url = httpsUrl
+			} else {
+				url = httpUrl
+			}
+			if len(l.ip) > 0 {
+				url = url + l.ip + port
+				vhUrls[vh] = append(vhUrls[vh], url)
+				continue
+			}
+
+			if !gotIPList {
+				gotIPList = true
+				ipv46s, ipv4s, ipv6s = getAllIfaceIPs(includeLoopback)
+			}
+			var ips []string
+			switch l.proto {
+			case tcp46:
+				ips = ipv46s
+			case tcp4:
+				ips = ipv4s
+			case tcp6:
+				ips = ipv6s
+			}
+			for _, ip := range ips {
+				if ipVh := s.lookupVhost(ip); ipVh == vh {
+					ipUrl := url + ip + port
+					vhUrls[vh] = append(vhUrls[vh], ipUrl)
 				}
 			}
 		}

@@ -265,7 +265,7 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 	}
 
 	// append config and re-parse
-	configs := []string{}
+	configs := make([]string, 0, len(results))
 	groupSeps := cmd.Options().GroupSeps()[0]
 	hasConfig := false
 	var stdinConfigArgs []string
@@ -291,6 +291,9 @@ func ArgsToCmdResults(cmd *goNixArgParser.Command, args []string) (results []*go
 			if config == "-" {
 				stdinConfigArgs = configArgs
 			}
+		}
+		if len(configArgs) == 0 {
+			continue
 		}
 
 		hasConfig = true
