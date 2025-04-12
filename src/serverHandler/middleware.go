@@ -1,8 +1,9 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/middleware"
 	"net/http"
+
+	"mjpclab.dev/ghfs/src/middleware"
 )
 
 func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) (processed bool) {
