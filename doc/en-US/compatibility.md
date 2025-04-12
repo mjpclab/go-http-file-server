@@ -1,6 +1,7 @@
 # Compiler compatibility
 
 ## FreeBSD platform
+
 - Go 1.9 is the last release supports FreeBSD 9.3
 - Go 1.10 supports FreeBSD 10.3+
 - Go 1.12 is the last release supports FreeBSD 10
@@ -9,12 +10,14 @@
 - Go 1.19 supports FreeBSD 12.2+
 
 ## OpenBSD platform
+
 - Go 1.9 supports OpenBSD 6.0+
 - Go 1.9 no longer supports OpenBSD 5.9
 - Go 1.10 is the last release supports OpenBSD 6.0
 - Go 1.11 requires OpenBSD 6.2+
 
 ## OSX Darwin platform
+
 - Go 1.10 is the last release supports OSX 10.8 Mountain Lion
 - Go 1.10 is the last release supports OSX 10.9 Mavericks
 - Go 1.11 supports OSX 10.10 Yosemite or later
@@ -31,6 +34,7 @@
 - Go 1.23 supports OSX 11.0 Big Sur or later
 
 ## Windows platform
+
 - Go 1.10 is the last release supports Windows XP
 - Go 1.10 is the last release supports Windows Vista
 - Go 1.11 supports Windows 7+
@@ -38,9 +42,11 @@
 - Go 1.21 supports Windows 10/Server 2016
 
 # Standard library compatibility
+
 ## SSL/TLS protocol
+
 - Go 1.13 is the last release supports SSLv3
 
 # See also
 
-https://go.dev/wiki/MinimumRequirements
+<https://go.dev/wiki/MinimumRequirements>

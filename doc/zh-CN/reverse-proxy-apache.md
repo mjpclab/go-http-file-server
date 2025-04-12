@@ -15,7 +15,8 @@ ghfs -l 8080 -r /tmp/
 ```
 
 ### 配置apache反向代理
-```
+
+```conf
 ProxyPass /files/ http://localhost:8080/
 ProxyPassReverse /files/ http://localhost:8080/
 ```

@@ -16,9 +16,9 @@ ghfs -l 8080 -r /tmp/
 
 Note to **preserve** tailing `/` in `proxy_pass`:
 
-```
+```conf
 location /files {
-	proxy_pass http://localhost:8080/;
+ proxy_pass http://localhost:8080/;
 }
 ```
 
@@ -38,9 +38,9 @@ ghfs -l 8080 -r /tmp/ --prefix /files
 
 Note to **omit** tailing `/` in `proxy_pass`:
 
-```
+```conf
 location /files {
-	proxy_pass http://localhost:8080;
+ proxy_pass http://localhost:8080;
 }
 ```
 

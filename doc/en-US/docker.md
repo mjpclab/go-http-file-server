@@ -1,6 +1,7 @@
 # Start a docker container to share local file system
 
 ## Image name
+
 `mjpclab/ghfs`
 
 ## Container's default configuration
