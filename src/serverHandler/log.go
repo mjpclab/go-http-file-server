@@ -1,11 +1,12 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/serverLog"
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"mjpclab.dev/ghfs/src/serverLog"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type loggableResponseWriter struct {

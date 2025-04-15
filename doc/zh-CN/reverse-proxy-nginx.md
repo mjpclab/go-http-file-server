@@ -16,9 +16,9 @@ ghfs -l 8080 -r /tmp/
 
 注意**保留**`proxy_pass`尾部的`/`。
 
-```
+```conf
 location /files {
-	proxy_pass http://localhost:8080/;
+ proxy_pass http://localhost:8080/;
 }
 ```
 
@@ -38,9 +38,9 @@ ghfs -l 8080 -r /tmp/ --prefix /files
 
 注意**省略**`proxy_pass`尾部的`/`。
 
-```
+```conf
 location /files {
-	proxy_pass http://localhost:8080;
+ proxy_pass http://localhost:8080;
 }
 ```
 

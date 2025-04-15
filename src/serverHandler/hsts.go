@@ -1,8 +1,9 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 func (h *aliasHandler) tryHsts(w http.ResponseWriter, r *http.Request) (needRedirect bool) {

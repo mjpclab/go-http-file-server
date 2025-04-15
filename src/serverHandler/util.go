@@ -1,13 +1,14 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/user"
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"path"
 	"regexp"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/user"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 func pathUsernamesToPathUids(users *user.List, pathsUsernames [][]string) pathIntsList {

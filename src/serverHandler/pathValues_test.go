@@ -1,8 +1,9 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"testing"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 func TestPathInts(t *testing.T) {

@@ -2,11 +2,12 @@ package serverHandler
 
 import (
 	"html/template"
+	"net/http"
+
 	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
 	tplUtil "mjpclab.dev/ghfs/src/tpl/util"
 	"mjpclab.dev/ghfs/src/util"
-	"net/http"
 )
 
 const typeDir = template.HTML("dir")
