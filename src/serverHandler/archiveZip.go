@@ -35,7 +35,7 @@ type zipWriter struct {
 }
 
 // AddFile adds a file or directory to the ZIP archive at the specified path.
-// It normalizes the path, creates a ZIP entry, and copies file contents in chunks if applicable.
+// It normalizes the path, creates a ZIP entry, and copies file contents.
 // Returns an error if the operation fails.
 func (w *zipWriter) AddFile(file *os.File, fileInfo os.FileInfo, archivePath string) error {
 	archivePath = strings.TrimPrefix(archivePath, "/")
@@ -52,17 +52,9 @@ func (w *zipWriter) AddFile(file *os.File, fileInfo os.FileInfo, archivePath str
 		return nil
 	}
 
-	remaining := fileInfo.Size()
-	for remaining > 0 {
-		chunk := remaining
-		if chunk > ChunkSize {
-			chunk = ChunkSize
-		}
-		written, err := io.CopyN(entryWriter, file, chunk)
-		if err != nil {
-			return err
-		}
-		remaining -= written
+	_, err = io.Copy(entryWriter, file)
+	if err != nil {
+		return err
 	}
 	return nil
 }
