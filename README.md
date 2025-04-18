@@ -12,7 +12,7 @@ Simple command line based HTTP file server to share local file system.
 - Can specify a custom theme for page rendering
 - Support location alias(mount another directory to url location)
 
-# Tech Features
+## Tech Features
 - Monolithic architecture
 - Stateless
 - Zero third party dependency
