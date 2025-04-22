@@ -1,16 +1,17 @@
 package serverHandler
 
 import (
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
 	"mjpclab.dev/ghfs/src/util"
-	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 var defaultHandler = http.NotFoundHandler()
@@ -47,6 +48,8 @@ type aliasHandler struct {
 	delete  *hierarchyAvailability
 	archive *hierarchyAvailability
 	cors    *hierarchyAvailability
+
+	archiveWorkers chan struct{}
 
 	globalRestrictAccess []string
 	restrictAccessUrls   pathStringsList
@@ -120,21 +123,8 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if session.isMutate && h.mutate(w, r, session, data) {
 			return
-		} else if session.isArchive {
-			switch session.archiveFormat {
-			case tarFmt:
-				if h.tar(w, r, session, data) {
-					return
-				}
-			case tgzFmt:
-				if h.tgz(w, r, session, data) {
-					return
-				}
-			case zipFmt:
-				if h.zip(w, r, session, data) {
-					return
-				}
-			}
+		} else if session.isArchive && h.createArchive(w, r, session, data) {
+			return
 		}
 	}
 
@@ -150,6 +140,29 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		h.page(w, r, session, data)
 	}
+}
+
+func (h *aliasHandler) createArchive(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) bool {
+	if h.archiveWorkers != nil {
+		select {
+		case h.archiveWorkers <- struct{}{}:
+			defer func() { <-h.archiveWorkers }()
+		default:
+			data.Status = http.StatusTooManyRequests
+			return false
+		}
+	}
+
+	switch session.archiveFormat {
+	case tarFmt:
+		return h.tar(w, r, session, data)
+	case tgzFmt:
+		return h.tgz(w, r, session, data)
+	case zipFmt:
+		return h.zip(w, r, session, data)
+	}
+
+	return false
 }
 
 func newAliasHandler(
@@ -178,6 +191,8 @@ func newAliasHandler(
 		toHttps:      p.ToHttps,
 		toHttpsPort:  p.ToHttpsPort,
 		defaultSort:  p.DefaultSort,
+
+		archiveWorkers: p.ArchivationsSem,
 
 		users:  vhostCtx.users,
 		theme:  vhostCtx.theme,
