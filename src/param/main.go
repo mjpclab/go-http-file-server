@@ -1,11 +1,12 @@
 package param
 
 import (
+	"os"
+	"path/filepath"
+
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/util"
-	"os"
-	"path/filepath"
 )
 
 type Param struct {
@@ -56,11 +57,13 @@ type Param struct {
 	DeleteDirs      []string
 	DeleteDirsUsers [][]string // [][path, user...]
 
-	GlobalArchive    bool
-	ArchiveUrls      []string
-	ArchiveUrlsUsers [][]string // [][path, user...]
-	ArchiveDirs      []string
-	ArchiveDirsUsers [][]string // [][path, user...]
+	GlobalArchive     bool
+	ArchiveUrls       []string
+	ArchiveUrlsUsers  [][]string // [][path, user...]
+	ArchiveDirs       []string
+	ArchiveDirsUsers  [][]string // [][path, user...]
+	ArchiveMaxWorkers int
+	ArchivationsSem   chan struct{}
 
 	GlobalCors bool
 	CorsUrls   []string
@@ -163,6 +166,10 @@ func (param *Param) Normalize() (errs []error) {
 	param.DeleteDirs = NormalizeFsPaths(param.DeleteDirs)
 	param.ArchiveUrls = NormalizeUrlPaths(param.ArchiveUrls)
 	param.ArchiveDirs = NormalizeFsPaths(param.ArchiveDirs)
+	if param.ArchiveMaxWorkers > 0 {
+		param.ArchivationsSem = make(chan struct{}, param.ArchiveMaxWorkers)
+	}
+
 	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
 	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)
 

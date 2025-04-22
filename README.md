@@ -28,7 +28,7 @@ Will generate executable file "main" in current directory.
 Start server on port 8080, root directory is current working directory:
 ```sh
 ghfs -l 8080
-``` 
+```
 
 Start server on port 8080, root directory is /usr/share/doc:
 ```sh
@@ -258,7 +258,10 @@ ghfs [options]
 -A|--global-archive
     Allow user to download the whole contents of current directory for all url paths.
     A download link will appear on top part of the page.
-    Make sure there is no circular symbol links.
+--max-archive-workers <number>
+    Maximum number of concurrent archive operations.
+    Set to -1 for unlimited (default).
+    When the limit is reached, new archive requests will receive 429 Too Many Requests.
 --archive <url-path> ...
 --archive-user <separator><url-path>[<separator><allowed-username>...] ...
     Allow user to download the whole contents of current directory for specific url paths(and sub paths).
@@ -304,7 +307,7 @@ ghfs [options]
 -S|--show <wildcard> ...
 -SD|--show-dir <wildcard> ...
 -SF|--show-file <wildcard> ...
-    If specified, files or directories match wildcards(except hidden by hide option) will be shown. 
+    If specified, files or directories match wildcards(except hidden by hide option) will be shown.
 
 -H|--hide <wildcard> ...
 -HD|--hide-dir <wildcard> ...
