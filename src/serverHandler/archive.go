@@ -52,6 +52,13 @@ func (h *aliasHandler) visitTreeNode(
 	childSelections []string,
 	archiveCallback archiveCallback,
 ) {
+	select {
+	case <-r.Context().Done():
+		return
+	default:
+		break
+	}
+
 	needAuth, _ := h.needAuth("", urlPath, fsPath)
 	userId, _, err := h.verifyAuth(r, urlPath, fsPath)
 	if needAuth && err != nil {
@@ -105,7 +112,7 @@ func (h *aliasHandler) visitTreeNode(
 	}
 
 	if fInfo.IsDir() && h.index.match(urlPath, fsPath, userId) {
-		childInfos, _, _ := h.mergeAlias(urlPath, fInfo, childInfos, true)
+		childInfos, _, _ = h.mergeAlias(urlPath, fInfo, childInfos, true)
 		childInfos = h.FilterItems(childInfos)
 
 		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
