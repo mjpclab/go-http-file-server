@@ -104,27 +104,36 @@ func (h *aliasHandler) visitTreeNode(
 		return
 	}
 
-	if fInfo.IsDir() && h.index.match(urlPath, fsPath, userId) {
-		childInfos, _, _ := h.mergeAlias(urlPath, fInfo, childInfos, true)
-		childInfos = h.FilterItems(childInfos)
+	if !fInfo.IsDir() || !h.index.match(urlPath, fsPath, userId) {
+		return
+	}
 
-		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
-		for _, childInfo := range childInfos {
-			matchChild, childChildSelections := matchSelection(childInfo, childSelections)
-			if !matchChild {
-				continue
-			}
+	select {
+	case <-r.Context().Done():
+		return
+	default:
+		break
+	}
 
-			childPath := "/" + childInfo.Name()
-			childFsPath := fsPath + childPath
-			childRawReqPath := util.CleanUrlPath(urlPath + childPath)
-			childRelPath := relPath + childPath
+	childInfos, _, _ = h.mergeAlias(urlPath, fInfo, childInfos, true)
+	childInfos = h.FilterItems(childInfos)
 
-			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
-				h.visitTreeNode(r, childRawReqPath, childAlias.fs, childRelPath, true, childChildSelections, archiveCallback)
-			} else {
-				h.visitTreeNode(r, childRawReqPath, childFsPath, childRelPath, statNode, childChildSelections, archiveCallback)
-			}
+	// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
+	for _, childInfo := range childInfos {
+		matchChild, childChildSelections := matchSelection(childInfo, childSelections)
+		if !matchChild {
+			continue
+		}
+
+		childPath := "/" + childInfo.Name()
+		childFsPath := fsPath + childPath
+		childRawReqPath := util.CleanUrlPath(urlPath + childPath)
+		childRelPath := relPath + childPath
+
+		if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
+			h.visitTreeNode(r, childRawReqPath, childAlias.fs, childRelPath, true, childChildSelections, archiveCallback)
+		} else {
+			h.visitTreeNode(r, childRawReqPath, childFsPath, childRelPath, statNode, childChildSelections, archiveCallback)
 		}
 	}
 }
