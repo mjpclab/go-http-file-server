@@ -258,7 +258,7 @@ ghfs [options]
 -A|--global-archive
     Allow user to download the whole contents of current directory for all url paths.
     A download link will appear on top part of the page.
---max-archive-workers <number>
+--archive-max-workers <number>
     Maximum number of concurrent archive operations.
     Set to -1 for unlimited (default).
     When the limit is reached, new archive requests will receive 429 Too Many Requests.
