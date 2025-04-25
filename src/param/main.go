@@ -62,8 +62,7 @@ type Param struct {
 	ArchiveUrlsUsers  [][]string // [][path, user...]
 	ArchiveDirs       []string
 	ArchiveDirsUsers  [][]string // [][path, user...]
-	ArchiveMaxWorkers int
-	ArchivationsSem   chan struct{}
+	ArchiveMaxWorkers int32
 
 	GlobalCors bool
 	CorsUrls   []string
@@ -166,9 +165,6 @@ func (param *Param) Normalize() (errs []error) {
 	param.DeleteDirs = NormalizeFsPaths(param.DeleteDirs)
 	param.ArchiveUrls = NormalizeUrlPaths(param.ArchiveUrls)
 	param.ArchiveDirs = NormalizeFsPaths(param.ArchiveDirs)
-	if param.ArchiveMaxWorkers > 0 {
-		param.ArchivationsSem = make(chan struct{}, param.ArchiveMaxWorkers)
-	}
 
 	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
 	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)

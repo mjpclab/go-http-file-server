@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/param"
@@ -49,7 +50,8 @@ type aliasHandler struct {
 	archive *hierarchyAvailability
 	cors    *hierarchyAvailability
 
-	archiveWorkers chan struct{}
+	archiveMaxWorkers int32
+	archiveWorkers    *int32
 
 	globalRestrictAccess []string
 	restrictAccessUrls   pathStringsList
@@ -143,11 +145,11 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *aliasHandler) createArchive(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) bool {
-	if h.archiveWorkers != nil {
-		select {
-		case h.archiveWorkers <- struct{}{}:
-			defer func() { <-h.archiveWorkers }()
-		default:
+	if h.archiveMaxWorkers > 0 {
+		current := atomic.AddInt32(h.archiveWorkers, -1)
+		defer atomic.AddInt32(h.archiveWorkers, 1)
+
+		if current < 0 {
 			data.Status = http.StatusTooManyRequests
 			return false
 		}
@@ -192,7 +194,8 @@ func newAliasHandler(
 		toHttpsPort:  p.ToHttpsPort,
 		defaultSort:  p.DefaultSort,
 
-		archiveWorkers: p.ArchivationsSem,
+		archiveMaxWorkers: vhostCtx.archiveMaxWorkers,
+		archiveWorkers:    vhostCtx.archiveWorkers,
 
 		users:  vhostCtx.users,
 		theme:  vhostCtx.theme,
