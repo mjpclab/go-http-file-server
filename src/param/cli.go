@@ -470,7 +470,8 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		// certificate
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
-		param.CertKeyPaths, _ = goVirtualHost.CertsKeysToPairs(certFiles, keyFiles)
+		param.CertKeyPaths, es = goVirtualHost.CertsKeysToPairs(certFiles, keyFiles)
+		errs = append(errs, es...)
 
 		// listen
 		listens, _ := result.GetStrings("listens")

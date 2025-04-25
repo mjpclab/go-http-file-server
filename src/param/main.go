@@ -165,7 +165,6 @@ func (param *Param) Normalize() (errs []error) {
 	param.DeleteDirs = NormalizeFsPaths(param.DeleteDirs)
 	param.ArchiveUrls = NormalizeUrlPaths(param.ArchiveUrls)
 	param.ArchiveDirs = NormalizeFsPaths(param.ArchiveDirs)
-
 	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
 	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)
 
