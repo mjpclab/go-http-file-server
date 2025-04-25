@@ -440,7 +440,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		archiveDirsUsers, _ := result.GetStrings("archivedirsusers")
 		param.ArchiveDirsUsers = SplitAllKeyValues(archiveDirsUsers)
 
-		param.ArchiveMaxWorkers, _ = result.GetInt("archivemaxworkers")
+		param.ArchiveMaxWorkers, _ = result.GetInt32("archivemaxworkers")
 
 		// global restrict access
 		if result.HasKey("globalrestrictaccess") {

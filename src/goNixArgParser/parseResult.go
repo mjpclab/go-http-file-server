@@ -118,6 +118,17 @@ func (r *ParseResult) GetInt(key string) (value int, found bool) {
 	return
 }
 
+func (r *ParseResult) GetInt32(key string) (value int32, found bool) {
+	str, found := r.GetString(key)
+	if !found {
+		return
+	}
+
+	value, err := toInt32(str)
+	found = err == nil
+	return
+}
+
 func (r *ParseResult) GetInt64(key string) (value int64, found bool) {
 	str, found := r.GetString(key)
 	if !found {
