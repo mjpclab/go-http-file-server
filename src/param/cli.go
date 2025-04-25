@@ -148,7 +148,7 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("archivedirsusers", "--archive-dir-user", "", nil, "file system path that allow archive files for specific users, <sep><fs-path>[<sep><user>...]")
 	serverError.CheckFatal(err)
 
-	err = options.AddFlagValue("archivemaxworkers", "--archive-max-workers", "", "-1", "maximum number of concurrent archive operations (-1 for unlimited)")
+	err = options.AddFlagValue("archivemaxworkers", "--archive-max-workers", "", "0", "maximum number of concurrent archive operations (0 for unlimited)")
 	serverError.CheckFatal(err)
 
 	err = options.AddFlag("globalcors", "--global-cors", "GHFS_GLOBAL_CORS", "enable CORS headers for all directories")
@@ -440,7 +440,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		archiveDirsUsers, _ := result.GetStrings("archivedirsusers")
 		param.ArchiveDirsUsers = SplitAllKeyValues(archiveDirsUsers)
 
-		param.ArchiveMaxWorkers, _ = result.GetInt32("archivemaxworkers")
+		param.ArchiveMaxWorkers, _ = result.GetUint32("archivemaxworkers")
 
 		// global restrict access
 		if result.HasKey("globalrestrictaccess") {

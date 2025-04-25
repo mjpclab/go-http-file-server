@@ -118,13 +118,13 @@ func (r *ParseResult) GetInt(key string) (value int, found bool) {
 	return
 }
 
-func (r *ParseResult) GetInt32(key string) (value int32, found bool) {
+func (r *ParseResult) GetUint32(key string) (value uint32, found bool) {
 	str, found := r.GetString(key)
 	if !found {
 		return
 	}
 
-	value, err := toInt32(str)
+	value, err := toUint32(str)
 	found = err == nil
 	return
 }

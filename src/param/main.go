@@ -62,7 +62,7 @@ type Param struct {
 	ArchiveUrlsUsers  [][]string // [][path, user...]
 	ArchiveDirs       []string
 	ArchiveDirsUsers  [][]string // [][path, user...]
-	ArchiveMaxWorkers int32
+	ArchiveMaxWorkers uint32
 
 	GlobalCors bool
 	CorsUrls   []string

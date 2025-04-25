@@ -81,9 +81,9 @@ func toInts(input []string) ([]int, error) {
 	return output, nil
 }
 
-func toInt32(input string) (int32, error) {
-	v, err := strconv.ParseInt(input, 10, 32)
-	return int32(v), err
+func toUint32(input string) (uint32, error) {
+	v, err := strconv.ParseUint(input, 10, 32)
+	return uint32(v), err
 }
 
 func toInt64(input string) (int64, error) {
