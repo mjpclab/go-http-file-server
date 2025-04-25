@@ -1,12 +1,13 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error
@@ -52,6 +53,13 @@ func (h *aliasHandler) visitTreeNode(
 	childSelections []string,
 	archiveCallback archiveCallback,
 ) {
+	select {
+	case <-r.Context().Done():
+		return
+	default:
+		break
+	}
+
 	needAuth, _ := h.needAuth("", urlPath, fsPath)
 	userId, _, err := h.verifyAuth(r, urlPath, fsPath)
 	if needAuth && err != nil {
@@ -104,36 +112,27 @@ func (h *aliasHandler) visitTreeNode(
 		return
 	}
 
-	if !fInfo.IsDir() || !h.index.match(urlPath, fsPath, userId) {
-		return
-	}
+	if fInfo.IsDir() && h.index.match(urlPath, fsPath, userId) {
+		childInfos, _, _ = h.mergeAlias(urlPath, fInfo, childInfos, true)
+		childInfos = h.FilterItems(childInfos)
 
-	select {
-	case <-r.Context().Done():
-		return
-	default:
-		break
-	}
+		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
+		for _, childInfo := range childInfos {
+			matchChild, childChildSelections := matchSelection(childInfo, childSelections)
+			if !matchChild {
+				continue
+			}
 
-	childInfos, _, _ = h.mergeAlias(urlPath, fInfo, childInfos, true)
-	childInfos = h.FilterItems(childInfos)
+			childPath := "/" + childInfo.Name()
+			childFsPath := fsPath + childPath
+			childRawReqPath := util.CleanUrlPath(urlPath + childPath)
+			childRelPath := relPath + childPath
 
-	// childInfo can be regular dir/file, or aliased item that shadows regular dir/file
-	for _, childInfo := range childInfos {
-		matchChild, childChildSelections := matchSelection(childInfo, childSelections)
-		if !matchChild {
-			continue
-		}
-
-		childPath := "/" + childInfo.Name()
-		childFsPath := fsPath + childPath
-		childRawReqPath := util.CleanUrlPath(urlPath + childPath)
-		childRelPath := relPath + childPath
-
-		if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
-			h.visitTreeNode(r, childRawReqPath, childAlias.fs, childRelPath, true, childChildSelections, archiveCallback)
-		} else {
-			h.visitTreeNode(r, childRawReqPath, childFsPath, childRelPath, statNode, childChildSelections, archiveCallback)
+			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
+				h.visitTreeNode(r, childRawReqPath, childAlias.fs, childRelPath, true, childChildSelections, archiveCallback)
+			} else {
+				h.visitTreeNode(r, childRawReqPath, childFsPath, childRelPath, statNode, childChildSelections, archiveCallback)
+			}
 		}
 	}
 }
