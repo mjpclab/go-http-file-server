@@ -50,8 +50,8 @@ type aliasHandler struct {
 	archive *hierarchyAvailability
 	cors    *hierarchyAvailability
 
-	archiveMaxWorkers int32
-	archiveWorkers    *int32
+	archiveMaxWorkers uint32
+	archiveWorkers    *atomic.Uint32
 
 	globalRestrictAccess []string
 	restrictAccessUrls   pathStringsList
@@ -146,13 +146,28 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *aliasHandler) createArchive(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) bool {
 	if h.archiveMaxWorkers > 0 {
-		current := atomic.AddInt32(h.archiveWorkers, -1)
-		defer atomic.AddInt32(h.archiveWorkers, 1)
-
-		if current < 0 {
-			data.Status = http.StatusTooManyRequests
-			return false
+		for {
+			current := h.archiveWorkers.Load()
+			if current >= h.archiveMaxWorkers {
+				data.Status = http.StatusTooManyRequests
+				return false
+			}
+			if h.archiveWorkers.CompareAndSwap(current, current+1) {
+				break
+			}
 		}
+
+		defer func() {
+			for {
+				current := h.archiveWorkers.Load()
+				if current == 0 {
+					break // prevent underflow just in case
+				}
+				if h.archiveWorkers.CompareAndSwap(current, current-1) {
+					break
+				}
+			}
+		}()
 	}
 
 	switch session.archiveFormat {

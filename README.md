@@ -260,7 +260,7 @@ ghfs [options]
     A download link will appear on top part of the page.
 --archive-max-workers <number>
     Maximum number of concurrent archive operations.
-    Set to -1 for unlimited (default).
+    Set to 0 for unlimited (default).
     When the limit is reached, new archive requests will receive 429 Too Many Requests.
 --archive <url-path> ...
 --archive-user <separator><url-path>[<separator><allowed-username>...] ...
