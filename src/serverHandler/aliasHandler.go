@@ -1,18 +1,16 @@
 package serverHandler
 
 import (
-	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync/atomic"
-
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
 	"mjpclab.dev/ghfs/src/util"
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 var defaultHandler = http.NotFoundHandler()
@@ -50,8 +48,8 @@ type aliasHandler struct {
 	archive *hierarchyAvailability
 	cors    *hierarchyAvailability
 
-	archiveMaxWorkers uint32
-	archiveWorkers    *atomic.Uint32
+	archiveWorkersMax uint32
+	archivingWorkers  *uint32
 
 	globalRestrictAccess []string
 	restrictAccessUrls   pathStringsList
@@ -125,7 +123,7 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if session.isMutate && h.mutate(w, r, session, data) {
 			return
-		} else if session.isArchive && h.createArchive(w, r, session, data) {
+		} else if session.isArchive && h.tryArchive(w, r, session, data) {
 			return
 		}
 	}
@@ -142,44 +140,6 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		h.page(w, r, session, data)
 	}
-}
-
-func (h *aliasHandler) createArchive(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) bool {
-	if h.archiveMaxWorkers > 0 {
-		for {
-			current := h.archiveWorkers.Load()
-			if current >= h.archiveMaxWorkers {
-				data.Status = http.StatusTooManyRequests
-				return false
-			}
-			if h.archiveWorkers.CompareAndSwap(current, current+1) {
-				break
-			}
-		}
-
-		defer func() {
-			for {
-				current := h.archiveWorkers.Load()
-				if current == 0 {
-					break // prevent underflow just in case
-				}
-				if h.archiveWorkers.CompareAndSwap(current, current-1) {
-					break
-				}
-			}
-		}()
-	}
-
-	switch session.archiveFormat {
-	case tarFmt:
-		return h.tar(w, r, session, data)
-	case tgzFmt:
-		return h.tgz(w, r, session, data)
-	case zipFmt:
-		return h.zip(w, r, session, data)
-	}
-
-	return false
 }
 
 func newAliasHandler(
@@ -209,8 +169,8 @@ func newAliasHandler(
 		toHttpsPort:  p.ToHttpsPort,
 		defaultSort:  p.DefaultSort,
 
-		archiveMaxWorkers: vhostCtx.archiveMaxWorkers,
-		archiveWorkers:    vhostCtx.archiveWorkers,
+		archiveWorkersMax: p.ArchiveWorkersMax,
+		archivingWorkers:  vhostCtx.archivingWorkers,
 
 		users:  vhostCtx.users,
 		theme:  vhostCtx.theme,

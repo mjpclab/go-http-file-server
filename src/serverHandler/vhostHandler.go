@@ -1,16 +1,14 @@
 package serverHandler
 
 import (
-	"net/http"
-	"regexp"
-	"sync/atomic"
-
 	"mjpclab.dev/ghfs/src/param"
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/serverLog"
 	"mjpclab.dev/ghfs/src/tpl/defaultTheme"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"mjpclab.dev/ghfs/src/user"
+	"net/http"
+	"regexp"
 )
 
 type vhostContext struct {
@@ -31,8 +29,7 @@ type vhostContext struct {
 	archiveUrlsUsers pathIntsList
 	archiveDirsUsers pathIntsList
 
-	archiveMaxWorkers uint32
-	archiveWorkers    *atomic.Uint32
+	archivingWorkers *uint32
 
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
@@ -100,6 +97,11 @@ func NewVhostHandler(
 		theme = defaultTheme.DefaultTheme
 	}
 
+	var archivingWorkers *uint32
+	if p.ArchiveWorkersMax > 0 {
+		archivingWorkers = new(uint32)
+	}
+
 	// alias param
 	vhostCtx := &vhostContext{
 		logger: logger,
@@ -119,8 +121,7 @@ func NewVhostHandler(
 		archiveUrlsUsers: pathUsernamesToPathUids(users, p.ArchiveUrlsUsers),
 		archiveDirsUsers: pathUsernamesToPathUids(users, p.ArchiveDirsUsers),
 
-		archiveMaxWorkers: p.ArchiveMaxWorkers,
-		archiveWorkers:    &atomic.Uint32{},
+		archivingWorkers: archivingWorkers,
 
 		shows:     shows,
 		showDirs:  showDirs,

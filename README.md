@@ -258,16 +258,17 @@ ghfs [options]
 -A|--global-archive
     Allow user to download the whole contents of current directory for all url paths.
     A download link will appear on top part of the page.
---archive-max-workers <number>
-    Maximum number of concurrent archive operations.
-    Set to 0 for unlimited (default).
-    When the limit is reached, new archive requests will receive 429 Too Many Requests.
+    Make sure there is no circular symbol links.
 --archive <url-path> ...
 --archive-user <separator><url-path>[<separator><allowed-username>...] ...
     Allow user to download the whole contents of current directory for specific url paths(and sub paths).
 --archive-dir <fs-path> ...
 --archive-dir-user <separator><fs-path>[<separator><allowed-username>...] ...
     Similar to --archive, but use file system path instead of url path.
+--archive-workers-max <number>
+    Maximum number of concurrent archive operations.
+    Set to 0 for unlimited (default).
+    When the limit is reached, new archive requests will be rejected with status code 429(Too Many Requests).
 
 --global-cors
     Allow CORS requests for all url path.
