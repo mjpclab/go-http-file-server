@@ -128,7 +128,7 @@ func (h *aliasHandler) visitTreeNode(
 			childRelPath := relPath + childPath
 
 			if childAlias, hasChildAlias := h.aliases.byUrlPath(childRawReqPath); hasChildAlias {
-				h.visitTreeNode(r, childRawReqPath, childAlias.fs, childRelPath, true, childChildSelections, archiveCallback)
+				h.visitTreeNode(r, childRawReqPath, childAlias.dir, childRelPath, true, childChildSelections, archiveCallback)
 			} else {
 				h.visitTreeNode(r, childRawReqPath, childFsPath, childRelPath, statNode, childChildSelections, archiveCallback)
 			}
