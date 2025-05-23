@@ -21,6 +21,7 @@ func writeTar(tw *tar.Writer, f *os.File, fInfo os.FileInfo, archivePath string)
 		typeFlag = tar.TypeDir
 		mode = 0755
 	} else {
+		typeFlag = tar.TypeReg
 		mode = 0644
 		size = fInfo.Size()
 	}

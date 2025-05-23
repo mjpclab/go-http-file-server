@@ -217,7 +217,7 @@ func (h *aliasHandler) mergeAlias(
 		var fsItem os.FileInfo
 		if noMore { // reached second-deepest path of alias
 			var err error
-			fsItem, err = os.Stat(alias.fs)
+			fsItem, err = os.Stat(alias.dir)
 			if err != nil {
 				errs = append(errs, err)
 			}
@@ -298,7 +298,7 @@ func (h *aliasHandler) statIndexFile(rawReqPath, baseDir string, baseItem os.Fil
 			if !alias.isMatch(path.Clean(rawReqPath + "/" + index)) {
 				continue
 			}
-			file, item, err = stat(alias.fs, true)
+			file, item, err = stat(alias.dir, true)
 			if err != nil && file != nil {
 				file.Close()
 			}
@@ -358,7 +358,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	tailSlash := vhostReqPath[len(vhostReqPath)-1] == '/'
 
 	reqPath := util.CleanUrlPath(vhostReqPath[len(h.url):])
-	fsPath := filepath.Clean(h.fs + reqPath)
+	fsPath := filepath.Clean(h.dir + reqPath)
 
 	rawQuery := r.URL.RawQuery
 

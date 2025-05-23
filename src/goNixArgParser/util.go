@@ -40,102 +40,151 @@ func stringToSlice(input string) []string {
 	return []string{input}
 }
 
-func toBool(input string) (bool, error) {
+func toBool(input string) (bool, bool) {
 	if len(input) == 0 {
-		return false, nil
+		return false, false
 	}
-	return strconv.ParseBool(input)
+	v, err := strconv.ParseBool(input)
+	return v, err == nil
 }
 
-func toBools(input []string) ([]bool, error) {
-	inputLen := len(input)
-
-	output := make([]bool, inputLen)
-	for i, l := 0, inputLen; i < l; i++ {
-		v, err := toBool(input[i])
-		if err != nil {
-			return nil, err
+func toBools(inputs []string) (outputs []bool, ok bool) {
+	l := len(inputs)
+	values := make([]bool, l)
+	for i := 0; i < l; i++ {
+		values[i], ok = toBool(inputs[i])
+		if !ok {
+			return
 		}
-		output[i] = v
 	}
 
-	return output, nil
+	return values, true
 }
 
-func toInt(input string) (int, error) {
-	return strconv.Atoi(input)
+func toInt(input string) (int, bool) {
+	v, err := strconv.Atoi(input)
+	return v, err == nil
 }
 
-func toInts(input []string) ([]int, error) {
-	inputLen := len(input)
-
-	output := make([]int, inputLen)
-	for i, l := 0, inputLen; i < l; i++ {
-		v, err := toInt(input[i])
-		if err != nil {
-			return nil, err
+func toInts(inputs []string) (outputs []int, ok bool) {
+	l := len(inputs)
+	values := make([]int, l)
+	for i := 0; i < l; i++ {
+		values[i], ok = toInt(inputs[i])
+		if !ok {
+			return
 		}
-		output[i] = v
 	}
 
-	return output, nil
+	return values, true
 }
 
-func toInt64(input string) (int64, error) {
-	return strconv.ParseInt(input, 10, 64)
+func toUint(input string) (uint, bool) {
+	v, err := strconv.ParseUint(input, 10, 0)
+	return uint(v), err == nil
 }
 
-func toInt64s(input []string) ([]int64, error) {
-	inputLen := len(input)
-
-	output := make([]int64, inputLen)
-	for i, l := 0, inputLen; i < l; i++ {
-		v, err := toInt64(input[i])
-		if err != nil {
-			return nil, err
+func toUints(inputs []string) (outputs []uint, ok bool) {
+	l := len(inputs)
+	values := make([]uint, l)
+	for i := 0; i < l; i++ {
+		values[i], ok = toUint(inputs[i])
+		if !ok {
+			return
 		}
-		output[i] = v
 	}
 
-	return output, nil
+	return values, true
 }
 
-func toUint64(input string) (uint64, error) {
-	return strconv.ParseUint(input, 10, 64)
+func toInt32(input string) (int32, bool) {
+	v, err := strconv.ParseInt(input, 10, 32)
+	return int32(v), err == nil
 }
 
-func toUint64s(input []string) ([]uint64, error) {
-	inputLen := len(input)
-
-	output := make([]uint64, inputLen)
-	for i, l := 0, inputLen; i < l; i++ {
-		v, err := toUint64(input[i])
-		if err != nil {
-			return nil, err
+func toInt32s(inputs []string) (outputs []int32, ok bool) {
+	l := len(inputs)
+	values := make([]int32, l)
+	for i := 0; i < l; i++ {
+		values[i], ok = toInt32(inputs[i])
+		if !ok {
+			return
 		}
-		output[i] = v
 	}
 
-	return output, nil
+	return values, true
 }
 
-func toFloat64(input string) (float64, error) {
-	return strconv.ParseFloat(input, 64)
+func toUint32(input string) (uint32, bool) {
+	v, err := strconv.ParseUint(input, 10, 32)
+	return uint32(v), err == nil
 }
 
-func toFloat64s(input []string) ([]float64, error) {
-	inputLen := len(input)
-
-	output := make([]float64, inputLen)
-	for i, l := 0, inputLen; i < l; i++ {
-		v, err := toFloat64(input[i])
-		if err != nil {
-			return nil, err
+func toUint32s(inputs []string) (outputs []uint32, ok bool) {
+	l := len(inputs)
+	values := make([]uint32, l)
+	for i := 0; i < l; i++ {
+		values[i], ok = toUint32(inputs[i])
+		if !ok {
+			return
 		}
-		output[i] = v
 	}
 
-	return output, nil
+	return values, true
+}
+
+func toInt64(input string) (int64, bool) {
+	v, err := strconv.ParseInt(input, 10, 64)
+	return v, err == nil
+}
+
+func toInt64s(inputs []string) (outputs []int64, ok bool) {
+	l := len(inputs)
+	values := make([]int64, l)
+	for i := 0; i < l; i++ {
+		values[i], ok = toInt64(inputs[i])
+		if !ok {
+			return
+		}
+	}
+
+	return values, true
+}
+
+func toUint64(input string) (uint64, bool) {
+	v, err := strconv.ParseUint(input, 10, 64)
+	return v, err == nil
+}
+
+func toUint64s(inputs []string) (outputs []uint64, ok bool) {
+	l := len(inputs)
+	values := make([]uint64, l)
+	for i := 0; i < l; i++ {
+		values[i], ok = toUint64(inputs[i])
+		if !ok {
+			return
+		}
+	}
+
+	return values, true
+}
+
+func toFloat64(input string) (float64, bool) {
+	v, err := strconv.ParseFloat(input, 64)
+	return v, err == nil
+}
+
+func toFloat64s(inputs []string) (outputs []float64, ok bool) {
+	l := len(inputs)
+	values := make([]float64, l)
+	for i := 0; i < l; i++ {
+		values[i], ok = toFloat64(inputs[i])
+		if !ok {
+			return
+		}
+	}
+
+	return values, true
 }
 
 func contains(collection []string, find string) bool {

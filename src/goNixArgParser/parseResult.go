@@ -102,9 +102,7 @@ func (r *ParseResult) GetBool(key string) (value bool, found bool) {
 		return
 	}
 
-	value, err := toBool(str)
-	found = err == nil
-	return
+	return toBool(str)
 }
 
 func (r *ParseResult) GetInt(key string) (value int, found bool) {
@@ -113,9 +111,34 @@ func (r *ParseResult) GetInt(key string) (value int, found bool) {
 		return
 	}
 
-	value, err := toInt(str)
-	found = err == nil
-	return
+	return toInt(str)
+}
+
+func (r *ParseResult) GetUint(key string) (value uint, found bool) {
+	str, found := r.GetString(key)
+	if !found {
+		return
+	}
+
+	return toUint(str)
+}
+
+func (r *ParseResult) GetInt32(key string) (value int32, found bool) {
+	str, found := r.GetString(key)
+	if !found {
+		return
+	}
+
+	return toInt32(str)
+}
+
+func (r *ParseResult) GetUint32(key string) (value uint32, found bool) {
+	str, found := r.GetString(key)
+	if !found {
+		return
+	}
+
+	return toUint32(str)
 }
 
 func (r *ParseResult) GetInt64(key string) (value int64, found bool) {
@@ -124,9 +147,7 @@ func (r *ParseResult) GetInt64(key string) (value int64, found bool) {
 		return
 	}
 
-	value, err := toInt64(str)
-	found = err == nil
-	return
+	return toInt64(str)
 }
 
 func (r *ParseResult) GetUint64(key string) (value uint64, found bool) {
@@ -135,9 +156,7 @@ func (r *ParseResult) GetUint64(key string) (value uint64, found bool) {
 		return
 	}
 
-	value, err := toUint64(str)
-	found = err == nil
-	return
+	return toUint64(str)
 }
 
 func (r *ParseResult) GetFloat64(key string) (value float64, found bool) {
@@ -146,9 +165,7 @@ func (r *ParseResult) GetFloat64(key string) (value float64, found bool) {
 		return
 	}
 
-	value, err := toFloat64(str)
-	found = err == nil
-	return
+	return toFloat64(str)
 }
 
 // =============================
@@ -185,9 +202,7 @@ func (r *ParseResult) GetBools(key string) (values []bool, found bool) {
 		return
 	}
 
-	values, err := toBools(strs)
-	found = err == nil
-	return
+	return toBools(strs)
 }
 
 func (r *ParseResult) GetInts(key string) (values []int, found bool) {
@@ -196,9 +211,34 @@ func (r *ParseResult) GetInts(key string) (values []int, found bool) {
 		return
 	}
 
-	values, err := toInts(strs)
-	found = err == nil
-	return
+	return toInts(strs)
+}
+
+func (r *ParseResult) GetUints(key string) (values []uint, found bool) {
+	strs, found := r.GetStrings(key)
+	if !found {
+		return
+	}
+
+	return toUints(strs)
+}
+
+func (r *ParseResult) GetInt32s(key string) (values []int32, found bool) {
+	strs, found := r.GetStrings(key)
+	if !found {
+		return
+	}
+
+	return toInt32s(strs)
+}
+
+func (r *ParseResult) GetUint32s(key string) (values []uint32, found bool) {
+	strs, found := r.GetStrings(key)
+	if !found {
+		return
+	}
+
+	return toUint32s(strs)
 }
 
 func (r *ParseResult) GetInt64s(key string) (values []int64, found bool) {
@@ -207,9 +247,7 @@ func (r *ParseResult) GetInt64s(key string) (values []int64, found bool) {
 		return
 	}
 
-	values, err := toInt64s(strs)
-	found = err == nil
-	return
+	return toInt64s(strs)
 }
 
 func (r *ParseResult) GetUint64s(key string) (values []uint64, found bool) {
@@ -218,9 +256,7 @@ func (r *ParseResult) GetUint64s(key string) (values []uint64, found bool) {
 		return
 	}
 
-	values, err := toUint64s(strs)
-	found = err == nil
-	return
+	return toUint64s(strs)
 }
 
 func (r *ParseResult) GetFloat64s(key string) (values []float64, found bool) {
@@ -229,9 +265,7 @@ func (r *ParseResult) GetFloat64s(key string) (values []float64, found bool) {
 		return
 	}
 
-	values, err := toFloat64s(strs)
-	found = err == nil
-	return
+	return toFloat64s(strs)
 }
 
 func (r *ParseResult) GetRests() (rests []string) {

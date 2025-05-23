@@ -15,7 +15,7 @@ func (h *aliasHandler) applyMiddlewares(mids []middleware.Middleware, w http.Res
 		VhostReqPath:  session.vhostReqPath,
 		AliasReqPath:  session.aliasReqPath,
 		AliasFsPath:   session.fsPath,
-		AliasFsRoot:   h.fs,
+		AliasFsRoot:   h.dir,
 
 		WantJson: session.wantJson,
 
