@@ -7,7 +7,7 @@ import (
 
 type alias struct {
 	url string
-	fs  string
+	dir string
 }
 
 func createAlias(urlPath, fsPath string) alias {

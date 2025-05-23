@@ -162,12 +162,12 @@ func newAliasHandler(
 
 	globalRestrictAccess := p.GlobalRestrictAccess
 	globalRestrictAccess = vhostCtx.restrictAccessUrls.mergePrefixMatched(globalRestrictAccess, util.HasUrlPrefixDir, currentAlias.url)
-	globalRestrictAccess = vhostCtx.restrictAccessDirs.mergePrefixMatched(globalRestrictAccess, util.HasFsPrefixDir, currentAlias.fs)
+	globalRestrictAccess = vhostCtx.restrictAccessDirs.mergePrefixMatched(globalRestrictAccess, util.HasFsPrefixDir, currentAlias.dir)
 	globalRestrictAccess = util.InPlaceDedup(globalRestrictAccess)
 
 	globalHeaders := p.GlobalHeaders
 	globalHeaders = vhostCtx.headersUrls.mergePrefixMatched(globalHeaders, util.HasUrlPrefixDir, currentAlias.url)
-	globalHeaders = vhostCtx.headersDirs.mergePrefixMatched(globalHeaders, util.HasFsPrefixDir, currentAlias.fs)
+	globalHeaders = vhostCtx.headersDirs.mergePrefixMatched(globalHeaders, util.HasFsPrefixDir, currentAlias.dir)
 
 	h := &aliasHandler{
 		alias:        currentAlias,
@@ -186,21 +186,21 @@ func newAliasHandler(
 		dirIndexes: p.DirIndexes,
 		aliases:    allAliases.filterSuccessor(currentAlias.url),
 
-		auth:    newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalAuth, p.AuthUrls, vhostCtx.authUrlsUsers, p.AuthDirs, vhostCtx.authDirsUsers),
-		index:   newHierarchyAvailability(currentAlias.url, currentAlias.fs, false, p.IndexUrls, vhostCtx.indexUrlsUsers, p.IndexDirs, vhostCtx.indexDirsUsers),
-		upload:  newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalUpload, p.UploadUrls, vhostCtx.uploadUrlsUsers, p.UploadDirs, vhostCtx.uploadDirsUsers),
-		mkdir:   newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalMkdir, p.MkdirUrls, vhostCtx.mkdirUrlsUsers, p.MkdirDirs, vhostCtx.mkdirDirsUsers),
-		delete:  newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalDelete, p.DeleteUrls, vhostCtx.deleteUrlsUsers, p.DeleteDirs, vhostCtx.deleteDirsUsers),
-		archive: newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalArchive, p.ArchiveUrls, vhostCtx.archiveUrlsUsers, p.ArchiveDirs, vhostCtx.archiveDirsUsers),
-		cors:    newHierarchyAvailability(currentAlias.url, currentAlias.fs, p.GlobalCors, p.CorsUrls, nil, p.CorsDirs, nil),
+		auth:    newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalAuth, p.AuthUrls, vhostCtx.authUrlsUsers, p.AuthDirs, vhostCtx.authDirsUsers),
+		index:   newHierarchyAvailability(currentAlias.url, currentAlias.dir, false, p.IndexUrls, vhostCtx.indexUrlsUsers, p.IndexDirs, vhostCtx.indexDirsUsers),
+		upload:  newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalUpload, p.UploadUrls, vhostCtx.uploadUrlsUsers, p.UploadDirs, vhostCtx.uploadDirsUsers),
+		mkdir:   newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalMkdir, p.MkdirUrls, vhostCtx.mkdirUrlsUsers, p.MkdirDirs, vhostCtx.mkdirDirsUsers),
+		delete:  newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalDelete, p.DeleteUrls, vhostCtx.deleteUrlsUsers, p.DeleteDirs, vhostCtx.deleteDirsUsers),
+		archive: newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalArchive, p.ArchiveUrls, vhostCtx.archiveUrlsUsers, p.ArchiveDirs, vhostCtx.archiveDirsUsers),
+		cors:    newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalCors, p.CorsUrls, nil, p.CorsDirs, nil),
 
 		globalRestrictAccess: globalRestrictAccess,
 		restrictAccessUrls:   vhostCtx.restrictAccessUrls.filterSuccessor(false, util.HasUrlPrefixDir, currentAlias.url),
-		restrictAccessDirs:   vhostCtx.restrictAccessDirs.filterSuccessor(false, util.HasFsPrefixDir, currentAlias.fs),
+		restrictAccessDirs:   vhostCtx.restrictAccessDirs.filterSuccessor(false, util.HasFsPrefixDir, currentAlias.dir),
 
 		globalHeaders: globalHeaders,
 		headersUrls:   vhostCtx.headersUrls.filterSuccessor(false, util.HasUrlPrefixDir, currentAlias.url),
-		headersDirs:   vhostCtx.headersDirs.filterSuccessor(false, util.HasFsPrefixDir, currentAlias.fs),
+		headersDirs:   vhostCtx.headersDirs.filterSuccessor(false, util.HasFsPrefixDir, currentAlias.dir),
 
 		shows:     vhostCtx.shows,
 		showDirs:  vhostCtx.showDirs,

@@ -5,7 +5,7 @@ source ./build.inc.version.sh
 
 TAG_PREFIX=${TAG_PREFIX:-mjpclab/ghfs}
 
-docker buildx create --name ghfs-builder --driver docker-container --bootstrap --driver-opt env.https_proxy=
+docker buildx create --name ghfs-builder --driver docker-container --bootstrap
 docker buildx use ghfs-builder
 
 docker buildx build \
