@@ -52,13 +52,6 @@ func (h *aliasHandler) visitTreeNode(
 	childSelections []string,
 	archiveCallback archiveCallback,
 ) {
-	select {
-	case <-r.Context().Done():
-		return
-	default:
-		break
-	}
-
 	needAuth, _ := h.needAuth("", urlPath, fsPath)
 	userId, _, err := h.verifyAuth(r, urlPath, fsPath)
 	if needAuth && err != nil {
