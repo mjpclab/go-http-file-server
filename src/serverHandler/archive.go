@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync/atomic"
 )
 
 type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error
@@ -209,4 +210,38 @@ func (h *aliasHandler) normalizeArchiveSelections(r *http.Request) ([]string, bo
 	}
 
 	return selections, true
+}
+
+func (h *aliasHandler) startArchive(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) (ok bool) {
+	switch session.archiveFormat {
+	case tarFmt:
+		return h.tar(w, r, session, data)
+	case tgzFmt:
+		return h.tgz(w, r, session, data)
+	case zipFmt:
+		return h.zip(w, r, session, data)
+	}
+
+	return
+}
+
+func (h *aliasHandler) tryArchive(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) (ok bool) {
+	if h.archivingWorkers == nil {
+		return h.startArchive(w, r, session, data)
+	}
+
+	if *h.archivingWorkers >= h.archiveWorkersMax {
+		data.Status = http.StatusTooManyRequests
+		return
+	}
+
+	archiving := atomic.AddUint32(h.archivingWorkers, 1)
+	ok = archiving <= h.archiveWorkersMax
+	if ok {
+		ok = h.startArchive(w, r, session, data)
+	} else {
+		data.Status = http.StatusTooManyRequests
+	}
+	atomic.AddUint32(h.archivingWorkers, ^uint32(0)) // archiveWorkers -= 1
+	return
 }

@@ -147,6 +147,9 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValues("archivedirsusers", "--archive-dir-user", "", nil, "file system path that allow archive files for specific users, <sep><fs-path>[<sep><user>...]")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagValue("archiveworkersmax", "--archive-workers-max", "", "0", "maximum number of concurrent archive operations (0 for unlimited)")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlag("globalcors", "--global-cors", "GHFS_GLOBAL_CORS", "enable CORS headers for all directories")
 	serverError.CheckFatal(err)
 
@@ -436,6 +439,8 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		archiveDirsUsers, _ := result.GetStrings("archivedirsusers")
 		param.ArchiveDirsUsers = SplitAllKeyValues(archiveDirsUsers)
 
+		param.ArchiveWorkersMax, _ = result.GetUint32("archiveworkersmax")
+
 		// global restrict access
 		if result.HasKey("globalrestrictaccess") {
 			param.GlobalRestrictAccess, _ = result.GetStrings("globalrestrictaccess")
@@ -465,6 +470,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		certFiles, _ := result.GetStrings("certs")
 		keyFiles, _ := result.GetStrings("keys")
 		param.CertKeyPaths, es = goVirtualHost.CertsKeysToPairs(certFiles, keyFiles)
+		errs = append(errs, es...)
 
 		// listen
 		listens, _ := result.GetStrings("listens")

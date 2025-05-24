@@ -48,6 +48,9 @@ type aliasHandler struct {
 	archive *hierarchyAvailability
 	cors    *hierarchyAvailability
 
+	archiveWorkersMax uint32
+	archivingWorkers  *uint32
+
 	globalRestrictAccess []string
 	restrictAccessUrls   pathStringsList
 	restrictAccessDirs   pathStringsList
@@ -120,21 +123,8 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if session.isMutate && h.mutate(w, r, session, data) {
 			return
-		} else if session.isArchive {
-			switch session.archiveFormat {
-			case tarFmt:
-				if h.tar(w, r, session, data) {
-					return
-				}
-			case tgzFmt:
-				if h.tgz(w, r, session, data) {
-					return
-				}
-			case zipFmt:
-				if h.zip(w, r, session, data) {
-					return
-				}
-			}
+		} else if session.isArchive && h.tryArchive(w, r, session, data) {
+			return
 		}
 	}
 
@@ -178,6 +168,9 @@ func newAliasHandler(
 		toHttps:      p.ToHttps,
 		toHttpsPort:  p.ToHttpsPort,
 		defaultSort:  p.DefaultSort,
+
+		archiveWorkersMax: p.ArchiveWorkersMax,
+		archivingWorkers:  vhostCtx.archivingWorkers,
 
 		users:  vhostCtx.users,
 		theme:  vhostCtx.theme,
