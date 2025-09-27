@@ -14,21 +14,21 @@ const DefaultTplStr = `
 	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=index.css"/>
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
-{{$contextQueryString := .Context.QueryString -}}
-{{$isSimple := .IsSimple -}}
-{{$SubItemPrefix := .SubItemPrefix -}}
-{{if not $isSimple -}}
+{{$contextQueryString := .Context.QueryString}}
+{{$isSimple := .IsSimple}}
+{{$SubItemPrefix := .SubItemPrefix}}
+{{if not $isSimple}}
 <ol class="path-list" translate="no">
-	{{range .Paths -}}
+	{{range .Paths}}
 	<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
-	{{end -}}
+	{{end}}
 </ol>
-{{if .LoginAvail -}}
+{{if .LoginAvail}}
 <a class="login" href="{{if ne .Status 401}}{{.RootRelPath}}?auth={{.Path}}{{$contextQueryString}}{{end}}">{{.Trans.LoginLabel}}</a>
-{{else if .AuthUserName -}}
+{{else if .AuthUserName}}
 <span class="login">[{{.AuthUserName}}]</span>
-{{end -}}
-{{if .CanUpload -}}
+{{end}}
+{{if .CanUpload}}
 <div class="upload-status">
 	<span class="label info">
 		<span class="content">{{.Trans.UploadingLabel}}</span>
@@ -38,9 +38,9 @@ const DefaultTplStr = `
 	</span>
 	<span class="progress"></span>
 </div>
-{{end -}}
+{{end}}
 
-{{if .CanMkdir -}}
+{{if .CanMkdir}}
 <div class="panel mkdir">
 	<form method="POST" action="{{.SubItemPrefix}}?mkdir">
 		<input type="text" autocomplete="off" name="name" class="name"/>
@@ -48,9 +48,9 @@ const DefaultTplStr = `
 		<input type="submit" value="{{.Trans.MkdirLabel}}" class="submit"/>
 	</form>
 </div>
-{{end -}}
+{{end}}
 
-{{if .CanUpload -}}
+{{if .CanUpload}}
 <script type="text/javascript">
 	function showUploadDirFailMessage() {
 		alert('{{.Trans.UploadDirFailMessage}}');
@@ -69,17 +69,17 @@ const DefaultTplStr = `
 		<button type="submit" class="submit">{{.Trans.UploadLabel}}</button>
 	</form>
 </div>
-{{end -}}
+{{end}}
 
-{{if .CanArchive -}}
+{{if .CanArchive}}
 <div class="archive">
 	<a href="{{.SubItemPrefix}}?tar">.tar</a>
 	<a href="{{.SubItemPrefix}}?tgz">.tar.gz</a>
 	<a href="{{.SubItemPrefix}}?zip">.zip</a>
 </div>
-{{end -}}
+{{end}}
 
-{{if .CanDelete -}}
+{{if .CanDelete}}
 <script type="text/javascript">
 	function confirmDelete(e) {
 		var form = e.target;
@@ -91,18 +91,18 @@ const DefaultTplStr = `
 		return proceed;
 	}
 </script>
-{{end -}}
-{{end -}}
-{{if .SubItemsHtml -}}
+{{end}}
+{{end}}
+{{if .SubItemsHtml}}
 <div class="panel filter">
 	<div class="form">
 		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}"/>
 		<button type="reset">X</button>
 	</div>
 </div>
-{{end -}}
+{{end}}
 <ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
-	{{if not $isSimple -}}
+	{{if not $isSimple}}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
 		<span class="detail">
 		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">{{.Trans.ListDirLabel}}{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
@@ -119,8 +119,8 @@ const DefaultTplStr = `
 		<span class="field time"></span>
 		</a>
 	</li>
-	{{end -}}
-	{{range .SubItemsHtml -}}
+	{{end}}
+	{{range .SubItemsHtml}}
 	<li class="{{.Type}}">
 		<a href="{{.Url}}" class="detail">
 		<span class="field name" translate="no">{{.DisplayName}}</span>
@@ -129,19 +129,20 @@ const DefaultTplStr = `
 		</a>
 		{{if and (not $isSimple) .DeleteUrl}}<form class="delete" method="post" action="{{$SubItemPrefix}}?delete" onsubmit="return confirmDelete(event)"><input type="hidden" name="name" value="{{.DeleteUrl}}"/><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/><button type="submit">x</button></form>{{end}}
 	</li>
-	{{end -}}
+	{{end}}
 </ul>
 
 {{if ne .Status 200}}<div class="error">{{.Status}}
-{{if eq .Status 401 -}}
-  {{.Trans.Error401 -}}
-{{else if eq .Status 403 -}}
-  {{.Trans.Error403 -}}
-{{else if eq .Status 404 -}}
-  {{.Trans.Error404 -}}
-{{else -}}
-  {{.Trans.ErrorStatus -}}
-{{end}}</div>{{end}}
+{{if eq .Status 401}}
+ {{.Trans.Error401}}
+{{else if eq .Status 403}}
+ {{.Trans.Error403}}
+{{else if eq .Status 404}}
+ {{.Trans.Error404}}
+{{else}}
+ {{.Trans.ErrorStatus}}
+{{end}}
+</div>{{end}}
 
 <script type="text/javascript" src="{{.RootRelPath}}?asset=index.js" defer="defer" async="async"></script>
 </body>
