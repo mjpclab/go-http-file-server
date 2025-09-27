@@ -463,7 +463,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	case "tgz":
 		isArchive = true
 		arFmt = tgzFmt
-		outFileName = ".tar.tz"
+		outFileName = ".tar.gz"
 	case "zip":
 		isArchive = true
 		arFmt = zipFmt
