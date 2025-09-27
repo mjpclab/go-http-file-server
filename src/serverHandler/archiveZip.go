@@ -61,7 +61,6 @@ func (h *aliasHandler) zip(w http.ResponseWriter, r *http.Request, session *sess
 		session,
 		data,
 		selections,
-		".zip",
 		"application/zip",
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			return writeZip(zipWriter, f, fInfo, relPath)

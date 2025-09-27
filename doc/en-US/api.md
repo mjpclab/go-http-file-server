@@ -50,18 +50,18 @@ Example:
 wget --recursive -nc -nH -np 'http://localhost/dir/?download'
 ```
 
-# Add download param to file
+# Add download param to files
 ```
 GET <path>?download[&sort=key]
 ```
-Add download parameter to file links in the page, which
-make them downloadable instead of displaying content.
+Add download parameter to file links in directory list page, which
+makes them downloadable instead of displaying content.
 
 # Download a file
 Notify user agent download a file rather than displaying its content,
 by outputting `Content-Disposition` header.
 ```
-GET <path/to/file>?download
+GET <path/to/file>?download[=filename]
 ```
 
 Example:
@@ -72,12 +72,12 @@ curl 'http://localhost/ghfs/file?download'
 # Get contents of specified path as archive file
 Only work when "archive" is enabled.
 ```
-GET <path>?tar
-GET <path>?tgz
-GET <path>?zip
-POST <path>?tar
-POST <path>?tgz
-POST <path>?zip
+GET <path>?tar[=filename]
+GET <path>?tgz[=filename]
+GET <path>?zip[=filename]
+POST <path>?tar[=filename]
+POST <path>?tgz[=filename]
+POST <path>?zip[=filename]
 ```
 
 Example:

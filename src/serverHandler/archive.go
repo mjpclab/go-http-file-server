@@ -142,21 +142,10 @@ func (h *aliasHandler) archiveFiles(
 	session *sessionContext,
 	data *responseData,
 	selections []string,
-	fileSuffix string,
 	contentType string,
 	cbWriteFile archiveCallback,
 ) {
-	var itemName string
-	_, hasAlias := h.aliases.byUrlPath(session.vhostReqPath)
-	if hasAlias {
-		itemName = path.Base(session.vhostReqPath)
-	}
-	if len(itemName) == 0 || itemName == "/" {
-		itemName = data.ItemName
-	}
-
-	targetFilename := itemName + fileSuffix
-	writeArchiveHeader(w, contentType, targetFilename)
+	writeArchiveHeader(w, contentType, session.outFileName)
 
 	if !NeedResponseBody(r.Method) {
 		return
@@ -170,7 +159,7 @@ func (h *aliasHandler) archiveFiles(
 		data.Item != nil, // not empty root
 		selections,
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
-			h.logArchive(targetFilename, relPath, r)
+			h.logArchive(session.outFileName, relPath, r)
 			err := cbWriteFile(f, fInfo, relPath)
 			h.logError(err)
 			return err

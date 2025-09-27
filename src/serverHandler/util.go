@@ -4,11 +4,39 @@ import (
 	"mjpclab.dev/ghfs/src/user"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"regexp"
 	"strings"
 )
+
+func getQueryPrefix(rawQuery string) (queryPrefix string) {
+	if len(rawQuery) == 0 {
+		return
+	}
+
+	queryPrefix = rawQuery
+
+	var querySepIndex int
+	if querySepIndex = strings.IndexByte(queryPrefix, '&'); querySepIndex >= 0 {
+		queryPrefix = queryPrefix[:querySepIndex]
+	}
+	if querySepIndex = strings.IndexByte(queryPrefix, '='); querySepIndex >= 0 {
+		queryPrefix = queryPrefix[:querySepIndex]
+	}
+
+	return
+}
+
+func getQueryValue(urlValues url.Values, key string) (value string, ok bool) {
+	var values []string
+	values, ok = urlValues[key]
+	if len(values) > 0 {
+		value = values[len(values)-1]
+	}
+	return
+}
 
 func pathUsernamesToPathUids(users *user.List, pathsUsernames [][]string) pathIntsList {
 	list := make(pathIntsList, 0, len(pathsUsernames))

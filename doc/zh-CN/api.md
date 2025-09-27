@@ -55,10 +55,10 @@ GET <path>?download[&sort=key]
 ```
 为页面中的文件链接添加下载参数，使其可被下载，而不是显示其内容。
 
-# 下载文件
+# 下载单个文件
 通过输出`Content-Disposition`头，通知用户代理下载文件而不是显示其内容。
 ```
-GET <path/to/file>?download
+GET <path/to/file>?download[=filename]
 ```
 
 举例：
@@ -69,12 +69,12 @@ curl 'http://localhost/ghfs/file?download'
 # 以打包文件形式获取指定路径下的内容
 仅在“archive”选项启用时有效。
 ```
-GET <path>?tar
-GET <path>?tgz
-GET <path>?zip
-POST <path>?tar
-POST <path>?tgz
-POST <path>?zip
+GET <path>?tar[=filename]
+GET <path>?tgz[=filename]
+GET <path>?zip[=filename]
+POST <path>?tar[=filename]
+POST <path>?tgz[=filename]
+POST <path>?zip[=filename]
 ```
 
 举例：

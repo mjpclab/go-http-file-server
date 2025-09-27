@@ -1,9 +1,97 @@
 package serverHandler
 
 import (
+	"net/url"
 	"os"
 	"testing"
 )
+
+func TestGetQueryPrefix(t *testing.T) {
+	var prefix string
+
+	prefix = getQueryPrefix("")
+	if prefix != "" {
+		t.Error(prefix)
+	}
+
+	prefix = getQueryPrefix("foo")
+	if prefix != "foo" {
+		t.Error(prefix)
+	}
+
+	prefix = getQueryPrefix("a&b")
+	if prefix != "a" {
+		t.Error(prefix)
+	}
+
+	prefix = getQueryPrefix("a=1&b")
+	if prefix != "a" {
+		t.Error(prefix)
+	}
+
+	prefix = getQueryPrefix("a&b=2")
+	if prefix != "a" {
+		t.Error(prefix)
+	}
+
+	prefix = getQueryPrefix("a=1&b=2")
+	if prefix != "a" {
+		t.Error(prefix)
+	}
+}
+
+func TestGetQueryValue(t *testing.T) {
+	var value string
+	var ok bool
+
+	value, ok = getQueryValue(url.Values{}, "foo")
+	if value != "" || ok {
+		t.Error(value, ok)
+	}
+
+	value, ok = getQueryValue(url.Values{
+		"foo": nil,
+	}, "foo")
+	if value != "" || !ok {
+		t.Error(value, ok)
+	}
+
+	value, ok = getQueryValue(url.Values{
+		"foo": []string{},
+	}, "foo")
+	if value != "" || !ok {
+		t.Error(value, ok)
+	}
+
+	value, ok = getQueryValue(url.Values{
+		"foo": []string{""},
+	}, "foo")
+	if value != "" || !ok {
+		t.Error(value, ok)
+	}
+
+	value, ok = getQueryValue(url.Values{
+		"foo": []string{"1"},
+	}, "foo")
+	if value != "1" || !ok {
+		t.Error(value, ok)
+	}
+
+	value, ok = getQueryValue(url.Values{
+		"foo": []string{"1", "2"},
+	}, "foo")
+	if value != "2" || !ok {
+		t.Error(value, ok)
+	}
+
+	value, ok = getQueryValue(url.Values{
+		"foo": []string{"1", "2"},
+		"bar": []string{"x", "y"},
+	}, "foo")
+	if value != "2" || !ok {
+		t.Error(value, ok)
+	}
+}
 
 func TestGetCleanFilePath(t *testing.T) {
 	var cleanPath string

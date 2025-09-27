@@ -31,6 +31,6 @@ for build in "$@"; do
 	if [ "$GOOS" == "windows" ]; then
 		zip -qrj "${OUTFILE}.zip" "$TMP/"
 	else
-		tar --owner=0 --group=0 -zcf "${OUTFILE}.tar.gz" -C "$TMP" $(ls -A1 "$TMP")
+		$TAR --owner=0 --group=0 -zcf "${OUTFILE}.tar.gz" -C "$TMP" $(ls -A1 "$TMP")
 	fi
 done
