@@ -7,17 +7,12 @@ html, body {
 	background: #fff;
 }
 
-html {
-	font-family: "roboto_condensedbold", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
 body {
 	color: #333;
 	font-size: 0.625em;
 	font-variant-ligatures: none;
 	font-variant-numeric: tabular-nums;
 	font-kerning: none;
-	-webkit-text-size-adjust: none;
 	text-size-adjust: none;
 	hyphens: none;
 	padding-bottom: 2em;
@@ -25,10 +20,6 @@ body {
 
 body, input, textarea, button {
 	font-family: "Cascadia Mono", Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", "Jetbrains Mono NL", monospace;
-}
-
-input::-ms-clear {
-	display: none;
 }
 
 form {
@@ -94,7 +85,7 @@ em {
 	border-radius: 3px;
 }
 
-.none, :root body .none {
+.none {
 	display: none;
 }
 
@@ -106,7 +97,6 @@ em {
 html::before {
 	display: none;
 	content: '';
-	position: absolute;
 	position: fixed;
 	z-index: 2;
 	left: 0;
@@ -127,7 +117,6 @@ html.dragging::before {
 	line-height: 1.2;
 	overflow: hidden;
 	border-bottom: 1px #999 solid;
-	zoom: 1;
 }
 
 .path-list li {
@@ -153,7 +142,6 @@ html.dragging::before {
 	height: 0.4em;
 	border: 1px solid;
 	border-color: #ccc #ccc transparent transparent;
-	-webkit-transform: rotate(45deg) translateY(-50%);
 	transform: rotate(45deg) translateY(-50%);
 }
 
@@ -174,33 +162,39 @@ html.dragging::before {
 
 .tab {
 	display: flex;
+	gap: 0.5em;
 	white-space: nowrap;
 	margin: 1em 1em -1em 1em;
 }
 
-.tab label {
+.tab h3, .tab a {
 	flex: 0 0 auto;
-	margin-right: 0.5em;
 	padding: 1em;
+}
+
+.tab h3 {
+	margin: 0;
+	font-size: inherit;
+}
+
+.tab a {
 	cursor: pointer;
 }
 
-.tab label:focus {
-	outline: 0;
-	text-decoration: underline;
-	text-decoration-style: dotted;
+.tab a:focus {
+	text-decoration: underline 1px dotted;
 }
 
-.tab label:hover {
+.tab a:hover {
 	background: #fbfbfb;
 }
 
-.tab label.active {
+.tab a.active {
 	color: #000;
 	background: #f7f7f7;
 }
 
-.tab label:last-child {
+.tab a:last-child {
 	margin-right: 0;
 }
 
@@ -212,7 +206,6 @@ html.dragging::before {
 
 .upload-status {
 	visibility: hidden;
-	position: absolute;
 	position: sticky;
 	z-index: 1;
 	left: 0;
@@ -220,8 +213,7 @@ html.dragging::before {
 	width: 100%;
 	height: 4px;
 	margin-bottom: -4px;
-	background: #faf5fa;
-	background-color: rgba(204, 153, 204, 0.1);
+	background: rgba(204, 153, 204, 0.1);
 	pointer-events: none;
 }
 
@@ -245,7 +237,6 @@ html.dragging::before {
 	position: relative;
 	display: inline-block;
 	vertical-align: top;
-	text-align: left;
 	text-align: start;
 	padding: 0.5em 1em;
 	box-sizing: border-box;
@@ -255,8 +246,7 @@ html.dragging::before {
 
 .upload-status .info .content {
 	padding-left: 2.5em;
-	background: #c9c;
-	background-color: rgba(204, 153, 204, 0.8);
+	background: rgba(204, 153, 204, 0.8);
 }
 
 @keyframes wheel {
@@ -287,14 +277,12 @@ html.dragging::before {
 }
 
 .upload-status .warn .content {
-	background: #800000;
-	background-color: rgba(128, 0, 0, 0.8);
+	background: rgba(128, 0, 0, 0.8);
 }
 
 .upload-status.uploading .info,
 .upload-status.failed .warn {
 	opacity: 1;
-	-webkit-transform: translateY(25%);
 	transform: translateY(25%);
 }
 
@@ -331,7 +319,6 @@ html.dragging::before {
 .archive {
 	margin: 1em;
 	overflow: hidden;
-	zoom: 1;
 }
 
 .archive a {
@@ -367,7 +354,6 @@ html.dragging::before {
 	border: 3px #aaa solid;
 	border-top-color: transparent;
 	border-left-color: transparent;
-	-webkit-transform: rotate(45deg);
 	transform: rotate(45deg);
 }
 
@@ -383,14 +369,6 @@ html.dragging::before {
 .mkdir .submit {
 	padding-left: 0.5em;
 	padding-right: 0.5em;
-}
-
-.filter {
-	display: none;
-}
-
-:root .filter {
-	display: block;
 }
 
 .filter .form {
@@ -423,7 +401,6 @@ html.dragging::before {
 
 .item-list li {
 	position: relative;
-	zoom: 1;
 }
 
 .item-list a {
@@ -437,7 +414,6 @@ html.dragging::before {
 	align-items: center;
 	border-bottom: 1px #f5f5f5 solid;
 	overflow: hidden;
-	zoom: 1;
 }
 
 .has-deletable .detail {
@@ -518,13 +494,13 @@ html.dragging::before {
 	background: #ffc;
 }
 
-@media only screen and (prefers-color-scheme: light) {
+@media screen and (prefers-color-scheme: light) {
 	html {
 		color-scheme: light;
 	}
 }
 
-@media only screen and (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
 	html {
 		color-scheme: dark;
 	}
@@ -565,11 +541,11 @@ html.dragging::before {
 		border-color: #555 #555 transparent transparent;
 	}
 
-	.tab label:hover {
+	.tab a:hover {
 		background-color: #181818;
 	}
 
-	.tab label.active {
+	.tab a.active {
 		color: #fff;
 		background-color: #222;
 	}
@@ -616,7 +592,7 @@ html.dragging::before {
 	}
 }
 
-@media only screen and (max-width: 375px) {
+@media screen and (max-width: 375px) {
 	.item-list .header .time {
 		width: 4.05em;
 	}
@@ -626,22 +602,14 @@ html.dragging::before {
 	}
 }
 
-@media only screen and (max-width: 350px) {
+@media screen and (max-width: 350px) {
 	.item-list .detail .time {
 		display: none;
 	}
 }
 
 @media print {
-	.panel, .archive {
-		display: none;
-	}
-
-	:root .panel {
-		display: none;
-	}
-
-	.tab {
+	.panel, .tab, .archive {
 		display: none;
 	}
 

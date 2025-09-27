@@ -10,7 +10,7 @@ func (h *aliasHandler) content(w http.ResponseWriter, r *http.Request, session *
 	header.Set("Vary", session.vary)
 	header.Set("X-Content-Type-Options", "nosniff")
 	if data.IsDownload {
-		filename := shimgo.Net_Url_PathEscape(data.ItemName)
+		filename := shimgo.Net_Url_PathEscape(session.outFileName)
 		header.Set("Content-Disposition", "attachment; filename="+filename+"; filename*=UTF-8''"+filename)
 	}
 

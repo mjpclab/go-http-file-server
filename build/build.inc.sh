@@ -6,3 +6,4 @@ source ./build.inc.version.sh
 getLdFlags() {
 	echo "-s -w"
 }
+TAR=${TAR:-tar}

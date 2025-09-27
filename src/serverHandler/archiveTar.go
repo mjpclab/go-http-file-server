@@ -77,8 +77,7 @@ func (h *aliasHandler) tar(w http.ResponseWriter, r *http.Request, session *sess
 		session,
 		data,
 		selections,
-		".tar",
-		"application/octet-stream",
+		"application/x-tar",
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			return writeTar(tw, f, fInfo, relPath)
 		},
@@ -120,8 +119,7 @@ func (h *aliasHandler) tgz(w http.ResponseWriter, r *http.Request, session *sess
 		session,
 		data,
 		selections,
-		".tar.gz",
-		"application/octet-stream",
+		"application/gzip",
 		func(f *os.File, fInfo os.FileInfo, relPath string) error {
 			return writeTar(tw, f, fInfo, relPath)
 		},

@@ -4,9 +4,9 @@ import (
 	"html/template"
 	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
-	"mjpclab.dev/ghfs/src/shimgo"
 	"mjpclab.dev/ghfs/src/util"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -82,6 +82,10 @@ type sessionContext struct {
 
 	file *os.File
 
+	query url.Values
+
+	outFileName string
+
 	errors []error
 }
 
@@ -108,7 +112,6 @@ type responseData struct {
 	RootRelPath string
 
 	Item          os.FileInfo
-	ItemName      string
 	SubItems      []os.FileInfo
 	AliasSubItems []os.FileInfo
 	SubItemsHtml  []itemHtml
@@ -265,7 +268,12 @@ func getSubItemPrefix(currDirRelPath, rawRequestPath string, tailSlash bool) str
 	}
 }
 
-func getItemName(info os.FileInfo, r *http.Request) (itemName string) {
+func getItemName(info os.FileInfo, r *http.Request, prefixReqPath string) (itemName string) {
+	itemName = path.Base(prefixReqPath)
+	if len(itemName) > 0 && itemName != "/" {
+		return
+	}
+
 	if info != nil {
 		itemName = info.Name()
 	}
@@ -360,11 +368,12 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	reqPath := util.CleanUrlPath(vhostReqPath[len(h.url):])
 	fsPath := filepath.Clean(h.dir + reqPath)
 
-	rawQuery := r.URL.RawQuery
+	query := r.URL.Query()
+	queryPrefix := getQueryPrefix(r.URL.RawQuery)
 
 	status := http.StatusOK
 
-	needAuth, requestAuth := h.needAuth(rawQuery, vhostReqPath, fsPath)
+	needAuth, requestAuth := h.needAuth(queryPrefix, vhostReqPath, fsPath)
 	authUserId, authUserName, _authErr := h.verifyAuth(r, vhostReqPath, fsPath)
 	authSuccess := !needAuth || _authErr == nil
 	if !authSuccess {
@@ -373,47 +382,6 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	headers := h.getHeaders(vhostReqPath, fsPath, authSuccess)
-
-	isSimple := false
-	isDownload := false
-	isUpload := false
-	isMkdir := false
-	isDelete := false
-	isMutate := false
-	switch {
-	case strings.HasPrefix(rawQuery, "simpledownload"):
-		isSimple = true
-		isDownload = true
-	case strings.HasPrefix(rawQuery, "simple"):
-		isSimple = true
-	case strings.HasPrefix(rawQuery, "download"):
-		isDownload = true
-	case strings.HasPrefix(rawQuery, "upload") && r.Method == shimgo.Net_Http_MethodPost:
-		isUpload = true
-		isMutate = true
-	case strings.HasPrefix(rawQuery, "mkdir"):
-		isMkdir = true
-		isMutate = true
-	case strings.HasPrefix(r.URL.RawQuery, "delete"):
-		isDelete = true
-		isMutate = true
-	}
-
-	isArchive := false
-	var arFmt archiveFormat
-	if len(rawQuery) == 3 || (len(rawQuery) > 3 && rawQuery[3] == '&') {
-		switch rawQuery[:3] {
-		case "tar":
-			isArchive = true
-			arFmt = tarFmt
-		case "tgz":
-			isArchive = true
-			arFmt = tgzFmt
-		case "zip":
-			isArchive = true
-			arFmt = zipFmt
-		}
-	}
 
 	accepts := acceptHeaders.ParseAccepts(r.Header.Get("Accept"))
 	acceptIndex, _, _ := accepts.GetPreferredValue(acceptContentTypes)
@@ -469,7 +437,60 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 	canIndex = canIndex && allowAccess
 
-	itemName := getItemName(item, r)
+	itemName := getItemName(item, r, prefixReqPath)
+
+	var outFileName string
+
+	isUpload := false
+	isMkdir := false
+	isDelete := false
+	isMutate := false
+	switch queryPrefix {
+	case "upload":
+		isUpload = true
+		isMutate = true
+	case "mkdir":
+		isMkdir = true
+		isMutate = true
+	case "delete":
+		isDelete = true
+		isMutate = true
+	}
+
+	isArchive := false
+	var arFmt archiveFormat
+	switch queryPrefix {
+	case "tar":
+		isArchive = true
+		arFmt = tarFmt
+		outFileName = ".tar"
+	case "tgz":
+		isArchive = true
+		arFmt = tgzFmt
+		outFileName = ".tar.tz"
+	case "zip":
+		isArchive = true
+		arFmt = zipFmt
+		outFileName = ".zip"
+	}
+	if isArchive {
+		arName, _ := getQueryValue(query, queryPrefix)
+		if len(arName) > 0 {
+			outFileName = arName
+		} else {
+			outFileName = itemName + outFileName
+		}
+	}
+
+	_, isSimple := query["simple"]
+	dlName, isDownload := getQueryValue(query, "download")
+	if isDownload {
+		if len(dlName) > 0 {
+			outFileName = dlName
+		} else {
+			outFileName = itemName
+		}
+	}
 
 	subItems, _readdirErr := readdir(file, item, canIndex && !isMutate && !isArchive && NeedResponseBody(r.Method))
 	if _readdirErr != nil {
@@ -494,7 +515,11 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	subItems = h.FilterItems(subItems)
-	rawSortBy, sortState := sortInfos(subItems, rawQuery, h.defaultSort)
+	sort := query.Get("sort")
+	if len(sort) > 2 {
+		sort = sort[:2]
+	}
+	sortState := sortInfos(subItems, sort, h.defaultSort)
 
 	if h.emptyRoot && status == http.StatusOK && len(vhostReqPath) > 1 {
 		status = http.StatusNotFound
@@ -538,7 +563,11 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		isArchive:     isArchive,
 		archiveFormat: arFmt,
 
+		outFileName: outFileName,
+
 		file: file,
+
+		query: query,
 
 		errors: errs,
 	}
@@ -565,7 +594,6 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		RootRelPath: rootRelPath,
 
 		Item:          item,
-		ItemName:      itemName,
 		SubItems:      subItems,
 		AliasSubItems: aliasSubItems,
 		SubItemsHtml:  nil,
@@ -574,7 +602,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		Context: pathContext{
 			simple:      isSimple,
 			download:    isDownload,
-			sort:        rawSortBy,
+			sort:        sort,
 			defaultSort: h.defaultSort,
 		},
 	}

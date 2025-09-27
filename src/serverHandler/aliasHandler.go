@@ -100,15 +100,16 @@ func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if session.authSuccess {
 		if session.requestAuth {
-			h.redirectWithoutRequestAuth(w, r, session, data)
+			returnUrl := h.extractNoAuthUrl(r, session, data)
+			http.Redirect(w, r, returnUrl, http.StatusFound)
 			return
 		}
 
 		if session.redirectAction == addSlashSuffix {
-			redirect(w, r, session.prefixReqPath+"/", h.autoDirSlash)
+			redirectWithQuery(w, r, session.prefixReqPath+"/", h.autoDirSlash)
 			return
 		} else if session.redirectAction == removeSlashSuffix {
-			redirect(w, r, session.prefixReqPath[:len(session.prefixReqPath)-1], h.autoDirSlash)
+			redirectWithQuery(w, r, session.prefixReqPath[:len(session.prefixReqPath)-1], h.autoDirSlash)
 			return
 		}
 

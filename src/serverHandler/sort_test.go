@@ -43,91 +43,91 @@ func TestSort(t *testing.T) {
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=/n", "")
+	sortInfos(infos, "/n", "")
 	ok = expectItems(infos, dir1, dir2, dir3, file1, file2, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=/N", "")
+	sortInfos(infos, "/N", "")
 	ok = expectItems(infos, dir3, dir2, dir1, file3, file2, file1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=n/", "")
+	sortInfos(infos, "n/", "")
 	ok = expectItems(infos, file1, file2, file3, dir1, dir2, dir3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=N/", "")
+	sortInfos(infos, "N/", "")
 	ok = expectItems(infos, file3, file2, file1, dir3, dir2, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=n", "")
+	sortInfos(infos, "n", "")
 	ok = expectItems(infos, dir1, file1, dir2, file2, dir3, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=N", "")
+	sortInfos(infos, "N", "")
 	ok = expectItems(infos, file3, dir3, file2, dir2, file1, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=e", "")
+	sortInfos(infos, "e", "")
 	ok = expectItems(infos, dir1, dir2, dir3, file2, file1, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=E", "")
+	sortInfos(infos, "E", "")
 	ok = expectItems(infos, file3, file1, file2, dir3, dir2, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=s", "")
+	sortInfos(infos, "s", "")
 	ok = expectItems(infos, dir1, file1, file2, dir3, file3, dir2)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=S", "")
+	sortInfos(infos, "S", "")
 	ok = expectItems(infos, dir2, file3, dir3, file2, file1, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=t", "")
+	sortInfos(infos, "t", "")
 	ok = expectItems(infos, dir1, file1, dir2, dir3, file2, file3)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=T", "")
+	sortInfos(infos, "T", "")
 	ok = expectItems(infos, file3, file2, dir3, dir2, file1, dir1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
 	}
 
 	copy(infos, originInfos)
-	sortInfos(infos, "?sort=/", "")
+	sortInfos(infos, "/", "")
 	ok = expectItems(infos, dir3, dir1, dir2, file2, file3, file1)
 	if !ok {
 		t.Errorf("%+v\n", infos)
