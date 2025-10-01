@@ -10,14 +10,12 @@
 	const classHeader = 'header';
 
 	const selectorIsNone = '.' + classNone;
-	const selectorNotNone = ':not(' + selectorIsNone + ')';
+	const selectorNotNone = `:not(${selectorIsNone})`;
 	const selectorPathList = '.path-list';
 	const selectorItemList = '.item-list';
-	const selectorItem = 'li:not(.' + classHeader + '):not(.parent)';
+	const selectorItem = `li:not(.${classHeader}):not(.parent)`;
 	const selectorItemIsNone = selectorItem + selectorIsNone;
 	const selectorItemNotNone = selectorItem + selectorNotNone;
-
-	const leavingEvent = typeof window.onpagehide !== strUndef ? 'pagehide' : 'beforeunload';
 
 	const Enter = 'Enter';
 	const Escape = 'Escape';
@@ -33,7 +31,7 @@
 	let filteredText = '';
 
 	function matchFilter(input) {
-		return input.toLowerCase().indexOf(filteredText) >= 0;
+		return input.toLowerCase().includes(filteredText);
 	}
 
 	let lastFocused;
@@ -47,8 +45,7 @@
 		const input = filter.querySelector('input');
 		if (!input) return;
 
-		let clear = filter.querySelector('button');
-		if (!clear) clear = document.createElement('button');
+		const clear = filter.querySelector('button') || document.createElement('button');
 
 		const itemList = document.querySelector(selectorItemList)
 
@@ -62,9 +59,9 @@
 				clear.style.display = 'block';
 
 				let selector
-				if (filteringText.indexOf(filteredText) >= 0) {	// increment search, find in visible items
+				if (filteringText.includes(filteredText)) {	// increment search, find in visible items
 					selector = selectorItemNotNone;
-				} else if (filteredText.indexOf(filteringText) >= 0) {	// decrement search, find in hidden items
+				} else if (filteredText.includes(filteringText)) {	// decrement search, find in hidden items
 					selector = selectorItemIsNone;
 				} else {
 					selector = selectorItem;
@@ -72,8 +69,7 @@
 				filteredText = filteringText;
 
 				items = itemList.querySelectorAll(selector);
-				if (!items.forEach) items = Array.prototype.slice.call(items);	// IE9+/ClassicEdge
-				items.forEach(function (item) {
+				items.forEach(item => {
 					const name = item.querySelector('.name');
 					if (matchFilter(name.textContent)) {
 						if (selector !== selectorItemNotNone) {
@@ -90,10 +86,7 @@
 				filteredText = '';
 
 				items = itemList.querySelectorAll(selectorItemIsNone);
-				if (!items.forEach) items = Array.prototype.slice.call(items);	// IE9+/ClassicEdge
-				items.forEach(function (item) {
-					item.classList.remove(classNone);
-				});
+				items.forEach(item => item.classList.remove(classNone));
 			}
 		};
 
@@ -143,12 +136,11 @@
 				sessionStorage.removeItem(location.pathname);
 			}
 
-			window.addEventListener(leavingEvent, function () {
+			window.addEventListener('pagehide', function () {
 				if (input.value) {
 					sessionStorage.setItem(location.pathname, input.value);
 				}
 			});
-
 		}
 		if (input.value) {
 			doFilter();
@@ -266,7 +258,7 @@
 		}
 
 		function getFirstFocusableSibling(container) {
-			const a = container.querySelector('li:not(.' + classNone + '):not(.' + classHeader + ') a');
+			const a = container.querySelector(`li:not(.${classNone}):not(.${classHeader}) a`);
 			return a;
 		}
 
@@ -317,7 +309,7 @@
 		const SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
 
 		const PLATFORM = navigator.platform || navigator.userAgent;
-		const IS_MAC_PLATFORM = PLATFORM.indexOf('Mac') >= 0 || PLATFORM.indexOf('iPhone') >= 0 || PLATFORM.indexOf('iPad') >= 0 || PLATFORM.indexOf('iPod') >= 0
+		const IS_MAC_PLATFORM = PLATFORM.includes('Mac') || PLATFORM.includes('iPhone') || PLATFORM.includes('iPad') || PLATFORM.includes('iPod')
 
 		let lookupKey;
 		let lookupBuffer;
@@ -380,7 +372,7 @@
 		}
 
 		function getFocusItemByKeyPress(e) {
-			if (SKIP_TAGS.indexOf(e.target.tagName) >= 0) {
+			if (SKIP_TAGS.includes(e.target.tagName)) {
 				return;
 			}
 
@@ -598,7 +590,6 @@
 		}
 
 		function enableFileDirModeSwitch() {
-			const classHidden = 'hidden';
 			const classActive = 'active';
 
 			function onClickOpt(optTarget, clearInput) {
@@ -669,10 +660,10 @@
 						return;
 					}
 
-					const nodir = Array.prototype.slice.call(files).every(function (file) {
-						return file.webkitRelativePath.indexOf('/') < 0;
-					});
-					if (nodir) {
+					const noDir = Array.prototype.slice.call(files).every(file =>
+						file.webkitRelativePath.includes('/')
+					);
+					if (noDir) {
 						onClickOptFile();	// prevent clear input files
 					}
 				});
@@ -699,7 +690,7 @@
 					sessionStorage.removeItem(uploadTypeField);
 				}
 
-				window.addEventListener(leavingEvent, function () {
+				window.addEventListener('pagehide', function () {
 					const activeUploadType = fileInput.name;
 					if (activeUploadType !== file) {
 						sessionStorage.setItem(uploadTypeField, activeUploadType)
@@ -923,7 +914,7 @@
 				const tagName = e.target.tagName;
 				if (tagName === 'TEXTAREA') {
 					return;
-				} else if (tagName === 'INPUT' && nonTextInputTypes.indexOf(e.target.type) < 0) {
+				} else if (tagName === 'INPUT' && !nonTextInputTypes.includes(e.target.type)) {
 					return;
 				}
 
@@ -967,11 +958,11 @@
 			});
 		}
 
-		const modes = enableFileDirModeSwitch();
+		const {switchToFileMode, switchToDirMode} = enableFileDirModeSwitch();
 		const uploadProgressively = enableUploadProgress();
 		enableFormUploadProgress(uploadProgressively);
-		enableDndUploadProgress(uploadProgressively, modes.switchToFileMode, modes.switchToDirMode);
-		enablePasteUploadProgress(uploadProgressively, modes.switchToFileMode, modes.switchToDirMode);
+		enableDndUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode);
+		enablePasteUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode);
 	}
 
 	function enableNonRefreshDelete() {
