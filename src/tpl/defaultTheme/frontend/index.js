@@ -10,14 +10,12 @@
 	const classHeader = 'header';
 
 	const selectorIsNone = '.' + classNone;
-	const selectorNotNone = ':not(' + selectorIsNone + ')';
+	const selectorNotNone = `:not(${selectorIsNone})`;
 	const selectorPathList = '.path-list';
 	const selectorItemList = '.item-list';
-	const selectorItem = 'li:not(.' + classHeader + '):not(.parent)';
+	const selectorItem = `li:not(.${classHeader}):not(.parent)`;
 	const selectorItemIsNone = selectorItem + selectorIsNone;
 	const selectorItemNotNone = selectorItem + selectorNotNone;
-
-	const leavingEvent = typeof window.onpagehide !== strUndef ? 'pagehide' : 'beforeunload';
 
 	const Enter = 'Enter';
 	const Escape = 'Escape';
@@ -33,7 +31,7 @@
 	let filteredText = '';
 
 	function matchFilter(input) {
-		return input.toLowerCase().indexOf(filteredText) >= 0;
+		return input.toLowerCase().includes(filteredText);
 	}
 
 	let lastFocused;
@@ -47,8 +45,7 @@
 		const input = filter.querySelector('input');
 		if (!input) return;
 
-		let clear = filter.querySelector('button');
-		if (!clear) clear = document.createElement('button');
+		const clear = filter.querySelector('button') || document.createElement('button');
 
 		const itemList = document.querySelector(selectorItemList)
 
@@ -62,9 +59,9 @@
 				clear.style.display = 'block';
 
 				let selector
-				if (filteringText.indexOf(filteredText) >= 0) {	// increment search, find in visible items
+				if (filteringText.includes(filteredText)) {	// increment search, find in visible items
 					selector = selectorItemNotNone;
-				} else if (filteredText.indexOf(filteringText) >= 0) {	// decrement search, find in hidden items
+				} else if (filteredText.includes(filteringText)) {	// decrement search, find in hidden items
 					selector = selectorItemIsNone;
 				} else {
 					selector = selectorItem;
@@ -72,8 +69,7 @@
 				filteredText = filteringText;
 
 				items = itemList.querySelectorAll(selector);
-				if (!items.forEach) items = Array.prototype.slice.call(items);	// IE9+/ClassicEdge
-				items.forEach(function (item) {
+				items.forEach(item => {
 					const name = item.querySelector('.name');
 					if (matchFilter(name.textContent)) {
 						if (selector !== selectorItemNotNone) {
@@ -90,10 +86,7 @@
 				filteredText = '';
 
 				items = itemList.querySelectorAll(selectorItemIsNone);
-				if (!items.forEach) items = Array.prototype.slice.call(items);	// IE9+/ClassicEdge
-				items.forEach(function (item) {
-					item.classList.remove(classNone);
-				});
+				items.forEach(item => item.classList.remove(classNone));
 			}
 		};
 
@@ -143,12 +136,11 @@
 				sessionStorage.removeItem(location.pathname);
 			}
 
-			window.addEventListener(leavingEvent, function () {
+			window.addEventListener('pagehide', function () {
 				if (input.value) {
 					sessionStorage.setItem(location.pathname, input.value);
 				}
 			});
-
 		}
 		if (input.value) {
 			doFilter();
@@ -200,8 +192,7 @@
 		prevChildName = decodeURIComponent(prevChildName);
 		if (!matchFilter(prevChildName)) return;
 
-		let items = document.body.querySelectorAll(selectorItemList + '>' + selectorItemNotNone);
-		items = Array.prototype.slice.call(items);
+		const items = Array.from(document.body.querySelectorAll(selectorItemList + '>' + selectorItemNotNone));
 		const selectorName = '.field.name';
 		const selectorLink = 'a';
 		for (let i = 0; i < items.length; i++) {
@@ -237,11 +228,7 @@
 			}
 			let startLI = startA && startA.closest('li');
 			if (!startLI) {
-				if (isBackward) {
-					startLI = container.firstElementChild;
-				} else {
-					startLI = container.lastElementChild;
-				}
+				startLI = isBackward ? container.firstElementChild : container.lastElementChild;
 			}
 			if (!startLI) {
 				return;
@@ -266,7 +253,7 @@
 		}
 
 		function getFirstFocusableSibling(container) {
-			const a = container.querySelector('li:not(.' + classNone + '):not(.' + classHeader + ') a');
+			const a = container.querySelector(`li:not(.${classNone}):not(.${classHeader}) a`);
 			return a;
 		}
 
@@ -278,8 +265,8 @@
 
 		function getMatchedFocusableSibling(container, isBackward, startA, buf) {
 			let skipRound = buf.length === 1;	// find next single-char prefix
-			let firstCheckA;
-			let secondCheckA;
+			let firstCheckedA;
+			let secondCheckedA;
 			let a = startA;
 			do {
 				if (skipRound) {
@@ -290,15 +277,15 @@
 					continue;
 				}
 
-				// firstCheckA maybe a focused a that not belongs to the list
-				// secondCheckA must be in the list
-				if (!firstCheckA) {
-					firstCheckA = a;
-				} else if (firstCheckA === a) {
+				// firstCheckedA maybe a focused a that not belongs to the list
+				// secondCheckedA must be in the list
+				if (!firstCheckedA) {
+					firstCheckedA = a;
+				} else if (firstCheckedA === a) {
 					return;
-				} else if (!secondCheckA) {
-					secondCheckA = a;
-				} else if (secondCheckA === a) {
+				} else if (!secondCheckedA) {
+					secondCheckedA = a;
+				} else if (secondCheckedA === a) {
 					return;
 				}
 
@@ -317,7 +304,7 @@
 		const SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
 
 		const PLATFORM = navigator.platform || navigator.userAgent;
-		const IS_MAC_PLATFORM = PLATFORM.indexOf('Mac') >= 0 || PLATFORM.indexOf('iPhone') >= 0 || PLATFORM.indexOf('iPad') >= 0 || PLATFORM.indexOf('iPod') >= 0
+		const IS_MAC_PLATFORM = PLATFORM.includes('Mac') || PLATFORM.includes('iPhone') || PLATFORM.includes('iPad') || PLATFORM.includes('iPod')
 
 		let lookupKey;
 		let lookupBuffer;
@@ -380,7 +367,7 @@
 		}
 
 		function getFocusItemByKeyPress(e) {
-			if (SKIP_TAGS.indexOf(e.target.tagName) >= 0) {
+			if (SKIP_TAGS.includes(e.target.tagName)) {
 				return;
 			}
 
@@ -447,10 +434,10 @@
 		const innerDirFile = 'innerdirfile';
 
 		const optFile = uploadType.querySelector('.' + file);
-		const optDirFile = uploadType.querySelector('.' + dirFile);
-		const optInnerDirFile = uploadType.querySelector('.' + innerDirFile);
+		const optDir = uploadType.querySelector('.' + dirFile);
+		const optInnerDir = uploadType.querySelector('.' + innerDirFile);
 		let optActive = optFile;
-		const canMkdir = Boolean(optDirFile);
+		const canMkdir = Boolean(optDir);
 
 		function getTimeStamp() {
 			const now = new Date();
@@ -480,7 +467,7 @@
 								return handle.getFile();
 							}).then(function (file) {
 								const relativePath = dirPath + file.name;
-								files.push({file: file, relativePath: relativePath});
+								files.push({file, relativePath});
 							}).catch(function (err) {
 								logError(err);
 							});
@@ -598,40 +585,40 @@
 		}
 
 		function enableFileDirModeSwitch() {
-			const classHidden = 'hidden';
 			const classActive = 'active';
 
-			function onClickOpt(optTarget, clearInput) {
+			function onClickOptAny(optTarget, clearInput) {
 				if (optTarget === optActive) {
 					return false;
 				}
-				optActive.classList.remove(classActive);
 
+				optActive.classList.remove(classActive);
 				optActive = optTarget;
 				optActive.classList.add(classActive);
 
 				if (clearInput) {
 					fileInput.value = '';
 				}
+
 				return true;
 			}
 
 			function onClickOptFile(e) {
-				if (onClickOpt(optFile, Boolean(e))) {
+				if (onClickOptAny(optFile, Boolean(e))) {
 					fileInput.name = file;
 					fileInput.webkitdirectory = false;
 				}
 			}
 
-			function onClickOptDirFile() {
-				if (onClickOpt(optDirFile, optActive === optFile)) {
+			function onClickOptDir() {
+				if (onClickOptAny(optDir, optActive === optFile)) {
 					fileInput.name = dirFile;
 					fileInput.webkitdirectory = true;
 				}
 			}
 
-			function onClickOptInnerDirFile() {
-				if (onClickOpt(optInnerDirFile, optActive === optFile)) {
+			function onClickOptInnerDir() {
+				if (onClickOptAny(optInnerDir, optActive === optFile)) {
 					fileInput.name = innerDirFile;
 					fileInput.webkitdirectory = true;
 				}
@@ -661,45 +648,42 @@
 				fileInput.addEventListener('change', function (e) {
 					// workaround fix for old browsers, select dir not work but still act like select files
 					// switch back to file
-					if (optActive === optFile) {
-						return;
-					}
-					const files = e.target.files;
-					if (!files.length) {
-						return;
-					}
+					if (optActive === optFile) return;
 
-					const nodir = Array.prototype.slice.call(files).every(function (file) {
-						return file.webkitRelativePath.indexOf('/') < 0;
-					});
-					if (nodir) {
+					const files = e.target.files;
+					if (!files.length) return;
+
+					const noDir = Array.from(files).every(file =>
+						!file.webkitRelativePath.includes('/')
+					);
+					if (noDir) {
 						onClickOptFile();	// prevent clear input files
 					}
 				});
 			}
-			if (optDirFile) {
-				optDirFile.addEventListener('click', onClickOptDirFile);
-				optDirFile.addEventListener('keydown', onKeydownOpt);
+			if (optDir) {
+				optDir.addEventListener('click', onClickOptDir);
+				optDir.addEventListener('keydown', onKeydownOpt);
 			}
-			if (optInnerDirFile) {
-				optInnerDirFile.addEventListener('click', onClickOptInnerDirFile);
-				optInnerDirFile.addEventListener('keydown', onKeydownOpt);
+			if (optInnerDir) {
+				optInnerDir.addEventListener('click', onClickOptInnerDir);
+				optInnerDir.addEventListener('keydown', onKeydownOpt);
 			}
 
 			if (hasStorage) {
 				const uploadTypeField = 'upload-type';
 				const prevUploadType = sessionStorage.getItem(uploadTypeField);
 				if (prevUploadType === dirFile) {
-					optDirFile && optDirFile.click();
+					optDir && optDir.click();
 				} else if (prevUploadType === innerDirFile) {
-					optInnerDirFile && optInnerDirFile.click();
+					optInnerDir && optInnerDir.click();
 				}
 
 				if (prevUploadType !== null) {
 					sessionStorage.removeItem(uploadTypeField);
 				}
 
-				window.addEventListener(leavingEvent, function () {
+				window.addEventListener('pagehide', function () {
 					const activeUploadType = fileInput.name;
 					if (activeUploadType !== file) {
 						sessionStorage.setItem(uploadTypeField, activeUploadType)
@@ -715,23 +699,20 @@
 			}
 
 			function switchToDirMode() {
-				if (optDirFile) {
-					if (optActive !== optDirFile) {
-						optDirFile.focus();
-						onClickOptDirFile();
+				if (optDir) {
+					if (optActive !== optDir) {
+						optDir.focus();
+						onClickOptDir();
 					}
-				} else if (optInnerDirFile) {
-					if (optActive !== optInnerDirFile) {
-						optInnerDirFile.focus();
-						onClickOptInnerDirFile();
+				} else if (optInnerDir) {
+					if (optActive !== optInnerDir) {
+						optInnerDir.focus();
+						onClickOptInnerDir();
 					}
 				}
 			}
 
-			return {
-				switchToFileMode: switchToFileMode,
-				switchToDirMode: switchToDirMode
-			};
+			return {switchToFileMode, switchToDirMode};
 		}
 
 		function enableUploadProgress() {	// also fix Safari upload filename has no path info
@@ -776,7 +757,7 @@
 			}
 
 			function uploadBatch(files) {
-				const formName = fileInput.name;
+				const fieldName = fileInput.name;
 				const parts = new FormData();
 				files.forEach(function (file) {
 					let relativePath
@@ -791,7 +772,7 @@
 						relativePath = file.name;
 					}
 
-					parts.append(formName, file, relativePath);
+					parts.append(fieldName, file, relativePath);
 				});
 
 				const xhr = new XMLHttpRequest();
@@ -808,9 +789,7 @@
 			}
 
 			function uploadProgressively(files) {
-				if (!files.length) {
-					return;
-				}
+				if (!files.length) return;
 
 				if (uploading) {
 					batches.push(files);
@@ -830,12 +809,12 @@
 				e.stopPropagation();
 				e.preventDefault();
 
-				const files = Array.prototype.slice.call(fileInput.files);
+				const files = Array.from(fileInput.files);
 				uploadProgressively(files);
 			});
 
 			fileInput.addEventListener('change', function () {
-				const files = Array.prototype.slice.call(fileInput.files);
+				const files = Array.from(fileInput.files);
 				uploadProgressively(files);
 			});
 		}
@@ -870,20 +849,15 @@
 				e.preventDefault();
 				e.currentTarget.classList.remove(classDragging);
 				fileInput.value = '';
-
-				if (!e.dataTransfer.files.length) {
-					return;
-				}
+				if (!e.dataTransfer.files.length) return;
 
 				itemsToFiles(e.dataTransfer.items, canMkdir).then(function (result) {
-					const files = result.files;
 					if (result.hasDir) {
 						switchToDirMode();
-						uploadProgressively(files);
 					} else {
 						switchToFileMode();
-						uploadProgressively(files);
 					}
+					uploadProgressively(result.files);
 				}, function (err) {
 					if (err === errLacksMkdir && typeof showUploadDirFailMessage !== strUndef) {
 						showUploadDirFailMessage();
@@ -923,7 +897,7 @@
 				const tagName = e.target.tagName;
 				if (tagName === 'TEXTAREA') {
 					return;
-				} else if (tagName === 'INPUT' && nonTextInputTypes.indexOf(e.target.type) < 0) {
+				} else if (tagName === 'INPUT' && !nonTextInputTypes.includes(e.target.type)) {
 					return;
 				}
 
@@ -936,9 +910,7 @@
 					uploadPastedContent(dFiles[0]);
 				} else if (dItems.length > 0 && dFiles.length === 0) {
 					// text pasted (with other data types in DataTransferItems
-					const textTypeIndex = data.types.findIndex(function (t) {
-						return t === typeTextPlain;
-					});
+					const textTypeIndex = data.types.findIndex(t => t === typeTextPlain);
 					const textItem = dItems[textTypeIndex];
 					if (textItem) {
 						textItem.getAsString(function (content) {
@@ -967,11 +939,11 @@
 			});
 		}
 
-		const modes = enableFileDirModeSwitch();
+		const {switchToFileMode, switchToDirMode} = enableFileDirModeSwitch();
 		const uploadProgressively = enableUploadProgress();
 		enableFormUploadProgress(uploadProgressively);
-		enableDndUploadProgress(uploadProgressively, modes.switchToFileMode, modes.switchToDirMode);
-		enablePasteUploadProgress(uploadProgressively, modes.switchToFileMode, modes.switchToDirMode);
+		enableDndUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode);
+		enablePasteUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode);
 	}
 
 	function enableNonRefreshDelete() {
@@ -990,12 +962,12 @@
 					const elItem = form.closest('li');
 					elItem.remove();
 				} else {
-					logError('delete failed: ' + status + ' ' + this.statusText);
+					logError(`delete failed: ${status} ${this.statusText}`);
 				}
 			}
 
 			let params = '';
-			const els = Array.prototype.slice.call(form.elements);
+			const els = Array.from(form.elements);
 			for (let i = 0; i < els.length; i++) {
 				if (!els[i].name) {
 					continue
