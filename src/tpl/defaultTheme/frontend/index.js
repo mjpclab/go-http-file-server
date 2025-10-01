@@ -3,65 +3,65 @@
 		console.error(err);
 	}
 
-	var strUndef = 'undefined';
-	var protoHttps = 'https:';
+	const strUndef = 'undefined';
+	const protoHttps = 'https:';
 
-	var classNone = 'none';
-	var classHeader = 'header';
+	const classNone = 'none';
+	const classHeader = 'header';
 
-	var selectorIsNone = '.' + classNone;
-	var selectorNotNone = ':not(' + selectorIsNone + ')';
-	var selectorPathList = '.path-list';
-	var selectorItemList = '.item-list';
-	var selectorItem = 'li:not(.' + classHeader + '):not(.parent)';
-	var selectorItemIsNone = selectorItem + selectorIsNone;
-	var selectorItemNotNone = selectorItem + selectorNotNone;
+	const selectorIsNone = '.' + classNone;
+	const selectorNotNone = ':not(' + selectorIsNone + ')';
+	const selectorPathList = '.path-list';
+	const selectorItemList = '.item-list';
+	const selectorItem = 'li:not(.' + classHeader + '):not(.parent)';
+	const selectorItemIsNone = selectorItem + selectorIsNone;
+	const selectorItemNotNone = selectorItem + selectorNotNone;
 
-	var leavingEvent = typeof window.onpagehide !== strUndef ? 'pagehide' : 'beforeunload';
+	const leavingEvent = typeof window.onpagehide !== strUndef ? 'pagehide' : 'beforeunload';
 
-	var Enter = 'Enter';
-	var Escape = 'Escape';
-	var Esc = 'Esc';
-	var Space = ' ';
+	const Enter = 'Enter';
+	const Escape = 'Escape';
+	const Esc = 'Esc';
+	const Space = ' ';
 
-	var hasStorage = false;
+	let hasStorage = false;
 	try {
 		if (typeof sessionStorage !== strUndef) hasStorage = true;
 	} catch (err) {
 	}
 
-	var filteredText = '';
+	let filteredText = '';
 
 	function matchFilter(input) {
 		return input.toLowerCase().indexOf(filteredText) >= 0;
 	}
 
-	var lastFocused;
+	let lastFocused;
 
-	var errLacksMkdir = new Error("mkdir permission is not enabled")
+	const errLacksMkdir = new Error("mkdir permission is not enabled")
 
 	function enableFilter() {
-		var filter = document.body.querySelector('.filter');
+		const filter = document.body.querySelector('.filter');
 		if (!filter) return;
 
-		var input = filter.querySelector('input');
+		const input = filter.querySelector('input');
 		if (!input) return;
 
-		var clear = filter.querySelector('button');
+		let clear = filter.querySelector('button');
 		if (!clear) clear = document.createElement('button');
 
-		var itemList = document.querySelector(selectorItemList)
+		const itemList = document.querySelector(selectorItemList)
 
-		var timeoutId;
-		var doFilter = function () {
-			var filteringText = input.value.trim().toLowerCase();
+		let timeoutId;
+		const doFilter = function () {
+			const filteringText = input.value.trim().toLowerCase();
 			if (filteringText === filteredText) return;
 
-			var items
+			let items
 			if (filteringText) {
 				clear.style.display = 'block';
 
-				var selector
+				let selector
 				if (filteringText.indexOf(filteredText) >= 0) {	// increment search, find in visible items
 					selector = selectorItemNotNone;
 				} else if (filteredText.indexOf(filteringText) >= 0) {	// decrement search, find in hidden items
@@ -74,7 +74,7 @@
 				items = itemList.querySelectorAll(selector);
 				if (!items.forEach) items = Array.prototype.slice.call(items);	// IE9+/ClassicEdge
 				items.forEach(function (item) {
-					var name = item.querySelector('.name');
+					const name = item.querySelector('.name');
 					if (matchFilter(name.textContent)) {
 						if (selector !== selectorItemNotNone) {
 							item.classList.remove(classNone);
@@ -97,19 +97,19 @@
 			}
 		};
 
-		var onValueMayChange = function () {
+		const onValueMayChange = function () {
 			clearTimeout(timeoutId);
 			timeoutId = setTimeout(doFilter, 350);
 		};
 		input.addEventListener('input', onValueMayChange);
 		input.addEventListener('change', onValueMayChange);
 
-		var onEnter = function () {
+		const onEnter = function () {
 			clearTimeout(timeoutId);
 			input.blur();
 			doFilter();
 		};
-		var onEscape = function () {
+		const onEscape = function () {
 			clearTimeout(timeoutId);
 			input.value = '';
 			doFilter();
@@ -135,7 +135,7 @@
 
 		// init
 		if (hasStorage) {
-			var prevSessionFilter = sessionStorage.getItem(location.pathname);
+			const prevSessionFilter = sessionStorage.getItem(location.pathname);
 			if (prevSessionFilter) {
 				input.value = prevSessionFilter;
 			}
@@ -157,12 +157,12 @@
 
 	function keepFocusOnBackwardForward() {
 		function onFocus(e) {
-			var link = e.target.closest('a');
+			const link = e.target.closest('a');
 			if (!link || link === lastFocused) return;
 			lastFocused = link;
 		}
 
-		var itemList = document.body.querySelector(selectorItemList);
+		const itemList = document.body.querySelector(selectorItemList);
 		itemList.addEventListener('focusin', onFocus);
 		itemList.addEventListener('click', onFocus);
 		window.addEventListener('pageshow', function () {
@@ -175,7 +175,7 @@
 
 	function focusChildOnNavUp() {
 		function extractCleanUrl(url) {
-			var sepIndex = url.indexOf('?');
+			let sepIndex = url.indexOf('?');
 			if (sepIndex < 0) sepIndex = url.indexOf('#');
 			if (sepIndex >= 0) {
 				url = url.slice(0, sepIndex);
@@ -183,39 +183,39 @@
 			return url;
 		}
 
-		var prevUrl = document.referrer;
+		let prevUrl = document.referrer;
 		if (!prevUrl) return;
 		prevUrl = extractCleanUrl(prevUrl);
 
-		var currUrl = extractCleanUrl(location.href);
+		const currUrl = extractCleanUrl(location.href);
 
 		if (prevUrl.length <= currUrl.length) return;
 		if (prevUrl.slice(0, currUrl.length) !== currUrl) return;
-		var goesUp = prevUrl.slice(currUrl.length);
+		const goesUp = prevUrl.slice(currUrl.length);
 		if (currUrl[currUrl.length - 1] !== '/' && goesUp[0] !== '/') return;
-		var matchInfo = /[^/]+/.exec(goesUp);
+		const matchInfo = /[^/]+/.exec(goesUp);
 		if (!matchInfo) return;
-		var prevChildName = matchInfo[0];
+		let prevChildName = matchInfo[0];
 		if (!prevChildName) return;
 		prevChildName = decodeURIComponent(prevChildName);
 		if (!matchFilter(prevChildName)) return;
 
-		var items = document.body.querySelectorAll(selectorItemList + '>' + selectorItemNotNone);
+		let items = document.body.querySelectorAll(selectorItemList + '>' + selectorItemNotNone);
 		items = Array.prototype.slice.call(items);
-		var selectorName = '.field.name';
-		var selectorLink = 'a';
-		for (var i = 0; i < items.length; i++) {
-			var item = items[i];
-			var elName = item.querySelector(selectorName);
+		const selectorName = '.field.name';
+		const selectorLink = 'a';
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i];
+			const elName = item.querySelector(selectorName);
 			if (!elName) continue;
 
-			var text = elName.textContent;
+			let text = elName.textContent;
 			if (text[text.length - 1] === '/') {
 				text = text.slice(0, -1);
 			}
 			if (text !== prevChildName) continue;
 
-			var elLink = item.querySelector(selectorLink);
+			const elLink = item.querySelector(selectorLink);
 			if (!elLink) break;
 
 			lastFocused = elLink;
@@ -225,8 +225,8 @@
 	}
 
 	function enableKeyboardNavigate() {
-		var pathList = document.body.querySelector(selectorPathList);
-		var itemList = document.body.querySelector(selectorItemList);
+		const pathList = document.body.querySelector(selectorPathList);
+		const itemList = document.body.querySelector(selectorItemList);
 		if (!pathList && !itemList) {
 			return;
 		}
@@ -235,7 +235,7 @@
 			if (!startA) {
 				startA = container.querySelector(':focus');
 			}
-			var startLI = startA && startA.closest('li');
+			let startLI = startA && startA.closest('li');
 			if (!startLI) {
 				if (isBackward) {
 					startLI = container.firstElementChild;
@@ -247,7 +247,7 @@
 				return;
 			}
 
-			var siblingLI = startLI;
+			let siblingLI = startLI;
 			do {
 				if (isBackward) {
 					siblingLI = siblingLI.previousElementSibling || container.lastElementChild;
@@ -260,27 +260,27 @@
 			));
 
 			if (siblingLI) {
-				var siblingA = siblingLI.querySelector('a');
+				const siblingA = siblingLI.querySelector('a');
 				return siblingA;
 			}
 		}
 
 		function getFirstFocusableSibling(container) {
-			var a = container.querySelector('li:not(.' + classNone + '):not(.' + classHeader + ') a');
+			const a = container.querySelector('li:not(.' + classNone + '):not(.' + classHeader + ') a');
 			return a;
 		}
 
 		function getLastFocusableSibling(container) {
-			var a = container.querySelector('li a');
+			let a = container.querySelector('li a');
 			a = getFocusableSibling(container, true, a);
 			return a;
 		}
 
 		function getMatchedFocusableSibling(container, isBackward, startA, buf) {
-			var skipRound = buf.length === 1;	// find next single-char prefix
-			var firstCheckA;
-			var secondCheckA;
-			var a = startA;
+			let skipRound = buf.length === 1;	// find next single-char prefix
+			let firstCheckA;
+			let secondCheckA;
+			let a = startA;
 			do {
 				if (skipRound) {
 					skipRound = false;
@@ -302,27 +302,27 @@
 					return;
 				}
 
-				var textContent = (a.querySelector('.name') || a).textContent.toLowerCase();
+				const textContent = (a.querySelector('.name') || a).textContent.toLowerCase();
 				if (textContent.startsWith(buf)) {
 					return a;
 				}
 			} while (a = getFocusableSibling(container, isBackward, a));
 		}
 
-		var ARROW_UP = 'ArrowUp';
-		var ARROW_DOWN = 'ArrowDown';
-		var ARROW_LEFT = 'ArrowLeft';
-		var ARROW_RIGHT = 'ArrowRight';
+		const ARROW_UP = 'ArrowUp';
+		const ARROW_DOWN = 'ArrowDown';
+		const ARROW_LEFT = 'ArrowLeft';
+		const ARROW_RIGHT = 'ArrowRight';
 
-		var SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
+		const SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
 
-		var PLATFORM = navigator.platform || navigator.userAgent;
-		var IS_MAC_PLATFORM = PLATFORM.indexOf('Mac') >= 0 || PLATFORM.indexOf('iPhone') >= 0 || PLATFORM.indexOf('iPad') >= 0 || PLATFORM.indexOf('iPod') >= 0
+		const PLATFORM = navigator.platform || navigator.userAgent;
+		const IS_MAC_PLATFORM = PLATFORM.indexOf('Mac') >= 0 || PLATFORM.indexOf('iPhone') >= 0 || PLATFORM.indexOf('iPad') >= 0 || PLATFORM.indexOf('iPod') >= 0
 
-		var lookupKey;
-		var lookupBuffer;
-		var lookupStartA;
-		var lookupTimer;
+		let lookupKey;
+		let lookupBuffer;
+		let lookupStartA;
+		let lookupTimer;
 
 		function clearLookupContext() {
 			lookupKey = undefined;
@@ -340,7 +340,7 @@
 		function lookup(container, key, isBackward) {
 			key = key.toLowerCase();
 
-			var currentLookupStartA;
+			let currentLookupStartA;
 			if (key === lookupKey) {
 				// same as last key, lookup next single-char prefix
 				currentLookupStartA = container.querySelector(':focus');
@@ -361,8 +361,8 @@
 			return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
 		}
 
-		var canArrowMove;
-		var isToEnd;
+		let canArrowMove;
+		let isToEnd;
 		if (IS_MAC_PLATFORM) {
 			canArrowMove = function (e) {
 				return !(e.ctrlKey || e.shiftKey || e.metaKey);	// only allow Opt
@@ -418,7 +418,7 @@
 		}
 
 		document.addEventListener('keydown', function (e) {
-			var newFocusEl = getFocusItemByKeyPress(e);
+			const newFocusEl = getFocusItemByKeyPress(e);
 			if (newFocusEl) {
 				e.preventDefault();
 				newFocusEl.focus();
@@ -427,67 +427,67 @@
 	}
 
 	function enhanceUpload() {
-		var upload = document.body.querySelector('.upload');
+		const upload = document.body.querySelector('.upload');
 		if (!upload) return;
 
-		var form = upload.querySelector('form');
+		const form = upload.querySelector('form');
 		if (!form) return;
 
-		var fileInput = form.querySelector('input[type=file]');
+		const fileInput = form.querySelector('input[type=file]');
 		if (!fileInput) return;
 
-		var submitButton = form.querySelector('[type=submit]');
+		const submitButton = form.querySelector('[type=submit]');
 		if (submitButton) submitButton.classList.add(classNone);
 
-		var uploadType = document.body.querySelector('.upload-type');
+		const uploadType = document.body.querySelector('.upload-type');
 		if (!uploadType) return;
 
-		var file = 'file';
-		var dirFile = 'dirfile';
-		var innerDirFile = 'innerdirfile';
+		const file = 'file';
+		const dirFile = 'dirfile';
+		const innerDirFile = 'innerdirfile';
 
-		var optFile = uploadType.querySelector('.' + file);
-		var optDirFile = uploadType.querySelector('.' + dirFile);
-		var optInnerDirFile = uploadType.querySelector('.' + innerDirFile);
-		var optActive = optFile;
-		var canMkdir = Boolean(optDirFile);
+		const optFile = uploadType.querySelector('.' + file);
+		const optDirFile = uploadType.querySelector('.' + dirFile);
+		const optInnerDirFile = uploadType.querySelector('.' + innerDirFile);
+		let optActive = optFile;
+		const canMkdir = Boolean(optDirFile);
 
 		function getTimeStamp() {
-			var now = new Date();
-			var date = String(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate());
-			var time = String(now.getHours() * 10000 + now.getMinutes() * 100 + now.getSeconds());
-			var ms = String(now.getMilliseconds());
+			const now = new Date();
+			let date = String(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate());
+			let time = String(now.getHours() * 10000 + now.getMinutes() * 100 + now.getSeconds());
+			let ms = String(now.getMilliseconds());
 			date = date.padStart(8, '0');
 			time = time.padStart(6, '0');
 			ms = ms.padStart(3, '0');
-			var ts = '-' + date + '-' + time + '-' + ms;
+			const ts = '-' + date + '-' + time + '-' + ms;
 			return ts;
 		}
 
-		var itemsToFiles;
+		let itemsToFiles;
 		if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && !DataTransferItem.prototype.webkitGetAsEntry) {
-			var handleKindFile = 'file';
-			var handleKindDir = 'directory';
-			var permDescriptor = {mode: 'read'};
+			const handleKindFile = 'file';
+			const handleKindDir = 'directory';
+			const permDescriptor = {mode: 'read'};
 			itemsToFiles = function (dataTransferItems, canMkdir) {
 				function resultsToFiles(results, files, dirPath) {
 					return Promise.all(results.map(function (result) {
-						var handle = result.value;
+						const handle = result.value;
 						if (handle.kind === handleKindFile) {
 							return handle.queryPermission(permDescriptor).then(function (queryResult) {
 								if (queryResult === 'prompt') return handle.requestPermission(permDescriptor);
 							}).then(function () {
 								return handle.getFile();
 							}).then(function (file) {
-								var relativePath = dirPath + file.name;
+								const relativePath = dirPath + file.name;
 								files.push({file: file, relativePath: relativePath});
 							}).catch(function (err) {
 								logError(err);
 							});
 						} else if (handle.kind === handleKindDir) {
 							return new Promise(function (resolve) {
-								var childResults = [];
-								var childIter = handle.values();
+								let childResults = [];
+								let childIter = handle.values();
 
 								function onLevelDone() {
 									childResults = null;
@@ -514,8 +514,8 @@
 					}));
 				}
 
-				var files = [];
-				var hasDir = false;
+				const files = [];
+				let hasDir = false;
 
 				return Promise.all(Array.from(dataTransferItems).map(function (item) {
 					return item.getAsFileSystemHandle();
@@ -527,7 +527,7 @@
 					if (hasDir && !canMkdir) {
 						throw errLacksMkdir;
 					}
-					var handleResults = handles.map(function (handle) {
+					const handleResults = handles.map(function (handle) {
 						return {value: handle, done: false};
 					});
 					return resultsToFiles(handleResults, files, '').then(function () {
@@ -541,7 +541,7 @@
 					return Promise.all(entries.map(function (entry) {
 						return new Promise(function (resolve) {
 							if (entry.isFile) {
-								var relativePath = entry.fullPath;
+								let relativePath = entry.fullPath;
 								if (relativePath[0] === '/') {
 									relativePath = relativePath.slice(1);
 								}
@@ -553,8 +553,8 @@
 									resolve()
 								});
 							} else if (entry.isDirectory) {
-								var dirReader = entry.createReader()
-								var onReadSubEntries = function (subEntries) {
+								const dirReader = entry.createReader()
+								const onReadSubEntries = function (subEntries) {
 									if (!subEntries.length) resolve();
 									entriesToFiles(subEntries, files).then(function () {
 										dirReader.readEntries(onReadSubEntries);
@@ -566,20 +566,20 @@
 					}));
 				}
 
-				var entries = [];
-				var files = [];
-				var hasDir = false;
+				const entries = [];
+				const files = [];
+				let hasDir = false;
 
-				for (var i = 0; i < dataTransferItems.length; i++) {
-					var item = dataTransferItems[i];
-					var entry = item.webkitGetAsEntry();
+				for (let i = 0; i < dataTransferItems.length; i++) {
+					const item = dataTransferItems[i];
+					const entry = item.webkitGetAsEntry();
 					if (!entry) {	// undefined for pasted text
 						continue;
 					}
 					if (entry.isFile) {
 						// Safari cannot get file from entry by entry.file(), if it is a pasted image
 						// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
-						var file = item.getAsFile();
+						const file = item.getAsFile();
 						files.push({file: file, relativePath: file.name});
 					} else if (entry.isDirectory) {
 						hasDir = true;
@@ -598,8 +598,8 @@
 		}
 
 		function enableFileDirModeSwitch() {
-			var classHidden = 'hidden';
-			var classActive = 'active';
+			const classHidden = 'hidden';
+			const classActive = 'active';
 
 			function onClickOpt(optTarget, clearInput) {
 				if (optTarget === optActive) {
@@ -664,12 +664,12 @@
 					if (optActive === optFile) {
 						return;
 					}
-					var files = e.target.files;
+					const files = e.target.files;
 					if (!files.length) {
 						return;
 					}
 
-					var nodir = Array.prototype.slice.call(files).every(function (file) {
+					const nodir = Array.prototype.slice.call(files).every(function (file) {
 						return file.webkitRelativePath.indexOf('/') < 0;
 					});
 					if (nodir) {
@@ -687,8 +687,8 @@
 			}
 
 			if (hasStorage) {
-				var uploadTypeField = 'upload-type';
-				var prevUploadType = sessionStorage.getItem(uploadTypeField);
+				const uploadTypeField = 'upload-type';
+				const prevUploadType = sessionStorage.getItem(uploadTypeField);
 				if (prevUploadType === dirFile) {
 					optDirFile && optDirFile.click();
 				} else if (prevUploadType === innerDirFile) {
@@ -700,7 +700,7 @@
 				}
 
 				window.addEventListener(leavingEvent, function () {
-					var activeUploadType = fileInput.name;
+					const activeUploadType = fileInput.name;
 					if (activeUploadType !== file) {
 						sessionStorage.setItem(uploadTypeField, activeUploadType)
 					}
@@ -735,18 +735,18 @@
 		}
 
 		function enableUploadProgress() {	// also fix Safari upload filename has no path info
-			var uploading = false;
-			var batches = [];
-			var classUploading = 'uploading';
-			var classFailed = 'failed';
-			var elUploadStatus = document.body.querySelector('.upload-status');
+			let uploading = false;
+			const batches = [];
+			const classUploading = 'uploading';
+			const classFailed = 'failed';
+			const elUploadStatus = document.body.querySelector('.upload-status');
 			if (!elUploadStatus) return;
-			var elProgress = elUploadStatus.querySelector('.progress');
-			var elFailedMessage = elUploadStatus.querySelector('.warn .message');
+			const elProgress = elUploadStatus.querySelector('.progress');
+			const elFailedMessage = elUploadStatus.querySelector('.warn .message');
 
 			function onProgress(e) {
 				if (e.lengthComputable) {
-					var percent = 100 * e.loaded / e.total;
+					const percent = 100 * e.loaded / e.total;
 					elProgress.style.width = percent + '%';
 				}
 			}
@@ -759,7 +759,7 @@
 			}
 
 			function onSuccess(e) {
-				var status = e.target.status
+				const status = e.target.status
 				if (status < 200 || status >= 300) {
 					return onFail({type: e.target.statusText || status});
 				} else if (batches.length) {
@@ -776,10 +776,10 @@
 			}
 
 			function uploadBatch(files) {
-				var formName = fileInput.name;
-				var parts = new FormData();
+				const formName = fileInput.name;
+				const parts = new FormData();
 				files.forEach(function (file) {
-					var relativePath
+					let relativePath
 					if (file.file) {
 						// unwrap object {file, relativePath}
 						relativePath = file.relativePath;
@@ -794,7 +794,7 @@
 					parts.append(formName, file, relativePath);
 				});
 
-				var xhr = new XMLHttpRequest();
+				const xhr = new XMLHttpRequest();
 				xhr.upload.addEventListener('progress', onProgress);
 				xhr.addEventListener('error', onFail);
 				xhr.addEventListener('error', onFinally);
@@ -830,19 +830,19 @@
 				e.stopPropagation();
 				e.preventDefault();
 
-				var files = Array.prototype.slice.call(fileInput.files);
+				const files = Array.prototype.slice.call(fileInput.files);
 				uploadProgressively(files);
 			});
 
 			fileInput.addEventListener('change', function () {
-				var files = Array.prototype.slice.call(fileInput.files);
+				const files = Array.prototype.slice.call(fileInput.files);
 				uploadProgressively(files);
 			});
 		}
 
 		function enableDndUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode) {
-			var isSelfDragging = false;
-			var classDragging = 'dragging';
+			let isSelfDragging = false;
+			const classDragging = 'dragging';
 
 			function onSelfDragStart() {
 				isSelfDragging = true;
@@ -876,7 +876,7 @@
 				}
 
 				itemsToFiles(e.dataTransfer.items, canMkdir).then(function (result) {
-					var files = result.files;
+					const files = result.files;
 					if (result.hasDir) {
 						switchToDirMode();
 						uploadProgressively(files);
@@ -893,7 +893,7 @@
 
 			document.body.addEventListener('dragstart', onSelfDragStart);
 			document.body.addEventListener('dragend', onDragEnd);
-			var dndTarget = document.documentElement;
+			const dndTarget = document.documentElement;
 			dndTarget.addEventListener('dragenter', onDragEnterOver);
 			dndTarget.addEventListener('dragover', onDragEnterOver);
 			dndTarget.addEventListener('dragleave', onDragLeave);
@@ -901,55 +901,55 @@
 		}
 
 		function enablePasteUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode) {
-			var typeTextPlain = 'text/plain';
-			var nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
+			const typeTextPlain = 'text/plain';
+			const nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
 
 			function uploadPastedContent(file) {
 				switchToFileMode();
 
-				var ts = getTimeStamp();
-				var filename = file.name;
-				var dotIndex = filename.lastIndexOf('.');
+				const ts = getTimeStamp();
+				let filename = file.name;
+				let dotIndex = filename.lastIndexOf('.');
 				if (dotIndex < 0) {
 					dotIndex = filename.length;
 				}
 				filename = filename.slice(0, dotIndex) + ts + filename.slice(dotIndex);
 
-				var files = [{file: file, relativePath: filename}];
+				const files = [{file: file, relativePath: filename}];
 				uploadProgressively(files);
 			}
 
 			document.documentElement.addEventListener('paste', function (e) {
-				var tagName = e.target.tagName;
+				const tagName = e.target.tagName;
 				if (tagName === 'TEXTAREA') {
 					return;
 				} else if (tagName === 'INPUT' && nonTextInputTypes.indexOf(e.target.type) < 0) {
 					return;
 				}
 
-				var data = e.clipboardData;
-				var dItems = data.items;
-				var dFiles = data.files;
+				const data = e.clipboardData;
+				const dItems = data.items;
+				const dFiles = data.files;
 
 				if (dItems.length === 1 && dFiles.length === 1 && dFiles[0].type === 'image/png') {
 					// image pasted
 					uploadPastedContent(dFiles[0]);
 				} else if (dItems.length > 0 && dFiles.length === 0) {
 					// text pasted (with other data types in DataTransferItems
-					var textTypeIndex = data.types.findIndex(function (t) {
+					const textTypeIndex = data.types.findIndex(function (t) {
 						return t === typeTextPlain;
 					});
-					var textItem = dItems[textTypeIndex];
+					const textItem = dItems[textTypeIndex];
 					if (textItem) {
 						textItem.getAsString(function (content) {
-							var file = new File([content], 'text.txt', {type: typeTextPlain})
+							const file = new File([content], 'text.txt', {type: typeTextPlain})
 							uploadPastedContent(file);
 						});
 					}
 				} else {
 					// actual files/directories pasted
 					itemsToFiles(dItems, canMkdir).then(function (result) {
-						var files = result.files;
+						const files = result.files;
 
 						// pasted real files
 						if (result.hasDir) {
@@ -967,36 +967,36 @@
 			});
 		}
 
-		var modes = enableFileDirModeSwitch();
-		var uploadProgressively = enableUploadProgress();
+		const modes = enableFileDirModeSwitch();
+		const uploadProgressively = enableUploadProgress();
 		enableFormUploadProgress(uploadProgressively);
 		enableDndUploadProgress(uploadProgressively, modes.switchToFileMode, modes.switchToDirMode);
 		enablePasteUploadProgress(uploadProgressively, modes.switchToFileMode, modes.switchToDirMode);
 	}
 
 	function enableNonRefreshDelete() {
-		var itemList = document.body.querySelector(selectorItemList);
+		const itemList = document.body.querySelector(selectorItemList);
 		if (!itemList) return;
 		if (!itemList.classList.contains('has-deletable')) return;
 
 		itemList.addEventListener('submit', function (e) {
 			if (e.defaultPrevented) return;
 
-			var form = e.target;
+			const form = e.target;
 
 			function onLoad() {
-				var status = this.status;
+				const status = this.status;
 				if (status >= 200 && status < 300) {
-					var elItem = form.closest('li');
+					const elItem = form.closest('li');
 					elItem.remove();
 				} else {
 					logError('delete failed: ' + status + ' ' + this.statusText);
 				}
 			}
 
-			var params = '';
-			var els = Array.prototype.slice.call(form.elements);
-			for (var i = 0; i < els.length; i++) {
+			let params = '';
+			const els = Array.prototype.slice.call(form.elements);
+			for (let i = 0; i < els.length; i++) {
 				if (!els[i].name) {
 					continue
 				}
@@ -1005,9 +1005,9 @@
 				}
 				params += els[i].name + '=' + encodeURIComponent(els[i].value)
 			}
-			var url = form.action;
+			const url = form.action;
 
-			var xhr = new XMLHttpRequest();
+			const xhr = new XMLHttpRequest();
 			xhr.open('POST', url);	// will retrieve deleted result into bfcache
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			xhr.addEventListener('load', onLoad);

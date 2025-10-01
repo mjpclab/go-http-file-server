@@ -79,9 +79,9 @@
 {{if .CanDelete -}}
 <script type="text/javascript">
 	function confirmDelete(e) {
-		var form = e.target;
-		var name = form.name.value;
-		var proceed = confirm('{{.Trans.DeleteConfirm}}\n' + name);
+		const form = e.target;
+		const name = form.name.value;
+		const proceed = confirm('{{.Trans.DeleteConfirm}}\n' + name);
 		if (!proceed) {
 			e.preventDefault();
 		}
