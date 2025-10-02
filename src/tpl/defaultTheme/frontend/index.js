@@ -19,7 +19,6 @@
 
 	const Enter = 'Enter';
 	const Escape = 'Escape';
-	const Esc = 'Esc';
 	const Space = ' ';
 
 	let hasStorage = false;
@@ -109,16 +108,12 @@
 		};
 
 		input.addEventListener('keydown', function (e) {
-			switch (e.key) {
-				case Enter:
-					onEnter();
-					e.preventDefault();
-					break;
-				case Escape:
-				case Esc:
-					onEscape();
-					e.preventDefault();
-					break;
+			if (e.key === Enter) {
+				onEnter();
+				e.preventDefault();
+			} else if (e.key === Escape) {
+				onEscape();
+				e.preventDefault();
 			}
 		});
 		clear.addEventListener('click', function () {
@@ -137,8 +132,9 @@
 			}
 
 			window.addEventListener('pagehide', function () {
-				if (input.value) {
-					sessionStorage.setItem(location.pathname, input.value);
+				const inputValue = input.value;
+				if (inputValue) {
+					sessionStorage.setItem(location.pathname, inputValue);
 				}
 			});
 		}
@@ -150,8 +146,7 @@
 	function keepFocusOnBackwardForward() {
 		function onFocus(e) {
 			const link = e.target.closest('a');
-			if (!link || link === lastFocused) return;
-			lastFocused = link;
+			if (link && link !== lastFocused) lastFocused = link;
 		}
 
 		const itemList = document.body.querySelector(selectorItemList);
@@ -213,6 +208,7 @@
 			lastFocused = elLink;
 			elLink.focus();
 			elLink.scrollIntoView({block: 'center'});
+			break;
 		}
 	}
 
