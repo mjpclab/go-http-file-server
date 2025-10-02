@@ -4,6 +4,7 @@
 	}
 
 	const strUndef = 'undefined';
+	const strFunction = 'function';
 	const protoHttps = 'https:';
 
 	const classNone = 'none';
@@ -19,7 +20,6 @@
 
 	const Enter = 'Enter';
 	const Escape = 'Escape';
-	const Esc = 'Esc';
 	const Space = ' ';
 
 	let hasStorage = false;
@@ -109,16 +109,12 @@
 		};
 
 		input.addEventListener('keydown', function (e) {
-			switch (e.key) {
-				case Enter:
-					onEnter();
-					e.preventDefault();
-					break;
-				case Escape:
-				case Esc:
-					onEscape();
-					e.preventDefault();
-					break;
+			if (e.key === Enter) {
+				onEnter();
+				e.preventDefault();
+			} else if (e.key === Escape) {
+				onEscape();
+				e.preventDefault();
 			}
 		});
 		clear.addEventListener('click', function () {
@@ -137,8 +133,9 @@
 			}
 
 			window.addEventListener('pagehide', function () {
-				if (input.value) {
-					sessionStorage.setItem(location.pathname, input.value);
+				const inputValue = input.value;
+				if (inputValue) {
+					sessionStorage.setItem(location.pathname, inputValue);
 				}
 			});
 		}
@@ -148,15 +145,12 @@
 	}
 
 	function keepFocusOnBackwardForward() {
-		function onFocus(e) {
-			const link = e.target.closest('a');
-			if (!link || link === lastFocused) return;
-			lastFocused = link;
-		}
-
 		const itemList = document.body.querySelector(selectorItemList);
-		itemList.addEventListener('focusin', onFocus);
-		itemList.addEventListener('click', onFocus);
+		itemList.addEventListener('focusin', function (e) {
+			if (lastFocused !== e.target) {
+				lastFocused = e.target;
+			}
+		});
 		window.addEventListener('pageshow', function () {
 			if (lastFocused && lastFocused !== document.activeElement) {
 				lastFocused.focus();
@@ -174,6 +168,8 @@
 			}
 			return url;
 		}
+
+		if (lastFocused) return;
 
 		let prevUrl = document.referrer;
 		if (!prevUrl) return;
@@ -212,6 +208,7 @@
 			lastFocused = elLink;
 			elLink.focus();
 			elLink.scrollIntoView({block: 'center'});
+			break;
 		}
 	}
 
@@ -223,15 +220,13 @@
 		}
 
 		function getFocusableSibling(container, isBackward, startA) {
+			if (!container.childElementCount) return;
 			if (!startA) {
 				startA = container.querySelector(':focus');
 			}
 			let startLI = startA && startA.closest('li');
 			if (!startLI) {
 				startLI = isBackward ? container.firstElementChild : container.lastElementChild;
-			}
-			if (!startLI) {
-				return;
 			}
 
 			let siblingLI = startLI;
@@ -439,18 +434,6 @@
 		let optActive = optFile;
 		const canMkdir = Boolean(optDir);
 
-		function getTimeStamp() {
-			const now = new Date();
-			let date = String(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate());
-			let time = String(now.getHours() * 10000 + now.getMinutes() * 100 + now.getSeconds());
-			let ms = String(now.getMilliseconds());
-			date = date.padStart(8, '0');
-			time = time.padStart(6, '0');
-			ms = ms.padStart(3, '0');
-			const ts = '-' + date + '-' + time + '-' + ms;
-			return ts;
-		}
-
 		let itemsToFiles;
 		if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && !DataTransferItem.prototype.webkitGetAsEntry) {
 			const handleKindFile = 'file';
@@ -625,20 +608,14 @@
 			}
 
 			function onKeydownOpt(e) {
-				switch (e.key) {
-					case Enter:
-					case Space:
-						if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) {
-							break;
-						}
-						e.preventDefault();
-						e.stopPropagation();
-						if (e.target === optActive) {
-							break;
-						}
-						e.target.click();
-						break;
-				}
+				if (e.key !== Enter && e.key !== Space) return;
+				if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+
+				e.preventDefault();
+				e.stopPropagation();
+				if (e.target === optActive) return;
+
+				e.target.click();
 			}
 
 			if (optFile) {
@@ -653,11 +630,11 @@
 					const files = e.target.files;
 					if (!files.length) return;
 
-					const noDir = Array.from(files).every(file =>
-						!file.webkitRelativePath.includes('/')
+					const hasDir = Array.from(files).some(file =>
+						file.webkitRelativePath.includes('/')
 					);
-					if (noDir) {
-						onClickOptFile();	// prevent clear input files
+					if (!hasDir) {
+						onClickOptFile();
 					}
 				});
 			}
@@ -759,20 +736,8 @@
 			function uploadBatch(files) {
 				const fieldName = fileInput.name;
 				const parts = new FormData();
-				files.forEach(function (file) {
-					let relativePath
-					if (file.file) {
-						// unwrap object {file, relativePath}
-						relativePath = file.relativePath;
-						file = file.file;
-					} else if (file.webkitRelativePath) {
-						relativePath = file.webkitRelativePath
-					}
-					if (!relativePath) {
-						relativePath = file.name;
-					}
-
-					parts.append(fieldName, file, relativePath);
+				files.forEach(file => {
+					parts.append(fieldName, file.file, file.relativePath);
 				});
 
 				const xhr = new XMLHttpRequest();
@@ -808,13 +773,13 @@
 			form.addEventListener('submit', function (e) {
 				e.stopPropagation();
 				e.preventDefault();
-
-				const files = Array.from(fileInput.files);
-				uploadProgressively(files);
 			});
 
 			fileInput.addEventListener('change', function () {
-				const files = Array.from(fileInput.files);
+				const files = Array.from(fileInput.files, file => ({
+					file,
+					relativePath: file.webkitRelativePath || file.name
+				}));
 				uploadProgressively(files);
 			});
 		}
@@ -859,7 +824,7 @@
 					}
 					uploadProgressively(result.files);
 				}, function (err) {
-					if (err === errLacksMkdir && typeof showUploadDirFailMessage !== strUndef) {
+					if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {
 						showUploadDirFailMessage();
 					}
 				});
@@ -878,7 +843,19 @@
 			const typeTextPlain = 'text/plain';
 			const nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
 
-			function uploadPastedContent(file) {
+			function getTimeStamp() {
+				const now = new Date();
+				let date = String(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate());
+				let time = String(now.getHours() * 10000 + now.getMinutes() * 100 + now.getSeconds());
+				let ms = String(now.getMilliseconds());
+				date = date.padStart(8, '0');
+				time = time.padStart(6, '0');
+				ms = ms.padStart(3, '0');
+				const ts = '-' + date + '-' + time + '-' + ms;
+				return ts;
+			}
+
+			function uploadPastedFile(file) {
 				switchToFileMode();
 
 				const ts = getTimeStamp();
@@ -889,7 +866,7 @@
 				}
 				filename = filename.slice(0, dotIndex) + ts + filename.slice(dotIndex);
 
-				const files = [{file: file, relativePath: filename}];
+				const files = [{file, relativePath: filename}];
 				uploadProgressively(files);
 			}
 
@@ -905,37 +882,41 @@
 				const dItems = data.items;
 				const dFiles = data.files;
 
-				if (dItems.length === 1 && dFiles.length === 1 && dFiles[0].type === 'image/png') {
-					// image pasted
-					uploadPastedContent(dFiles[0]);
-				} else if (dItems.length > 0 && dFiles.length === 0) {
-					// text pasted (with other data types in DataTransferItems
-					const textTypeIndex = data.types.findIndex(t => t === typeTextPlain);
-					const textItem = dItems[textTypeIndex];
-					if (textItem) {
-						textItem.getAsString(function (content) {
-							const file = new File([content], 'text.txt', {type: typeTextPlain})
-							uploadPastedContent(file);
-						});
-					}
-				} else {
-					// actual files/directories pasted
-					itemsToFiles(dItems, canMkdir).then(function (result) {
-						const files = result.files;
-
-						// pasted real files
-						if (result.hasDir) {
-							switchToDirMode();
-						} else {
-							switchToFileMode();
-						}
-						uploadProgressively(files);
-					}, function (err) {
-						if (err === errLacksMkdir && typeof showUploadDirFailMessage !== strUndef) {
-							showUploadDirFailMessage();
-						}
-					});
+				// image pasted
+				if (dItems.length === 1 && dFiles.length === 1 && dFiles[0].type.startsWith('image/')) {
+					uploadPastedFile(dFiles[0]);
+					return;
 				}
+
+				// text pasted (with other data types in DataTransferItems
+				if (dItems.length > 0 && dFiles.length === 0) {
+					const textTypeIndex = data.types.findIndex(t => t === typeTextPlain);
+					if (textTypeIndex < 0) return;
+
+					const textItem = dItems[textTypeIndex];
+					textItem.getAsString(function (content) {
+						const file = new File([content], 'text.txt', {type: typeTextPlain})
+						uploadPastedFile(file);
+					});
+					return;
+				}
+
+				// actual files/directories pasted
+				itemsToFiles(dItems, canMkdir).then(function (result) {
+					// pasted real files
+					if (result.hasDir) {
+						switchToDirMode();
+					} else {
+						switchToFileMode();
+					}
+					uploadProgressively(result.files);
+				}, function (err) {
+					if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {
+						showUploadDirFailMessage();
+					} else {
+						logError(err);
+					}
+				});
 			});
 		}
 
@@ -956,36 +937,28 @@
 
 			const form = e.target;
 
-			function onLoad() {
-				const status = this.status;
-				if (status >= 200 && status < 300) {
-					const elItem = form.closest('li');
-					elItem.remove();
-				} else {
-					logError(`delete failed: ${status} ${this.statusText}`);
+			const params = Array.from(form.elements, el => {
+				const {name, value} = el
+				if (name) {
+					return `${name}=${encodeURIComponent(value)}`;
 				}
-			}
+			}).filter(Boolean).join('&');
 
-			let params = '';
-			const els = Array.from(form.elements);
-			for (let i = 0; i < els.length; i++) {
-				if (!els[i].name) {
-					continue
-				}
-				if (params.length > 0) {
-					params += '&'
-				}
-				params += els[i].name + '=' + encodeURIComponent(els[i].value)
-			}
-			const url = form.action;
+			// follow redirect to update bf-cache
+			fetch(form.action, {
+				method: form.method,
+				headers: {
+					'Content-Type': form.enctype,
+				},
+				body: params
+			}).then(resp => {
+				const {status} = resp;
+				if (status < 200 || status > 299) throw resp;
+				const elItem = form.closest('li');
+				elItem.remove();
+			}).catch(logError);
 
-			const xhr = new XMLHttpRequest();
-			xhr.open('POST', url);	// will retrieve deleted result into bfcache
-			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-			xhr.addEventListener('load', onLoad);
-			xhr.send(params);
 			e.preventDefault();
-			return false;
 		});
 	}
 
