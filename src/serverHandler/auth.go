@@ -3,7 +3,6 @@ package serverHandler
 import (
 	"errors"
 	"net/http"
-	"net/url"
 	"strings"
 )
 
@@ -70,10 +69,6 @@ func (h *aliasHandler) redirectWithoutRequestAuth(w http.ResponseWriter, r *http
 		index = strings.LastIndexByte(returnUrl, '&')
 		if index >= 0 {
 			returnUrl = returnUrl[:index]
-		}
-		url, err := url.QueryUnescape(returnUrl)
-		if err == nil {
-			returnUrl = url
 		}
 	} else {
 		returnUrl = r.Header.Get("Referer")
