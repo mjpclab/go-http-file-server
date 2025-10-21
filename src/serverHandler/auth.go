@@ -3,7 +3,6 @@ package serverHandler
 import (
 	"errors"
 	"net/http"
-	"net/url"
 )
 
 const authQueryParam = "auth"
@@ -57,11 +56,7 @@ func (h *aliasHandler) verifyAuth(r *http.Request, vhostReqPath, reqFsPath strin
 func (h *aliasHandler) extractNoAuthUrl(r *http.Request, session *sessionContext, data *responseData) string {
 	returnUrl, hasReturnUrl := getQueryValue(session.query, authQueryParam)
 	if hasReturnUrl && len(returnUrl) > 0 {
-		var err error
-		returnUrl, err = url.QueryUnescape(returnUrl)
-		if err == nil {
-			return returnUrl
-		}
+		return returnUrl
 	}
 
 	returnUrl = r.Header.Get("Referer")
