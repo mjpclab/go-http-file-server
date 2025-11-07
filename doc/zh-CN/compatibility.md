@@ -35,6 +35,8 @@
 - Go 1.23支持OSX 11 Big Sur及后续版本
 - Go 1.24是最后支持OSX 11 Big Sur的版本
 - Go 1.25支持OSX 12 Monterey及后续版本
+- Go 1.26是最后支持OSX 12 Monterey的版本
+- Go 1.27支持OSX 13 Ventura及后续版本
 
 ## Windows平台
 - Go 1.10是最后支持Windows XP的版本
