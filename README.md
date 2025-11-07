@@ -15,7 +15,7 @@ Simple command line based HTTP file server to share local file system.
 ## Tech Features
 - Monolithic architecture
 - Stateless
-- Zero third party dependency
+- Zero third-party dependency
 
 ## Compile
 Minimal required Go version is 1.18.
@@ -160,7 +160,7 @@ ghfs [options]
     Specify default index file for directory.
 
 --global-restrict-access [<allowed-host> ...]
-    Restrict access from third party host for all url paths, by detecting
+    Restrict access from third-party host for all url paths, by detecting
     request header `Referer` or `Origin`.
     If the request header is empty, directory list page is still allowed
     to access.
@@ -362,7 +362,7 @@ Defaults to 256.
 To prevent outputting additional information on console, like accessible URLs, etc,
 set value to "1".
 
-## Shortcut key for default theme
+## Shortcut key for built-in theme
 - `←`, `→`: move focus between path items
 - `Ctrl`/`Opt` + `←`: move focus to first path item
 - `Ctrl`/`Opt` + `→`: move focus to last path item
