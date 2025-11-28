@@ -56,11 +56,12 @@ type Param struct {
 	DeleteDirs      []string
 	DeleteDirsUsers [][]string // [][path, user...]
 
-	GlobalArchive    bool
-	ArchiveUrls      []string
-	ArchiveUrlsUsers [][]string // [][path, user...]
-	ArchiveDirs      []string
-	ArchiveDirsUsers [][]string // [][path, user...]
+	GlobalArchive     bool
+	ArchiveUrls       []string
+	ArchiveUrlsUsers  [][]string // [][path, user...]
+	ArchiveDirs       []string
+	ArchiveDirsUsers  [][]string // [][path, user...]
+	ArchiveWorkersMax uint32
 
 	GlobalCors bool
 	CorsUrls   []string

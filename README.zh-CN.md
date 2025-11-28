@@ -28,7 +28,7 @@ go build main.go
 在8080端口启动服务器，根目录为当前工作目录：
 ```sh
 ghfs -l 8080
-``` 
+```
 
 在8080端口启动服务器，根目录为 /usr/share/doc：
 ```sh
@@ -255,6 +255,10 @@ ghfs [选项]
 --archive-dir <文件系统路径> ...
 --archive-dir-user <分隔符><文件系统路径>[<分隔符><允许的用户名>...] ...
     与--archive类似，但指定的是文件系统路径，而不是URL路径。
+--archive-workers-max <数值>
+    指定打包下载的最大并发数。
+    设为0（默认）表示无限制。
+    达到并发上限后，会拒绝后续打包请求并返回状态码429（Too Many Requests）。
 
 --global-cors
     接受所有URL路径的CORS跨域请求。

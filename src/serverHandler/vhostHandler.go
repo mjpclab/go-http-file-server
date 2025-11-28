@@ -29,6 +29,8 @@ type vhostContext struct {
 	archiveUrlsUsers pathIntsList
 	archiveDirsUsers pathIntsList
 
+	archivingWorkers *uint32
+
 	shows     *regexp.Regexp
 	showDirs  *regexp.Regexp
 	showFiles *regexp.Regexp
@@ -95,6 +97,11 @@ func NewVhostHandler(
 		theme = defaultTheme.DefaultTheme
 	}
 
+	var archivingWorkers *uint32
+	if p.ArchiveWorkersMax > 0 {
+		archivingWorkers = new(uint32)
+	}
+
 	// alias param
 	vhostCtx := &vhostContext{
 		logger: logger,
@@ -113,6 +120,8 @@ func NewVhostHandler(
 		deleteDirsUsers:  pathUsernamesToPathUids(users, p.DeleteDirsUsers),
 		archiveUrlsUsers: pathUsernamesToPathUids(users, p.ArchiveUrlsUsers),
 		archiveDirsUsers: pathUsernamesToPathUids(users, p.ArchiveDirsUsers),
+
+		archivingWorkers: archivingWorkers,
 
 		shows:     shows,
 		showDirs:  showDirs,
