@@ -391,21 +391,21 @@ html.dragging::before {
 	padding: 0 0.5em;
 }
 
-.item-list {
+.entry-list {
 	margin: 1em;
 	line-height: 1.2;
 }
 
-.item-list li {
+.entry-list li {
 	position: relative;
 }
 
-.item-list a {
+.entry-list a {
 	padding: 0.6em;
 }
 
-.item-list .detail,
-.item-list .delete {
+.entry-list .detail,
+.entry-list .delete {
 	display: flex;
 	flex-flow: row nowrap;
 	align-items: center;
@@ -417,12 +417,12 @@ html.dragging::before {
 	padding-right: 2.2em;
 }
 
-.item-list .field {
+.entry-list .field {
 	margin: 0 0 0 1em;
 	flex-shrink: 0;
 }
 
-.item-list .name {
+.entry-list .name {
 	flex-grow: 1;
 	flex-shrink: 1;
 	flex-basis: 0;
@@ -432,20 +432,20 @@ html.dragging::before {
 	word-break: break-all;
 }
 
-.item-list .size {
+.entry-list .size {
 	white-space: nowrap;
 	text-align: right;
 	color: #666;
 }
 
-.item-list .time {
+.entry-list .time {
 	color: #999;
 	text-align: right;
 	white-space: nowrap;
 	overflow: hidden;
 }
 
-.item-list .delete {
+.entry-list .delete {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -454,7 +454,7 @@ html.dragging::before {
 	align-items: stretch;
 }
 
-.item-list .delete button {
+.entry-list .delete button {
 	border: 0;
 	color: #800000;
 	background: none;
@@ -464,15 +464,15 @@ html.dragging::before {
 	padding: 0.1875em 0.3125em 0.3125em;
 }
 
-.item-list .delete button:hover {
+.entry-list .delete button:hover {
 	background: #fee;
 }
 
-.item-list .header .detail {
+.entry-list .header .detail {
 	background: #fcfcfc;
 }
 
-.item-list .header .field {
+.entry-list .header .field {
 	display: inline-block;
 	margin: 0;
 	font-size: 1.5em;
@@ -480,7 +480,7 @@ html.dragging::before {
 	overflow: hidden;
 }
 
-.item-list .header .time {
+.entry-list .header .time {
 	width: 6.5em;
 	text-align: center;
 }
@@ -559,28 +559,28 @@ html.dragging::before {
 		border-color: #555;
 	}
 
-	.item-list .detail,
-	.item-list .delete {
+	.entry-list .detail,
+	.entry-list .delete {
 		border-bottom-color: #222;
 	}
 
-	.item-list .size {
+	.entry-list .size {
 		color: #999;
 	}
 
-	.item-list .time {
+	.entry-list .time {
 		color: #666;
 	}
 
-	.item-list .delete button {
+	.entry-list .delete button {
 		color: #f99;
 	}
 
-	.item-list .delete button:hover {
+	.entry-list .delete button:hover {
 		background-color: #433;
 	}
 
-	.item-list .header .detail {
+	.entry-list .header .detail {
 		background-color: #181818;
 	}
 
@@ -590,17 +590,17 @@ html.dragging::before {
 }
 
 @media screen and (max-width: 375px) {
-	.item-list .header .time {
+	.entry-list .header .time {
 		width: 4.05em;
 	}
 
-	.item-list .detail .time span {
+	.entry-list .detail .time span {
 		display: none;
 	}
 }
 
 @media screen and (max-width: 350px) {
-	.item-list .detail .time {
+	.entry-list .detail .time {
 		display: none;
 	}
 }
@@ -610,12 +610,12 @@ html.dragging::before {
 		display: none;
 	}
 
-	.item-list li {
+	.entry-list li {
 		page-break-inside: avoid;
 		break-inside: avoid;
 	}
 
-	.item-list li.parent {
+	.entry-list li.parent {
 		display: none;
 	}
 

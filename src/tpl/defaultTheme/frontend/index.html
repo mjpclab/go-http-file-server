@@ -98,7 +98,7 @@
 	</div>
 </div>
 {{end -}}
-<ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
+<ul class="entry-list{{if .HasDeletable}} has-deletable{{end}}">
 	{{if not $isSimple -}}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
 		<span class="detail">

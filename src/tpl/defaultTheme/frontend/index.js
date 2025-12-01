@@ -13,10 +13,10 @@
 	const selectorIsNone = '.' + classNone;
 	const selectorNotNone = `:not(${selectorIsNone})`;
 	const selectorPathList = '.path-list';
-	const selectorItemList = '.item-list';
-	const selectorItem = `li:not(.${classHeader}):not(.parent)`;
-	const selectorItemIsNone = selectorItem + selectorIsNone;
-	const selectorItemNotNone = selectorItem + selectorNotNone;
+	const selectorEntryList = '.entry-list';
+	const selectorEntry = `li:not(.${classHeader}):not(.parent)`;
+	const selectorEntryIsNone = selectorEntry + selectorIsNone;
+	const selectorEntryNotNone = selectorEntry + selectorNotNone;
 
 	const Enter = 'Enter';
 	const Escape = 'Escape';
@@ -47,46 +47,46 @@
 
 		const clear = filter.querySelector('button') || document.createElement('button');
 
-		const itemList = document.querySelector(selectorItemList)
+		const entryList = document.querySelector(selectorEntryList);
 
 		let timeoutId;
 		const doFilter = function () {
 			const filteringText = input.value.trim().toLowerCase();
 			if (filteringText === filteredText) return;
 
-			let items
+			let entries
 			if (filteringText) {
 				clear.style.display = 'block';
 
 				let selector
-				if (filteringText.includes(filteredText)) {	// increment search, find in visible items
-					selector = selectorItemNotNone;
-				} else if (filteredText.includes(filteringText)) {	// decrement search, find in hidden items
-					selector = selectorItemIsNone;
+				if (filteringText.includes(filteredText)) {	// increment search, find in visible entries
+					selector = selectorEntryNotNone;
+				} else if (filteredText.includes(filteringText)) {	// decrement search, find in hidden entries
+					selector = selectorEntryIsNone;
 				} else {
-					selector = selectorItem;
+					selector = selectorEntry;
 				}
 				filteredText = filteringText;
 
-				items = itemList.querySelectorAll(selector);
-				items.forEach(item => {
-					const name = item.querySelector('.name');
+				entries = entryList.querySelectorAll(selector);
+				entries.forEach(entry => {
+					const name = entry.querySelector('.name');
 					if (matchFilter(name.textContent)) {
-						if (selector !== selectorItemNotNone) {
-							item.classList.remove(classNone);
+						if (selector !== selectorEntryNotNone) {
+							entry.classList.remove(classNone);
 						}
 					} else {
-						if (selector !== selectorItemIsNone) {
-							item.classList.add(classNone);
+						if (selector !== selectorEntryIsNone) {
+							entry.classList.add(classNone);
 						}
 					}
 				});
-			} else {	// filter cleared, show all items
+			} else {	// filter cleared, show all entries
 				clear.style.display = '';
 				filteredText = '';
 
-				items = itemList.querySelectorAll(selectorItemIsNone);
-				items.forEach(item => item.classList.remove(classNone));
+				entries = entryList.querySelectorAll(selectorEntryIsNone);
+				entries.forEach(entry => entry.classList.remove(classNone));
 			}
 		};
 
@@ -145,8 +145,8 @@
 	}
 
 	function keepFocusOnBackwardForward() {
-		const itemList = document.body.querySelector(selectorItemList);
-		itemList.addEventListener('focusin', function (e) {
+		const entryList = document.body.querySelector(selectorEntryList);
+		entryList.addEventListener('focusin', function (e) {
 			if (lastFocused !== e.target) {
 				lastFocused = e.target;
 			}
@@ -188,12 +188,12 @@
 		prevChildName = decodeURIComponent(prevChildName);
 		if (!matchFilter(prevChildName)) return;
 
-		const items = Array.from(document.body.querySelectorAll(selectorItemList + '>' + selectorItemNotNone));
+		const entries = Array.from(document.body.querySelectorAll(selectorEntryList + '>' + selectorEntryNotNone));
 		const selectorName = '.field.name';
 		const selectorLink = 'a';
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
-			const elName = item.querySelector(selectorName);
+		for (let i = 0; i < entries.length; i++) {
+			const entry = entries[i];
+			const elName = entry.querySelector(selectorName);
 			if (!elName) continue;
 
 			let text = elName.textContent;
@@ -202,7 +202,7 @@
 			}
 			if (text !== prevChildName) continue;
 
-			const elLink = item.querySelector(selectorLink);
+			const elLink = entry.querySelector(selectorLink);
 			if (!elLink) break;
 
 			lastFocused = elLink;
@@ -214,8 +214,8 @@
 
 	function enableKeyboardNavigate() {
 		const pathList = document.body.querySelector(selectorPathList);
-		const itemList = document.body.querySelector(selectorItemList);
-		if (!pathList && !itemList) {
+		const entryList = document.body.querySelector(selectorEntryList);
+		if (!pathList && !entryList) {
 			return;
 		}
 
@@ -370,15 +370,15 @@
 				switch (e.key) {
 					case ARROW_DOWN:
 						if (isToEnd(e)) {
-							return getLastFocusableSibling(itemList);
+							return getLastFocusableSibling(entryList);
 						} else {
-							return getFocusableSibling(itemList, false);
+							return getFocusableSibling(entryList, false);
 						}
 					case ARROW_UP:
 						if (isToEnd(e)) {
-							return getFirstFocusableSibling(itemList);
+							return getFirstFocusableSibling(entryList);
 						} else {
-							return getFocusableSibling(itemList, true);
+							return getFocusableSibling(entryList, true);
 						}
 					case ARROW_RIGHT:
 						if (isToEnd(e)) {
@@ -395,7 +395,7 @@
 				}
 			}
 			if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
-				return lookup(itemList, e.key, e.shiftKey);
+				return lookup(entryList, e.key, e.shiftKey);
 			}
 		}
 
@@ -928,11 +928,11 @@
 	}
 
 	function enableNonRefreshDelete() {
-		const itemList = document.body.querySelector(selectorItemList);
-		if (!itemList) return;
-		if (!itemList.classList.contains('has-deletable')) return;
+		const entryList = document.body.querySelector(selectorEntryList);
+		if (!entryList) return;
+		if (!entryList.classList.contains('has-deletable')) return;
 
-		itemList.addEventListener('submit', function (e) {
+		entryList.addEventListener('submit', function (e) {
 			if (e.defaultPrevented) return;
 
 			const form = e.target;
