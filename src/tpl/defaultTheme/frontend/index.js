@@ -435,135 +435,91 @@
 		const canMkdir = Boolean(optDir);
 
 		let itemsToFiles;
-		if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && !DataTransferItem.prototype.webkitGetAsEntry) {
+		if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && DataTransferItem.prototype.getAsFileSystemHandle && !DataTransferItem.prototype.webkitGetAsEntry) {
 			const handleKindFile = 'file';
 			const handleKindDir = 'directory';
-			const permDescriptor = {mode: 'read'};
-			itemsToFiles = function (dataTransferItems, canMkdir) {
-				function resultsToFiles(results, files, dirPath) {
-					return Promise.all(results.map(function (result) {
-						const handle = result.value;
+			itemsToFiles = async function (dataTransferItems, canMkdir) {
+				async function handlesToFiles(handles, files, dirPath) {
+					for (let i = 0; i < handles.length; i++) {
+						const handle = handles[i];
 						if (handle.kind === handleKindFile) {
-							return handle.queryPermission(permDescriptor).then(function (queryResult) {
-								if (queryResult === 'prompt') return handle.requestPermission(permDescriptor);
-							}).then(function () {
-								return handle.getFile();
-							}).then(function (file) {
-								const relativePath = dirPath + file.name;
-								files.push({file, relativePath});
-							}).catch(function (err) {
-								logError(err);
-							});
+							const file = await handle.getFile();
+							const relativePath = dirPath + file.name;
+							files.push({file, relativePath});
 						} else if (handle.kind === handleKindDir) {
-							return new Promise(function (resolve) {
-								let childResults = [];
-								let childIter = handle.values();
-
-								function onLevelDone() {
-									childResults = null;
-									childIter = null;
-									resolve();
-								}
-
-								function addChildResult() {
-									childIter.next().then(function (result) {
-										if (result.done) {
-											if (childResults.length) {
-												resultsToFiles(childResults, files, dirPath + handle.name + '/').then(onLevelDone);
-											} else onLevelDone();
-										} else {
-											childResults.push(result);
-											addChildResult();
-										}
-									});
-								}
-
-								addChildResult();
-							});
+							const subHandles = [];
+							for await(const subHandle of handle.values()) {
+								subHandles.push(subHandle);
+							}
+							if (subHandles.length) {
+								await handlesToFiles(subHandles, files, dirPath + handle.name + '/');
+							}
 						}
-					}));
+					}
 				}
 
-				const files = [];
 				let hasDir = false;
-
-				return Promise.all(Array.from(dataTransferItems).map(function (item) {
-					return item.getAsFileSystemHandle();
-				})).then(function (handles) {
-					handles = handles.filter(Boolean);	// undefined for pasted content
-					hasDir = handles.some(function (handle) {
-						return handle.kind === handleKindDir;
-					});
-					if (hasDir && !canMkdir) {
-						throw errLacksMkdir;
+				const permDescriptor = {mode: 'read'};
+				const handles = await Promise.all(Array.from(dataTransferItems, async item => {
+					const handle = await item.getAsFileSystemHandle();
+					if (handle.kind === handleKindDir) {
+						if (!canMkdir) throw errLacksMkdir;
+						hasDir = true
 					}
-					const handleResults = handles.map(function (handle) {
-						return {value: handle, done: false};
-					});
-					return resultsToFiles(handleResults, files, '').then(function () {
-						return {files: files, hasDir: hasDir};
-					});
-				});
+					const permState = await handle.queryPermission(permDescriptor);
+					if (permState !== 'granted') {
+						await handle.requestPermission(permDescriptor);
+					}
+					return handle;
+				}));
+
+				const files = [];
+				await handlesToFiles(handles, files, '');
+				return {files, hasDir};
 			}
 		} else {
-			itemsToFiles = function (dataTransferItems, canMkdir) {
-				function entriesToFiles(entries, files) {
-					return Promise.all(entries.map(function (entry) {
-						return new Promise(function (resolve) {
-							if (entry.isFile) {
-								let relativePath = entry.fullPath;
-								if (relativePath[0] === '/') {
-									relativePath = relativePath.slice(1);
-								}
-								entry.file(function (file) {
-									files.push({file: file, relativePath: relativePath});
-									resolve();
-								}, function (err) {
-									logError(err);
-									resolve()
-								});
-							} else if (entry.isDirectory) {
-								const dirReader = entry.createReader()
-								const onReadSubEntries = function (subEntries) {
-									if (!subEntries.length) resolve();
-									entriesToFiles(subEntries, files).then(function () {
-										dirReader.readEntries(onReadSubEntries);
-									});
-								}
-								dirReader.readEntries(onReadSubEntries);
+			itemsToFiles = async function (dataTransferItems, canMkdir) {
+				async function entriesToFiles(entries, files) {
+					for (let i = 0; i < entries.length; i++) {
+						const entry = entries[i];
+						if (entry.isFile) {
+							let relativePath = entry.fullPath;
+							if (relativePath[0] === '/') {
+								relativePath = relativePath.slice(1);
 							}
-						})
-					}));
+							const file = await new Promise((res, rej) => entry.file(res, rej));
+							files.push({file, relativePath});
+						} else if (entry.isDirectory) {
+							const reader = entry.createReader();
+							while (true) {
+								const subEntries = await new Promise((res, rej) => reader.readEntries(res, rej));
+								if (!subEntries.length) break;
+								await entriesToFiles(subEntries, files);
+							}
+						}
+					}
 				}
 
 				const entries = [];
 				const files = [];
-				let hasDir = false;
 
 				for (let i = 0; i < dataTransferItems.length; i++) {
 					const item = dataTransferItems[i];
 					const entry = item.webkitGetAsEntry();
-					if (!entry) {	// undefined for pasted text
-						continue;
-					}
 					if (entry.isFile) {
 						// Safari cannot get file from entry by entry.file(), if it is a pasted image
 						// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
 						const file = item.getAsFile();
-						files.push({file: file, relativePath: file.name});
+						files.push({file, relativePath: file.name});
 					} else if (entry.isDirectory) {
-						hasDir = true;
-						if (canMkdir) {
-							entries.push(entry);
-						} else {
-							return Promise.reject(errLacksMkdir);
-						}
+						if (!canMkdir) throw errLacksMkdir;
+						entries.push(entry);
 					}
 				}
 
-				return entriesToFiles(entries, files).then(function () {
-					return {files: files, hasDir: hasDir};
-				});
+				const hasDir = entries.length > 0;
+				await entriesToFiles(entries, files);
+				return {files, hasDir};
 			}
 		}
 
@@ -826,6 +782,8 @@
 				}, function (err) {
 					if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {
 						showUploadDirFailMessage();
+					} else {
+						logError(err);
 					}
 				});
 			}
