@@ -48,7 +48,7 @@ var translationEnUs = Translation{
 	UploadDirLabel:         "Dir",
 	UploadDirHint:          "Upload directory itself",
 	UploadDirContentsLabel: "Dir contents",
-	UploadDirContentsHint:  "Upload contents of directory",
+	UploadDirContentsHint:  "Upload contents of a directory",
 	UploadLabel:            "Upload",
 	UploadingLabel:         "Uploading...",
 	UploadSuccessLabel:     "Upload success",

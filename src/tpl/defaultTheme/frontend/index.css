@@ -56,10 +56,8 @@ input, button {
 	padding: 0.25em 0;
 }
 
-input[type=button],
-input[type=submit],
-input[type=reset],
-button {
+input[type=button], input[type=submit], input[type=reset],
+button, label {
 	cursor: pointer;
 }
 
@@ -364,29 +362,6 @@ html.dragging::before {
 	padding-right: 0.5em;
 }
 
-.filter .form {
-	position: relative;
-	display: flex;
-}
-
-.filter input {
-	flex: 1 1 auto;
-	width: 97%;
-	padding-right: 1.5em;
-	box-sizing: border-box;
-}
-
-.filter button {
-	display: none;
-	position: absolute;
-	right: 0;
-	top: 0;
-	bottom: 0;
-	border: 0;
-	background: none;
-	padding: 0 0.5em;
-}
-
 .entry-list {
 	margin: 1em;
 	line-height: 1.2;
@@ -410,6 +385,7 @@ html.dragging::before {
 }
 
 .has-deletable .detail {
+	align-items: stretch;
 	padding-right: 2.2em;
 }
 
@@ -419,9 +395,7 @@ html.dragging::before {
 }
 
 .entry-list .name {
-	flex-grow: 1;
-	flex-shrink: 1;
-	flex-basis: 0;
+	flex: 1 1 0;
 	margin-left: 0;
 	font-size: 1.5em;
 	white-space: pre-wrap;
@@ -474,6 +448,41 @@ html.dragging::before {
 	font-size: 1.5em;
 	color: #808080;
 	overflow: hidden;
+}
+
+.entry-list .header .name {
+	flex: 0 0 auto;
+}
+
+.entry-list .header .filter {
+	flex: 1 1 0;
+	display: flex;
+	position: relative;
+}
+
+.entry-list .header .filter label {
+	flex: 1 1 0;
+	display: flex;
+	align-items: center;
+	padding: 0 0.5em;
+}
+
+.entry-list .header .filter label input {
+	flex: 1 1 0;
+	width: 0;
+}
+
+.entry-list .header .filter button {
+	display: none;
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	padding: 0 1em;
+	border: 0;
+	appearance: none;
+	color: inherit;
+	background: none;
 }
 
 .entry-list .header .time {
@@ -586,6 +595,10 @@ html.dragging::before {
 }
 
 @media screen and (max-width: 375px) {
+	.entry-list .header .filter {
+		display: none;
+	}
+
 	.entry-list .header .time {
 		width: 4.05em;
 	}
@@ -603,6 +616,14 @@ html.dragging::before {
 
 @media print {
 	.panel, .tab, .archive {
+		display: none;
+	}
+
+	.entry-list .header .name {
+		flex: 1 1 auto;
+	}
+
+	.entry-list .header .filter {
 		display: none;
 	}
 

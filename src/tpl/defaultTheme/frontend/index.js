@@ -106,6 +106,9 @@
 			input.value = '';
 			doFilter();
 		};
+		filter.addEventListener('reset', function (e) {
+			e.preventDefault();
+		});
 
 		input.addEventListener('keydown', function (e) {
 			if (e.key === Enter) {
@@ -596,6 +599,8 @@
 					optDir && optDir.click();
 				} else if (prevUploadType === innerDirFile) {
 					optInnerDir && optInnerDir.click();
+				} else {
+					optFile && optFile.click();
 				}
 
 				if (prevUploadType !== null) {
@@ -608,6 +613,8 @@
 						sessionStorage.setItem(uploadTypeField, activeUploadType)
 					}
 				});
+			} else {
+				optFile && optDir && optDir.click();
 			}
 
 			function switchToFileMode() {
