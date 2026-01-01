@@ -56,20 +56,21 @@ input, button {
 	padding: 0.25em 0;
 }
 
-input[type=button], input[type=submit], input[type=reset],
-button, label {
-	cursor: pointer;
-}
-
-input:disabled[type=button],
-input:disabled[type=submit],
-input:disabled[type=reset],
-button:disabled {
-	cursor: default;
-}
-
 input[type=text] {
 	padding: 0.25em;
+}
+
+input[type=button], input[type=submit], input[type=reset], button {
+	padding: 0.25em 0.5em;
+}
+
+input[type=button]:enabled,
+input[type=submit]:enabled,
+input[type=reset]:enabled,
+input[type=file]:enabled,
+button:enabled,
+label {
+	cursor: pointer;
 }
 
 em {
@@ -108,27 +109,31 @@ html.dragging::before {
 
 
 .path-list {
+	display: flex;
+	flex-wrap: wrap;
 	font-size: 1.5em;
 	line-height: 1.2;
-	overflow: hidden;
 	border-bottom: 1px #999 solid;
 }
 
 .path-list li {
+	display: flex;
+}
+
+.path-list li a {
 	position: relative;
-	float: left;
-	text-align: center;
-	white-space: nowrap;
-}
-
-.path-list a {
-	display: block;
-	padding-right: 1.2em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	min-width: 1em;
-	white-space: pre-wrap;
+	word-break: break-all;
 }
 
-.path-list a:after {
+.path-list li:not(:last-child) a {
+	padding-right: 1.2em;
+}
+
+.path-list li:not(:last-child) a:after {
 	content: '';
 	position: absolute;
 	top: 50%;
@@ -136,16 +141,9 @@ html.dragging::before {
 	width: 0.4em;
 	height: 0.4em;
 	border: 1px solid;
-	border-color: #ccc #ccc transparent transparent;
+	color: #ccc;
+	border-color: currentColor currentColor transparent transparent;
 	transform: rotate(45deg) translateY(-50%);
-}
-
-.path-list li:last-child a {
-	padding-right: 0.5em;
-}
-
-.path-list li:last-child a:after {
-	display: none;
 }
 
 .login {
@@ -218,21 +216,19 @@ html.dragging::before {
 	left: 0;
 	top: 0;
 	width: 100%;
+	display: flex;
+	justify-content: center;
 	color: #fff;
-	text-align: center;
 	opacity: 0;
 	transition: transform .2s, opacity .2s;
 }
 
 .upload-status .label .content {
 	position: relative;
-	display: inline-block;
-	vertical-align: top;
-	text-align: start;
 	padding: 0.5em 1em;
+	line-height: 1em;
 	box-sizing: border-box;
-	overflow-wrap: break-word;
-	word-break: break-word;
+	word-break: break-all;
 }
 
 .upload-status .info .content {
@@ -254,7 +250,7 @@ html.dragging::before {
 	content: '';
 	position: absolute;
 	left: 1em;
-	top: 0.70em;
+	top: 0.5em;
 	width: 1em;
 	height: 1em;
 	box-sizing: border-box;
@@ -286,36 +282,23 @@ html.dragging::before {
 	background: #c9c;
 }
 
-.upload {
-	position: relative;
-}
-
-.upload input,
-.upload button {
-	display: block;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.upload button {
-	position: relative;
-	margin-top: 0.5em;
-	overflow: hidden;
-}
-
-.upload button span {
-	position: relative;
+.upload-form {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.5em;
 }
 
 .archive {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1em;
 	margin: 1em;
-	overflow: hidden;
+	padding: 0 0.5em;
 }
 
 .archive a {
 	position: relative;
-	float: left;
-	margin: 0 0.5em;
 	padding: 1em 1em 1em 3em;
 	border: 2px #f5f5f5 solid;
 }
@@ -357,11 +340,6 @@ html.dragging::before {
 	flex: 1 1 auto;
 }
 
-.mkdir .submit {
-	padding-left: 0.5em;
-	padding-right: 0.5em;
-}
-
 .entry-list {
 	margin: 1em;
 	line-height: 1.2;
@@ -384,13 +362,19 @@ html.dragging::before {
 	overflow: hidden;
 }
 
-.has-deletable .detail {
-	align-items: stretch;
+.entry-list .detail {
+	gap: 1em;
+}
+
+.entry-list.has-deletable .detail {
 	padding-right: 2.2em;
 }
 
+.entry-list.has-deletable .delete {
+	align-self: stretch;
+}
+
 .entry-list .field {
-	margin: 0 0 0 1em;
 	flex-shrink: 0;
 }
 
@@ -406,6 +390,10 @@ html.dragging::before {
 	white-space: nowrap;
 	text-align: right;
 	color: #666;
+}
+
+.entry-list .size:empty {
+	display: none;
 }
 
 .entry-list .time {
@@ -439,12 +427,12 @@ html.dragging::before {
 }
 
 .entry-list .header .detail {
+	gap: 0;
 	background: #fcfcfc;
 }
 
 .entry-list .header .field {
 	display: inline-block;
-	margin: 0;
 	font-size: 1.5em;
 	color: #808080;
 	overflow: hidden;
@@ -456,6 +444,7 @@ html.dragging::before {
 
 .entry-list .header .filter {
 	flex: 1 1 0;
+	align-self: stretch;
 	display: flex;
 	position: relative;
 }
@@ -470,6 +459,14 @@ html.dragging::before {
 .entry-list .header .filter label input {
 	flex: 1 1 0;
 	width: 0;
+}
+
+.entry-list .header .filter label input:placeholder-shown {
+	opacity: 0.4;
+}
+
+.entry-list .header .filter label input:focus {
+	opacity: 1;
 }
 
 .entry-list .header .filter button {
@@ -535,12 +532,8 @@ html.dragging::before {
 		border-color: #555;
 	}
 
-	.path-list {
-		border-bottom-color: #999;
-	}
-
-	.path-list a:after {
-		border-color: #555 #555 transparent transparent;
+	.path-list li:not(:last-child) a:after {
+		color: #555;
 	}
 
 	.tab button:hover {
@@ -594,13 +587,19 @@ html.dragging::before {
 	}
 }
 
+@media screen and (max-width: 450px) {
+	.entry-list .header .time {
+		width: 4.05em;
+	}
+}
+
 @media screen and (max-width: 375px) {
 	.entry-list .header .filter {
 		display: none;
 	}
 
-	.entry-list .header .time {
-		width: 4.05em;
+	.entry-list .header .name {
+		flex: 1 1 0;
 	}
 
 	.entry-list .detail .time span {
@@ -615,8 +614,13 @@ html.dragging::before {
 }
 
 @media print {
-	.panel, .tab, .archive {
+	.login, .panel, .tab, .archive {
 		display: none;
+	}
+
+	.entry-list {
+		margin-left: 0;
+		margin-right: 0;
 	}
 
 	.entry-list .header .name {
@@ -628,7 +632,6 @@ html.dragging::before {
 	}
 
 	.entry-list li {
-		page-break-inside: avoid;
 		break-inside: avoid;
 	}
 
@@ -636,11 +639,11 @@ html.dragging::before {
 		display: none;
 	}
 
-	.has-deletable .detail {
+	.entry-list.has-deletable .detail {
 		padding-right: 0;
 	}
 
-	.has-deletable .delete {
+	.entry-list.has-deletable .delete {
 		display: none;
 	}
 }

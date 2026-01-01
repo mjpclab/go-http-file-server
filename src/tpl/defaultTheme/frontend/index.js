@@ -102,9 +102,13 @@
 			doFilter();
 		};
 		const onEscape = function () {
-			clearTimeout(timeoutId);
-			input.value = '';
-			doFilter();
+			if (input.value) {
+				clearTimeout(timeoutId);
+				input.value = '';
+				doFilter();
+			} else {
+				input.blur();
+			}
 		};
 		filter.addEventListener('reset', function (e) {
 			e.preventDefault();
@@ -411,10 +415,7 @@
 	}
 
 	function enhanceUpload() {
-		const upload = document.body.querySelector('.upload');
-		if (!upload) return;
-
-		const form = upload.querySelector('form');
+		const form = document.body.querySelector('.upload-form');
 		if (!form) return;
 
 		const fileInput = form.querySelector('input[type=file]');
