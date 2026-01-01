@@ -19,7 +19,7 @@ body, input, textarea, button {
 	font-family: "Cascadia Mono", Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", "Jetbrains Mono NL", monospace;
 }
 
-form {
+form, h1, h2, h3, h4, h5, h6 {
 	margin: 0;
 	padding: 0;
 }
@@ -161,44 +161,40 @@ html.dragging::before {
 	display: flex;
 	gap: 0.5em;
 	white-space: nowrap;
-	margin: 1em 1em -1em 1em;
+	margin: 1em 1em 0 1em;
 }
 
-.tab h3, .tab a {
+.tab button {
 	flex: 0 0 auto;
-	padding: 1em;
+	appearance: none;
+	outline: 0;
+	border: 0;
+	padding: 0.5em 1em;
+	color: inherit;
+	background: inherit;
 }
 
-.tab h3 {
-	margin: 0;
-	font-size: inherit;
-}
-
-.tab a {
-	cursor: pointer;
-}
-
-.tab a:focus {
+.tab button:focus {
 	text-decoration: underline 1px dotted;
 }
 
-.tab a:hover {
+.tab button:hover {
 	background: #fbfbfb;
 }
 
-.tab a.active {
+.tab button.active {
 	color: #000;
 	background: #f7f7f7;
-}
-
-.tab a:last-child {
-	margin-right: 0;
 }
 
 .panel {
 	margin: 1em;
 	padding: 1em;
 	background: #f7f7f7;
+}
+
+.tab + .panel {
+	margin-top: 0;
 }
 
 .upload-status {
@@ -538,11 +534,11 @@ html.dragging::before {
 		border-color: #555 #555 transparent transparent;
 	}
 
-	.tab a:hover {
+	.tab button:hover {
 		background-color: #181818;
 	}
 
-	.tab a.active {
+	.tab button.active {
 		color: #fff;
 		background-color: #222;
 	}

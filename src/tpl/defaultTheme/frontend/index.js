@@ -20,7 +20,6 @@
 
 	const Enter = 'Enter';
 	const Escape = 'Escape';
-	const Space = ' ';
 
 	let hasStorage = false;
 	try {
@@ -525,6 +524,7 @@
 
 		function enableFileDirModeSwitch() {
 			const classActive = 'active';
+			const title = form.querySelector('h4') || document.createElement('h4');
 
 			function onClickOptAny(optTarget, clearInput) {
 				if (optTarget === optActive) {
@@ -534,6 +534,7 @@
 				optActive.classList.remove(classActive);
 				optActive = optTarget;
 				optActive.classList.add(classActive);
+				title.textContent = optActive.title || optActive.textContent;
 
 				if (clearInput) {
 					fileInput.value = '';
@@ -563,21 +564,8 @@
 				}
 			}
 
-			function onKeydownOpt(e) {
-				if (e.key !== Enter && e.key !== Space) return;
-				if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
-
-				e.preventDefault();
-				e.stopPropagation();
-				if (e.target === optActive) return;
-
-				e.target.click();
-			}
-
 			if (optFile) {
 				optFile.addEventListener('click', onClickOptFile);
-				optFile.addEventListener('keydown', onKeydownOpt);
-
 				fileInput.addEventListener('change', function (e) {
 					// workaround fix for old browsers, select dir not work but still act like select files
 					// switch back to file
@@ -596,11 +584,9 @@
 			}
 			if (optDir) {
 				optDir.addEventListener('click', onClickOptDir);
-				optDir.addEventListener('keydown', onKeydownOpt);
 			}
 			if (optInnerDir) {
 				optInnerDir.addEventListener('click', onClickOptInnerDir);
-				optInnerDir.addEventListener('keydown', onKeydownOpt);
 			}
 
 			if (hasStorage) {

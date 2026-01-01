@@ -54,13 +54,13 @@
 	}
 </script>
 <div class="tab upload-type">
-	<h3>{{.Trans.UploadLabel}}</h3>
-	<a class="file active" tabindex="0" role="button" title="{{.Trans.UploadFilesHint}}">{{.Trans.UploadFilesLabel}}</a>
-	{{if .CanMkdir}}<a class="dirfile" tabindex="0" role="button" title="{{.Trans.UploadDirHint}}">{{.Trans.UploadDirLabel}}</a>
-	<a class="innerdirfile" tabindex="0" role="button" title="{{.Trans.UploadDirContentsHint}}">{{.Trans.UploadDirContentsLabel}}</a>{{end}}
+	<button class="file active" title="{{.Trans.UploadFilesHint}}">{{.Trans.UploadFilesLabel}}</button>
+	{{if .CanMkdir}}<button class="dirfile" title="{{.Trans.UploadDirHint}}">{{.Trans.UploadDirLabel}}</button>
+	<button class="innerdirfile" title="{{.Trans.UploadDirContentsHint}}">{{.Trans.UploadDirContentsLabel}}</button>{{end}}
 </div>
 <div class="panel upload">
 	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
+		<h4>{{.Trans.UploadFilesHint}}</h4>
 		<input type="file" name="file" multiple="multiple"/>
 		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/>
 		<button type="submit" class="submit">{{.Trans.UploadLabel}}</button>
