@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{.Lang}}">
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-	<meta name="viewport" content="width=device-width,user-scalable=no"/>
-	<meta name="format-detection" content="telephone=no"/>
-	<meta name="renderer" content="webkit"/>
-	<meta name="wap-font-scale" content="no"/>
+	<meta name="viewport" content="width=device-width,user-scalable=no">
+	<meta name="format-detection" content="telephone=no,date=no,email=no,address=no">
+	<meta name="renderer" content="webkit">
 	<title>{{.Path}}</title>
-	<link rel="shortcut icon" type="image/x-icon" href="{{.RootRelPath}}?asset=favicon.ico"/>
-	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=index.css"/>
+	<link rel="shortcut icon" type="image/x-icon" href="{{.RootRelPath}}?asset=favicon.ico">
+	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=index.css">
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 {{$contextQueryString := .Context.QueryString -}}
@@ -40,15 +38,15 @@
 {{if .CanMkdir -}}
 <div class="panel mkdir">
 	<form method="POST" action="{{.SubItemPrefix}}?mkdir">
-		<input type="text" autocomplete="off" name="name" class="name"/>
-		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/>
-		<input type="submit" value="{{.Trans.MkdirLabel}}" class="submit"/>
+		<input type="text" autocomplete="off" name="name" class="name">
+		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}">
+		<input type="submit" value="{{.Trans.MkdirLabel}}" class="submit">
 	</form>
 </div>
 {{end -}}
 
 {{if .CanUpload -}}
-<script type="text/javascript">
+<script>
 	function showUploadDirFailMessage() {
 		alert('{{.Trans.UploadDirFailMessage}}');
 	}
@@ -61,9 +59,9 @@
 <div class="panel upload">
 	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
 		<h4>{{.Trans.UploadFilesHint}}</h4>
-		<input type="file" name="file" multiple="multiple"/>
-		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/>
-		<button type="submit" class="submit">{{.Trans.UploadLabel}}</button>
+		<input type="file" name="file" multiple="multiple">
+		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}">
+		<button type="submit">{{.Trans.UploadLabel}}</button>
 	</form>
 </div>
 {{end -}}
@@ -77,7 +75,7 @@
 {{end -}}
 
 {{if .CanDelete -}}
-<script type="text/javascript">
+<script>
 	function confirmDelete(e) {
 		const form = e.target;
 		const name = form.name.value;
@@ -97,7 +95,7 @@
 		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">{{.Trans.ListDirLabel}}{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
 		<a class="field name" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextNameSort}}">{{.Trans.ListNameLabel}}{{if eq $sortKey "n"}}&uarr;{{else if eq $sortKey "N"}}&darr;{{end}}</a>
 		<form class="filter">
-			<label><input type="text" name="name" autocomplete="off" spellcheck="false" accesskey="r" placeholder="{{.Trans.FilterLabel}}"/></label>
+			<label><input type="text" name="name" autocomplete="off" spellcheck="false" accesskey="r" placeholder="{{.Trans.FilterLabel}}"></label>
 			<button type="reset">X</button>
 		</form>
 		<a class="field type" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTypeSort}}">{{.Trans.ListTypeLabel}}{{if eq $sortKey "e"}}&uarr;{{else if eq $sortKey "E"}}&darr;{{end}}</a>
@@ -120,7 +118,7 @@
 		<span class="field size">{{.DisplaySize}}</span>
 		<span class="field time">{{.DisplayTime}}</span>
 		</a>
-		{{if and (not $isSimple) .DeleteUrl}}<form class="delete" method="post" action="{{$SubItemPrefix}}?delete" onsubmit="return confirmDelete(event)"><input type="hidden" name="name" value="{{.DeleteUrl}}"/><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/><button type="submit">x</button></form>{{end}}
+		{{if and (not $isSimple) .DeleteUrl}}<form class="delete" method="post" action="{{$SubItemPrefix}}?delete" onsubmit="return confirmDelete(event)"><input type="hidden" name="name" value="{{.DeleteUrl}}"><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"><button type="submit">x</button></form>{{end}}
 	</li>
 	{{end -}}
 </ul>
@@ -136,6 +134,6 @@
   {{.Trans.ErrorStatus -}}
 {{end}}</div>{{end}}
 
-<script type="text/javascript" src="{{.RootRelPath}}?asset=index.js" defer="defer" async="async"></script>
+<script src="{{.RootRelPath}}?asset=index.js" defer="defer" async="async"></script>
 </body>
 </html>
