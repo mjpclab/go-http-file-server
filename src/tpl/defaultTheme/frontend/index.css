@@ -94,7 +94,7 @@ html::before {
 	display: none;
 	content: '';
 	position: fixed;
-	z-index: 2;
+	z-index: 4;
 	inset: 0;
 	opacity: 0.7;
 	background: #c9c;
@@ -145,7 +145,7 @@ html.dragging::before {
 
 .login {
 	position: absolute;
-	z-index: 1;
+	z-index: 2;
 	inset-inline-end: 0;
 	padding: 0.5em 1em;
 }
@@ -193,7 +193,7 @@ html.dragging::before {
 .upload-status {
 	visibility: hidden;
 	position: sticky;
-	z-index: 1;
+	z-index: 3;
 	inset-inline-start: 0;
 	inset-block-start: 0;
 	inline-size: 100%;
@@ -424,6 +424,12 @@ html.dragging::before {
 	background: #fee;
 }
 
+.entry-list .header {
+	position: sticky;
+	inset-block-start: 0;
+	z-index: 1;
+}
+
 .entry-list .header .detail {
 	gap: 0;
 	background: #fcfcfc;
@@ -616,6 +622,10 @@ html.dragging::before {
 
 	.entry-list {
 		margin-inline: 0;
+	}
+
+	.entry-list .header {
+		position: relative;
 	}
 
 	.entry-list .header .name {
