@@ -12,7 +12,7 @@ body {
 	font-kerning: none;
 	text-size-adjust: none;
 	hyphens: none;
-	padding-bottom: 2em;
+	padding-block-end: 2em;
 }
 
 body, input, textarea, button {
@@ -95,10 +95,7 @@ html::before {
 	content: '';
 	position: fixed;
 	z-index: 2;
-	left: 0;
-	top: 0;
-	right: 0;
-	bottom: 0;
+	inset: 0;
 	opacity: 0.7;
 	background: #c9c;
 }
@@ -113,7 +110,7 @@ html.dragging::before {
 	flex-wrap: wrap;
 	font-size: 1.5em;
 	line-height: 1.2;
-	border-bottom: 1px #999 solid;
+	border-block-end: 1px #999 solid;
 }
 
 .path-list li {
@@ -130,16 +127,16 @@ html.dragging::before {
 }
 
 .path-list li:not(:last-child) a {
-	padding-right: 1.2em;
+	padding-inline-end: 1.2em;
 }
 
-.path-list li:not(:last-child) a:after {
+.path-list li:not(:last-child) a::after {
 	content: '';
 	position: absolute;
-	top: 50%;
-	right: 0.5em;
-	width: 0.4em;
-	height: 0.4em;
+	inset-block-start: 50%;
+	inset-inline-end: 0.5em;
+	inline-size: 0.4em;
+	block-size: 0.4em;
 	border: 1px solid;
 	color: #ccc;
 	border-color: currentColor currentColor transparent transparent;
@@ -149,7 +146,7 @@ html.dragging::before {
 .login {
 	position: absolute;
 	z-index: 1;
-	right: 0;
+	inset-inline-end: 0;
 	padding: 0.5em 1em;
 }
 
@@ -190,18 +187,18 @@ html.dragging::before {
 }
 
 .tab + .panel {
-	margin-top: 0;
+	margin-block-start: 0;
 }
 
 .upload-status {
 	visibility: hidden;
 	position: sticky;
 	z-index: 1;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 4px;
-	margin-bottom: -4px;
+	inset-inline-start: 0;
+	inset-block-start: 0;
+	inline-size: 100%;
+	block-size: 4px;
+	margin-block-end: -4px;
 	background: rgba(204, 153, 204, 0.1);
 	pointer-events: none;
 }
@@ -213,9 +210,9 @@ html.dragging::before {
 
 .upload-status .label {
 	position: absolute;
-	left: 0;
-	top: 0;
-	width: 100%;
+	inset-inline-start: 0;
+	inset-block-start: 0;
+	inline-size: 100%;
 	display: flex;
 	justify-content: center;
 	color: #fff;
@@ -225,41 +222,42 @@ html.dragging::before {
 
 .upload-status .label .content {
 	position: relative;
-	padding: 0.5em 1em;
+	padding-inline: 1em;
+	padding-block: 0.5em;
 	line-height: 1em;
 	box-sizing: border-box;
 	word-break: break-all;
 }
 
 .upload-status .info .content {
-	padding-left: 2.5em;
+	padding-inline-start: 2.5em;
 	background: rgba(204, 153, 204, 0.8);
 }
 
 @keyframes wheel {
 	from {
-		transform: rotate(0);
+		transform: rotate(0deg);
 	}
 	to {
 		transform: rotate(360deg);
 	}
 }
 
-.upload-status .info .content:before,
-.upload-status .info .content:after {
+.upload-status .info .content::before,
+.upload-status .info .content::after {
 	content: '';
 	position: absolute;
-	left: 1em;
-	top: 0.5em;
-	width: 1em;
-	height: 1em;
+	inset-inline-start: 1em;
+	inset-block-start: 0.5em;
+	inline-size: 1em;
+	block-size: 1em;
 	box-sizing: border-box;
 	border: 2px solid rgba(255, 255, 255, 0.3);
 	border-radius: 50%;
 	animation: wheel 1s linear infinite;
 }
 
-.upload-status .info .content:after {
+.upload-status .info .content::after {
 	border-color: currentColor transparent transparent transparent;
 }
 
@@ -275,10 +273,10 @@ html.dragging::before {
 
 .upload-status .progress {
 	position: absolute;
-	left: 0;
-	top: 0;
-	width: 0;
-	height: 100%;
+	inset-inline-start: 0;
+	inset-block-start: 0;
+	inline-size: 0;
+	block-size: 100%;
 	background: #c9c;
 }
 
@@ -299,7 +297,8 @@ html.dragging::before {
 
 .archive a {
 	position: relative;
-	padding: 1em 1em 1em 3em;
+	padding: 1em;
+	padding-inline-start: 3em;
 	border: 2px #f5f5f5 solid;
 }
 
@@ -310,21 +309,21 @@ html.dragging::before {
 .archive a:before {
 	content: '';
 	position: absolute;
-	left: 1.1em;
-	top: 1em;
-	height: 1em;
-	width: 3px;
+	inset-inline-start: 1.1em;
+	inset-block-start: 1em;
+	inline-size: 3px;
+	block-size: 1em;
 	background: #aaa;
 }
 
 .archive a:after {
 	content: '';
 	position: absolute;
-	left: 0.6em;
-	top: 1em;
-	width: 0.5em;
-	height: 0.5em;
-	margin-left: 1px;
+	inset-inline-start: 0.6em;
+	inset-block-start: 1em;
+	inline-size: 0.5em;
+	block-size: 0.5em;
+	margin-inline-start: 1px;
 	border: 3px #aaa solid;
 	border-top-color: transparent;
 	border-left-color: transparent;
@@ -358,7 +357,7 @@ html.dragging::before {
 	display: flex;
 	flex-flow: row nowrap;
 	align-items: center;
-	border-bottom: 1px #f5f5f5 solid;
+	border-block-end: 1px #f5f5f5 solid;
 	overflow: hidden;
 }
 
@@ -367,7 +366,7 @@ html.dragging::before {
 }
 
 .entry-list.has-deletable .detail {
-	padding-right: 2.2em;
+	padding-inline-end: 2.2em;
 }
 
 .entry-list.has-deletable .delete {
@@ -380,7 +379,7 @@ html.dragging::before {
 
 .entry-list .name {
 	flex: 1 1 0;
-	margin-left: 0;
+	margin-inline-start: 0;
 	font-size: 1.5em;
 	white-space: pre-wrap;
 	word-break: break-all;
@@ -388,7 +387,7 @@ html.dragging::before {
 
 .entry-list .size {
 	white-space: nowrap;
-	text-align: right;
+	text-align: end;
 	color: #666;
 }
 
@@ -398,16 +397,15 @@ html.dragging::before {
 
 .entry-list .time {
 	color: #999;
-	text-align: right;
+	text-align: end;
 	white-space: nowrap;
 	overflow: hidden;
 }
 
 .entry-list .delete {
 	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
+	inset-block: 0;
+	inset-inline: auto 0;
 	display: flex;
 	align-items: stretch;
 }
@@ -458,7 +456,7 @@ html.dragging::before {
 
 .entry-list .header .filter label input {
 	flex: 1 1 0;
-	width: 0;
+	inline-size: 0;
 }
 
 .entry-list .header .filter label input:placeholder-shown {
@@ -472,9 +470,7 @@ html.dragging::before {
 .entry-list .header .filter button {
 	display: none;
 	position: absolute;
-	right: 0;
-	top: 0;
-	bottom: 0;
+	inset: 0 0 0 auto;
 	padding: 0 1em;
 	border: 0;
 	appearance: none;
@@ -483,7 +479,7 @@ html.dragging::before {
 }
 
 .entry-list .header .time {
-	width: 6.5em;
+	inline-size: 6.5em;
 	text-align: center;
 }
 
@@ -532,7 +528,7 @@ html.dragging::before {
 		border-color: #555;
 	}
 
-	.path-list li:not(:last-child) a:after {
+	.path-list li:not(:last-child) a::after {
 		color: #555;
 	}
 
@@ -559,7 +555,7 @@ html.dragging::before {
 
 	.entry-list .detail,
 	.entry-list .delete {
-		border-bottom-color: #222;
+		border-block-end-color: #222;
 	}
 
 	.entry-list .size {
@@ -589,7 +585,7 @@ html.dragging::before {
 
 @media screen and (max-width: 450px) {
 	.entry-list .header .time {
-		width: 4.05em;
+		inline-size: 4.05em;
 	}
 }
 
@@ -619,8 +615,7 @@ html.dragging::before {
 	}
 
 	.entry-list {
-		margin-left: 0;
-		margin-right: 0;
+		margin-inline: 0;
 	}
 
 	.entry-list .header .name {
@@ -640,7 +635,7 @@ html.dragging::before {
 	}
 
 	.entry-list.has-deletable .detail {
-		padding-right: 0;
+		padding-inline-end: 0;
 	}
 
 	.entry-list.has-deletable .delete {
