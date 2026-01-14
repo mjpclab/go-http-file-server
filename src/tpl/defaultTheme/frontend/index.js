@@ -420,7 +420,7 @@ function enhanceUpload() {
 	const fileInput = form.querySelector('input[type=file]');
 	if (!fileInput) return;
 
-	const submitButton = form.querySelector('[type=submit]');
+	const submitButton = form.querySelector('button:last-of-type');
 	if (submitButton) submitButton.classList.add(classNone);
 
 	const uploadType = document.body.querySelector('.upload-type');
@@ -429,6 +429,8 @@ function enhanceUpload() {
 	const file = 'file';
 	const dirFile = 'dirfile';
 	const innerDirFile = 'innerdirfile';
+
+	const itemKindFile = 'file';
 
 	const optFile = uploadType.querySelector('.' + file);
 	const optDir = uploadType.querySelector('.' + dirFile);
@@ -440,29 +442,32 @@ function enhanceUpload() {
 	if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && DataTransferItem.prototype.getAsFileSystemHandle && !DataTransferItem.prototype.webkitGetAsEntry) {
 		const handleKindFile = 'file';
 		const handleKindDir = 'directory';
-		itemsToFiles = async function (dataTransferItems, canMkdir) {
+		itemsToFiles = async function (dataTransferItems) {
 			async function handlesToFiles(handles, files, dirPath) {
-				for (let i = 0; i < handles.length; i++) {
-					const handle = handles[i];
+				await Promise.all(handles.map(async handle => {
 					if (handle.kind === handleKindFile) {
+						const relativePath = dirPath + handle.name;
 						const file = await handle.getFile();
-						const relativePath = dirPath + file.name;
 						files.push({file, relativePath});
 					} else if (handle.kind === handleKindDir) {
 						const subHandles = [];
 						for await(const subHandle of handle.values()) {
 							subHandles.push(subHandle);
 						}
+						const relativePath = dirPath + handle.name + '/';
 						if (subHandles.length) {
-							await handlesToFiles(subHandles, files, dirPath + handle.name + '/');
+							await handlesToFiles(subHandles, files, relativePath);
+						} else {
+							const file = new File([''], handle.name);
+							files.push({file, relativePath});
 						}
 					}
-				}
+				}));
 			}
 
 			let hasDir = false;
 			const permDescriptor = {mode: 'read'};
-			const handles = await Promise.all(Array.from(dataTransferItems, async item => {
+			const handles = await Promise.all(Array.from(dataTransferItems).filter(item => item.kind === itemKindFile).map(async item => {
 				const handle = await item.getAsFileSystemHandle();
 				if (handle.kind === handleKindDir) {
 					if (!canMkdir) throw errLacksMkdir;
@@ -480,46 +485,47 @@ function enhanceUpload() {
 			return {files, hasDir};
 		};
 	} else {
-		itemsToFiles = async function (dataTransferItems, canMkdir) {
+		itemsToFiles = async function (dataTransferItems) {
 			async function entriesToFiles(entries, files) {
-				for (let i = 0; i < entries.length; i++) {
-					const entry = entries[i];
+				await Promise.all(entries.map(async (entry) => {
 					if (entry.isFile) {
-						let relativePath = entry.fullPath;
-						if (relativePath[0] === '/') {
-							relativePath = relativePath.slice(1);
-						}
 						const file = await new Promise((res, rej) => entry.file(res, rej));
+						const relativePath = entry.fullPath.slice(1);
 						files.push({file, relativePath});
 					} else if (entry.isDirectory) {
 						const reader = entry.createReader();
-						while (true) {
+						const subTasks = [];
+						for (let i = 0; ; i++) {
 							const subEntries = await new Promise((res, rej) => reader.readEntries(res, rej));
-							if (!subEntries.length) break;
-							await entriesToFiles(subEntries, files);
+							if (subEntries.length > 0) {
+								subTasks.push(entriesToFiles(subEntries, files));
+								continue;
+							}
+							if (i === 0) {
+								const file = new File([''], entry.name);
+								const relativePath = entry.fullPath.slice(1) + '/';
+								files.push({file, relativePath});
+							} else {
+								await Promise.all(subTasks);
+							}
+							break;
 						}
 					}
-				}
+				}));
 			}
 
-			const entries = [];
+			let hasDir = false;
+			const entries = Array.from(dataTransferItems, item => {
+				if (item.kind !== itemKindFile) return;
+				const entry = item.webkitGetAsEntry();
+				if (entry.isDirectory) {
+					if (!canMkdir) throw errLacksMkdir;
+					hasDir = true;
+				}
+				return entry;
+			}).filter(Boolean);
 			const files = [];
 
-			for (let i = 0; i < dataTransferItems.length; i++) {
-				const item = dataTransferItems[i];
-				const entry = item.webkitGetAsEntry();
-				if (entry.isFile) {
-					// Safari cannot get file from entry by entry.file(), if it is a pasted image
-					// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
-					const file = item.getAsFile();
-					files.push({file, relativePath: file.name});
-				} else if (entry.isDirectory) {
-					if (!canMkdir) throw errLacksMkdir;
-					entries.push(entry);
-				}
-			}
-
-			const hasDir = entries.length > 0;
 			await entriesToFiles(entries, files);
 			return {files, hasDir};
 		};
@@ -614,7 +620,7 @@ function enhanceUpload() {
 				}
 			});
 		} else {
-			optFile && optDir && optDir.click();
+			optFile && optFile.click();
 		}
 
 		function switchToFileMode() {
@@ -625,25 +631,24 @@ function enhanceUpload() {
 		}
 
 		function switchToDirMode() {
-			if (optDir) {
-				if (optActive !== optDir) {
-					optDir.focus();
-					onClickOptDir();
-				}
-			} else if (optInnerDir) {
-				if (optActive !== optInnerDir) {
-					optInnerDir.focus();
-					onClickOptInnerDir();
-				}
+			if (optDir && optActive !== optDir) {
+				optDir.focus();
+				onClickOptDir();
 			}
 		}
 
-		return {switchToFileMode, switchToDirMode};
+		function switchToInnerDirMode() {
+			if (optInnerDir && optActive !== optInnerDir) {
+				optInnerDir.focus();
+				onClickOptInnerDir();
+			}
+		}
+
+		return {switchToFileMode, switchToDirMode, switchToInnerDirMode};
 	}
 
-	function enableUploadProgress() {	// also fix Safari upload filename has no path info
-		let uploading = false;
-		const batches = [];
+	function enableUploadProgress(switchToFileMode, switchToDirMode, switchToInnerDirMode) {
+		let uploading = null;
 		const classUploading = 'uploading';
 		const classFailed = 'failed';
 		const elUploadStatus = document.body.querySelector('.upload-status');
@@ -651,89 +656,148 @@ function enhanceUpload() {
 		const elProgress = elUploadStatus.querySelector('.progress');
 		const elFailedMessage = elUploadStatus.querySelector('.warn .message');
 
-		function onProgress(e) {
-			if (e.lengthComputable) {
-				const percent = 100 * e.loaded / e.total;
-				elProgress.style.width = percent + '%';
-			}
-		}
-
-		function onFail(e) {
-			elUploadStatus.classList.remove(classUploading);
-			elUploadStatus.classList.add(classFailed);
-			elFailedMessage.textContent = " - " + e.type;
-			batches.length = 0;
-		}
-
-		function onSuccess(e) {
-			const status = e.target.status
-			if (status < 200 || status >= 300) {
-				return onFail({type: e.target.statusText || status});
-			} else if (batches.length) {
-				uploadBatch(batches.shift());
-			} else {
-				uploading = false;
-				elUploadStatus.classList.remove(classUploading);
-				location.reload();
-			}
-		}
-
-		function onFinally() {
-			elProgress.style.width = '';
-		}
-
 		function uploadBatch(files) {
+			const maxCount = 2048;
 			const fieldName = fileInput.name;
-			const parts = new FormData();
-			files.forEach(file => {
-				parts.append(fieldName, file.file, file.relativePath);
+
+			const slices = [];
+			let totalSize = 0;
+
+			let parts = null;
+			let count = Infinity;
+			for (let i = 0; i <= files.length; i++) {
+				if (count >= maxCount || i === files.length) {
+					if (i > 0) slices.push(parts);
+					if (i === files.length) break;
+					parts = new FormData();
+					count = 0;
+				}
+
+				const {file, relativePath} = files[i];
+				totalSize += file.size;
+				count += 1;
+				parts.append(fieldName, file, relativePath);
+			}
+			if (slices.length === 0) return;
+
+			let finishedSize = 0;
+			elProgress.style.width = '';
+			const onProgress = e => {
+				if (e.lengthComputable) {
+					const percent = 100 * (finishedSize + e.loaded) / totalSize;
+					elProgress.style.width = percent + '%';
+				}
+			};
+			const onUploadSuccess = e => {
+				if (e.lengthComputable) {
+					finishedSize += e.total;
+				}
+			};
+			const {method, action} = form;
+			return new Promise(function (resolve, reject) {
+				const onFail = e => {
+					slices.length = 0;
+					reject(e);
+				};
+				const onDownloadSuccess = e => {
+					const status = e.target.status;
+					if (status < 200 || status >= 300) {
+						onFail({type: e.target.statusText || status});
+						return;
+					}
+					if (slices.length) {
+						uploadSlice(slices.shift());
+						return;
+					}
+
+					elProgress.style.width = '100%';
+					resolve();
+				};
+
+				function uploadSlice(parts) {
+					const xhr = new XMLHttpRequest();
+					xhr.upload.addEventListener('progress', onProgress);
+					xhr.upload.addEventListener('error', onFail);
+					xhr.addEventListener('error', onFail);
+					xhr.upload.addEventListener('abort', onFail);
+					xhr.addEventListener('abort', onFail);
+					xhr.upload.addEventListener('load', onUploadSuccess);
+					xhr.addEventListener('load', onDownloadSuccess);
+					xhr.open(method, action);
+					xhr.setRequestHeader('accept', 'application/json');
+					xhr.send(parts);
+				}
+
+				uploadSlice(slices.shift());
 			});
-
-			const xhr = new XMLHttpRequest();
-			xhr.upload.addEventListener('progress', onProgress);
-			xhr.addEventListener('error', onFail);
-			xhr.addEventListener('error', onFinally);
-			xhr.addEventListener('abort', onFail);
-			xhr.addEventListener('abort', onFinally);
-			xhr.addEventListener('load', onSuccess);
-			xhr.addEventListener('load', onFinally);
-
-			xhr.open(form.method, form.action);
-			xhr.send(parts);
 		}
 
-		function uploadProgressively(files) {
-			if (!files.length) return;
-
-			if (uploading) {
-				batches.push(files);
-			} else {
-				uploading = true;
+		async function tryUploadBatch(getFilesResult) {
+			if (!uploading) {
 				elUploadStatus.classList.remove(classFailed);
 				elUploadStatus.classList.add(classUploading);
-				uploadBatch(files);
+				uploading = Promise.resolve();
 			}
+
+			const filesResultTask = getFilesResult();	// must extract DataTransferItems ASAP
+			const localUploading = uploading = uploading.then(async () => {
+				const filesResult = await filesResultTask;
+				const {files, hasDir, isInnerDir} = filesResult;
+
+				if (hasDir) {
+					isInnerDir ? switchToInnerDirMode() : switchToDirMode();
+				} else {
+					switchToFileMode();
+				}
+
+				await uploadBatch(files);
+				if (uploading === localUploading) {
+					location.reload();
+				}
+			}).catch(err => {
+				elFailedMessage.textContent = ' - ' + err.type;
+				if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {
+					showUploadDirFailMessage();
+				} else {
+					logError(err);
+				}
+				elUploadStatus.classList.remove(classUploading);
+				elUploadStatus.classList.add(classFailed);
+				throw err;
+			});
+
+			return localUploading;
 		}
 
-		return uploadProgressively;
+		async function uploadFilesProgressively(filesResult) {
+			await tryUploadBatch(() => filesResult);
+		}
+
+		async function uploadItemsProgressively(dataTransferItems) {
+			await tryUploadBatch(() => itemsToFiles(dataTransferItems));
+		}
+
+		return {uploadFilesProgressively, uploadItemsProgressively};
 	}
 
-	function enableFormUploadProgress(uploadProgressively) {
+	function enableFormUploadProgress(uploadFilesProgressively) {
 		form.addEventListener('submit', function (e) {
 			e.stopPropagation();
 			e.preventDefault();
 		});
 
 		fileInput.addEventListener('change', function () {
-			const files = Array.from(fileInput.files, file => ({
-				file,
-				relativePath: file.webkitRelativePath || file.name
-			}));
-			uploadProgressively(files);
+			let hasDir = false;
+			const files = Array.from(fileInput.files, file => {
+				const relativePath = file.webkitRelativePath || file.name;
+				if (relativePath.includes('/')) hasDir = true;
+				return {file, relativePath};
+			});
+			uploadFilesProgressively({files, hasDir, isInnerDir: fileInput.name === innerDirFile});
 		});
 	}
 
-	function enableDndUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode) {
+	function enableDndUploadProgress(uploadItemsProgressively) {
 		let isSelfDragging = false;
 		const classDragging = 'dragging';
 
@@ -747,9 +811,11 @@ function enhanceUpload() {
 
 		function onDragEnterOver(e) {
 			if (isSelfDragging) return;
-			e.stopPropagation();
-			e.preventDefault();
-			e.currentTarget.classList.add(classDragging);
+			if (e.dataTransfer.items.length) {
+				e.stopPropagation();
+				e.preventDefault();
+				e.currentTarget.classList.add(classDragging);
+			}
 		}
 
 		function onDragLeave(e) {
@@ -763,22 +829,7 @@ function enhanceUpload() {
 			e.preventDefault();
 			e.currentTarget.classList.remove(classDragging);
 			fileInput.value = '';
-			if (!e.dataTransfer.files.length) return;
-
-			itemsToFiles(e.dataTransfer.items, canMkdir).then(function (result) {
-				if (result.hasDir) {
-					switchToDirMode();
-				} else {
-					switchToFileMode();
-				}
-				uploadProgressively(result.files);
-			}, function (err) {
-				if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {
-					showUploadDirFailMessage();
-				} else {
-					logError(err);
-				}
-			});
+			uploadItemsProgressively(e.dataTransfer.items);
 		}
 
 		document.body.addEventListener('dragstart', onSelfDragStart);
@@ -790,9 +841,8 @@ function enhanceUpload() {
 		dndTarget.addEventListener('drop', onDrop);
 	}
 
-	function enablePasteUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode) {
+	function enablePasteUploadProgress(uploadFilesProgressively, uploadItemsProgressively) {
 		const typeTextPlain = 'text/plain';
-		const nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
 
 		function getTimeStamp() {
 			const now = new Date();
@@ -807,8 +857,6 @@ function enhanceUpload() {
 		}
 
 		function uploadPastedFile(file) {
-			switchToFileMode();
-
 			const ts = getTimeStamp();
 			let filename = file.name;
 			let dotIndex = filename.lastIndexOf('.');
@@ -818,16 +866,23 @@ function enhanceUpload() {
 			filename = filename.slice(0, dotIndex) + ts + filename.slice(dotIndex);
 
 			const files = [{file, relativePath: filename}];
-			uploadProgressively(files);
+			uploadFilesProgressively({files, hasDir: false});
+		}
+
+		function isTextInput(el) {
+			const tagName = el.tagName;
+			if (tagName === 'TEXTAREA') {
+				return true;
+			}
+			const nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
+			if (tagName === 'INPUT' && !nonTextInputTypes.includes(el.type)) {
+				return true;
+			}
+			return false;
 		}
 
 		document.documentElement.addEventListener('paste', function (e) {
-			const tagName = e.target.tagName;
-			if (tagName === 'TEXTAREA') {
-				return;
-			} else if (tagName === 'INPUT' && !nonTextInputTypes.includes(e.target.type)) {
-				return;
-			}
+			if (isTextInput(e.target)) return;
 
 			const data = e.clipboardData;
 			const dItems = data.items;
@@ -853,29 +908,17 @@ function enhanceUpload() {
 			}
 
 			// actual files/directories pasted
-			itemsToFiles(dItems, canMkdir).then(function (result) {
-				// pasted real files
-				if (result.hasDir) {
-					switchToDirMode();
-				} else {
-					switchToFileMode();
-				}
-				uploadProgressively(result.files);
-			}, function (err) {
-				if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {
-					showUploadDirFailMessage();
-				} else {
-					logError(err);
-				}
-			});
+			if (dItems.length) {
+				uploadItemsProgressively(dItems);
+			}
 		});
 	}
 
-	const {switchToFileMode, switchToDirMode} = enableFileDirModeSwitch();
-	const uploadProgressively = enableUploadProgress();
-	enableFormUploadProgress(uploadProgressively);
-	enableDndUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode);
-	enablePasteUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode);
+	const {switchToFileMode, switchToDirMode, switchToInnerDirMode} = enableFileDirModeSwitch();
+	const {uploadFilesProgressively, uploadItemsProgressively} = enableUploadProgress(switchToFileMode, switchToDirMode, switchToInnerDirMode);
+	enableFormUploadProgress(uploadFilesProgressively);
+	enableDndUploadProgress(uploadItemsProgressively);
+	enablePasteUploadProgress(uploadFilesProgressively, uploadItemsProgressively);
 }
 
 function enableNonRefreshDelete() {
