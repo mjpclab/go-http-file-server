@@ -45,12 +45,12 @@ type pathEntry struct {
 }
 
 type itemHtml struct {
+	Name        string
 	Type        template.HTML
 	Url         string
 	DisplayName template.HTML
 	DisplaySize template.HTML
 	DisplayTime template.HTML
-	DeleteUrl   string
 }
 
 type sessionContext struct {

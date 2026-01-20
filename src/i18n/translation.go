@@ -24,9 +24,8 @@ type Translation struct {
 
 	FilterLabel string
 
-	SelectStart  string
-	SelectCancel string
-	SelectAll    string
+	ToggleSelectLabel string
+	SelectAllLabel    string
 
 	ArchiveLabel string
 
@@ -63,9 +62,8 @@ var translationEnUs = Translation{
 
 	FilterLabel: "filter...",
 
-	SelectStart:  "Select",
-	SelectCancel: "Cancel",
-	SelectAll:    "Select all",
+	ToggleSelectLabel: "Toggle select",
+	SelectAllLabel:    "Select all",
 
 	ArchiveLabel: "Archive",
 
@@ -102,9 +100,8 @@ var translationZhSimp = Translation{
 
 	FilterLabel: "筛选……",
 
-	SelectStart:  "选择",
-	SelectCancel: "取消",
-	SelectAll:    "全选",
+	ToggleSelectLabel: "切换勾选",
+	SelectAllLabel:    "全选",
 
 	ArchiveLabel: "打包",
 
@@ -141,9 +138,8 @@ var translationZhTrad = Translation{
 
 	FilterLabel: "篩選……",
 
-	SelectStart:  "選擇",
-	SelectCancel: "取消",
-	SelectAll:    "全選",
+	ToggleSelectLabel: "切換勾選",
+	SelectAllLabel:    "全選",
 
 	ArchiveLabel: "打包",
 

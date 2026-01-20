@@ -109,9 +109,6 @@ function enableFilter() {
 			input.blur();
 		}
 	};
-	filter.addEventListener('reset', function (e) {
-		e.preventDefault();
-	});
 
 	input.addEventListener('keydown', function (e) {
 		if (e.key === Enter) {
@@ -921,39 +918,67 @@ function enhanceUpload() {
 	enablePasteUploadProgress(uploadFilesProgressively, uploadItemsProgressively);
 }
 
-function enableNonRefreshDelete() {
-	const entryList = document.body.querySelector(selectorEntryList);
+function enableSelectActions() {
+	const form = document.body.querySelector('form.entry-form');
+	if (!form) return;
+
+	const entryList = form.querySelector(selectorEntryList);
 	if (!entryList) return;
-	if (!entryList.classList.contains('has-deletable')) return;
 
-	entryList.addEventListener('submit', function (e) {
-		if (e.defaultPrevented) return;
+	const btnDelete = form.querySelector('.action-list .delete');
+	const btnToggleSelect = entryList.querySelector('.toggle-select');
+	const chkSelectAll = entryList.querySelector('.select-all');
 
-		const form = e.target;
+	const classSelecting = 'selecting';
+	const selectorVisible = `li${selectorNotNone}`;
+	const selectorHidden = `li${selectorIsNone}`;
+	const selectorCheckbox = '.select input[type=checkbox]';
+	const selectorUnchecked = `${selectorCheckbox}:not(:checked)`;
+	const selectorChecked = `${selectorCheckbox}:checked`;
+	const selectorVisibleUnchecked = `${selectorVisible} ${selectorUnchecked}`;
+	const selectorHiddenChecked = `${selectorHidden} ${selectorChecked}`;
 
-		const params = Array.from(form.elements, el => {
-			const {name, value} = el;
-			if (name) {
-				return `${name}=${encodeURIComponent(value)}`;
-			}
-		}).filter(Boolean).join('&');
+	form.addEventListener('submit', function () {
+		entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
 
-		// follow redirect to update bf-cache
-		fetch(form.action, {
-			method: form.method,
-			headers: {
-				'Content-Type': form.enctype,
-			},
-			body: params
-		}).then(resp => {
-			const {status} = resp;
-			if (status < 200 || status > 299) throw resp;
-			const elItem = form.closest('li');
-			elItem.remove();
-		}).catch(logError);
-
-		e.preventDefault();
+		setTimeout(() => {
+			form.classList.remove(classSelecting);
+			entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+		}, 0);
 	});
+
+	if (btnToggleSelect) {
+		btnToggleSelect.addEventListener('click', function () {
+			form.classList.toggle(classSelecting);
+			const selecting = form.classList.contains(classSelecting);
+			if (btnDelete) {
+				btnDelete.disabled = !selecting;
+			}
+			if (!selecting) {
+				entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+			}
+		});
+	}
+
+	if (chkSelectAll) {
+		chkSelectAll.addEventListener('change', function (e) {
+			const checked = e.target.checked;
+			if (checked) {
+				entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
+				entryList.querySelectorAll(selectorVisibleUnchecked).forEach(input => input.checked = true);
+			} else {
+				entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+			}
+		});
+	}
+
+	if (typeof confirmDelete === strFunction) {
+		if (btnDelete) {
+			btnDelete.addEventListener('click', function (e) {
+				if (!confirmDelete()) e.preventDefault();
+			});
+		}
+	}
 }
 
 enableFilter();
@@ -961,4 +986,4 @@ keepFocusOnBackwardForward();
 focusChildOnNavUp();
 enableKeyboardNavigate();
 enhanceUpload();
-enableNonRefreshDelete();
+enableSelectActions();
