@@ -112,7 +112,7 @@ func (h *aliasHandler) visitTreeNode(
 	}
 
 	if fInfo.IsDir() && h.index.match(urlPath, fsPath, userId) {
-		childInfos, _, _ = h.mergeAlias(urlPath, fInfo, childInfos, true)
+		childInfos, _, _ = h.mergeAlias(urlPath, fInfo, childInfos, true, true)
 		childInfos = h.FilterItems(childInfos)
 
 		// childInfo can be regular dir/file, or aliased item that shadows regular dir/file

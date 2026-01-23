@@ -205,6 +205,7 @@ func (h *aliasHandler) mergeAlias(
 	rawRequestPath string,
 	item os.FileInfo,
 	subItems []os.FileInfo,
+	generateSubItems bool,
 	doMerge bool,
 ) (mergedSubItems, aliasSubItems []os.FileInfo, errs []error) {
 	if !doMerge || (item != nil && !item.IsDir()) || len(h.aliases) == 0 {
@@ -245,7 +246,9 @@ func (h *aliasHandler) mergeAlias(
 			// fsItem could be nil
 			aliasSubItem := createVirtualFileInfo(subName, fsItem)
 			aliasSubItems = append(aliasSubItems, aliasSubItem)
-			subItems = append(subItems, aliasSubItem)
+			if generateSubItems {
+				subItems = append(subItems, aliasSubItem)
+			}
 		}
 	}
 
@@ -488,13 +491,14 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		}
 	}
 
-	subItems, _readdirErr := readdir(file, item, canIndex && !isMutate && !isArchive && NeedResponseBody(r.Method))
+	generateSubItems := canIndex && !isMutate && !isArchive && NeedResponseBody(r.Method)
+	subItems, _readdirErr := readdir(file, item, generateSubItems)
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, canIndex)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, generateSubItems, canIndex)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -506,7 +510,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	// set `redirectAction` to `addSlashSuffix` for dangling intermediate alias directory
-	if redirectAction == noRedirect && h.autoDirSlash > 0 && len(subItems) > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' {
+	if redirectAction == noRedirect && h.autoDirSlash > 0 && len(aliasSubItems) > 0 && prefixReqPath[len(prefixReqPath)-1] != '/' {
 		redirectAction = addSlashSuffix
 	}
 
