@@ -363,6 +363,88 @@ html.dragging::before {
 
 .entry-list .detail {
 	gap: 1em;
+	position: relative;
+	padding-inline-start: 3em;
+}
+
+/* icon - common */
+.entry-list .detail::before,
+.entry-list .detail::after {
+	content: '';
+	position: absolute;
+	color: #999;
+	border: 1px currentColor solid;
+}
+
+/* icon - header */
+.entry-list .header .detail::before,
+.entry-list .header .detail::after {
+	content: none;
+	display: none;
+}
+
+/* icon - parent */
+.entry-list .parent .detail::before {
+	inset-inline-start: 0.9em;
+	inline-size: 0.9em;
+	block-size: 1em;
+	border-block-width: 0 1px;
+	border-inline-width: 1px 0;
+	border-end-start-radius: 0.3em;
+}
+
+.entry-list .parent .detail::after {
+	inset-inline-start: 0.65em;
+	margin-top: calc(-1em - 2px);
+	inline-size: 0;
+	block-size: 0;
+	border-inline-width: 0.3em;
+	border-block-width: 0 0.6em;
+	border-inline-color: transparent;
+}
+
+/* icon - dir */
+.entry-list .dir .detail::before,
+.entry-list .dir .detail::after {
+	--gradient-color-from: #ffd;
+	--gradient-color-to: #fec;
+	background: linear-gradient(to bottom, var(--gradient-color-from), var(--gradient-color-to));
+}
+
+.entry-list .dir .detail::before {
+	inset-inline-start: 0.6em;
+	inline-size: 1em;
+	block-size: 1em;
+}
+
+.entry-list .dir .detail::after {
+	inset-inline-start: 0.6em;
+	inline-size: 1em;
+	block-size: 0.6em;
+	margin-block-end: -0.4em;
+	transform: skewX(-30deg);
+	transform-origin: center bottom;
+}
+
+/* icon - file */
+.entry-list .file .detail::before {
+	inset-inline-start: 0.6em;
+	inline-size: 1.2em;
+	block-size: 1.2em;
+	border-start-end-radius: 0.4em;
+	--gradient-color-from: #fff;
+	--gradient-color-to: #f1f1f1;
+	background: linear-gradient(to bottom, var(--gradient-color-from), var(--gradient-color-to));
+}
+
+.entry-list .file .detail::after {
+	inset-inline-start: 0.85em;
+	inline-size: 0.8em;
+	block-size: 0.3em;
+	border-block-width: 2px;
+	border-inline-width: 0;
+	border-style: dotted;
+	transform: skew(20deg);
 }
 
 .entry-list.has-deletable .detail {
@@ -562,6 +644,27 @@ html.dragging::before {
 	.entry-list .detail,
 	.entry-list .delete {
 		border-block-end-color: #222;
+	}
+
+	.entry-list .detail::before,
+	.entry-list .detail::after {
+		color: #444;
+	}
+
+	.entry-list .parent .detail::before,
+	.entry-list .parent .detail::after {
+		color: #999;
+	}
+
+	.entry-list .dir .detail::before,
+	.entry-list .dir .detail::after {
+		--gradient-color-from: #a74;
+		--gradient-color-to: #963;
+	}
+
+	.entry-list .file .detail::before {
+		--gradient-color-from: #bbb;
+		--gradient-color-to: #aaa;
 	}
 
 	.entry-list .size {
