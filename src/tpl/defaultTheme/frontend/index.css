@@ -282,7 +282,7 @@ html.dragging::before {
 	background: #c9c;
 }
 
-.upload-form {
+.upload form {
 	position: relative;
 	display: flex;
 	flex-direction: column;
@@ -290,7 +290,7 @@ html.dragging::before {
 	gap: 0.5em;
 }
 
-.upload-form button {
+.upload button {
 	position: absolute;
 	inset-inline-end: 0;
 }

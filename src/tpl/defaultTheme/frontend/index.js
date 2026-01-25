@@ -411,7 +411,7 @@ function enableKeyboardNavigate() {
 }
 
 function enhanceUpload() {
-	const form = document.body.querySelector('.upload-form');
+	const form = document.body.querySelector('.upload form');
 	if (!form) return;
 
 	const fileInput = form.querySelector('input[type=file]');

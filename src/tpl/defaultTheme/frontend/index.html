@@ -56,8 +56,8 @@
 	{{if .CanMkdir}}<button class="dirfile" title="{{.Trans.UploadDirHint}}">{{.Trans.UploadDirLabel}}</button>
 	<button class="innerdirfile" title="{{.Trans.UploadDirContentsHint}}">{{.Trans.UploadDirContentsLabel}}</button>{{end}}
 </div>
-<div class="panel">
-	<form class="upload-form" method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
+<div class="panel upload">
+	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
 		<h4>{{.Trans.UploadFilesHint}}</h4>
 		<input type="file" name="file" multiple="multiple">
 		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}">
