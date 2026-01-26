@@ -1,22 +1,22 @@
 package defaultTheme
 
 import (
-	"bytes"
 	_ "embed"
 	"mjpclab.dev/ghfs/src/tpl/theme"
+	"strings"
 )
 
 //go:embed frontend/index.html
 var defaultTplStr string
 
 //go:embed frontend/index.css
-var defaultCss []byte
+var defaultCss string
 
 //go:embed frontend/index.js
-var defaultJs []byte
+var defaultJs string
 
 //go:embed frontend/favicon.ico
-var defaultFavicon []byte
+var defaultFavicon string
 
 var DefaultTheme theme.MemTheme
 
@@ -29,8 +29,8 @@ func init() {
 	}
 
 	DefaultTheme.Assets = theme.Assets{
-		{"index.css", "text/css; charset=utf-8", bytes.NewReader(defaultCss)},
-		{"index.js", "application/javascript; charset=utf-8", bytes.NewReader(defaultJs)},
-		{"favicon.ico", "image/x-icon", bytes.NewReader(defaultFavicon)},
+		{"index.css", "text/css; charset=utf-8", strings.NewReader(defaultCss)},
+		{"index.js", "application/javascript; charset=utf-8", strings.NewReader(defaultJs)},
+		{"favicon.ico", "image/x-icon", strings.NewReader(defaultFavicon)},
 	}
 }
