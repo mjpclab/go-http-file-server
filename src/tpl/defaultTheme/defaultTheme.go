@@ -1,7 +1,6 @@
 package defaultTheme
 
 import (
-	"bytes"
 	"mjpclab.dev/ghfs/src/tpl/defaultTheme/frontend"
 	"mjpclab.dev/ghfs/src/tpl/theme"
 	"strings"
@@ -20,6 +19,6 @@ func init() {
 	DefaultTheme.Assets = theme.Assets{
 		{"index.css", "text/css; charset=utf-8", strings.NewReader(frontend.DefaultCss)},
 		{"index.js", "application/javascript; charset=utf-8", strings.NewReader(frontend.DefaultJs)},
-		{"favicon.ico", "image/x-icon", bytes.NewReader(frontend.DefaultFavicon)},
+		{"favicon.ico", "image/x-icon", strings.NewReader(frontend.DefaultFavicon)},
 	}
 }

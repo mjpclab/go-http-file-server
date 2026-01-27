@@ -8,10 +8,11 @@ import (
 	"net/http"
 )
 
+const contentIdentity = "identity"
 const contentEncGzip = "gzip"
 const contentEncDeflate = "deflate"
 
-var encodings = []string{contentEncGzip, contentEncDeflate}
+var encodings = []string{contentIdentity, contentEncGzip, contentEncDeflate}
 
 func GetWriter(w http.ResponseWriter, r *http.Request) (wc io.WriteCloser, ok bool) {
 	header := w.Header()
@@ -26,8 +27,8 @@ func GetWriter(w http.ResponseWriter, r *http.Request) (wc io.WriteCloser, ok bo
 	}
 
 	accepts := acceptHeaders.ParseAccepts(r.Header.Get("Accept-Encoding"))
-	_, encoding, hasSupportedEncoding := accepts.GetPreferredValue(encodings)
-	if !hasSupportedEncoding {
+	index, encoding, _ := accepts.GetPreferredValue(encodings)
+	if index < 1 {
 		return nil, false
 	}
 

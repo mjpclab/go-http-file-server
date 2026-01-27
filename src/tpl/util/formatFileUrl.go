@@ -6,6 +6,7 @@ import (
 
 var fileUrlReplacer = strings.NewReplacer(
 	"%", "%25",
+	"+", "%2b",
 	"?", "%3f",
 	"&", "%26",
 	"#", "%23",

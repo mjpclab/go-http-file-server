@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html lang="{{.Lang}}">
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-	<meta name="viewport" content="width=device-width,user-scalable=no"/>
-	<meta name="format-detection" content="telephone=no"/>
-	<meta name="renderer" content="webkit"/>
-	<meta name="wap-font-scale" content="no"/>
+	<meta name="viewport" content="width=device-width,user-scalable=no">
+	<meta name="format-detection" content="telephone=no,date=no,email=no,address=no">
+	<meta name="renderer" content="webkit">
 	<title>{{.Path}}</title>
-	<link rel="shortcut icon" type="image/x-icon" href="{{.RootRelPath}}?asset=favicon.ico"/>
-	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=index.css"/>
+	<link rel="shortcut icon" type="image/x-icon" href="{{.RootRelPath}}?asset=favicon.ico">
+	<link rel="stylesheet" type="text/css" href="{{.RootRelPath}}?asset=index.css">
 </head>
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 {{$contextQueryString := .Context.QueryString}}
-{{$isSimple := .IsSimple}}
 {{$SubItemPrefix := .SubItemPrefix}}
-{{if not $isSimple}}
+{{$canSelect := and (or .CanArchive .CanDelete) (len .SubItemsHtml)}}
+{{if not .IsSimple}}
 <ol class="path-list" translate="no">
 	{{range .Paths}}
 	<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
@@ -40,74 +38,67 @@
 {{if .CanMkdir}}
 <div class="panel mkdir">
 	<form method="POST" action="{{.SubItemPrefix}}?mkdir">
-		<input type="text" autocomplete="off" name="name" class="name"/>
-		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/>
-		<input type="submit" value="{{.Trans.MkdirLabel}}" class="submit"/>
+		<input type="text" autocomplete="off" name="name" class="name">
+		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}">
+		<button>{{.Trans.MkdirLabel}}</button>
 	</form>
 </div>
 {{end}}
 
 {{if .CanUpload}}
-<script type="text/javascript">
+<script>
 	function showUploadDirFailMessage() {
 		alert('{{.Trans.UploadDirFailMessage}}');
 	}
 </script>
 <div class="tab upload-type">
-	<h3>{{.Trans.UploadLabel}}</h3>
-	<a class="file active" tabindex="0" role="button" title="{{.Trans.UploadFilesHint}}">{{.Trans.UploadFilesLabel}}</a>
-	{{if .CanMkdir}}<a class="dirfile" tabindex="0" role="button" title="{{.Trans.UploadDirHint}}">{{.Trans.UploadDirLabel}}</a>
-	<a class="innerdirfile" tabindex="0" role="button" title="{{.Trans.UploadDirContentsHint}}">{{.Trans.UploadDirContentsLabel}}</a>{{end}}
+	<button class="file active" title="{{.Trans.UploadFilesHint}}">{{.Trans.UploadFilesLabel}}</button>
+	{{if .CanMkdir}}<button class="dirfile" title="{{.Trans.UploadDirHint}}">{{.Trans.UploadDirLabel}}</button>
+	<button class="innerdirfile" title="{{.Trans.UploadDirContentsHint}}">{{.Trans.UploadDirContentsLabel}}</button>{{end}}
 </div>
 <div class="panel upload">
 	<form method="POST" action="{{.SubItemPrefix}}?upload" enctype="multipart/form-data">
-		<input type="file" name="file" multiple="multiple"/>
-		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/>
-		<button type="submit" class="submit">{{.Trans.UploadLabel}}</button>
+		<h4>{{.Trans.UploadFilesHint}}</h4>
+		<input type="file" name="file" multiple="multiple">
+		<input type="hidden" name="contextquerystring" value="{{$contextQueryString}}">
+		<button>{{.Trans.UploadLabel}}</button>
 	</form>
 </div>
 {{end}}
-
-{{if .CanArchive}}
-<div class="archive">
-	<a href="{{.SubItemPrefix}}?tar">.tar</a>
-	<a href="{{.SubItemPrefix}}?tgz">.tar.gz</a>
-	<a href="{{.SubItemPrefix}}?zip">.zip</a>
-</div>
 {{end}}
-
-{{if .CanDelete}}
-<script type="text/javascript">
-	function confirmDelete(e) {
-		var form = e.target;
-		var name = form.name.value;
-		var proceed = confirm('{{.Trans.DeleteConfirm}}\n' + name);
-		if (!proceed) {
-			e.preventDefault();
+<form method="POST" class="entry-form">
+{{if and $canSelect (not .IsSimple)}}
+<div class="action-list">
+	{{if .CanArchive}}
+	<button class="archive" title="{{.Trans.ArchiveLabel}} .tar" formaction="{{.SubItemPrefix}}?tar">.tar</button>
+	<button class="archive" title="{{.Trans.ArchiveLabel}} .tgz" formaction="{{.SubItemPrefix}}?tgz">.tgz</button>
+	<button class="archive" title="{{.Trans.ArchiveLabel}} .zip" formaction="{{.SubItemPrefix}}?zip">.zip</button>
+	{{end}}
+	{{if .CanDelete}}
+	<script>
+		function confirmDelete() {
+			return confirm('{{.Trans.DeleteConfirm}}');
 		}
-		return proceed;
-	}
-</script>
-{{end}}
-{{end}}
-{{if .SubItemsHtml}}
-<div class="panel filter">
-	<div class="form">
-		<input type="text" accesskey="r" placeholder="{{.Trans.FilterLabel}}"/>
-		<button type="reset">X</button>
-	</div>
+	</script>
+	<button class="delete" title="{{.Trans.DeleteLabel}}" formaction="{{.SubItemPrefix}}?delete" disabled>{{.Trans.DeleteLabel}}</button>
+	{{end}}
 </div>
 {{end}}
-<ul class="item-list{{if .HasDeletable}} has-deletable{{end}}">
-	{{if not $isSimple}}
+<ul class="entry-list">
+	{{if not .IsSimple}}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
-		<span class="detail">
+		<div class="detail">
 		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">{{.Trans.ListDirLabel}}{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
 		<a class="field name" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextNameSort}}">{{.Trans.ListNameLabel}}{{if eq $sortKey "n"}}&uarr;{{else if eq $sortKey "N"}}&darr;{{end}}</a>
+		<div class="filter">
+			<label><input type="text" autocomplete="off" spellcheck="false" accesskey="r" placeholder="{{.Trans.FilterLabel}}"></label>
+			<button type="button">X</button>
+		</div>
 		<a class="field type" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTypeSort}}">{{.Trans.ListTypeLabel}}{{if eq $sortKey "e"}}&uarr;{{else if eq $sortKey "E"}}&darr;{{end}}</a>
 		<a class="field size" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextSizeSort}}">{{.Trans.ListSizeLabel}}{{if eq $sortKey "s"}}&uarr;{{else if eq $sortKey "S"}}&darr;{{end}}</a>
 		<a class="field time" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTimeSort}}">{{.Trans.ListTimeLabel}}{{if eq $sortKey "t"}}&uarr;{{else if eq $sortKey "T"}}&darr;{{end}}</a>
-		</span>
+		</div>
+		{{if $canSelect}}<button type="button" class="toggle-select" title="{{.Trans.ToggleSelectLabel}}"></button>{{end}}
 	</li>
 	<li class="parent">
 		<a href="{{if .IsRoot}}./{{else}}../{{end}}{{$contextQueryString}}" class="detail">
@@ -115,6 +106,7 @@
 		<span class="field size"></span>
 		<span class="field time"></span>
 		</a>
+		{{if $canSelect}}<label class="select" title="{{.Trans.SelectAllLabel}}"><input type="checkbox" class="select-all"></label>{{end}}
 	</li>
 	{{end}}
 	{{range .SubItemsHtml}}
@@ -124,10 +116,11 @@
 		<span class="field size">{{.DisplaySize}}</span>
 		<span class="field time">{{.DisplayTime}}</span>
 		</a>
-		{{if and (not $isSimple) .DeleteUrl}}<form class="delete" method="post" action="{{$SubItemPrefix}}?delete" onsubmit="return confirmDelete(event)"><input type="hidden" name="name" value="{{.DeleteUrl}}"/><input type="hidden" name="contextquerystring" value="{{$contextQueryString}}"/><button type="submit">x</button></form>{{end}}
+		{{if $canSelect}}<label class="select"><input type="checkbox" name="name" value="{{.Name}}"></label>{{end}}
 	</li>
 	{{end}}
 </ul>
+</form>
 
 {{if ne .Status 200}}<div class="error">{{.Status}}
 {{if eq .Status 401}}
@@ -141,6 +134,6 @@
 {{end}}
 </div>{{end}}
 
-<script type="text/javascript" src="{{.RootRelPath}}?asset=index.js" defer="defer" async="async"></script>
+<script type="module" src="{{.RootRelPath}}?asset=index.js" async="async"></script>
 </body>
 </html>

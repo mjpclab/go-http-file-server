@@ -10,12 +10,12 @@ Simple command line based HTTP file server to share local file system.
 - Can download the whole contents of current directory as archive file if enabled
 - Can upload files to current directory if enabled
 - Can specify a custom theme for page rendering
-- Support location alias(mount another directory to url location)
+- Support location alias(mount another directory to URL location)
 
 ## Tech Features
 - Monolithic architecture
 - Stateless
-- Zero third party dependency
+- Zero third-party dependency
 
 ## Compile
 Minimal required Go version is 1.2.
@@ -50,7 +50,7 @@ ghfs -r /var/tmp -u /data
 ghfs -r /var/tmp --upload-dir /var/tmp/data
 ```
 
-Share files from /etc, but also mount /usr/share/doc to url path /doc
+Share files from /etc, but also mount /usr/share/doc to URL path /doc
 ```sh
 ghfs -r /etc -a :/doc:/usr/share/doc
 ```
@@ -72,7 +72,7 @@ ghfs -L -
 ```
 
 Http Basic Auth:
-- requires authentication for url /files
+- requires authentication for URL /files
 - username: user1, password: pass1
 - username: user2, password: pass2
 ```sh
@@ -137,7 +137,7 @@ ghfs [options]
     e.g. ":/doc:/usr/share/doc"
 
 --prefix <path> ...
-    Serve files under a specific sub url path.
+    Serve files under a specific sub URL path.
     Could be useful if server is behind a reverse proxy and
     received the request without proxying path stripped.
 
@@ -168,7 +168,7 @@ ghfs [options]
     Specify default index file for directory.
 
 --global-restrict-access [<allowed-host> ...]
-    Restrict access from third party host for all url paths, by detecting
+    Restrict access from third-party host for all URL paths, by detecting
     request header `Referer` or `Origin`.
     If the request header is empty, directory list page is still allowed
     to access.
@@ -182,7 +182,8 @@ ghfs [options]
     Similar to --global-restrict-access, but for a specific URL path(and sub paths).
     e.g. "#/url/path#example1.com#example2.com".
 --restrict-access-dir <separator><fs-path>[<separator><allowed-host>...] ...
-    Similar to --global-restrict-access, but for a file system path(and sub paths).
+    Similar to --global-restrict-access, but for file system paths(and sub paths)
+    corresponding to the URL paths.
     e.g. "#/fs/path#example1.com#example2.com".
 
 --global-header <name>:<value> ...
@@ -190,7 +191,7 @@ ghfs [options]
 --header <separator><url-path><separator><name><separator><value> ...
     Add custom HTTP response header for a specific URL path(and sub path).
 --header-dir <separator><fs-path><separator><name><separator><value> ...
-    Similar to --header, but use file system path instead of url path.
+    Similar to --header, but use file system paths corresponding to the URL paths.
 
 --user [<username>]:[<password>] ...
     Specify users for current virtual host for Basic Auth, empty username and/or password is allowed.
@@ -202,33 +203,34 @@ ghfs [options]
     Specify users for Basic Auth, with encoded password.
 
 --global-auth
-    Use Basic Auth for all url path.
+    Use Basic Auth for all URL path.
 --auth <url-path> ...
 --auth-user <separator><url-path>[<separator><allowed-username>...] ...
-    Use Basic Auth for specific url paths(and sub paths).
+    Use Basic Auth for specific URL paths(and sub paths).
 --auth-dir <fs-path> ...
 --auth-dir-user <separator><fs-path>[<separator><allowed-username>...] ...
-    Use Basic Auth for specific file system paths(and sub paths).
+    Use Basic Auth for specific file system paths(and sub paths)
+    corresponding to the URL paths.
 
 --index <url-path> ...
 --index-user <separator><url-path>[<separator><allowed-username>...] ...
-    Set url paths(and sub paths) that allows to index files of a directory.
+    Set URL paths(and sub paths) that allows to index files of a directory.
     --index defaults to "/".
     Set to "" to disable index.
 --index-dir <fs-path> ...
 --index-dir-user <separator><fs-path>[<separator><allowed-username>...] ...
-    Similar to --index, but use file system path instead of url path.
+    Similar to --index, but use file system paths corresponding to the URL paths.
 
 -U|--global-upload
-    Allow upload files for all url paths.
+    Allow upload files for all URL paths.
     Use it with care.
 -u|--upload <url-path> ...
 --upload-user <separator><url-path>[<separator><allowed-username>...] ...
-    Set url paths(and sub paths) that allows to upload files.
+    Set URL paths(and sub paths) that allows to upload files.
     Use it with care.
 --upload-dir <fs-path> ...
 --upload-dir-user <separator><fs-path>[<separator><allowed-username>...] ...
-    Similar to --upload, but use file system path instead of url path.
+    Similar to --upload, but use file system paths corresponding to the URL paths.
     Use it with care.
 
     Notes for upload options:
@@ -238,25 +240,25 @@ ghfs [options]
         For directory upload mode, sub directories will be uploaded only if mkdir is enabled.
 
 --global-mkdir
-    Allow create sub directory under all url paths.
+    Allow create sub directory under all URL paths.
 --mkdir <url-path> ...
 --mkdir-user <separator><url-path>[<separator><allowed-username>...] ...
-    Allow create sub directory under specific url paths(and sub paths).
+    Allow create sub directory under specific URL paths(and sub paths).
 --mkdir-dir <fs-path> ...
 --mkdir-dir-user <separator><fs-path>[<separator><allowed-username>...] ...
-    Similar to --mkdir, but use file system path instead of url path.
+    Similar to --mkdir, but use file system paths corresponding to the URL paths.
 
     Notes for mkdir options:
         To avoid ambiguity, names shadowed by aliased items cannot be created.
 
 --global-delete
-    Allow delete items under all url paths.
+    Allow delete items under all URL paths.
 --delete <url-path> ...
 --delete-user <separator><url-path>[<separator><allowed-username>...] ...
-    Allow delete items under specific url paths(and sub paths).
+    Allow delete items under specific URL paths(and sub paths).
 --delete-dir <fs-path> ...
 --delete-dir-user <separator><fs-path>[<separator><allowed-username>...] ...
-    Similar to --delete, but use file system path instead of url path.
+    Similar to --delete, but use file system paths corresponding to the URL paths.
 
     Notes for delete options:
         To avoid ambiguity, aliased items under a path cannot be deleted.
@@ -264,22 +266,23 @@ ghfs [options]
         To avoid ambiguity, files/directories shadowed by aliased items cannot be deleted.
 
 -A|--global-archive
-    Allow user to download the whole contents of current directory for all url paths.
+    Allow user to download the whole contents of current directory for all URL paths.
     A download link will appear on top part of the page.
     Make sure there is no circular symbol links.
 --archive <url-path> ...
 --archive-user <separator><url-path>[<separator><allowed-username>...] ...
-    Allow user to download the whole contents of current directory for specific url paths(and sub paths).
+    Allow user to download the whole contents of current directory for specific URL paths(and sub paths).
 --archive-dir <fs-path> ...
 --archive-dir-user <separator><fs-path>[<separator><allowed-username>...] ...
-    Similar to --archive, but use file system path instead of url path.
+    Similar to --archive, but use file system paths corresponding to the URL paths.
 
 --global-cors
-    Allow CORS requests for all url path.
+    Allow CORS requests for all URL path.
 --cors <url-path> ...
-    Allow CORS requests for specific url paths(and sub paths).
+    Allow CORS requests for specific URL paths(and sub paths).
 --cors-dir <fs-path> ...
-    Allow CORS requests for specific file system paths(and sub paths).
+    Allow CORS requests for specific file system paths(and sub paths)
+    corresponding to the URL paths.
 
 -c|--cert <file> ...
     Specify TLS certificate file.
@@ -370,7 +373,7 @@ Defaults to 256.
 To prevent outputting additional information on console, like accessible URLs, etc,
 set value to "1".
 
-## Shortcut key for default theme
+## Shortcut key for built-in theme
 - `←`, `→`: move focus between path items
 - `Ctrl`/`Opt` + `←`: move focus to first path item
 - `Ctrl`/`Opt` + `→`: move focus to last path item

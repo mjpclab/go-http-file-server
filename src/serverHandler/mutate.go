@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"mjpclab.dev/ghfs/src/shimgo"
 	"net/http"
+	"strconv"
 )
 
 func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *sessionContext, data *responseData) (ok bool) {
@@ -40,11 +41,15 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *s
 		header.Set("Content-Type", "application/json; charset=utf-8")
 
 		if ok {
+			const result = `{"success":true}`
+			header.Set("Content-Length", strconv.Itoa(len(result)))
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"success":true}`))
+			w.Write([]byte(result))
 		} else {
+			const result = `{"success":false}`
+			header.Set("Content-Length", strconv.Itoa(len(result)))
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"success":false}`))
+			w.Write([]byte(result))
 		}
 		return true
 	}
@@ -60,7 +65,7 @@ func (h *aliasHandler) mutate(w http.ResponseWriter, r *http.Request, session *s
 			}
 		}
 		http.Redirect(w, r, reqPath, http.StatusFound)
-		return
+		return true
 	}
 
 	data.Status = http.StatusInternalServerError

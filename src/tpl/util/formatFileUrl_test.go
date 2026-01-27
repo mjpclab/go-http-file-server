@@ -9,6 +9,14 @@ func TestFormatFileUrl(t *testing.T) {
 		t.Error()
 	}
 
+	if FormatFileUrl("a%b") != "a%25b" {
+		t.Error()
+	}
+
+	if FormatFileUrl("a+b") != "a%2bb" {
+		t.Error()
+	}
+
 	if FormatFileUrl("a?b") != "a%3fb" {
 		t.Error()
 	}
