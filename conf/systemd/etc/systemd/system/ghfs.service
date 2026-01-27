@@ -5,8 +5,8 @@ After=network.target
 [Service]
 Type=simple
 AmbientCapabilities=CAP_NET_BIND_SERVICE
-ExecStart=/sbin/runuser -u nobody -- /usr/local/bin/ghfs --config=/etc/ghfs.conf
-# ExecStart=/sbin/runuser -u nobody -- sh -c 'GHFS_CPU_PROFILE_FILE=/var/log/cpu-`date +%%F-%%T`.pprof exec /usr/local/bin/ghfs --config=/etc/ghfs.conf'
+User=nobody
+ExecStart=/usr/local/bin/ghfs --config=/etc/ghfs.conf
 ExecReload=/bin/kill -s HUP $MAINPID
 KillSignal=SIGTERM
 KillMode=process
