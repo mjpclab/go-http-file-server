@@ -1,1026 +1,989 @@
-(function () {
-	function logError(err) {
-		console.error(err);
-	}
+function logError(err) {
+	console.error(err);
+}
 
-	var strUndef = 'undefined';
-	var protoHttps = 'https:';
+const strUndef = 'undefined';
+const strFunction = 'function';
+const protoHttps = 'https:';
 
-	var classNone = 'none';
-	var classHeader = 'header';
+const classNone = 'none';
+const classHeader = 'header';
 
-	var selectorIsNone = '.' + classNone;
-	var selectorNotNone = ':not(' + selectorIsNone + ')';
-	var selectorPathList = '.path-list';
-	var selectorItemList = '.item-list';
-	var selectorItem = 'li:not(.' + classHeader + '):not(.parent)';
-	var selectorItemIsNone = selectorItem + selectorIsNone;
-	var selectorItemNotNone = selectorItem + selectorNotNone;
+const selectorIsNone = '.' + classNone;
+const selectorNotNone = `:not(${selectorIsNone})`;
+const selectorPathList = '.path-list';
+const selectorEntryList = '.entry-list';
+const selectorEntry = `li:not(.${classHeader}):not(.parent)`;
+const selectorEntryIsNone = selectorEntry + selectorIsNone;
+const selectorEntryNotNone = selectorEntry + selectorNotNone;
 
-	var leavingEvent = typeof window.onpagehide !== strUndef ? 'pagehide' : 'beforeunload';
+const Enter = 'Enter';
+const Escape = 'Escape';
 
-	var Enter = 'Enter';
-	var Escape = 'Escape';
-	var Esc = 'Esc';
-	var Space = ' ';
+let hasStorage = false;
+try {
+	if (typeof sessionStorage !== strUndef) hasStorage = true;
+} catch (err) {
+}
 
-	var hasStorage = false;
-	try {
-		if (typeof sessionStorage !== strUndef) hasStorage = true;
-	} catch (err) {
-	}
+let filteredText = '';
 
-	var filteredText = '';
+function matchFilter(input) {
+	return input.toLowerCase().includes(filteredText);
+}
 
-	function matchFilter(input) {
-		return input.toLowerCase().indexOf(filteredText) >= 0;
-	}
+let lastFocused;
 
-	var lastFocused;
+const errLacksMkdir = new Error('mkdir permission is not enabled');
 
-	var errLacksMkdir = new Error("mkdir permission is not enabled")
+function enableFilter() {
+	const filter = document.body.querySelector('.filter');
+	if (!filter) return;
 
-	function enableFilter() {
-		var filter = document.body.querySelector('.filter');
-		if (!filter) return;
+	const input = filter.querySelector('input');
+	if (!input) return;
 
-		var input = filter.querySelector('input');
-		if (!input) return;
+	const clear = filter.querySelector('button') || document.createElement('button');
 
-		var clear = filter.querySelector('button');
-		if (!clear) clear = document.createElement('button');
+	const entryList = document.querySelector(selectorEntryList);
 
-		var itemList = document.querySelector(selectorItemList)
+	let timeoutId;
+	const doFilter = function () {
+		const filteringText = input.value.trim().toLowerCase();
+		if (filteringText === filteredText) return;
 
-		var timeoutId;
-		var doFilter = function () {
-			var filteringText = input.value.trim().toLowerCase();
-			if (filteringText === filteredText) return;
+		let entries;
+		if (filteringText) {
+			clear.style.display = 'block';
 
-			var items
-			if (filteringText) {
-				clear.style.display = 'block';
-
-				var selector
-				if (filteringText.indexOf(filteredText) >= 0) {	// increment search, find in visible items
-					selector = selectorItemNotNone;
-				} else if (filteredText.indexOf(filteringText) >= 0) {	// decrement search, find in hidden items
-					selector = selectorItemIsNone;
-				} else {
-					selector = selectorItem;
-				}
-				filteredText = filteringText;
-
-				items = itemList.querySelectorAll(selector);
-				if (!items.forEach) items = Array.prototype.slice.call(items);	// IE9+/ClassicEdge
-				items.forEach(function (item) {
-					var name = item.querySelector('.name');
-					if (matchFilter(name.textContent)) {
-						if (selector !== selectorItemNotNone) {
-							item.classList.remove(classNone);
-						}
-					} else {
-						if (selector !== selectorItemIsNone) {
-							item.classList.add(classNone);
-						}
-					}
-				});
-			} else {	// filter cleared, show all items
-				clear.style.display = '';
-				filteredText = '';
-
-				items = itemList.querySelectorAll(selectorItemIsNone);
-				if (!items.forEach) items = Array.prototype.slice.call(items);	// IE9+/ClassicEdge
-				items.forEach(function (item) {
-					item.classList.remove(classNone);
-				});
+			let selector;
+			if (filteringText.includes(filteredText)) {	// increment search, find in visible entries
+				selector = selectorEntryNotNone;
+			} else if (filteredText.includes(filteringText)) {	// decrement search, find in hidden entries
+				selector = selectorEntryIsNone;
+			} else {
+				selector = selectorEntry;
 			}
-		};
+			filteredText = filteringText;
 
-		var onValueMayChange = function () {
-			clearTimeout(timeoutId);
-			timeoutId = setTimeout(doFilter, 350);
-		};
-		input.addEventListener('input', onValueMayChange);
-		input.addEventListener('change', onValueMayChange);
+			entries = entryList.querySelectorAll(selector);
+			entries.forEach(entry => {
+				const name = entry.querySelector('.name');
+				if (matchFilter(name.textContent)) {
+					if (selector !== selectorEntryNotNone) {
+						entry.classList.remove(classNone);
+					}
+				} else {
+					if (selector !== selectorEntryIsNone) {
+						entry.classList.add(classNone);
+					}
+				}
+			});
+		} else {	// filter cleared, show all entries
+			clear.style.display = '';
+			filteredText = '';
 
-		var onEnter = function () {
-			clearTimeout(timeoutId);
-			input.blur();
-			doFilter();
-		};
-		var onEscape = function () {
+			entries = entryList.querySelectorAll(selectorEntryIsNone);
+			entries.forEach(entry => entry.classList.remove(classNone));
+		}
+	};
+
+	const onValueMayChange = function () {
+		clearTimeout(timeoutId);
+		timeoutId = setTimeout(doFilter, 350);
+	};
+	input.addEventListener('input', onValueMayChange);
+	input.addEventListener('change', onValueMayChange);
+
+	const onEnter = function () {
+		clearTimeout(timeoutId);
+		input.blur();
+		doFilter();
+	};
+	const onEscape = function () {
+		if (input.value) {
 			clearTimeout(timeoutId);
 			input.value = '';
 			doFilter();
-		};
+		} else {
+			input.blur();
+		}
+	};
 
-		input.addEventListener('keydown', function (e) {
-			switch (e.key) {
-				case Enter:
-					onEnter();
-					e.preventDefault();
-					break;
-				case Escape:
-				case Esc:
-					onEscape();
-					e.preventDefault();
-					break;
-			}
-		});
-		clear.addEventListener('click', function () {
+	input.addEventListener('keydown', function (e) {
+		if (e.key === Enter) {
+			onEnter();
+			e.preventDefault();
+		} else if (e.key === Escape) {
 			onEscape();
-			input.focus();
-		});
-
-		// init
-		if (hasStorage) {
-			var prevSessionFilter = sessionStorage.getItem(location.pathname);
-			if (prevSessionFilter) {
-				input.value = prevSessionFilter;
-			}
-			if (prevSessionFilter !== null) {
-				sessionStorage.removeItem(location.pathname);
-			}
-
-			window.addEventListener(leavingEvent, function () {
-				if (input.value) {
-					sessionStorage.setItem(location.pathname, input.value);
-				}
-			});
-
+			e.preventDefault();
 		}
-		if (input.value) {
-			doFilter();
-		}
-	}
+	});
+	clear.addEventListener('click', function () {
+		onEscape();
+		input.focus();
+	});
 
-	function keepFocusOnBackwardForward() {
-		function onFocus(e) {
-			var link = e.target.closest('a');
-			if (!link || link === lastFocused) return;
-			lastFocused = link;
+	// init
+	if (hasStorage) {
+		const prevSessionFilter = sessionStorage.getItem(location.pathname);
+		if (prevSessionFilter) {
+			input.value = prevSessionFilter;
+		}
+		if (prevSessionFilter !== null) {
+			sessionStorage.removeItem(location.pathname);
 		}
 
-		var itemList = document.body.querySelector(selectorItemList);
-		itemList.addEventListener('focusin', onFocus);
-		itemList.addEventListener('click', onFocus);
-		window.addEventListener('pageshow', function () {
-			if (lastFocused && lastFocused !== document.activeElement) {
-				lastFocused.focus();
-				lastFocused.scrollIntoView({block: 'center'});
+		window.addEventListener('pagehide', function () {
+			const inputValue = input.value;
+			if (inputValue) {
+				sessionStorage.setItem(location.pathname, inputValue);
 			}
 		});
 	}
+	if (input.value) {
+		doFilter();
+	}
+}
 
-	function focusChildOnNavUp() {
-		function extractCleanUrl(url) {
-			var sepIndex = url.indexOf('?');
-			if (sepIndex < 0) sepIndex = url.indexOf('#');
-			if (sepIndex >= 0) {
-				url = url.slice(0, sepIndex);
-			}
-			return url;
+function keepFocusOnBackwardForward() {
+	const entryList = document.body.querySelector(selectorEntryList);
+	entryList.addEventListener('focusin', function (e) {
+		if (lastFocused !== e.target) {
+			lastFocused = e.target;
+		}
+	});
+	window.addEventListener('pageshow', function () {
+		if (lastFocused && lastFocused !== document.activeElement) {
+			lastFocused.focus();
+			lastFocused.scrollIntoView({block: 'center'});
+		}
+	});
+}
+
+function focusChildOnNavUp() {
+	function extractCleanUrl(url) {
+		let sepIndex = url.indexOf('?');
+		if (sepIndex < 0) sepIndex = url.indexOf('#');
+		if (sepIndex >= 0) {
+			url = url.slice(0, sepIndex);
+		}
+		return url;
+	}
+
+	if (lastFocused) return;
+
+	let prevUrl = document.referrer;
+	if (!prevUrl) return;
+	prevUrl = extractCleanUrl(prevUrl);
+
+	const currUrl = extractCleanUrl(location.href);
+
+	if (prevUrl.length <= currUrl.length) return;
+	if (prevUrl.slice(0, currUrl.length) !== currUrl) return;
+	const goesUp = prevUrl.slice(currUrl.length);
+	if (currUrl[currUrl.length - 1] !== '/' && goesUp[0] !== '/') return;
+	const matchInfo = /[^/]+/.exec(goesUp);
+	if (!matchInfo) return;
+	let prevChildName = matchInfo[0];
+	if (!prevChildName) return;
+	prevChildName = decodeURIComponent(prevChildName);
+	if (!matchFilter(prevChildName)) return;
+
+	const entries = Array.from(document.body.querySelectorAll(selectorEntryList + '>' + selectorEntryNotNone));
+	const selectorName = '.field.name';
+	const selectorLink = 'a';
+	for (let i = 0; i < entries.length; i++) {
+		const entry = entries[i];
+		const elName = entry.querySelector(selectorName);
+		if (!elName) continue;
+
+		let text = elName.textContent;
+		if (text[text.length - 1] === '/') {
+			text = text.slice(0, -1);
+		}
+		if (text !== prevChildName) continue;
+
+		const elLink = entry.querySelector(selectorLink);
+		if (!elLink) break;
+
+		lastFocused = elLink;
+		elLink.focus();
+		elLink.scrollIntoView({block: 'center'});
+		break;
+	}
+}
+
+function enableKeyboardNavigate() {
+	const pathList = document.body.querySelector(selectorPathList);
+	const entryList = document.body.querySelector(selectorEntryList);
+	if (!pathList && !entryList) {
+		return;
+	}
+
+	function getFocusableSibling(container, isBackward, startA) {
+		if (!container.childElementCount) return;
+		if (!startA) {
+			startA = container.querySelector(':focus');
+		}
+		let startLI = startA && startA.closest('li');
+		if (!startLI) {
+			startLI = isBackward ? container.firstElementChild : container.lastElementChild;
 		}
 
-		var prevUrl = document.referrer;
-		if (!prevUrl) return;
-		prevUrl = extractCleanUrl(prevUrl);
-
-		var currUrl = extractCleanUrl(location.href);
-
-		if (prevUrl.length <= currUrl.length) return;
-		if (prevUrl.slice(0, currUrl.length) !== currUrl) return;
-		var goesUp = prevUrl.slice(currUrl.length);
-		if (currUrl[currUrl.length - 1] !== '/' && goesUp[0] !== '/') return;
-		var matchInfo = /[^/]+/.exec(goesUp);
-		if (!matchInfo) return;
-		var prevChildName = matchInfo[0];
-		if (!prevChildName) return;
-		prevChildName = decodeURIComponent(prevChildName);
-		if (!matchFilter(prevChildName)) return;
-
-		var items = document.body.querySelectorAll(selectorItemList + '>' + selectorItemNotNone);
-		items = Array.prototype.slice.call(items);
-		var selectorName = '.field.name';
-		var selectorLink = 'a';
-		for (var i = 0; i < items.length; i++) {
-			var item = items[i];
-			var elName = item.querySelector(selectorName);
-			if (!elName) continue;
-
-			var text = elName.textContent;
-			if (text[text.length - 1] === '/') {
-				text = text.slice(0, -1);
+		let siblingLI = startLI;
+		do {
+			if (isBackward) {
+				siblingLI = siblingLI.previousElementSibling || container.lastElementChild;
+			} else {
+				siblingLI = siblingLI.nextElementSibling || container.firstElementChild;
 			}
-			if (text !== prevChildName) continue;
+		} while (siblingLI !== startLI && (
+			siblingLI.classList.contains(classNone) ||
+			siblingLI.classList.contains(classHeader)
+		));
 
-			var elLink = item.querySelector(selectorLink);
-			if (!elLink) break;
-
-			lastFocused = elLink;
-			elLink.focus();
-			elLink.scrollIntoView({block: 'center'});
+		if (siblingLI) {
+			const siblingA = siblingLI.querySelector('a');
+			return siblingA;
 		}
 	}
 
-	function enableKeyboardNavigate() {
-		var pathList = document.body.querySelector(selectorPathList);
-		var itemList = document.body.querySelector(selectorItemList);
-		if (!pathList && !itemList) {
+	function getFirstFocusableSibling(container) {
+		const a = container.querySelector(`li:not(.${classNone}):not(.${classHeader}) a`);
+		return a;
+	}
+
+	function getLastFocusableSibling(container) {
+		let a = container.querySelector('li a');
+		a = getFocusableSibling(container, true, a);
+		return a;
+	}
+
+	function getMatchedFocusableSibling(container, isBackward, startA, buf) {
+		let skipRound = buf.length === 1;	// find next single-char prefix
+		let firstCheckedA;
+		let secondCheckedA;
+		let a = startA;
+		do {
+			if (skipRound) {
+				skipRound = false;
+				continue;
+			}
+			if (!a) {
+				continue;
+			}
+
+			// firstCheckedA maybe a focused a that not belongs to the list
+			// secondCheckedA must be in the list
+			if (!firstCheckedA) {
+				firstCheckedA = a;
+			} else if (firstCheckedA === a) {
+				return;
+			} else if (!secondCheckedA) {
+				secondCheckedA = a;
+			} else if (secondCheckedA === a) {
+				return;
+			}
+
+			const textContent = (a.querySelector('.name') || a).textContent.toLowerCase();
+			if (textContent.startsWith(buf)) {
+				return a;
+			}
+		} while (a = getFocusableSibling(container, isBackward, a));
+	}
+
+	const ARROW_UP = 'ArrowUp';
+	const ARROW_DOWN = 'ArrowDown';
+	const ARROW_LEFT = 'ArrowLeft';
+	const ARROW_RIGHT = 'ArrowRight';
+
+	const SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
+
+	const PLATFORM = navigator.platform || navigator.userAgent;
+	const IS_MAC_PLATFORM = PLATFORM.includes('Mac') || PLATFORM.includes('iPhone') || PLATFORM.includes('iPad') || PLATFORM.includes('iPod');
+
+	let lookupKey;
+	let lookupBuffer;
+	let lookupStartA;
+	let lookupTimer;
+
+	function clearLookupContext() {
+		lookupKey = undefined;
+		lookupBuffer = '';
+		lookupStartA = null;
+	}
+
+	clearLookupContext();
+
+	function delayClearLookupContext() {
+		clearTimeout(lookupTimer);
+		lookupTimer = setTimeout(clearLookupContext, 850);
+	}
+
+	function lookup(container, key, isBackward) {
+		key = key.toLowerCase();
+
+		let currentLookupStartA;
+		if (key === lookupKey) {
+			// same as last key, lookup next single-char prefix
+			currentLookupStartA = container.querySelector(':focus');
+		} else {
+			if (!lookupStartA) {
+				lookupStartA = container.querySelector(':focus');
+			}
+			currentLookupStartA = lookupStartA;
+			if (lookupKey === undefined) {
+				lookupKey = key;
+			} else {
+				// key changed, no more single-char prefix match
+				lookupKey = '';
+			}
+		}
+		lookupBuffer += key;
+		delayClearLookupContext();
+		return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
+	}
+
+	let canArrowMove;
+	let isToEnd;
+	if (IS_MAC_PLATFORM) {
+		canArrowMove = function (e) {
+			return !(e.ctrlKey || e.shiftKey || e.metaKey);	// only allow Opt
+		};
+		isToEnd = function (e) {
+			return e.altKey;	// Opt key
+		};
+	} else {
+		canArrowMove = function (e) {
+			return !(e.altKey || e.shiftKey || e.metaKey);	// only allow Ctrl
+		};
+		isToEnd = function (e) {
+			return e.ctrlKey;
+		};
+	}
+
+	function getFocusItemByKeyPress(e) {
+		if (SKIP_TAGS.includes(e.target.tagName)) {
 			return;
 		}
 
-		function getFocusableSibling(container, isBackward, startA) {
-			if (!startA) {
-				startA = container.querySelector(':focus');
-			}
-			var startLI = startA && startA.closest('li');
-			if (!startLI) {
-				if (isBackward) {
-					startLI = container.firstElementChild;
-				} else {
-					startLI = container.lastElementChild;
-				}
-			}
-			if (!startLI) {
-				return;
-			}
-
-			var siblingLI = startLI;
-			do {
-				if (isBackward) {
-					siblingLI = siblingLI.previousElementSibling || container.lastElementChild;
-				} else {
-					siblingLI = siblingLI.nextElementSibling || container.firstElementChild;
-				}
-			} while (siblingLI !== startLI && (
-				siblingLI.classList.contains(classNone) ||
-				siblingLI.classList.contains(classHeader)
-			));
-
-			if (siblingLI) {
-				var siblingA = siblingLI.querySelector('a');
-				return siblingA;
+		if (canArrowMove(e)) {
+			switch (e.key) {
+				case ARROW_DOWN:
+					if (isToEnd(e)) {
+						return getLastFocusableSibling(entryList);
+					} else {
+						return getFocusableSibling(entryList, false);
+					}
+				case ARROW_UP:
+					if (isToEnd(e)) {
+						return getFirstFocusableSibling(entryList);
+					} else {
+						return getFocusableSibling(entryList, true);
+					}
+				case ARROW_RIGHT:
+					if (isToEnd(e)) {
+						return getLastFocusableSibling(pathList);
+					} else {
+						return getFocusableSibling(pathList, false);
+					}
+				case ARROW_LEFT:
+					if (isToEnd(e)) {
+						return getFirstFocusableSibling(pathList);
+					} else {
+						return getFocusableSibling(pathList, true);
+					}
 			}
 		}
-
-		function getFirstFocusableSibling(container) {
-			var a = container.querySelector('li:not(.' + classNone + '):not(.' + classHeader + ') a');
-			return a;
+		if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
+			return lookup(entryList, e.key, e.shiftKey);
 		}
+	}
 
-		function getLastFocusableSibling(container) {
-			var a = container.querySelector('li a');
-			a = getFocusableSibling(container, true, a);
-			return a;
+	document.addEventListener('keydown', function (e) {
+		const newFocusEl = getFocusItemByKeyPress(e);
+		if (newFocusEl) {
+			e.preventDefault();
+			newFocusEl.focus();
 		}
+	});
+}
 
-		function getMatchedFocusableSibling(container, isBackward, startA, buf) {
-			var skipRound = buf.length === 1;	// find next single-char prefix
-			var firstCheckA;
-			var secondCheckA;
-			var a = startA;
-			do {
-				if (skipRound) {
-					skipRound = false;
-					continue;
+function enhanceUpload() {
+	const form = document.body.querySelector('.upload form');
+	if (!form) return;
+
+	const fileInput = form.querySelector('input[type=file]');
+	if (!fileInput) return;
+
+	const submitButton = form.querySelector('button:last-of-type');
+	if (submitButton) submitButton.classList.add(classNone);
+
+	const uploadType = document.body.querySelector('.upload-type');
+	if (!uploadType) return;
+
+	const file = 'file';
+	const dirFile = 'dirfile';
+	const innerDirFile = 'innerdirfile';
+
+	const itemKindFile = 'file';
+
+	const optFile = uploadType.querySelector('.' + file);
+	const optDir = uploadType.querySelector('.' + dirFile);
+	const optInnerDir = uploadType.querySelector('.' + innerDirFile);
+	let optActive = optFile;
+	const canMkdir = Boolean(optDir);
+
+	let itemsToFiles;
+	if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && DataTransferItem.prototype.getAsFileSystemHandle && !DataTransferItem.prototype.webkitGetAsEntry) {
+		const handleKindFile = 'file';
+		const handleKindDir = 'directory';
+		itemsToFiles = async function (dataTransferItems) {
+			async function handlesToFiles(handles, files, dirPath) {
+				await Promise.all(handles.map(async handle => {
+					if (handle.kind === handleKindFile) {
+						const relativePath = dirPath + handle.name;
+						const file = await handle.getFile();
+						files.push({file, relativePath});
+					} else if (handle.kind === handleKindDir) {
+						const subHandles = [];
+						for await(const subHandle of handle.values()) {
+							subHandles.push(subHandle);
+						}
+						const relativePath = dirPath + handle.name + '/';
+						if (subHandles.length) {
+							await handlesToFiles(subHandles, files, relativePath);
+						} else {
+							const file = new File([''], handle.name);
+							files.push({file, relativePath});
+						}
+					}
+				}));
+			}
+
+			let hasDir = false;
+			const permDescriptor = {mode: 'read'};
+			const handles = await Promise.all(Array.from(dataTransferItems).filter(item => item.kind === itemKindFile).map(async item => {
+				const handle = await item.getAsFileSystemHandle();
+				if (handle.kind === handleKindDir) {
+					if (!canMkdir) throw errLacksMkdir;
+					hasDir = true;
 				}
-				if (!a) {
-					continue;
+				const permState = await handle.queryPermission(permDescriptor);
+				if (permState !== 'granted') {
+					await handle.requestPermission(permDescriptor);
 				}
+				return handle;
+			}));
 
-				// firstCheckA maybe a focused a that not belongs to the list
-				// secondCheckA must be in the list
-				if (!firstCheckA) {
-					firstCheckA = a;
-				} else if (firstCheckA === a) {
-					return;
-				} else if (!secondCheckA) {
-					secondCheckA = a;
-				} else if (secondCheckA === a) {
-					return;
-				}
+			const files = [];
+			await handlesToFiles(handles, files, '');
+			return {files, hasDir};
+		};
+	} else {
+		itemsToFiles = async function (dataTransferItems) {
+			async function entriesToFiles(entries, files) {
+				await Promise.all(entries.map(async (entry) => {
+					if (entry.isFile) {
+						const file = await new Promise((res, rej) => entry.file(res, rej));
+						const relativePath = entry.fullPath.slice(1);
+						files.push({file, relativePath});
+					} else if (entry.isDirectory) {
+						const reader = entry.createReader();
+						const subTasks = [];
+						for (let i = 0; ; i++) {
+							const subEntries = await new Promise((res, rej) => reader.readEntries(res, rej));
+							if (subEntries.length > 0) {
+								subTasks.push(entriesToFiles(subEntries, files));
+								continue;
+							}
+							if (i === 0) {
+								const file = new File([''], entry.name);
+								const relativePath = entry.fullPath.slice(1) + '/';
+								files.push({file, relativePath});
+							} else {
+								await Promise.all(subTasks);
+							}
+							break;
+						}
+					}
+				}));
+			}
 
-				var textContent = (a.querySelector('.name') || a).textContent.toLowerCase();
-				if (textContent.startsWith(buf)) {
-					return a;
+			let hasDir = false;
+			const entries = Array.from(dataTransferItems, item => {
+				if (item.kind !== itemKindFile) return;
+				const entry = item.webkitGetAsEntry();
+				if (entry.isDirectory) {
+					if (!canMkdir) throw errLacksMkdir;
+					hasDir = true;
 				}
-			} while (a = getFocusableSibling(container, isBackward, a));
+				return entry;
+			}).filter(Boolean);
+			const files = [];
+
+			await entriesToFiles(entries, files);
+			return {files, hasDir};
+		};
+	}
+
+	function enableFileDirModeSwitch() {
+		const classActive = 'active';
+		const title = form.querySelector('h4') || document.createElement('h4');
+
+		function onClickOptAny(optTarget, clearInput) {
+			if (optTarget === optActive) {
+				return false;
+			}
+
+			optActive.classList.remove(classActive);
+			optActive = optTarget;
+			optActive.classList.add(classActive);
+			title.textContent = optActive.title || optActive.textContent;
+
+			if (clearInput) {
+				fileInput.value = '';
+			}
+
+			return true;
 		}
 
-		var ARROW_UP = 'ArrowUp';
-		var ARROW_DOWN = 'ArrowDown';
-		var ARROW_LEFT = 'ArrowLeft';
-		var ARROW_RIGHT = 'ArrowRight';
-
-		var SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
-
-		var PLATFORM = navigator.platform || navigator.userAgent;
-		var IS_MAC_PLATFORM = PLATFORM.indexOf('Mac') >= 0 || PLATFORM.indexOf('iPhone') >= 0 || PLATFORM.indexOf('iPad') >= 0 || PLATFORM.indexOf('iPod') >= 0
-
-		var lookupKey;
-		var lookupBuffer;
-		var lookupStartA;
-		var lookupTimer;
-
-		function clearLookupContext() {
-			lookupKey = undefined;
-			lookupBuffer = '';
-			lookupStartA = null;
+		function onClickOptFile(e) {
+			if (onClickOptAny(optFile, Boolean(e))) {
+				fileInput.name = file;
+				fileInput.webkitdirectory = false;
+			}
 		}
 
-		clearLookupContext();
-
-		function delayClearLookupContext() {
-			clearTimeout(lookupTimer);
-			lookupTimer = setTimeout(clearLookupContext, 850);
+		function onClickOptDir() {
+			if (onClickOptAny(optDir, optActive === optFile)) {
+				fileInput.name = dirFile;
+				fileInput.webkitdirectory = true;
+			}
 		}
 
-		function lookup(container, key, isBackward) {
-			key = key.toLowerCase();
+		function onClickOptInnerDir() {
+			if (onClickOptAny(optInnerDir, optActive === optFile)) {
+				fileInput.name = innerDirFile;
+				fileInput.webkitdirectory = true;
+			}
+		}
 
-			var currentLookupStartA;
-			if (key === lookupKey) {
-				// same as last key, lookup next single-char prefix
-				currentLookupStartA = container.querySelector(':focus');
+		if (optFile) {
+			optFile.addEventListener('click', onClickOptFile);
+			fileInput.addEventListener('change', function (e) {
+				// workaround fix for old browsers, select dir not work but still act like select files
+				// switch back to file
+				if (optActive === optFile) return;
+
+				const files = e.target.files;
+				if (!files.length) return;
+
+				const hasDir = Array.from(files).some(file =>
+					file.webkitRelativePath.includes('/')
+				);
+				if (!hasDir) {
+					onClickOptFile();
+				}
+			});
+		}
+		if (optDir) {
+			optDir.addEventListener('click', onClickOptDir);
+		}
+		if (optInnerDir) {
+			optInnerDir.addEventListener('click', onClickOptInnerDir);
+		}
+
+		if (hasStorage) {
+			const uploadTypeField = 'upload-type';
+			const prevUploadType = sessionStorage.getItem(uploadTypeField);
+			if (prevUploadType === dirFile) {
+				optDir && optDir.click();
+			} else if (prevUploadType === innerDirFile) {
+				optInnerDir && optInnerDir.click();
 			} else {
-				if (!lookupStartA) {
-					lookupStartA = container.querySelector(':focus');
-				}
-				currentLookupStartA = lookupStartA;
-				if (lookupKey === undefined) {
-					lookupKey = key;
-				} else {
-					// key changed, no more single-char prefix match
-					lookupKey = '';
-				}
+				optFile && optFile.click();
 			}
-			lookupBuffer += key;
-			delayClearLookupContext();
-			return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
-		}
 
-		var canArrowMove;
-		var isToEnd;
-		if (IS_MAC_PLATFORM) {
-			canArrowMove = function (e) {
-				return !(e.ctrlKey || e.shiftKey || e.metaKey);	// only allow Opt
+			if (prevUploadType !== null) {
+				sessionStorage.removeItem(uploadTypeField);
 			}
-			isToEnd = function (e) {
-				return e.altKey;	// Opt key
-			}
+
+			window.addEventListener('pagehide', function () {
+				const activeUploadType = fileInput.name;
+				if (activeUploadType !== file) {
+					sessionStorage.setItem(uploadTypeField, activeUploadType);
+				}
+			});
 		} else {
-			canArrowMove = function (e) {
-				return !(e.altKey || e.shiftKey || e.metaKey);	// only allow Ctrl
-			}
-			isToEnd = function (e) {
-				return e.ctrlKey;
+			optFile && optFile.click();
+		}
+
+		function switchToFileMode() {
+			if (optFile && optActive !== optFile) {
+				optFile.focus();
+				onClickOptFile(true);
 			}
 		}
 
-		function getFocusItemByKeyPress(e) {
-			if (SKIP_TAGS.indexOf(e.target.tagName) >= 0) {
-				return;
+		function switchToDirMode() {
+			if (optDir && optActive !== optDir) {
+				optDir.focus();
+				onClickOptDir();
 			}
+		}
 
-			if (canArrowMove(e)) {
-				switch (e.key) {
-					case ARROW_DOWN:
-						if (isToEnd(e)) {
-							return getLastFocusableSibling(itemList);
-						} else {
-							return getFocusableSibling(itemList, false);
-						}
-					case ARROW_UP:
-						if (isToEnd(e)) {
-							return getFirstFocusableSibling(itemList);
-						} else {
-							return getFocusableSibling(itemList, true);
-						}
-					case ARROW_RIGHT:
-						if (isToEnd(e)) {
-							return getLastFocusableSibling(pathList);
-						} else {
-							return getFocusableSibling(pathList, false);
-						}
-					case ARROW_LEFT:
-						if (isToEnd(e)) {
-							return getFirstFocusableSibling(pathList);
-						} else {
-							return getFocusableSibling(pathList, true);
-						}
+		function switchToInnerDirMode() {
+			if (optInnerDir && optActive !== optInnerDir) {
+				optInnerDir.focus();
+				onClickOptInnerDir();
+			}
+		}
+
+		return {switchToFileMode, switchToDirMode, switchToInnerDirMode};
+	}
+
+	function enableUploadProgress(switchToFileMode, switchToDirMode, switchToInnerDirMode) {
+		let uploading = null;
+		const classUploading = 'uploading';
+		const classFailed = 'failed';
+		const elUploadStatus = document.body.querySelector('.upload-status');
+		if (!elUploadStatus) return;
+		const elProgress = elUploadStatus.querySelector('.progress');
+		const elFailedMessage = elUploadStatus.querySelector('.warn .message');
+
+		function uploadBatch(files) {
+			const maxCount = 2048;
+			const fieldName = fileInput.name;
+
+			const slices = [];
+			let totalSize = 0;
+
+			let parts = null;
+			let count = Infinity;
+			for (let i = 0; i <= files.length; i++) {
+				if (count >= maxCount || i === files.length) {
+					if (i > 0) slices.push(parts);
+					if (i === files.length) break;
+					parts = new FormData();
+					count = 0;
 				}
+
+				const {file, relativePath} = files[i];
+				totalSize += file.size;
+				count += 1;
+				parts.append(fieldName, file, relativePath);
 			}
-			if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
-				return lookup(itemList, e.key, e.shiftKey);
-			}
+			if (slices.length === 0) return;
+
+			let finishedSize = 0;
+			elProgress.style.width = '';
+			const onProgress = e => {
+				if (e.lengthComputable) {
+					const percent = 100 * (finishedSize + e.loaded) / totalSize;
+					elProgress.style.width = percent + '%';
+				}
+			};
+			const onUploadSuccess = e => {
+				if (e.lengthComputable) {
+					finishedSize += e.total;
+				}
+			};
+			const {method, action} = form;
+			return new Promise(function (resolve, reject) {
+				const onFail = e => {
+					slices.length = 0;
+					reject(e);
+				};
+				const onDownloadSuccess = e => {
+					const status = e.target.status;
+					if (status < 200 || status >= 300) {
+						onFail({type: e.target.statusText || status});
+						return;
+					}
+					if (slices.length) {
+						uploadSlice(slices.shift());
+						return;
+					}
+
+					elProgress.style.width = '100%';
+					resolve();
+				};
+
+				function uploadSlice(parts) {
+					const xhr = new XMLHttpRequest();
+					xhr.upload.addEventListener('progress', onProgress);
+					xhr.upload.addEventListener('error', onFail);
+					xhr.addEventListener('error', onFail);
+					xhr.upload.addEventListener('abort', onFail);
+					xhr.addEventListener('abort', onFail);
+					xhr.upload.addEventListener('load', onUploadSuccess);
+					xhr.addEventListener('load', onDownloadSuccess);
+					xhr.open(method, action);
+					xhr.setRequestHeader('accept', 'application/json');
+					xhr.send(parts);
+				}
+
+				uploadSlice(slices.shift());
+			});
 		}
 
-		document.addEventListener('keydown', function (e) {
-			var newFocusEl = getFocusItemByKeyPress(e);
-			if (newFocusEl) {
-				e.preventDefault();
-				newFocusEl.focus();
+		async function tryUploadBatch(getFilesResult) {
+			if (!uploading) {
+				elUploadStatus.classList.remove(classFailed);
+				elUploadStatus.classList.add(classUploading);
+				uploading = Promise.resolve();
 			}
+
+			const filesResultTask = getFilesResult();	// must extract DataTransferItems ASAP
+			const localUploading = uploading = uploading.then(async () => {
+				const filesResult = await filesResultTask;
+				const {files, hasDir, isInnerDir} = filesResult;
+
+				if (hasDir) {
+					isInnerDir ? switchToInnerDirMode() : switchToDirMode();
+				} else {
+					switchToFileMode();
+				}
+
+				await uploadBatch(files);
+				if (uploading === localUploading) {
+					location.reload();
+				}
+			}).catch(err => {
+				elFailedMessage.textContent = ' - ' + err.type;
+				if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {
+					showUploadDirFailMessage();
+				} else {
+					logError(err);
+				}
+				elUploadStatus.classList.remove(classUploading);
+				elUploadStatus.classList.add(classFailed);
+				throw err;
+			});
+
+			return localUploading;
+		}
+
+		async function uploadFilesProgressively(filesResult) {
+			await tryUploadBatch(() => filesResult);
+		}
+
+		async function uploadItemsProgressively(dataTransferItems) {
+			await tryUploadBatch(() => itemsToFiles(dataTransferItems));
+		}
+
+		return {uploadFilesProgressively, uploadItemsProgressively};
+	}
+
+	function enableFormUploadProgress(uploadFilesProgressively) {
+		form.addEventListener('submit', function (e) {
+			e.stopPropagation();
+			e.preventDefault();
+		});
+
+		fileInput.addEventListener('change', function () {
+			let hasDir = false;
+			const files = Array.from(fileInput.files, file => {
+				const relativePath = file.webkitRelativePath || file.name;
+				if (relativePath.includes('/')) hasDir = true;
+				return {file, relativePath};
+			});
+			uploadFilesProgressively({files, hasDir, isInnerDir: fileInput.name === innerDirFile});
 		});
 	}
 
-	function enhanceUpload() {
-		var upload = document.body.querySelector('.upload');
-		if (!upload) return;
+	function enableDndUploadProgress(uploadItemsProgressively) {
+		let isSelfDragging = false;
+		const classDragging = 'dragging';
 
-		var form = upload.querySelector('form');
-		if (!form) return;
-
-		var fileInput = form.querySelector('input[type=file]');
-		if (!fileInput) return;
-
-		var submitButton = form.querySelector('[type=submit]');
-		if (submitButton) submitButton.classList.add(classNone);
-
-		var uploadType = document.body.querySelector('.upload-type');
-		if (!uploadType) return;
-
-		var file = 'file';
-		var dirFile = 'dirfile';
-		var innerDirFile = 'innerdirfile';
-
-		var optFile = uploadType.querySelector('.' + file);
-		var optDirFile = uploadType.querySelector('.' + dirFile);
-		var optInnerDirFile = uploadType.querySelector('.' + innerDirFile);
-		var optActive = optFile;
-		var canMkdir = Boolean(optDirFile);
-
-		function getTimeStamp() {
-			var now = new Date();
-			var date = String(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate());
-			var time = String(now.getHours() * 10000 + now.getMinutes() * 100 + now.getSeconds());
-			var ms = String(now.getMilliseconds());
-			date = date.padStart(8, '0');
-			time = time.padStart(6, '0');
-			ms = ms.padStart(3, '0');
-			var ts = '-' + date + '-' + time + '-' + ms;
-			return ts;
+		function onSelfDragStart() {
+			isSelfDragging = true;
 		}
 
-		var itemsToFiles;
-		if (location.protocol === protoHttps && typeof FileSystemHandle !== strUndef && !DataTransferItem.prototype.webkitGetAsEntry) {
-			var handleKindFile = 'file';
-			var handleKindDir = 'directory';
-			var permDescriptor = {mode: 'read'};
-			itemsToFiles = function (dataTransferItems, canMkdir) {
-				function resultsToFiles(results, files, dirPath) {
-					return Promise.all(results.map(function (result) {
-						var handle = result.value;
-						if (handle.kind === handleKindFile) {
-							return handle.queryPermission(permDescriptor).then(function (queryResult) {
-								if (queryResult === 'prompt') return handle.requestPermission(permDescriptor);
-							}).then(function () {
-								return handle.getFile();
-							}).then(function (file) {
-								var relativePath = dirPath + file.name;
-								files.push({file: file, relativePath: relativePath});
-							}).catch(function (err) {
-								logError(err);
-							});
-						} else if (handle.kind === handleKindDir) {
-							return new Promise(function (resolve) {
-								var childResults = [];
-								var childIter = handle.values();
-
-								function onLevelDone() {
-									childResults = null;
-									childIter = null;
-									resolve();
-								}
-
-								function addChildResult() {
-									childIter.next().then(function (result) {
-										if (result.done) {
-											if (childResults.length) {
-												resultsToFiles(childResults, files, dirPath + handle.name + '/').then(onLevelDone);
-											} else onLevelDone();
-										} else {
-											childResults.push(result);
-											addChildResult();
-										}
-									});
-								}
-
-								addChildResult();
-							});
-						}
-					}));
-				}
-
-				var files = [];
-				var hasDir = false;
-
-				return Promise.all(Array.from(dataTransferItems).map(function (item) {
-					return item.getAsFileSystemHandle();
-				})).then(function (handles) {
-					handles = handles.filter(Boolean);	// undefined for pasted content
-					hasDir = handles.some(function (handle) {
-						return handle.kind === handleKindDir;
-					});
-					if (hasDir && !canMkdir) {
-						throw errLacksMkdir;
-					}
-					var handleResults = handles.map(function (handle) {
-						return {value: handle, done: false};
-					});
-					return resultsToFiles(handleResults, files, '').then(function () {
-						return {files: files, hasDir: hasDir};
-					});
-				});
-			}
-		} else {
-			itemsToFiles = function (dataTransferItems, canMkdir) {
-				function entriesToFiles(entries, files) {
-					return Promise.all(entries.map(function (entry) {
-						return new Promise(function (resolve) {
-							if (entry.isFile) {
-								var relativePath = entry.fullPath;
-								if (relativePath[0] === '/') {
-									relativePath = relativePath.slice(1);
-								}
-								entry.file(function (file) {
-									files.push({file: file, relativePath: relativePath});
-									resolve();
-								}, function (err) {
-									logError(err);
-									resolve()
-								});
-							} else if (entry.isDirectory) {
-								var dirReader = entry.createReader()
-								var onReadSubEntries = function (subEntries) {
-									if (!subEntries.length) resolve();
-									entriesToFiles(subEntries, files).then(function () {
-										dirReader.readEntries(onReadSubEntries);
-									});
-								}
-								dirReader.readEntries(onReadSubEntries);
-							}
-						})
-					}));
-				}
-
-				var entries = [];
-				var files = [];
-				var hasDir = false;
-
-				for (var i = 0; i < dataTransferItems.length; i++) {
-					var item = dataTransferItems[i];
-					var entry = item.webkitGetAsEntry();
-					if (!entry) {	// undefined for pasted text
-						continue;
-					}
-					if (entry.isFile) {
-						// Safari cannot get file from entry by entry.file(), if it is a pasted image
-						// so workaround is for all browsers, just get first hierarchy of files by item.getAsFile()
-						var file = item.getAsFile();
-						files.push({file: file, relativePath: file.name});
-					} else if (entry.isDirectory) {
-						hasDir = true;
-						if (canMkdir) {
-							entries.push(entry);
-						} else {
-							return Promise.reject(errLacksMkdir);
-						}
-					}
-				}
-
-				return entriesToFiles(entries, files).then(function () {
-					return {files: files, hasDir: hasDir};
-				});
-			}
+		function onDragEnd() {
+			isSelfDragging = false;
 		}
 
-		function enableFileDirModeSwitch() {
-			var classHidden = 'hidden';
-			var classActive = 'active';
-
-			function onClickOpt(optTarget, clearInput) {
-				if (optTarget === optActive) {
-					return false;
-				}
-				optActive.classList.remove(classActive);
-
-				optActive = optTarget;
-				optActive.classList.add(classActive);
-
-				if (clearInput) {
-					fileInput.value = '';
-				}
-				return true;
-			}
-
-			function onClickOptFile(e) {
-				if (onClickOpt(optFile, Boolean(e))) {
-					fileInput.name = file;
-					fileInput.webkitdirectory = false;
-				}
-			}
-
-			function onClickOptDirFile() {
-				if (onClickOpt(optDirFile, optActive === optFile)) {
-					fileInput.name = dirFile;
-					fileInput.webkitdirectory = true;
-				}
-			}
-
-			function onClickOptInnerDirFile() {
-				if (onClickOpt(optInnerDirFile, optActive === optFile)) {
-					fileInput.name = innerDirFile;
-					fileInput.webkitdirectory = true;
-				}
-			}
-
-			function onKeydownOpt(e) {
-				switch (e.key) {
-					case Enter:
-					case Space:
-						if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) {
-							break;
-						}
-						e.preventDefault();
-						e.stopPropagation();
-						if (e.target === optActive) {
-							break;
-						}
-						e.target.click();
-						break;
-				}
-			}
-
-			if (optFile) {
-				optFile.addEventListener('click', onClickOptFile);
-				optFile.addEventListener('keydown', onKeydownOpt);
-
-				fileInput.addEventListener('change', function (e) {
-					// workaround fix for old browsers, select dir not work but still act like select files
-					// switch back to file
-					if (optActive === optFile) {
-						return;
-					}
-					var files = e.target.files;
-					if (!files.length) {
-						return;
-					}
-
-					var nodir = Array.prototype.slice.call(files).every(function (file) {
-						return file.webkitRelativePath.indexOf('/') < 0;
-					});
-					if (nodir) {
-						onClickOptFile();	// prevent clear input files
-					}
-				});
-			}
-			if (optDirFile) {
-				optDirFile.addEventListener('click', onClickOptDirFile);
-				optDirFile.addEventListener('keydown', onKeydownOpt);
-			}
-			if (optInnerDirFile) {
-				optInnerDirFile.addEventListener('click', onClickOptInnerDirFile);
-				optInnerDirFile.addEventListener('keydown', onKeydownOpt);
-			}
-
-			if (hasStorage) {
-				var uploadTypeField = 'upload-type';
-				var prevUploadType = sessionStorage.getItem(uploadTypeField);
-				if (prevUploadType === dirFile) {
-					optDirFile && optDirFile.click();
-				} else if (prevUploadType === innerDirFile) {
-					optInnerDirFile && optInnerDirFile.click();
-				}
-
-				if (prevUploadType !== null) {
-					sessionStorage.removeItem(uploadTypeField);
-				}
-
-				window.addEventListener(leavingEvent, function () {
-					var activeUploadType = fileInput.name;
-					if (activeUploadType !== file) {
-						sessionStorage.setItem(uploadTypeField, activeUploadType)
-					}
-				});
-			}
-
-			function switchToFileMode() {
-				if (optFile && optActive !== optFile) {
-					optFile.focus();
-					onClickOptFile(true);
-				}
-			}
-
-			function switchToDirMode() {
-				if (optDirFile) {
-					if (optActive !== optDirFile) {
-						optDirFile.focus();
-						onClickOptDirFile();
-					}
-				} else if (optInnerDirFile) {
-					if (optActive !== optInnerDirFile) {
-						optInnerDirFile.focus();
-						onClickOptInnerDirFile();
-					}
-				}
-			}
-
-			return {
-				switchToFileMode: switchToFileMode,
-				switchToDirMode: switchToDirMode
-			};
-		}
-
-		function enableUploadProgress() {	// also fix Safari upload filename has no path info
-			var uploading = false;
-			var batches = [];
-			var classUploading = 'uploading';
-			var classFailed = 'failed';
-			var elUploadStatus = document.body.querySelector('.upload-status');
-			if (!elUploadStatus) return;
-			var elProgress = elUploadStatus.querySelector('.progress');
-			var elFailedMessage = elUploadStatus.querySelector('.warn .message');
-
-			function onProgress(e) {
-				if (e.lengthComputable) {
-					var percent = 100 * e.loaded / e.total;
-					elProgress.style.width = percent + '%';
-				}
-			}
-
-			function onFail(e) {
-				elUploadStatus.classList.remove(classUploading);
-				elUploadStatus.classList.add(classFailed);
-				elFailedMessage.textContent = " - " + e.type;
-				batches.length = 0;
-			}
-
-			function onSuccess(e) {
-				var status = e.target.status
-				if (status < 200 || status >= 300) {
-					return onFail({type: e.target.statusText || status});
-				} else if (batches.length) {
-					uploadBatch(batches.shift());
-				} else {
-					uploading = false;
-					elUploadStatus.classList.remove(classUploading);
-					location.reload();
-				}
-			}
-
-			function onFinally() {
-				elProgress.style.width = '';
-			}
-
-			function uploadBatch(files) {
-				var formName = fileInput.name;
-				var parts = new FormData();
-				files.forEach(function (file) {
-					var relativePath
-					if (file.file) {
-						// unwrap object {file, relativePath}
-						relativePath = file.relativePath;
-						file = file.file;
-					} else if (file.webkitRelativePath) {
-						relativePath = file.webkitRelativePath
-					}
-					if (!relativePath) {
-						relativePath = file.name;
-					}
-
-					parts.append(formName, file, relativePath);
-				});
-
-				var xhr = new XMLHttpRequest();
-				xhr.upload.addEventListener('progress', onProgress);
-				xhr.addEventListener('error', onFail);
-				xhr.addEventListener('error', onFinally);
-				xhr.addEventListener('abort', onFail);
-				xhr.addEventListener('abort', onFinally);
-				xhr.addEventListener('load', onSuccess);
-				xhr.addEventListener('load', onFinally);
-
-				xhr.open(form.method, form.action);
-				xhr.send(parts);
-			}
-
-			function uploadProgressively(files) {
-				if (!files.length) {
-					return;
-				}
-
-				if (uploading) {
-					batches.push(files);
-				} else {
-					uploading = true;
-					elUploadStatus.classList.remove(classFailed);
-					elUploadStatus.classList.add(classUploading);
-					uploadBatch(files);
-				}
-			}
-
-			return uploadProgressively;
-		}
-
-		function enableFormUploadProgress(uploadProgressively) {
-			form.addEventListener('submit', function (e) {
-				e.stopPropagation();
-				e.preventDefault();
-
-				var files = Array.prototype.slice.call(fileInput.files);
-				uploadProgressively(files);
-			});
-
-			fileInput.addEventListener('change', function () {
-				var files = Array.prototype.slice.call(fileInput.files);
-				uploadProgressively(files);
-			});
-		}
-
-		function enableDndUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode) {
-			var isSelfDragging = false;
-			var classDragging = 'dragging';
-
-			function onSelfDragStart() {
-				isSelfDragging = true;
-			}
-
-			function onDragEnd() {
-				isSelfDragging = false;
-			}
-
-			function onDragEnterOver(e) {
-				if (isSelfDragging) return;
+		function onDragEnterOver(e) {
+			if (isSelfDragging) return;
+			if (e.dataTransfer.items.length) {
 				e.stopPropagation();
 				e.preventDefault();
 				e.currentTarget.classList.add(classDragging);
 			}
-
-			function onDragLeave(e) {
-				if (e.target === e.currentTarget) {
-					e.target.classList.remove(classDragging);
-				}
-			}
-
-			function onDrop(e) {
-				e.stopPropagation();
-				e.preventDefault();
-				e.currentTarget.classList.remove(classDragging);
-				fileInput.value = '';
-
-				if (!e.dataTransfer.files.length) {
-					return;
-				}
-
-				itemsToFiles(e.dataTransfer.items, canMkdir).then(function (result) {
-					var files = result.files;
-					if (result.hasDir) {
-						switchToDirMode();
-						uploadProgressively(files);
-					} else {
-						switchToFileMode();
-						uploadProgressively(files);
-					}
-				}, function (err) {
-					if (err === errLacksMkdir && typeof showUploadDirFailMessage !== strUndef) {
-						showUploadDirFailMessage();
-					}
-				});
-			}
-
-			document.body.addEventListener('dragstart', onSelfDragStart);
-			document.body.addEventListener('dragend', onDragEnd);
-			var dndTarget = document.documentElement;
-			dndTarget.addEventListener('dragenter', onDragEnterOver);
-			dndTarget.addEventListener('dragover', onDragEnterOver);
-			dndTarget.addEventListener('dragleave', onDragLeave);
-			dndTarget.addEventListener('drop', onDrop);
 		}
 
-		function enablePasteUploadProgress(uploadProgressively, switchToFileMode, switchToDirMode) {
-			var typeTextPlain = 'text/plain';
-			var nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
-
-			function uploadPastedContent(file) {
-				switchToFileMode();
-
-				var ts = getTimeStamp();
-				var filename = file.name;
-				var dotIndex = filename.lastIndexOf('.');
-				if (dotIndex < 0) {
-					dotIndex = filename.length;
-				}
-				filename = filename.slice(0, dotIndex) + ts + filename.slice(dotIndex);
-
-				var files = [{file: file, relativePath: filename}];
-				uploadProgressively(files);
+		function onDragLeave(e) {
+			if (e.target === e.currentTarget) {
+				e.target.classList.remove(classDragging);
 			}
-
-			document.documentElement.addEventListener('paste', function (e) {
-				var tagName = e.target.tagName;
-				if (tagName === 'TEXTAREA') {
-					return;
-				} else if (tagName === 'INPUT' && nonTextInputTypes.indexOf(e.target.type) < 0) {
-					return;
-				}
-
-				var data = e.clipboardData;
-				var dItems = data.items;
-				var dFiles = data.files;
-
-				if (dItems.length === 1 && dFiles.length === 1 && dFiles[0].type === 'image/png') {
-					// image pasted
-					uploadPastedContent(dFiles[0]);
-				} else if (dItems.length > 0 && dFiles.length === 0) {
-					// text pasted (with other data types in DataTransferItems
-					var textTypeIndex = data.types.findIndex(function (t) {
-						return t === typeTextPlain;
-					});
-					var textItem = dItems[textTypeIndex];
-					if (textItem) {
-						textItem.getAsString(function (content) {
-							var file = new File([content], 'text.txt', {type: typeTextPlain})
-							uploadPastedContent(file);
-						});
-					}
-				} else {
-					// actual files/directories pasted
-					itemsToFiles(dItems, canMkdir).then(function (result) {
-						var files = result.files;
-
-						// pasted real files
-						if (result.hasDir) {
-							switchToDirMode();
-						} else {
-							switchToFileMode();
-						}
-						uploadProgressively(files);
-					}, function (err) {
-						if (err === errLacksMkdir && typeof showUploadDirFailMessage !== strUndef) {
-							showUploadDirFailMessage();
-						}
-					});
-				}
-			});
 		}
 
-		var modes = enableFileDirModeSwitch();
-		var uploadProgressively = enableUploadProgress();
-		enableFormUploadProgress(uploadProgressively);
-		enableDndUploadProgress(uploadProgressively, modes.switchToFileMode, modes.switchToDirMode);
-		enablePasteUploadProgress(uploadProgressively, modes.switchToFileMode, modes.switchToDirMode);
+		function onDrop(e) {
+			e.stopPropagation();
+			e.preventDefault();
+			e.currentTarget.classList.remove(classDragging);
+			fileInput.value = '';
+			uploadItemsProgressively(e.dataTransfer.items);
+		}
+
+		document.body.addEventListener('dragstart', onSelfDragStart);
+		document.body.addEventListener('dragend', onDragEnd);
+		const dndTarget = document.documentElement;
+		dndTarget.addEventListener('dragenter', onDragEnterOver);
+		dndTarget.addEventListener('dragover', onDragEnterOver);
+		dndTarget.addEventListener('dragleave', onDragLeave);
+		dndTarget.addEventListener('drop', onDrop);
 	}
 
-	function enableNonRefreshDelete() {
-		var itemList = document.body.querySelector(selectorItemList);
-		if (!itemList) return;
-		if (!itemList.classList.contains('has-deletable')) return;
+	function enablePasteUploadProgress(uploadFilesProgressively, uploadItemsProgressively) {
+		const typeTextPlain = 'text/plain';
 
-		itemList.addEventListener('submit', function (e) {
-			if (e.defaultPrevented) return;
+		function getTimeStamp() {
+			const now = new Date();
+			let date = String(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate());
+			let time = String(now.getHours() * 10000 + now.getMinutes() * 100 + now.getSeconds());
+			let ms = String(now.getMilliseconds());
+			date = date.padStart(8, '0');
+			time = time.padStart(6, '0');
+			ms = ms.padStart(3, '0');
+			const ts = '-' + date + '-' + time + '-' + ms;
+			return ts;
+		}
 
-			var form = e.target;
-
-			function onLoad() {
-				var status = this.status;
-				if (status >= 200 && status < 300) {
-					var elItem = form.closest('li');
-					elItem.remove();
-				} else {
-					logError('delete failed: ' + status + ' ' + this.statusText);
-				}
+		function uploadPastedFile(file) {
+			const ts = getTimeStamp();
+			let filename = file.name;
+			let dotIndex = filename.lastIndexOf('.');
+			if (dotIndex < 0) {
+				dotIndex = filename.length;
 			}
+			filename = filename.slice(0, dotIndex) + ts + filename.slice(dotIndex);
 
-			var params = '';
-			var els = Array.prototype.slice.call(form.elements);
-			for (var i = 0; i < els.length; i++) {
-				if (!els[i].name) {
-					continue
-				}
-				if (params.length > 0) {
-					params += '&'
-				}
-				params += els[i].name + '=' + encodeURIComponent(els[i].value)
+			const files = [{file, relativePath: filename}];
+			uploadFilesProgressively({files, hasDir: false});
+		}
+
+		function isTextInput(el) {
+			const tagName = el.tagName;
+			if (tagName === 'TEXTAREA') {
+				return true;
 			}
-			var url = form.action;
-
-			var xhr = new XMLHttpRequest();
-			xhr.open('POST', url);	// will retrieve deleted result into bfcache
-			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-			xhr.addEventListener('load', onLoad);
-			xhr.send(params);
-			e.preventDefault();
+			const nonTextInputTypes = ['hidden', 'radio', 'checkbox', 'button', 'reset', 'submit', 'image'];
+			if (tagName === 'INPUT' && !nonTextInputTypes.includes(el.type)) {
+				return true;
+			}
 			return false;
+		}
+
+		document.documentElement.addEventListener('paste', function (e) {
+			if (isTextInput(e.target)) return;
+
+			const data = e.clipboardData;
+			const dItems = data.items;
+			const dFiles = data.files;
+
+			// image pasted
+			if (dItems.length === 1 && dFiles.length === 1 && dFiles[0].type.startsWith('image/')) {
+				uploadPastedFile(dFiles[0]);
+				return;
+			}
+
+			// text pasted (with other data types in DataTransferItems
+			if (dItems.length > 0 && dFiles.length === 0) {
+				const textTypeIndex = data.types.findIndex(t => t === typeTextPlain);
+				if (textTypeIndex < 0) return;
+
+				const textItem = dItems[textTypeIndex];
+				textItem.getAsString(function (content) {
+					const file = new File([content], 'text.txt', {type: typeTextPlain});
+					uploadPastedFile(file);
+				});
+				return;
+			}
+
+			// actual files/directories pasted
+			if (dItems.length) {
+				uploadItemsProgressively(dItems);
+			}
 		});
 	}
 
-	enableFilter();
-	keepFocusOnBackwardForward();
-	focusChildOnNavUp();
-	enableKeyboardNavigate();
-	enhanceUpload();
-	enableNonRefreshDelete();
-}());
+	const {switchToFileMode, switchToDirMode, switchToInnerDirMode} = enableFileDirModeSwitch();
+	const {uploadFilesProgressively, uploadItemsProgressively} = enableUploadProgress(switchToFileMode, switchToDirMode, switchToInnerDirMode);
+	enableFormUploadProgress(uploadFilesProgressively);
+	enableDndUploadProgress(uploadItemsProgressively);
+	enablePasteUploadProgress(uploadFilesProgressively, uploadItemsProgressively);
+}
+
+function enableSelectActions() {
+	const form = document.body.querySelector('form.entry-form');
+	if (!form) return;
+
+	const entryList = form.querySelector(selectorEntryList);
+	if (!entryList) return;
+
+	const btnDelete = form.querySelector('.action-list .delete');
+	const btnToggleSelect = entryList.querySelector('.toggle-select');
+	const chkSelectAll = entryList.querySelector('.select-all');
+
+	const classSelecting = 'selecting';
+	const selectorVisible = `li${selectorNotNone}`;
+	const selectorHidden = `li${selectorIsNone}`;
+	const selectorCheckbox = '.select input[type=checkbox]';
+	const selectorUnchecked = `${selectorCheckbox}:not(:checked)`;
+	const selectorChecked = `${selectorCheckbox}:checked`;
+	const selectorVisibleUnchecked = `${selectorVisible} ${selectorUnchecked}`;
+	const selectorHiddenChecked = `${selectorHidden} ${selectorChecked}`;
+
+	form.addEventListener('submit', function () {
+		entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
+
+		setTimeout(() => {
+			form.classList.remove(classSelecting);
+			entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+		}, 0);
+	});
+
+	if (btnToggleSelect) {
+		btnToggleSelect.addEventListener('click', function () {
+			form.classList.toggle(classSelecting);
+			const selecting = form.classList.contains(classSelecting);
+			if (btnDelete) {
+				btnDelete.disabled = !selecting;
+			}
+			if (!selecting) {
+				entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+			}
+		});
+	}
+
+	if (chkSelectAll) {
+		chkSelectAll.addEventListener('change', function (e) {
+			const checked = e.target.checked;
+			if (checked) {
+				entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
+				entryList.querySelectorAll(selectorVisibleUnchecked).forEach(input => input.checked = true);
+			} else {
+				entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+			}
+		});
+	}
+
+	if (typeof confirmDelete === strFunction) {
+		if (btnDelete) {
+			btnDelete.addEventListener('click', function (e) {
+				if (!confirmDelete()) e.preventDefault();
+			});
+		}
+	}
+}
+
+enableFilter();
+keepFocusOnBackwardForward();
+focusChildOnNavUp();
+enableKeyboardNavigate();
+enhanceUpload();
+enableSelectActions();

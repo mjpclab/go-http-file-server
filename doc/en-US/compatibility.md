@@ -35,6 +35,8 @@
 - Go 1.23 supports OSX 11 Big Sur or later
 - Go 1.24 is the last release supports OSX 11 Big Sur
 - Go 1.25 supports OSX 12 Monterey or later
+- Go 1.26 is the last release supports OSX 12 Monterey
+- Go 1.27 supports OSX 13 Ventura or later
 
 ## Windows platform
 - Go 1.10 is the last release supports Windows XP
