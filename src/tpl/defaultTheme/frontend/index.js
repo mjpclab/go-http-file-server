@@ -808,7 +808,7 @@ function enhanceUpload() {
 
 		function onDragEnterOver(e) {
 			if (isSelfDragging) return;
-			if (e.dataTransfer.items.length) {
+			if (e.dataTransfer.types.includes('Files')) {
 				e.stopPropagation();
 				e.preventDefault();
 				e.currentTarget.classList.add(classDragging);
