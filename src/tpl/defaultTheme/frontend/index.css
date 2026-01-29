@@ -404,8 +404,7 @@ html.dragging::before {
 }
 
 /* select */
-.entry-list .toggle-select,
-.entry-list .select {
+.entry-list .toggle-select {
 	position: absolute;
 	inset-inline-start: 0;
 	inset-block: 0;
@@ -442,16 +441,27 @@ html.dragging::before {
 
 .entry-list .select {
 	display: none;
-	align-items: center;
-	justify-content: center;
+	position: absolute;
+	inset: 0;
+	user-select: none;
 }
 
 .entry-list .select:hover {
-	background: #cfc;
+	background: #ffffff0c;
 }
 
 .selecting .entry-list .select {
-	display: flex;
+	display: block;
+}
+
+.entry-list .select input {
+	font-size: inherit;
+	block-size: 100%;
+	margin-inline-start: 0.6em;
+}
+
+.entry-list li:has(.select input:checked) {
+	background: #cee;
 }
 
 .entry-list .detail {
@@ -719,8 +729,8 @@ html.dragging::before {
 		color: #f99;
 	}
 
-	.entry-list .select:hover {
-		background: #353;
+	.entry-list li:has(.select input:checked) {
+		background: #244;
 	}
 
 	.entry-list .detail {
