@@ -699,7 +699,7 @@ function enhanceUpload() {
 				const onDownloadSuccess = e => {
 					const status = e.target.status;
 					if (status < 200 || status >= 300) {
-						onFail({type: e.target.statusText || status});
+						onFail({message: e.target.statusText || status});
 						return;
 					}
 					if (slices.length) {
@@ -752,7 +752,7 @@ function enhanceUpload() {
 					location.reload();
 				}
 			}).catch(err => {
-				elFailedMessage.textContent = ' - ' + err.type;
+				elFailedMessage.textContent = ' - ' + err.message;
 				if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {
 					showUploadDirFailMessage();
 				} else {
