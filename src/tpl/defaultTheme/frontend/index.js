@@ -19,6 +19,8 @@ const selectorEntryNotNone = selectorEntry + selectorNotNone;
 
 const Enter = 'Enter';
 const Escape = 'Escape';
+const Space = ' ';
+const KEY_EVENT_SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
 
 let hasStorage = false;
 try {
@@ -298,8 +300,6 @@ function enableKeyboardNavigate() {
 	const ARROW_LEFT = 'ArrowLeft';
 	const ARROW_RIGHT = 'ArrowRight';
 
-	const SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
-
 	const PLATFORM = navigator.platform || navigator.userAgent;
 	const IS_MAC_PLATFORM = PLATFORM.includes('Mac') || PLATFORM.includes('iPhone') || PLATFORM.includes('iPad') || PLATFORM.includes('iPod');
 
@@ -364,9 +364,7 @@ function enableKeyboardNavigate() {
 	}
 
 	function getFocusItemByKeyPress(e) {
-		if (SKIP_TAGS.includes(e.target.tagName)) {
-			return;
-		}
+		if (KEY_EVENT_SKIP_TAGS.includes(e.target.tagName)) return;
 
 		if (canArrowMove(e)) {
 			switch (e.key) {
@@ -925,18 +923,117 @@ function enableSelectActions() {
 	const entryList = form.querySelector(selectorEntryList);
 	if (!entryList) return;
 
+	const pointerDownEvent = 'mousedown';
+	const pointerMoveEvent = 'mousemove';
+	const pointerUpEvent = 'mouseup';
+
 	const btnDelete = form.querySelector('.action-list .delete');
 	const btnToggleSelect = entryList.querySelector('.toggle-select');
 	const chkSelectAll = entryList.querySelector('.select-all');
 
 	const classSelecting = 'selecting';
-	const selectorVisible = `li${selectorNotNone}`;
-	const selectorHidden = `li${selectorIsNone}`;
-	const selectorCheckbox = '.select input[type=checkbox]';
+	const selectorItem = 'li:not(.header)';
+	const selectorVisible = `${selectorItem}${selectorNotNone}`;
+	const selectorHidden = `${selectorItem}${selectorIsNone}`;
+	const selectorSelectLabel = '.select';
+	const selectorCheckInput = 'input[type=checkbox]';
+	const selectorCheckbox = `${selectorSelectLabel} ${selectorCheckInput}`;
 	const selectorUnchecked = `${selectorCheckbox}:not(:checked)`;
 	const selectorChecked = `${selectorCheckbox}:checked`;
 	const selectorVisibleUnchecked = `${selectorVisible} ${selectorUnchecked}`;
 	const selectorHiddenChecked = `${selectorHidden} ${selectorChecked}`;
+
+	const selectRect = document.createElement('div');
+	selectRect.classList.add('select-rect');
+	form.append(selectRect);
+
+	let maxX, maxY;
+	const updateMaxSize = () => {
+		maxX = Math.max(document.documentElement.offsetWidth, Math.floor(visualViewport.width));
+		maxY = Math.max(document.documentElement.offsetHeight, Math.floor(visualViewport.height));
+	};
+	visualViewport.addEventListener('resize', updateMaxSize);
+	updateMaxSize();
+
+	const classPinching = 'pinching';
+	let startItem = null;
+	let startX, startY;
+	const getPointerPosition = e => {
+		let x = e.offsetX;
+		let y = e.offsetY;
+		let el = e.target;
+		const offsetContainer = entryList.offsetParent;
+		do {
+			x += el.offsetLeft;
+			y += el.offsetTop;
+			el = el.offsetParent;
+		} while (el && el !== offsetContainer);
+		return [Math.min(x, maxX), Math.min(y, maxY)];
+	};
+	const cleanUp = () => {
+		startItem = null;
+		document.documentElement.removeEventListener(pointerMoveEvent, onPointerMove);
+		document.documentElement.removeEventListener(pointerUpEvent, onPointerUp);
+		selectRect.classList.remove(classPinching);
+	};
+	const onPointerDown = e => {
+		if (startItem) cleanUp();
+		if (e.button !== 0) return;
+		const selectLabel = e.target.closest(selectorSelectLabel);
+		if (!selectLabel) return;
+		startItem = selectLabel.closest(selectorItem);
+		e.preventDefault();	// avoid dragging selected text
+
+		document.documentElement.addEventListener(pointerMoveEvent, onPointerMove);
+		document.documentElement.addEventListener(pointerUpEvent, onPointerUp);
+
+		([startX, startY] = getPointerPosition(e));
+		selectRect.style.left = startX + 'px';
+		selectRect.style.top = startY + 'px';
+		selectRect.style.width = '';
+		selectRect.style.height = '';
+		selectRect.classList.add(classPinching);
+	};
+	const onPointerMove = e => {
+		const [endX, endY] = getPointerPosition(e);
+		selectRect.style.left = Math.min(startX, endX) + 'px';
+		selectRect.style.top = Math.min(startY, endY) + 'px';
+		selectRect.style.width = Math.abs(endX - startX) + 'px';
+		selectRect.style.height = Math.abs(endY - startY) + 'px';
+	};
+	const onPointerUp = e => {
+		if (!startItem) return;	// e.g. pointer-downed & press ESC
+		let fromItem = startItem;
+		cleanUp();
+
+		const [, endY] = getPointerPosition(e);
+		let currentItem = e.target.closest(selectorItem);
+		if (!currentItem || currentItem === fromItem) return;
+		const checked = !fromItem.querySelector(selectorCheckInput).checked;
+		let toItem;
+		if (endY > startY) {
+			toItem = currentItem;
+		} else {
+			toItem = fromItem;
+			fromItem = currentItem;
+		}
+		let item = fromItem;
+		while (true) {
+			if (!item.classList.contains(classNone)) {
+				item.querySelector(selectorCheckInput).checked = checked;
+			}
+			if (item === toItem) break;
+			item = item.nextElementSibling;
+		}
+	};
+	const onKeyDown = e => {
+		if (e.key !== Enter && e.key !== Space) return;
+		const checkbox = e.target.parentElement.querySelector(selectorCheckbox);
+		if (checkbox) {
+			e.preventDefault();
+			checkbox.click();
+		}
+	};
 
 	form.addEventListener('submit', function () {
 		if (btnDelete) {
@@ -951,14 +1048,30 @@ function enableSelectActions() {
 	});
 
 	if (btnToggleSelect) {
-		btnToggleSelect.addEventListener('click', function () {
+		const onToggleSelect = () => {
 			form.classList.toggle(classSelecting);
 			const selecting = form.classList.contains(classSelecting);
 			if (btnDelete) {
 				btnDelete.disabled = !selecting;
 			}
-			if (!selecting) {
+			if (selecting) {
+				document.documentElement.addEventListener(pointerDownEvent, onPointerDown);
+				entryList.addEventListener('keydown', onKeyDown);
+			} else {
+				document.documentElement.removeEventListener(pointerDownEvent, onPointerDown);
+				entryList.removeEventListener('keydown', onKeyDown);
+				if (startItem) cleanUp();
 				entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+			}
+		};
+		btnToggleSelect.addEventListener('click', onToggleSelect);
+		document.body.addEventListener('keydown', function (e) {
+			if (e.key !== Escape) return;
+			if (KEY_EVENT_SKIP_TAGS.includes(e.target.tagName)) return;
+			if (e.target === e.currentTarget) {
+				onToggleSelect();
+			} else if (entryList.contains(e.target)) {
+				onToggleSelect();
 			}
 		});
 	}
@@ -967,7 +1080,6 @@ function enableSelectActions() {
 		chkSelectAll.addEventListener('change', function (e) {
 			const checked = e.target.checked;
 			if (checked) {
-				entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
 				entryList.querySelectorAll(selectorVisibleUnchecked).forEach(input => input.checked = true);
 			} else {
 				entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);

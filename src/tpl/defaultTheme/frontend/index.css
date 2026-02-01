@@ -650,6 +650,20 @@ html.dragging::before {
 	text-align: center;
 }
 
+.select-rect {
+	position: absolute;
+	z-index: 2;
+	display: none;
+	box-sizing: border-box;
+	background: #6662;
+	border: 1px #7777 dashed;
+	pointer-events: none;
+}
+
+.select-rect.pinching {
+	display: block;
+}
+
 .error {
 	margin: 1em;
 	padding: 1em;
