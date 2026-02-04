@@ -262,6 +262,35 @@ function enableKeyboardNavigate() {
 		return a;
 	}
 
+	function getFocusablePageSibling(container, isBackward, steps, startA) {
+		if (!container.childElementCount) return;
+		if (!startA) {
+			startA = container.querySelector(':focus');
+		}
+		let startLI = startA && startA.closest('li');
+
+		if (!startLI) {
+			return getFirstFocusableSibling(container);
+		}
+
+		let siblingLI = startLI;
+		let sib = siblingLI;
+		while (true) {
+			sib = isBackward ? sib.previousElementSibling : sib.nextElementSibling;
+			if (!sib) break;
+			const available = !sib.classList.contains(classNone) &&
+				!sib.classList.contains(classHeader);
+			if (available) {
+				siblingLI = sib;
+				--steps;
+			}
+			if (steps === 0) break;
+		}
+
+		const siblingA = siblingLI.querySelector('a');
+		return siblingA;
+	}
+
 	function getMatchedFocusableSibling(container, isBackward, startA, buf) {
 		let skipRound = buf.length === 1;	// find next single-char prefix
 		let firstCheckedA;
@@ -299,6 +328,10 @@ function enableKeyboardNavigate() {
 	const ARROW_DOWN = 'ArrowDown';
 	const ARROW_LEFT = 'ArrowLeft';
 	const ARROW_RIGHT = 'ArrowRight';
+	const PAGE_UP = 'PageUp';
+	const PAGE_DOWN = 'PageDown';
+	const HOME = 'Home';
+	const END = 'End';
 
 	const PLATFORM = navigator.platform || navigator.userAgent;
 	const IS_MAC_PLATFORM = PLATFORM.includes('Mac') || PLATFORM.includes('iPhone') || PLATFORM.includes('iPad') || PLATFORM.includes('iPod');
@@ -362,6 +395,13 @@ function enableKeyboardNavigate() {
 			return e.ctrlKey;
 		};
 	}
+	const itemHeight = entryList.lastElementChild.offsetHeight;
+	let itemsPerPage = 1;
+	const updateItemsPerPage = () => {
+		itemsPerPage = Math.max(Math.floor(visualViewport.height / itemHeight) - 2, 1);
+	};
+	visualViewport.addEventListener('resize', updateItemsPerPage);
+	updateItemsPerPage();
 
 	function getFocusItemByKeyPress(e) {
 		if (KEY_EVENT_SKIP_TAGS.includes(e.target.tagName)) return;
@@ -380,6 +420,14 @@ function enableKeyboardNavigate() {
 					} else {
 						return getFocusableSibling(entryList, true);
 					}
+				case PAGE_DOWN:
+					return getFocusablePageSibling(entryList, false, itemsPerPage);
+				case PAGE_UP:
+					return getFocusablePageSibling(entryList, true, itemsPerPage);
+				case END:
+					return getLastFocusableSibling(entryList);
+				case HOME:
+					return getFirstFocusableSibling(entryList);
 				case ARROW_RIGHT:
 					if (isToEnd(e)) {
 						return getLastFocusableSibling(pathList);
@@ -403,6 +451,7 @@ function enableKeyboardNavigate() {
 		const newFocusEl = getFocusItemByKeyPress(e);
 		if (newFocusEl) {
 			e.preventDefault();
+			newFocusEl.scrollIntoView({block: 'center'});
 			newFocusEl.focus();
 		}
 	});
