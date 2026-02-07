@@ -939,6 +939,9 @@ function enableSelectActions() {
 	const selectorHiddenChecked = `${selectorHidden} ${selectorChecked}`;
 
 	form.addEventListener('submit', function () {
+		if (btnDelete) {
+			btnDelete.disabled = true;
+		}
 		entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
 
 		setTimeout(() => {
