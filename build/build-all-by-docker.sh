@@ -45,6 +45,10 @@ buildByDocker() {
 gover=latest
 buildByDocker "$gover" "${builds[@]}"
 
+#gover=1.26
+#builds=('darwin amd64 -12-monterey' 'darwin arm64 -12-monterey')
+#buildByDocker "$gover" "${builds[@]}"
+
 #gover=1.24
 #builds=('darwin amd64 -11-big-sur' 'darwin arm64 -11-big-sur')
 #buildByDocker "$gover" "${builds[@]}"
