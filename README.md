@@ -378,8 +378,9 @@ set value to "1".
 - `Ctrl`/`Opt` + `←`: move focus to first path item
 - `Ctrl`/`Opt` + `→`: move focus to last path item
 - `↑`, `↓`: move focus between file items
-- `Ctrl`/`Opt` + `↑`: move focus to first file item
-- `Ctrl`/`Opt` + `↓`: move focus to last file item
+- `PageUp`, `PageDown`: move focus between paged file items
+- `Ctrl`/`Opt` + `↑` or `Home`: move focus to first file item
+- `Ctrl`/`Opt` + `↓` or `End`: move focus to last file item
 - Repeat inputting same character will look for next file that prefixes with it. + `Shift` for reverse direction.
 - Non-repeat inputs will be remembered as a string in short time to look for next file prefix match. + `Shift` for reverse direction.
 - When upload is enabled, pasting(`Ctrl`/`Cmd` + `v`) image or text content will upload that content as a file.

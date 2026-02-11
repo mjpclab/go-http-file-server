@@ -21,11 +21,6 @@ const DefaultTplStr = `
 	<li><a href="{{.Path}}{{$contextQueryString}}">{{fmtFilename .Name}}</a></li>
 	{{end}}
 </ol>
-{{if .LoginAvail}}
-<a class="login" href="{{if ne .Status 401}}{{.RootRelPath}}?auth={{.Path}}{{$contextQueryString}}{{end}}">{{.Trans.LoginLabel}}</a>
-{{else if .AuthUserName}}
-<span class="login">[{{.AuthUserName}}]</span>
-{{end}}
 {{if .CanUpload}}
 <div class="upload-status">
 	<span class="label info">
@@ -36,6 +31,11 @@ const DefaultTplStr = `
 	</span>
 	<span class="progress"></span>
 </div>
+{{end}}
+{{if .LoginAvail}}
+<a class="login" href="{{if ne .Status 401}}{{.RootRelPath}}?auth={{.Path}}{{$contextQueryString}}{{end}}">{{.Trans.LoginLabel}}</a>
+{{else if .AuthUserName}}
+<span class="login">[{{.AuthUserName}}]</span>
 {{end}}
 
 {{if .CanMkdir}}
@@ -69,7 +69,7 @@ const DefaultTplStr = `
 </div>
 {{end}}
 {{end}}
-<form method="POST" class="entry-form">
+<form method="POST" class="entry-form" autocomplete="off">
 {{if and $canSelect (not .IsSimple)}}
 <div class="action-list">
 	{{if .CanArchive}}

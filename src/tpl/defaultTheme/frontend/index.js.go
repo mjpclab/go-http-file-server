@@ -22,6 +22,8 @@ const DefaultJs = "" +
 	"\n" +
 	"const Enter = 'Enter';\n" +
 	"const Escape = 'Escape';\n" +
+	"const Space = ' ';\n" +
+	"const KEY_EVENT_SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];\n" +
 	"\n" +
 	"let hasStorage = false;\n" +
 	"try {\n" +
@@ -263,6 +265,35 @@ const DefaultJs = "" +
 	"		return a;\n" +
 	"	}\n" +
 	"\n" +
+	"	function getFocusablePageSibling(container, isBackward, steps, startA) {\n" +
+	"		if (!container.childElementCount) return;\n" +
+	"		if (!startA) {\n" +
+	"			startA = container.querySelector(':focus');\n" +
+	"		}\n" +
+	"		let startLI = startA && startA.closest('li');\n" +
+	"\n" +
+	"		if (!startLI) {\n" +
+	"			return getFirstFocusableSibling(container);\n" +
+	"		}\n" +
+	"\n" +
+	"		let siblingLI = startLI;\n" +
+	"		let sib = siblingLI;\n" +
+	"		while (true) {\n" +
+	"			sib = isBackward ? sib.previousElementSibling : sib.nextElementSibling;\n" +
+	"			if (!sib) break;\n" +
+	"			const available = !sib.classList.contains(classNone) &&\n" +
+	"				!sib.classList.contains(classHeader);\n" +
+	"			if (available) {\n" +
+	"				siblingLI = sib;\n" +
+	"				--steps;\n" +
+	"			}\n" +
+	"			if (steps === 0) break;\n" +
+	"		}\n" +
+	"\n" +
+	"		const siblingA = siblingLI.querySelector('a');\n" +
+	"		return siblingA;\n" +
+	"	}\n" +
+	"\n" +
 	"	function getMatchedFocusableSibling(container, isBackward, startA, buf) {\n" +
 	"		let skipRound = buf.length === 1;	// find next single-char prefix\n" +
 	"		let firstCheckedA;\n" +
@@ -300,8 +331,10 @@ const DefaultJs = "" +
 	"	const ARROW_DOWN = 'ArrowDown';\n" +
 	"	const ARROW_LEFT = 'ArrowLeft';\n" +
 	"	const ARROW_RIGHT = 'ArrowRight';\n" +
-	"\n" +
-	"	const SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];\n" +
+	"	const PAGE_UP = 'PageUp';\n" +
+	"	const PAGE_DOWN = 'PageDown';\n" +
+	"	const HOME = 'Home';\n" +
+	"	const END = 'End';\n" +
 	"\n" +
 	"	const PLATFORM = navigator.platform || navigator.userAgent;\n" +
 	"	const IS_MAC_PLATFORM = PLATFORM.includes('Mac') || PLATFORM.includes('iPhone') || PLATFORM.includes('iPad') || PLATFORM.includes('iPod');\n" +
@@ -365,11 +398,16 @@ const DefaultJs = "" +
 	"			return e.ctrlKey;\n" +
 	"		};\n" +
 	"	}\n" +
+	"	const itemHeight = entryList.lastElementChild.offsetHeight;\n" +
+	"	let itemsPerPage = 1;\n" +
+	"	const updateItemsPerPage = () => {\n" +
+	"		itemsPerPage = Math.max(Math.floor(visualViewport.height / itemHeight) - 2, 1);\n" +
+	"	};\n" +
+	"	visualViewport.addEventListener('resize', updateItemsPerPage);\n" +
+	"	updateItemsPerPage();\n" +
 	"\n" +
 	"	function getFocusItemByKeyPress(e) {\n" +
-	"		if (SKIP_TAGS.includes(e.target.tagName)) {\n" +
-	"			return;\n" +
-	"		}\n" +
+	"		if (KEY_EVENT_SKIP_TAGS.includes(e.target.tagName)) return;\n" +
 	"\n" +
 	"		if (canArrowMove(e)) {\n" +
 	"			switch (e.key) {\n" +
@@ -385,6 +423,14 @@ const DefaultJs = "" +
 	"					} else {\n" +
 	"						return getFocusableSibling(entryList, true);\n" +
 	"					}\n" +
+	"				case PAGE_DOWN:\n" +
+	"					return getFocusablePageSibling(entryList, false, itemsPerPage);\n" +
+	"				case PAGE_UP:\n" +
+	"					return getFocusablePageSibling(entryList, true, itemsPerPage);\n" +
+	"				case END:\n" +
+	"					return getLastFocusableSibling(entryList);\n" +
+	"				case HOME:\n" +
+	"					return getFirstFocusableSibling(entryList);\n" +
 	"				case ARROW_RIGHT:\n" +
 	"					if (isToEnd(e)) {\n" +
 	"						return getLastFocusableSibling(pathList);\n" +
@@ -408,6 +454,7 @@ const DefaultJs = "" +
 	"		const newFocusEl = getFocusItemByKeyPress(e);\n" +
 	"		if (newFocusEl) {\n" +
 	"			e.preventDefault();\n" +
+	"			newFocusEl.scrollIntoView({block: 'center'});\n" +
 	"			newFocusEl.focus();\n" +
 	"		}\n" +
 	"	});\n" +
@@ -702,7 +749,7 @@ const DefaultJs = "" +
 	"				const onDownloadSuccess = e => {\n" +
 	"					const status = e.target.status;\n" +
 	"					if (status < 200 || status >= 300) {\n" +
-	"						onFail({type: e.target.statusText || status});\n" +
+	"						onFail({message: e.target.statusText || status});\n" +
 	"						return;\n" +
 	"					}\n" +
 	"					if (slices.length) {\n" +
@@ -755,7 +802,7 @@ const DefaultJs = "" +
 	"					location.reload();\n" +
 	"				}\n" +
 	"			}).catch(err => {\n" +
-	"				elFailedMessage.textContent = ' - ' + err.type;\n" +
+	"				elFailedMessage.textContent = ' - ' + err.message;\n" +
 	"				if (err === errLacksMkdir && typeof showUploadDirFailMessage === strFunction) {\n" +
 	"					showUploadDirFailMessage();\n" +
 	"				} else {\n" +
@@ -811,7 +858,7 @@ const DefaultJs = "" +
 	"\n" +
 	"		function onDragEnterOver(e) {\n" +
 	"			if (isSelfDragging) return;\n" +
-	"			if (e.dataTransfer.items.length) {\n" +
+	"			if (e.dataTransfer.types.includes('Files')) {\n" +
 	"				e.stopPropagation();\n" +
 	"				e.preventDefault();\n" +
 	"				e.currentTarget.classList.add(classDragging);\n" +
@@ -928,20 +975,122 @@ const DefaultJs = "" +
 	"	const entryList = form.querySelector(selectorEntryList);\n" +
 	"	if (!entryList) return;\n" +
 	"\n" +
+	"	const pointerDownEvent = 'mousedown';\n" +
+	"	const pointerMoveEvent = 'mousemove';\n" +
+	"	const pointerUpEvent = 'mouseup';\n" +
+	"\n" +
 	"	const btnDelete = form.querySelector('.action-list .delete');\n" +
 	"	const btnToggleSelect = entryList.querySelector('.toggle-select');\n" +
 	"	const chkSelectAll = entryList.querySelector('.select-all');\n" +
 	"\n" +
 	"	const classSelecting = 'selecting';\n" +
-	"	const selectorVisible = `li${selectorNotNone}`;\n" +
-	"	const selectorHidden = `li${selectorIsNone}`;\n" +
-	"	const selectorCheckbox = '.select input[type=checkbox]';\n" +
+	"	const selectorItem = 'li:not(.header)';\n" +
+	"	const selectorVisible = `${selectorItem}${selectorNotNone}`;\n" +
+	"	const selectorHidden = `${selectorItem}${selectorIsNone}`;\n" +
+	"	const selectorSelectLabel = '.select';\n" +
+	"	const selectorCheckInput = 'input[type=checkbox]';\n" +
+	"	const selectorCheckbox = `${selectorSelectLabel} ${selectorCheckInput}`;\n" +
 	"	const selectorUnchecked = `${selectorCheckbox}:not(:checked)`;\n" +
 	"	const selectorChecked = `${selectorCheckbox}:checked`;\n" +
 	"	const selectorVisibleUnchecked = `${selectorVisible} ${selectorUnchecked}`;\n" +
 	"	const selectorHiddenChecked = `${selectorHidden} ${selectorChecked}`;\n" +
 	"\n" +
+	"	const selectRect = document.createElement('div');\n" +
+	"	selectRect.classList.add('select-rect');\n" +
+	"	form.append(selectRect);\n" +
+	"\n" +
+	"	let maxX, maxY;\n" +
+	"	const updateMaxSize = () => {\n" +
+	"		maxX = Math.max(document.documentElement.offsetWidth, Math.floor(visualViewport.width));\n" +
+	"		maxY = Math.max(document.documentElement.offsetHeight, Math.floor(visualViewport.height));\n" +
+	"	};\n" +
+	"	visualViewport.addEventListener('resize', updateMaxSize);\n" +
+	"	updateMaxSize();\n" +
+	"\n" +
+	"	const classPinching = 'pinching';\n" +
+	"	let startItem = null;\n" +
+	"	let startX, startY;\n" +
+	"	const getPointerPosition = e => {\n" +
+	"		let x = e.offsetX;\n" +
+	"		let y = e.offsetY;\n" +
+	"		let el = e.target;\n" +
+	"		const offsetContainer = entryList.offsetParent;\n" +
+	"		do {\n" +
+	"			x += el.offsetLeft;\n" +
+	"			y += el.offsetTop;\n" +
+	"			el = el.offsetParent;\n" +
+	"		} while (el && el !== offsetContainer);\n" +
+	"		return [Math.min(x, maxX), Math.min(y, maxY)];\n" +
+	"	};\n" +
+	"	const cleanUp = () => {\n" +
+	"		startItem = null;\n" +
+	"		document.documentElement.removeEventListener(pointerMoveEvent, onPointerMove);\n" +
+	"		document.documentElement.removeEventListener(pointerUpEvent, onPointerUp);\n" +
+	"		selectRect.classList.remove(classPinching);\n" +
+	"	};\n" +
+	"	const onPointerDown = e => {\n" +
+	"		if (startItem) cleanUp();\n" +
+	"		if (e.button !== 0) return;\n" +
+	"		const selectLabel = e.target.closest(selectorSelectLabel);\n" +
+	"		if (!selectLabel) return;\n" +
+	"		startItem = selectLabel.closest(selectorItem);\n" +
+	"		e.preventDefault();	// avoid dragging selected text\n" +
+	"\n" +
+	"		document.documentElement.addEventListener(pointerMoveEvent, onPointerMove);\n" +
+	"		document.documentElement.addEventListener(pointerUpEvent, onPointerUp);\n" +
+	"\n" +
+	"		([startX, startY] = getPointerPosition(e));\n" +
+	"		selectRect.style.left = startX + 'px';\n" +
+	"		selectRect.style.top = startY + 'px';\n" +
+	"		selectRect.style.width = '';\n" +
+	"		selectRect.style.height = '';\n" +
+	"		selectRect.classList.add(classPinching);\n" +
+	"	};\n" +
+	"	const onPointerMove = e => {\n" +
+	"		const [endX, endY] = getPointerPosition(e);\n" +
+	"		selectRect.style.left = Math.min(startX, endX) + 'px';\n" +
+	"		selectRect.style.top = Math.min(startY, endY) + 'px';\n" +
+	"		selectRect.style.width = Math.abs(endX - startX) + 'px';\n" +
+	"		selectRect.style.height = Math.abs(endY - startY) + 'px';\n" +
+	"	};\n" +
+	"	const onPointerUp = e => {\n" +
+	"		if (!startItem) return;	// e.g. pointer-downed & press ESC\n" +
+	"		let fromItem = startItem;\n" +
+	"		cleanUp();\n" +
+	"\n" +
+	"		const [, endY] = getPointerPosition(e);\n" +
+	"		let currentItem = e.target.closest(selectorItem);\n" +
+	"		if (!currentItem || currentItem === fromItem) return;\n" +
+	"		const checked = !fromItem.querySelector(selectorCheckInput).checked;\n" +
+	"		let toItem;\n" +
+	"		if (endY > startY) {\n" +
+	"			toItem = currentItem;\n" +
+	"		} else {\n" +
+	"			toItem = fromItem;\n" +
+	"			fromItem = currentItem;\n" +
+	"		}\n" +
+	"		let item = fromItem;\n" +
+	"		while (true) {\n" +
+	"			if (!item.classList.contains(classNone)) {\n" +
+	"				item.querySelector(selectorCheckInput).checked = checked;\n" +
+	"			}\n" +
+	"			if (item === toItem) break;\n" +
+	"			item = item.nextElementSibling;\n" +
+	"		}\n" +
+	"	};\n" +
+	"	const onKeyDown = e => {\n" +
+	"		if (e.key !== Enter && e.key !== Space) return;\n" +
+	"		const checkbox = e.target.parentElement.querySelector(selectorCheckbox);\n" +
+	"		if (checkbox) {\n" +
+	"			e.preventDefault();\n" +
+	"			checkbox.click();\n" +
+	"		}\n" +
+	"	};\n" +
+	"\n" +
 	"	form.addEventListener('submit', function () {\n" +
+	"		if (btnDelete) {\n" +
+	"			btnDelete.disabled = true;\n" +
+	"		}\n" +
 	"		entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);\n" +
 	"\n" +
 	"		setTimeout(() => {\n" +
@@ -951,14 +1100,30 @@ const DefaultJs = "" +
 	"	});\n" +
 	"\n" +
 	"	if (btnToggleSelect) {\n" +
-	"		btnToggleSelect.addEventListener('click', function () {\n" +
+	"		const onToggleSelect = () => {\n" +
 	"			form.classList.toggle(classSelecting);\n" +
 	"			const selecting = form.classList.contains(classSelecting);\n" +
 	"			if (btnDelete) {\n" +
 	"				btnDelete.disabled = !selecting;\n" +
 	"			}\n" +
-	"			if (!selecting) {\n" +
+	"			if (selecting) {\n" +
+	"				document.documentElement.addEventListener(pointerDownEvent, onPointerDown);\n" +
+	"				entryList.addEventListener('keydown', onKeyDown);\n" +
+	"			} else {\n" +
+	"				document.documentElement.removeEventListener(pointerDownEvent, onPointerDown);\n" +
+	"				entryList.removeEventListener('keydown', onKeyDown);\n" +
+	"				if (startItem) cleanUp();\n" +
 	"				entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);\n" +
+	"			}\n" +
+	"		};\n" +
+	"		btnToggleSelect.addEventListener('click', onToggleSelect);\n" +
+	"		document.body.addEventListener('keydown', function (e) {\n" +
+	"			if (e.key !== Escape) return;\n" +
+	"			if (KEY_EVENT_SKIP_TAGS.includes(e.target.tagName)) return;\n" +
+	"			if (e.target === e.currentTarget) {\n" +
+	"				onToggleSelect();\n" +
+	"			} else if (entryList.contains(e.target)) {\n" +
+	"				onToggleSelect();\n" +
 	"			}\n" +
 	"		});\n" +
 	"	}\n" +
@@ -967,7 +1132,6 @@ const DefaultJs = "" +
 	"		chkSelectAll.addEventListener('change', function (e) {\n" +
 	"			const checked = e.target.checked;\n" +
 	"			if (checked) {\n" +
-	"				entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);\n" +
 	"				entryList.querySelectorAll(selectorVisibleUnchecked).forEach(input => input.checked = true);\n" +
 	"			} else {\n" +
 	"				entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);\n" +

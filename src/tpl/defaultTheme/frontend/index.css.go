@@ -95,17 +95,17 @@ em {
 }
 
 
-html::before {
+html::after {
 	display: none;
 	content: '';
 	position: fixed;
-	z-index: 4;
+	z-index: 2;
 	inset: 0;
 	opacity: 0.7;
 	background: #c9c;
 }
 
-html.dragging::before {
+html.dragging::after {
 	display: block;
 }
 
@@ -146,13 +146,6 @@ html.dragging::before {
 	color: #ccc;
 	border-color: currentColor currentColor transparent transparent;
 	transform: rotate(45deg) translateY(-50%);
-}
-
-.login {
-	position: absolute;
-	z-index: 2;
-	inset-inline-end: 0;
-	padding: 0.5em 1em;
 }
 
 .tab {
@@ -198,7 +191,7 @@ html.dragging::before {
 .upload-status {
 	visibility: hidden;
 	position: sticky;
-	z-index: 3;
+	z-index: 2;
 	inset-inline-start: 0;
 	inset-block-start: 0;
 	inline-size: 100%;
@@ -283,6 +276,13 @@ html.dragging::before {
 	inline-size: 0;
 	block-size: 100%;
 	background: #c9c;
+}
+
+.login {
+	position: absolute;
+	z-index: 2;
+	inset-inline-end: 0;
+	padding: 0.5em 1em;
 }
 
 .upload form {
@@ -407,8 +407,7 @@ html.dragging::before {
 }
 
 /* select */
-.entry-list .toggle-select,
-.entry-list .select {
+.entry-list .toggle-select {
 	position: absolute;
 	inset-inline-start: 0;
 	inset-block: 0;
@@ -445,16 +444,27 @@ html.dragging::before {
 
 .entry-list .select {
 	display: none;
-	align-items: center;
-	justify-content: center;
+	position: absolute;
+	inset: 0;
+	user-select: none;
 }
 
 .entry-list .select:hover {
-	background: #cfc;
+	background: #ffffff0c;
 }
 
 .selecting .entry-list .select {
-	display: flex;
+	display: block;
+}
+
+.entry-list .select input {
+	font-size: inherit;
+	block-size: 100%;
+	margin-inline-start: 0.6em;
+}
+
+.entry-list li:has(.select input:checked) {
+	background: #cee;
 }
 
 .entry-list .detail {
@@ -643,6 +653,20 @@ html.dragging::before {
 	text-align: center;
 }
 
+.select-rect {
+	position: absolute;
+	z-index: 1;
+	display: none;
+	box-sizing: border-box;
+	background: #6662;
+	border: 1px #7777 dashed;
+	pointer-events: none;
+}
+
+.select-rect.pinching {
+	display: block;
+}
+
 .error {
 	margin: 1em;
 	padding: 1em;
@@ -722,8 +746,8 @@ html.dragging::before {
 		color: #f99;
 	}
 
-	.entry-list .select:hover {
-		background: #353;
+	.entry-list li:has(.select input:checked) {
+		background: #244;
 	}
 
 	.entry-list .detail {
