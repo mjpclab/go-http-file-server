@@ -103,7 +103,7 @@ function enableFilter() {
 		doFilter();
 	};
 	const onEscape = function () {
-		if (input.value) {
+		if (filteredText || input.value) {
 			clearTimeout(timeoutId);
 			input.value = '';
 			doFilter();
