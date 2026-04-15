@@ -57,6 +57,8 @@ type aliasHandler struct {
 	headersDirs   pathHeadersList
 
 	postMiddlewares []middleware.Middleware
+
+	themeOptions [][2]string
 }
 
 func (h *aliasHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -211,6 +213,8 @@ func newAliasHandler(
 		hideFiles: vhostCtx.hideFiles,
 
 		postMiddlewares: p.PostMiddlewares,
+
+		themeOptions: p.ThemeOptions,
 	}
 	return h
 }

@@ -22,6 +22,8 @@ const Escape = 'Escape';
 const Space = ' ';
 const KEY_EVENT_SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
 
+const options = typeof themeOptions !== strUndef ? themeOptions : {};
+
 let hasStorage = false;
 try {
 	if (typeof sessionStorage !== strUndef) hasStorage = true;
@@ -700,27 +702,51 @@ function enhanceUpload() {
 		const elProgress = elUploadStatus.querySelector('.progress');
 		const elFailedMessage = elUploadStatus.querySelector('.warn .message');
 
+		function parseSize(s) {
+			if (typeof s !== 'string' || s.length === 0) return 0;
+			const unitFactors = {'k': 1024, 'm': 1024 * 1024, 'g': 1024 * 1024 * 1024};
+			const unit = unitFactors[s[s.length - 1].toLowerCase()];
+			const n = Number(unit ? s.slice(0, -1) : s);
+			return isFinite(n) ? n * (unit || 1) : 0;
+		}
+
+		const maxBatchCount = Math.max(0, Number(options['uploadmaxbatchcount'])) || 2048;
+		const maxBatchSize = Math.max(0, parseSize(options['uploadmaxbatchsize'])) || Infinity;
+
 		function uploadBatch(files) {
-			const maxCount = 2048;
 			const fieldName = fileInput.name;
 
 			const slices = [];
 			let totalSize = 0;
 
-			let parts = null;
-			let count = Infinity;
-			for (let i = 0; i <= files.length; i++) {
-				if (count >= maxCount || i === files.length) {
-					if (i > 0) slices.push(parts);
-					if (i === files.length) break;
-					parts = new FormData();
-					count = 0;
+			let formData;
+			let batchCount;
+			let batchSize;
+			const resetBatch = () => {
+				formData = new FormData();
+				batchCount = 0;
+				batchSize = 0;
+			};
+			resetBatch();
+			for (let i = 0; i < files.length; ++i) {
+				if (batchCount >= maxBatchCount) {
+					slices.push(formData);
+					resetBatch();
 				}
 
 				const {file, relativePath} = files[i];
+				if (batchCount > 0 && batchSize + file.size > maxBatchSize) {
+					slices.push(formData);
+					resetBatch();
+				}
+
+				batchCount += 1;
+				batchSize += file.size;
 				totalSize += file.size;
-				count += 1;
-				parts.append(fieldName, file, relativePath);
+				formData.append(fieldName, file, relativePath);
+			}
+			if (batchCount > 0) {
+				slices.push(formData);
 			}
 			if (slices.length === 0) return;
 

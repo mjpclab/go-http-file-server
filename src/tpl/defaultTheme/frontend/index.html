@@ -47,9 +47,9 @@
 
 {{if .CanUpload -}}
 <script>
-	function showUploadDirFailMessage() {
-		alert('{{.Trans.UploadDirFailMessage}}');
-	}
+function showUploadDirFailMessage() {
+	alert('{{.Trans.UploadDirFailMessage}}');
+}
 </script>
 <div class="tab upload-type">
 	<button class="file active" title="{{.Trans.UploadFilesHint}}">{{.Trans.UploadFilesLabel}}</button>
@@ -76,9 +76,9 @@
 	{{end}}
 	{{if .CanDelete}}
 	<script>
-		function confirmDelete() {
-			return confirm('{{.Trans.DeleteConfirm}}');
-		}
+	function confirmDelete() {
+		return confirm('{{.Trans.DeleteConfirm}}');
+	}
 	</script>
 	<button class="delete" title="{{.Trans.DeleteLabel}}" formaction="{{.SubItemPrefix}}?delete" disabled>{{.Trans.DeleteLabel}}</button>
 	{{end}}
@@ -133,6 +133,11 @@
   {{.Trans.ErrorStatus -}}
 {{end}}</div>{{end}}
 
+{{if .ThemeOptions}}<script>
+const themeOptions = { {{range .ThemeOptions}}
+	"{{index . 0}}":"{{index . 1}}",{{end}}
+};
+</script>{{end}}
 <script type="module" src="{{.RootRelPath}}?asset=index.js" async="async"></script>
 </body>
 </html>
