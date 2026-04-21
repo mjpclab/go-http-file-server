@@ -6,5 +6,5 @@ VERSION=${VERSION#v}
 # remove branch identifier like "-go1.9"
 VERSION=$(sed -e 's/-go[0-9]*\.[0-9]*//' <<< "$VERSION")
 
-# remove additional commit count "X.Y.Z-n-gCOMMIT" -> "X.Y.Z-gCOMMIT"
-VERSION=${VERSION/-*-/-}
+# remove additional commit count and "g" prefix: "X.Y.Z-n-gCOMMIT" -> "X.Y.Z-COMMIT"
+VERSION=${VERSION/-*-g/-}

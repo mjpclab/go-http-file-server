@@ -25,7 +25,6 @@ for build in "$@"; do
 
 	echo "Building: $GOOS$OS_SUFFIX $ARCH"
 	go build -ldflags "$(getLdFlags)" -o "$TMP/$MAINNAME$(go env GOEXE)" ../main.go
-	cp ../LICENSE "$TMP"
 
 	OUTFILE="$OUTDIR/$MAINNAME-$VERSION-$GOOS$OS_SUFFIX-$GOARCH$ARCH_OPT"
 	if [ "$GOOS" == "windows" ]; then
