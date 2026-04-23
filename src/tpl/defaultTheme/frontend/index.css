@@ -3,8 +3,9 @@ html, body, form, h1, h2, h3, h4, h5, h6 {
 	padding: 0;
 }
 
-html, body {
-	background: #fff;
+html {
+	--background-color: #fff;
+	background: var(--background-color);
 }
 
 body {
@@ -315,92 +316,9 @@ html.dragging::after {
 	flex: 1 1 auto;
 }
 
-.action-list {
+.entry-form {
 	display: flex;
-	gap: 1em;
-	margin: 1em;
-	padding: 1em;
-}
-
-.action-list button {
-	--padding-start: 2.4em;
-	--padding-end: 1em;
-
-	position: relative;
-	padding-inline: var(--padding-start) var(--padding-end);
-	padding-block: 0.5em;
-	appearance: none;
-	box-sizing: content-box;
-	block-size: 1.2em;
-	line-height: 1;
-	white-space: nowrap;
-	overflow: hidden;
-	border: 2px #f5f5f5 solid;
-	background: none;
-}
-
-.action-list button:enabled:hover {
-	border-color: #ddd;
-}
-
-.action-list .archive::before,
-.action-list .archive::after {
-	--arrow-edge: 0.4em;
-	--border-width: 2px;
-	--vert-bar-offset: 0.7em;
-	--vert-bar-size: 0.8em;
-
-	content: '';
-	position: absolute;
-	inset-inline-start: calc(var(--padding-start) - 1.5em);
-	inline-size: var(--arrow-edge);
-	border: 0 #aaa solid;
-}
-
-.action-list .archive::before {
-	inset-block-start: var(--vert-bar-offset);
-	block-size: var(--vert-bar-size);
-	border-inline-end-width: var(--border-width);
-}
-
-.action-list .archive::after {
-	margin-inline-start: calc(-1.5 * var(--border-width));
-	margin-block-start: calc(-1 * var(--border-width));
-	inset-block-start: calc(var(--vert-bar-offset) + var(--vert-bar-size) - var(--arrow-edge));
-	block-size: var(--arrow-edge);
-	border-width: var(--border-width);
-	border-inline-start-color: transparent;
-	border-block-start-color: transparent;
-	transform-origin: right bottom;
-	transform: rotate(45deg);
-}
-
-.action-list .delete:enabled:hover {
-	background: #fee;
-}
-
-.action-list .delete::before,
-.action-list .delete::after {
-	content: '';
-	position: absolute;
-	inset-inline-start: calc(var(--padding-start) - 1.6em);
-	inset-block-start: 1.05em;
-	inline-size: 1em;
-	border: 1px currentColor solid;
-	border-inline-width: 0;
-	color: #800000;
-}
-
-.action-list .delete:disabled {
-	opacity: 0.5;
-}
-
-.action-list .delete::before {
-	transform: rotate(45deg);
-}
-
-.action-list .delete::after {
-	transform: rotate(-45deg);
+	flex-direction: column;
 }
 
 .entry-list {
@@ -681,6 +599,109 @@ html.dragging::after {
 	display: block;
 }
 
+.action-list {
+	position: sticky;
+	bottom: 0;
+	margin-inline: 1em;
+	padding: 1em;
+	align-self: flex-end;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 1em;
+	backdrop-filter: blur(0.5em);
+	mask-image: linear-gradient(to bottom, transparent, #000 0.6em);
+}
+
+.action-list a,
+.action-list button {
+	display: flex;
+	align-items: center;
+	padding: 0.5em;
+	box-sizing: content-box;
+	block-size: 1.2em;
+	line-height: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	border: 2px #f5f5f5 solid;
+	font-size: var(--minor-font-size);
+	background: var(--background-color);
+}
+
+.action-list a:hover,
+.action-list button:enabled:hover {
+	border-color: #ddd;
+}
+
+.action-list button {
+	position: relative;
+	appearance: none;
+
+	--padding-start: 2.4em;
+	--padding-end: 1em;
+	padding-inline: var(--padding-start) var(--padding-end);
+}
+
+.action-list button:disabled {
+	opacity: 0.5;
+}
+
+.action-list .download::before,
+.action-list .download::after {
+	--arrow-edge: 0.4em;
+	--border-width: 2px;
+	--vert-bar-offset: 0.7em;
+	--vert-bar-size: 0.8em;
+
+	content: '';
+	position: absolute;
+	inset-inline-start: calc(var(--padding-start) - 1.5em);
+	inline-size: var(--arrow-edge);
+	border: 0 #aaa solid;
+}
+
+.action-list .download::before {
+	inset-block-start: var(--vert-bar-offset);
+	block-size: var(--vert-bar-size);
+	border-inline-end-width: var(--border-width);
+}
+
+.action-list .download::after {
+	margin-inline-start: calc(-1.5 * var(--border-width));
+	margin-block-start: calc(-1 * var(--border-width));
+	inset-block-start: calc(var(--vert-bar-offset) + var(--vert-bar-size) - var(--arrow-edge));
+	block-size: var(--arrow-edge);
+	border-width: var(--border-width);
+	border-inline-start-color: transparent;
+	border-block-start-color: transparent;
+	transform-origin: right bottom;
+	transform: rotate(45deg);
+}
+
+.action-list .delete:enabled:hover {
+	background: #fee;
+}
+
+.action-list .delete::before,
+.action-list .delete::after {
+	content: '';
+	position: absolute;
+	inset-inline-start: calc(var(--padding-start) - 1.6em);
+	inset-block-start: 1.05em;
+	inline-size: 1em;
+	border: 1px currentColor solid;
+	border-inline-width: 0;
+	color: #800000;
+}
+
+.action-list .delete::before {
+	transform: rotate(45deg);
+}
+
+.action-list .delete::after {
+	transform: rotate(-45deg);
+}
+
 .error {
 	margin: 1em;
 	padding: 1em;
@@ -696,10 +717,7 @@ html.dragging::after {
 @media screen and (prefers-color-scheme: dark) {
 	html {
 		color-scheme: dark;
-	}
-
-	html, body {
-		background: #111;
+		--background-color: #111;
 	}
 
 	body {
@@ -752,10 +770,12 @@ html.dragging::after {
 		background-color: #222;
 	}
 
+	.action-list a,
 	.action-list button {
 		border-color: #222;
 	}
 
+	.action-list a:hover,
 	.action-list button:enabled:hover {
 		border-color: #555;
 	}
@@ -816,6 +836,11 @@ html.dragging::after {
 }
 
 @media screen and (max-width: 450px) {
+	.action-list {
+		gap: 0.5em;
+		padding: 0.5em;
+	}
+
 	.action-list button {
 		--padding-start: 2em;
 		--padding-end: 0.6em;
@@ -827,6 +852,10 @@ html.dragging::after {
 }
 
 @media screen and (max-width: 375px) {
+	.action-list {
+		padding-inline: 0;
+	}
+
 	.action-list button {
 		--padding-start: 1.8em;
 		--padding-end: 0.4em;

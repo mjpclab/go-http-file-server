@@ -20,7 +20,7 @@ const selectorEntryNotNone = selectorEntry + selectorNotNone;
 const Enter = 'Enter';
 const Escape = 'Escape';
 const Space = ' ';
-const KEY_EVENT_SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
+const KEY_EVENT_SKIP_TAGS = ['INPUT', 'TEXTAREA'];
 
 const options = typeof themeOptions !== strUndef ? themeOptions : {};
 
@@ -1002,11 +1002,13 @@ function enableSelectActions() {
 	const pointerMoveEvent = 'mousemove';
 	const pointerUpEvent = 'mouseup';
 
+	const btnDownloadFiles = form.querySelector('.action-list button.download.files');
 	const btnDelete = form.querySelector('.action-list .delete');
 	const btnToggleSelect = entryList.querySelector('.toggle-select');
 	const chkSelectAll = entryList.querySelector('.select-all');
 
 	const classSelecting = 'selecting';
+	const classFile = 'file';
 	const selectorItem = 'li:not(.header)';
 	const selectorVisible = `${selectorItem}${selectorNotNone}`;
 	const selectorHidden = `${selectorItem}${selectorIsNone}`;
@@ -1110,22 +1112,13 @@ function enableSelectActions() {
 		}
 	};
 
-	form.addEventListener('submit', function () {
-		if (btnDelete) {
-			btnDelete.disabled = true;
-		}
-		entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
-
-		setTimeout(() => {
-			form.classList.remove(classSelecting);
-			entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
-		}, 0);
-	});
-
 	if (btnToggleSelect) {
 		const onToggleSelect = () => {
 			form.classList.toggle(classSelecting);
 			const selecting = form.classList.contains(classSelecting);
+			if (btnDownloadFiles) {
+				btnDownloadFiles.disabled = !selecting;
+			}
 			if (btnDelete) {
 				btnDelete.disabled = !selecting;
 			}
@@ -1162,12 +1155,41 @@ function enableSelectActions() {
 		});
 	}
 
-	if (typeof confirmDelete === strFunction) {
-		if (btnDelete) {
-			btnDelete.addEventListener('click', function (e) {
-				if (!confirmDelete()) e.preventDefault();
-			});
+	const resetSelection = () => {
+		if (btnDownloadFiles) {
+			btnDownloadFiles.disabled = true;
 		}
+		if (btnDelete) {
+			btnDelete.disabled = true;
+		}
+		entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
+
+		setTimeout(() => {
+			form.classList.remove(classSelecting);
+			entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+		}, 0);
+	};
+	form.addEventListener('submit', resetSelection);
+
+	if (btnDownloadFiles) {
+		const selectorCheckedFileLink = `${selectorVisible}.${classFile}:has(${selectorChecked}) a`;
+		btnDownloadFiles.addEventListener('click', () => {
+			entryList.querySelectorAll(selectorCheckedFileLink).forEach(a => {
+				const dlLink = a.cloneNode();
+				dlLink.download = '';
+				dlLink.classList.add(classNone);
+				document.body.append(dlLink);
+				dlLink.click();
+				dlLink.remove();
+			});
+			resetSelection();
+		});
+	}
+
+	if (btnDelete && typeof confirmDelete === strFunction) {
+		btnDelete.addEventListener('click', function (e) {
+			if (!confirmDelete()) e.preventDefault();
+		});
 	}
 }
 
