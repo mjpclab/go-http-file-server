@@ -20,12 +20,12 @@ func TestFileDest(t *testing.T) {
 		t.Fatal("stat file failed")
 	}
 
-	dest := newFileDest(file.Name(), file, info)
+	dest := newFileDest(file.Name(), info)
 	dest.ch <- []byte("hello")
 	dest.ch <- []byte("world")
 
 	go dest.close()
-	dest.serve()
+	dest.serve(file)
 
 	logs, _ := os.ReadFile(file.Name())
 	if !bytes.Equal(logs, []byte("hello\nworld\n")) {

@@ -69,8 +69,9 @@ func (fMan *FileMan) ReOpen() []error {
 			continue
 		}
 		if file != nil && info != nil {
-			dest.file = file
-			dest.info = info
+			dest.ch <- nil
+			dest.info = info // notice: to avoid race condition, call NewLogger/ReOpen sequentially
+			fMan.serve(dest, file)
 		}
 	}
 
@@ -82,6 +83,15 @@ func (fMan *FileMan) Close() {
 		dest.close()
 	}
 	fMan.wg.Wait()
+}
+
+func (fMan *FileMan) serve(dest *fileDest, file *os.File) {
+	fMan.wg.Add(1)
+	go func() {
+		dest.serve(file)
+		file.Close()
+		fMan.wg.Done()
+	}()
 }
 
 func (fMan *FileMan) getWritingCh(fsPath string) (chan<- []byte, error) {
@@ -112,14 +122,9 @@ func (fMan *FileMan) getWritingCh(fsPath string) (chan<- []byte, error) {
 		return ch, nil
 	}
 
-	dest := newFileDest(fsPath, file, info)
+	dest := newFileDest(fsPath, info)
 	fMan.dests = append(fMan.dests, dest)
-
-	fMan.wg.Add(1)
-	go func() {
-		dest.serve()
-		fMan.wg.Done()
-	}()
+	fMan.serve(dest, file)
 
 	return dest.ch, nil
 }

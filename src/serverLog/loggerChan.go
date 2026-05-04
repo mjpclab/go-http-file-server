@@ -7,7 +7,8 @@ func (ch loggerChan) canLog() bool {
 }
 
 func (ch loggerChan) log(payload []byte) {
-	if ch.canLog() {
+	// `payload` MUST NOT be nil, otherwise will stop the receiver of the `ch`
+	if len(payload) > 0 && ch.canLog() {
 		ch <- payload
 	}
 }
