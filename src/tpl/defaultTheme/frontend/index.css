@@ -323,7 +323,7 @@ html.dragging::after {
 
 .entry-list {
 	margin: 1em;
-	line-height: 1.2;
+	line-height: 2em;
 	font-variant-numeric: tabular-nums;
 	font-kerning: none;
 	font-family: "Cascadia Mono", Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", "Jetbrains Mono NL", monospace;

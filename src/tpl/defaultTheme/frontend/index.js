@@ -230,26 +230,19 @@ function enableKeyboardNavigate() {
 		if (!startA) {
 			startA = container.querySelector(':focus');
 		}
-		let startLI = startA && startA.closest('li');
-		if (!startLI) {
-			startLI = isBackward ? container.firstElementChild : container.lastElementChild;
+		let siblingLI = startA && startA.closest('li');
+		if (!siblingLI) {
+			const siblingA = isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);
+			return siblingA;
 		}
 
-		let siblingLI = startLI;
-		do {
-			if (isBackward) {
-				siblingLI = siblingLI.previousElementSibling || container.lastElementChild;
-			} else {
-				siblingLI = siblingLI.nextElementSibling || container.firstElementChild;
+		while (true) {
+			siblingLI = isBackward ? siblingLI.previousElementSibling : siblingLI.nextElementSibling;
+			if (!siblingLI) return;
+			if (!siblingLI.classList.contains(classNone) && !siblingLI.classList.contains(classHeader)) {
+				const siblingA = siblingLI.querySelector('a');
+				return siblingA;
 			}
-		} while (siblingLI !== startLI && (
-			siblingLI.classList.contains(classNone) ||
-			siblingLI.classList.contains(classHeader)
-		));
-
-		if (siblingLI) {
-			const siblingA = siblingLI.querySelector('a');
-			return siblingA;
 		}
 	}
 
@@ -259,12 +252,15 @@ function enableKeyboardNavigate() {
 	}
 
 	function getLastFocusableSibling(container) {
-		let a = container.querySelector('li a');
-		a = getFocusableSibling(container, true, a);
+		let li = container.lastElementChild;
+		while (li && (li.classList.contains(classNone) || li.classList.contains(classHeader))) {
+			li = li.previousElementSibling;
+		}
+		const a = li && li.querySelector('a');
 		return a;
 	}
 
-	function getFocusablePageSibling(container, isBackward, steps, startA) {
+	function getFocusablePageSibling(container, isBackward, pageHeight, startA) {
 		if (!container.childElementCount) return;
 		if (!startA) {
 			startA = container.querySelector(':focus');
@@ -276,19 +272,24 @@ function enableKeyboardNavigate() {
 		}
 
 		let siblingLI = startLI;
+		let accumHeight = 0;
 		let sib = siblingLI;
 		while (true) {
 			sib = isBackward ? sib.previousElementSibling : sib.nextElementSibling;
 			if (!sib) break;
+
 			const available = !sib.classList.contains(classNone) &&
 				!sib.classList.contains(classHeader);
-			if (available) {
-				siblingLI = sib;
-				--steps;
-			}
-			if (steps === 0) break;
+			if (!available) continue;
+
+			const sibHeight = sib.offsetHeight;
+			if (accumHeight > 0 && accumHeight + sibHeight > pageHeight) break;
+
+			siblingLI = sib;
+			accumHeight += sibHeight;
 		}
 
+		if (accumHeight === 0) return;
 		const siblingA = siblingLI.querySelector('a');
 		return siblingA;
 	}
@@ -380,6 +381,17 @@ function enableKeyboardNavigate() {
 		return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
 	}
 
+	const elHeader = entryList.querySelector('.' + classHeader);
+	const elActionList = document.body.querySelector('.action-list') || document.createElement('div');
+	let headerHeight, bodyHeight, headerBodyHeight;
+	const updateHeights = () => {
+		headerHeight = elHeader.offsetHeight;
+		headerBodyHeight = visualViewport.height - elActionList.offsetHeight;
+		bodyHeight = headerBodyHeight - headerHeight;
+	};
+	visualViewport.addEventListener('resize', updateHeights);
+	updateHeights();
+
 	let canArrowMove;
 	let isToEnd;
 	if (IS_MAC_PLATFORM) {
@@ -397,13 +409,6 @@ function enableKeyboardNavigate() {
 			return e.ctrlKey;
 		};
 	}
-	const itemHeight = entryList.lastElementChild.offsetHeight;
-	let itemsPerPage = 1;
-	const updateItemsPerPage = () => {
-		itemsPerPage = Math.max(Math.floor(visualViewport.height / itemHeight) - 2, 1);
-	};
-	visualViewport.addEventListener('resize', updateItemsPerPage);
-	updateItemsPerPage();
 
 	function getFocusItemByKeyPress(e) {
 		if (KEY_EVENT_SKIP_TAGS.includes(e.target.tagName)) return;
@@ -423,9 +428,9 @@ function enableKeyboardNavigate() {
 						return getFocusableSibling(entryList, true);
 					}
 				case PAGE_DOWN:
-					return getFocusablePageSibling(entryList, false, itemsPerPage);
+					return getFocusablePageSibling(entryList, false, bodyHeight);
 				case PAGE_UP:
-					return getFocusablePageSibling(entryList, true, itemsPerPage);
+					return getFocusablePageSibling(entryList, true, bodyHeight);
 				case END:
 					return getLastFocusableSibling(entryList);
 				case HOME:
@@ -444,18 +449,29 @@ function enableKeyboardNavigate() {
 					}
 			}
 		}
+
 		if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
 			return lookup(entryList, e.key, e.shiftKey);
 		}
 	}
 
 	document.addEventListener('keydown', function (e) {
-		const newFocusEl = getFocusItemByKeyPress(e);
-		if (newFocusEl) {
-			e.preventDefault();
-			newFocusEl.scrollIntoView({block: 'center'});
-			newFocusEl.focus();
+		const elFocused = getFocusItemByKeyPress(e);
+		if (!elFocused) return;
+		e.preventDefault();
+
+		if (!entryList.contains(elFocused)) {
+			elFocused.focus();
+			return;
 		}
+
+		const rectFocused = elFocused.getBoundingClientRect();
+		if (rectFocused.top < headerHeight) {
+			window.scrollBy(0, rectFocused.top - headerHeight);
+		} else if (rectFocused.bottom > headerBodyHeight) {
+			window.scrollBy(0, rectFocused.bottom - headerBodyHeight);
+		}
+		elFocused.focus({preventScroll: true});
 	});
 }
 
