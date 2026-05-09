@@ -47,7 +47,7 @@ It's convenient for tools like "wget" to download files recursively.
 
 Example:
 ```shell
-wget --recursive -nc -nH -np 'http://localhost/dir/?download'
+wget -r -nc -nH -np -R 'index.html?simple*' 'http://localhost/dir/?simple'
 ```
 
 # Add download param to files

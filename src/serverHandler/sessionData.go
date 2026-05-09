@@ -119,8 +119,9 @@ type responseData struct {
 	SortState     SortState
 	Context       pathContext
 
-	Lang  string
-	Trans *i18n.Translation
+	ThemeOptions [][2]string
+	Lang         string
+	Trans        *i18n.Translation
 }
 
 func getPathEntries(currDirRelPath, path string, tailSlash bool) (pathEntries []pathEntry, rootRelPath string) {
@@ -609,6 +610,8 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 			sort:        sort,
 			defaultSort: h.defaultSort,
 		},
+
+		ThemeOptions: h.themeOptions,
 	}
 	return
 }

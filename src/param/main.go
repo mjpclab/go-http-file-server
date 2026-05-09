@@ -83,6 +83,7 @@ type Param struct {
 	HostNames    []string
 	Theme        string
 	ThemeDir     string
+	ThemeOptions [][2]string
 
 	Hsts        bool
 	HstsMaxAge  int

@@ -20,7 +20,9 @@ const selectorEntryNotNone = selectorEntry + selectorNotNone;
 const Enter = 'Enter';
 const Escape = 'Escape';
 const Space = ' ';
-const KEY_EVENT_SKIP_TAGS = ['INPUT', 'BUTTON', 'TEXTAREA'];
+const KEY_EVENT_SKIP_TAGS = ['INPUT', 'TEXTAREA'];
+
+const options = typeof themeOptions !== strUndef ? themeOptions : {};
 
 let hasStorage = false;
 try {
@@ -103,7 +105,7 @@ function enableFilter() {
 		doFilter();
 	};
 	const onEscape = function () {
-		if (input.value) {
+		if (filteredText || input.value) {
 			clearTimeout(timeoutId);
 			input.value = '';
 			doFilter();
@@ -228,26 +230,19 @@ function enableKeyboardNavigate() {
 		if (!startA) {
 			startA = container.querySelector(':focus');
 		}
-		let startLI = startA && startA.closest('li');
-		if (!startLI) {
-			startLI = isBackward ? container.firstElementChild : container.lastElementChild;
+		let siblingLI = startA && startA.closest('li');
+		if (!siblingLI) {
+			const siblingA = isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);
+			return siblingA;
 		}
 
-		let siblingLI = startLI;
-		do {
-			if (isBackward) {
-				siblingLI = siblingLI.previousElementSibling || container.lastElementChild;
-			} else {
-				siblingLI = siblingLI.nextElementSibling || container.firstElementChild;
+		while (true) {
+			siblingLI = isBackward ? siblingLI.previousElementSibling : siblingLI.nextElementSibling;
+			if (!siblingLI) return;
+			if (!siblingLI.classList.contains(classNone) && !siblingLI.classList.contains(classHeader)) {
+				const siblingA = siblingLI.querySelector('a');
+				return siblingA;
 			}
-		} while (siblingLI !== startLI && (
-			siblingLI.classList.contains(classNone) ||
-			siblingLI.classList.contains(classHeader)
-		));
-
-		if (siblingLI) {
-			const siblingA = siblingLI.querySelector('a');
-			return siblingA;
 		}
 	}
 
@@ -257,12 +252,15 @@ function enableKeyboardNavigate() {
 	}
 
 	function getLastFocusableSibling(container) {
-		let a = container.querySelector('li a');
-		a = getFocusableSibling(container, true, a);
+		let li = container.lastElementChild;
+		while (li && (li.classList.contains(classNone) || li.classList.contains(classHeader))) {
+			li = li.previousElementSibling;
+		}
+		const a = li && li.querySelector('a');
 		return a;
 	}
 
-	function getFocusablePageSibling(container, isBackward, steps, startA) {
+	function getFocusablePageSibling(container, isBackward, pageHeight, startA) {
 		if (!container.childElementCount) return;
 		if (!startA) {
 			startA = container.querySelector(':focus');
@@ -274,19 +272,24 @@ function enableKeyboardNavigate() {
 		}
 
 		let siblingLI = startLI;
+		let accumHeight = 0;
 		let sib = siblingLI;
 		while (true) {
 			sib = isBackward ? sib.previousElementSibling : sib.nextElementSibling;
 			if (!sib) break;
+
 			const available = !sib.classList.contains(classNone) &&
 				!sib.classList.contains(classHeader);
-			if (available) {
-				siblingLI = sib;
-				--steps;
-			}
-			if (steps === 0) break;
+			if (!available) continue;
+
+			const sibHeight = sib.offsetHeight;
+			if (accumHeight > 0 && accumHeight + sibHeight > pageHeight) break;
+
+			siblingLI = sib;
+			accumHeight += sibHeight;
 		}
 
+		if (accumHeight === 0) return;
 		const siblingA = siblingLI.querySelector('a');
 		return siblingA;
 	}
@@ -378,6 +381,17 @@ function enableKeyboardNavigate() {
 		return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
 	}
 
+	const elHeader = entryList.querySelector('.' + classHeader);
+	const elActionList = document.body.querySelector('.action-list') || document.createElement('div');
+	let headerHeight, bodyHeight, headerBodyHeight;
+	const updateHeights = () => {
+		headerHeight = elHeader.offsetHeight;
+		headerBodyHeight = visualViewport.height - elActionList.offsetHeight;
+		bodyHeight = headerBodyHeight - headerHeight;
+	};
+	visualViewport.addEventListener('resize', updateHeights);
+	updateHeights();
+
 	let canArrowMove;
 	let isToEnd;
 	if (IS_MAC_PLATFORM) {
@@ -395,13 +409,6 @@ function enableKeyboardNavigate() {
 			return e.ctrlKey;
 		};
 	}
-	const itemHeight = entryList.lastElementChild.offsetHeight;
-	let itemsPerPage = 1;
-	const updateItemsPerPage = () => {
-		itemsPerPage = Math.max(Math.floor(visualViewport.height / itemHeight) - 2, 1);
-	};
-	visualViewport.addEventListener('resize', updateItemsPerPage);
-	updateItemsPerPage();
 
 	function getFocusItemByKeyPress(e) {
 		if (KEY_EVENT_SKIP_TAGS.includes(e.target.tagName)) return;
@@ -421,9 +428,9 @@ function enableKeyboardNavigate() {
 						return getFocusableSibling(entryList, true);
 					}
 				case PAGE_DOWN:
-					return getFocusablePageSibling(entryList, false, itemsPerPage);
+					return getFocusablePageSibling(entryList, false, bodyHeight);
 				case PAGE_UP:
-					return getFocusablePageSibling(entryList, true, itemsPerPage);
+					return getFocusablePageSibling(entryList, true, bodyHeight);
 				case END:
 					return getLastFocusableSibling(entryList);
 				case HOME:
@@ -442,18 +449,29 @@ function enableKeyboardNavigate() {
 					}
 			}
 		}
+
 		if (!e.ctrlKey && (!e.altKey || IS_MAC_PLATFORM) && !e.metaKey && e.key.length === 1) {
 			return lookup(entryList, e.key, e.shiftKey);
 		}
 	}
 
 	document.addEventListener('keydown', function (e) {
-		const newFocusEl = getFocusItemByKeyPress(e);
-		if (newFocusEl) {
-			e.preventDefault();
-			newFocusEl.scrollIntoView({block: 'center'});
-			newFocusEl.focus();
+		const elFocused = getFocusItemByKeyPress(e);
+		if (!elFocused) return;
+		e.preventDefault();
+
+		if (!entryList.contains(elFocused)) {
+			elFocused.focus();
+			return;
 		}
+
+		const rectFocused = elFocused.getBoundingClientRect();
+		if (rectFocused.top < headerHeight) {
+			window.scrollBy(0, rectFocused.top - headerHeight);
+		} else if (rectFocused.bottom > headerBodyHeight) {
+			window.scrollBy(0, rectFocused.bottom - headerBodyHeight);
+		}
+		elFocused.focus({preventScroll: true});
 	});
 }
 
@@ -700,27 +718,51 @@ function enhanceUpload() {
 		const elProgress = elUploadStatus.querySelector('.progress');
 		const elFailedMessage = elUploadStatus.querySelector('.warn .message');
 
+		function parseSize(s) {
+			if (typeof s !== 'string' || s.length === 0) return 0;
+			const unitFactors = {'k': 1024, 'm': 1024 * 1024, 'g': 1024 * 1024 * 1024};
+			const unit = unitFactors[s[s.length - 1].toLowerCase()];
+			const n = Number(unit ? s.slice(0, -1) : s);
+			return isFinite(n) ? n * (unit || 1) : 0;
+		}
+
+		const maxBatchCount = Math.max(0, Number(options['uploadmaxbatchcount'])) || 2048;
+		const maxBatchSize = Math.max(0, parseSize(options['uploadmaxbatchsize'])) || Infinity;
+
 		function uploadBatch(files) {
-			const maxCount = 2048;
 			const fieldName = fileInput.name;
 
 			const slices = [];
 			let totalSize = 0;
 
-			let parts = null;
-			let count = Infinity;
-			for (let i = 0; i <= files.length; i++) {
-				if (count >= maxCount || i === files.length) {
-					if (i > 0) slices.push(parts);
-					if (i === files.length) break;
-					parts = new FormData();
-					count = 0;
+			let formData;
+			let batchCount;
+			let batchSize;
+			const resetBatch = () => {
+				formData = new FormData();
+				batchCount = 0;
+				batchSize = 0;
+			};
+			resetBatch();
+			for (let i = 0; i < files.length; ++i) {
+				if (batchCount >= maxBatchCount) {
+					slices.push(formData);
+					resetBatch();
 				}
 
 				const {file, relativePath} = files[i];
+				if (batchCount > 0 && batchSize + file.size > maxBatchSize) {
+					slices.push(formData);
+					resetBatch();
+				}
+
+				batchCount += 1;
+				batchSize += file.size;
 				totalSize += file.size;
-				count += 1;
-				parts.append(fieldName, file, relativePath);
+				formData.append(fieldName, file, relativePath);
+			}
+			if (batchCount > 0) {
+				slices.push(formData);
 			}
 			if (slices.length === 0) return;
 
@@ -976,11 +1018,13 @@ function enableSelectActions() {
 	const pointerMoveEvent = 'mousemove';
 	const pointerUpEvent = 'mouseup';
 
+	const btnDownloadFiles = form.querySelector('.action-list button.download.files');
 	const btnDelete = form.querySelector('.action-list .delete');
 	const btnToggleSelect = entryList.querySelector('.toggle-select');
 	const chkSelectAll = entryList.querySelector('.select-all');
 
 	const classSelecting = 'selecting';
+	const classFile = 'file';
 	const selectorItem = 'li:not(.header)';
 	const selectorVisible = `${selectorItem}${selectorNotNone}`;
 	const selectorHidden = `${selectorItem}${selectorIsNone}`;
@@ -1084,22 +1128,13 @@ function enableSelectActions() {
 		}
 	};
 
-	form.addEventListener('submit', function () {
-		if (btnDelete) {
-			btnDelete.disabled = true;
-		}
-		entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
-
-		setTimeout(() => {
-			form.classList.remove(classSelecting);
-			entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
-		}, 0);
-	});
-
 	if (btnToggleSelect) {
 		const onToggleSelect = () => {
 			form.classList.toggle(classSelecting);
 			const selecting = form.classList.contains(classSelecting);
+			if (btnDownloadFiles) {
+				btnDownloadFiles.disabled = !selecting;
+			}
 			if (btnDelete) {
 				btnDelete.disabled = !selecting;
 			}
@@ -1136,12 +1171,41 @@ function enableSelectActions() {
 		});
 	}
 
-	if (typeof confirmDelete === strFunction) {
-		if (btnDelete) {
-			btnDelete.addEventListener('click', function (e) {
-				if (!confirmDelete()) e.preventDefault();
-			});
+	const resetSelection = () => {
+		if (btnDownloadFiles) {
+			btnDownloadFiles.disabled = true;
 		}
+		if (btnDelete) {
+			btnDelete.disabled = true;
+		}
+		entryList.querySelectorAll(selectorHiddenChecked).forEach(input => input.checked = false);
+
+		setTimeout(() => {
+			form.classList.remove(classSelecting);
+			entryList.querySelectorAll(selectorChecked).forEach(input => input.checked = false);
+		}, 0);
+	};
+	form.addEventListener('submit', resetSelection);
+
+	if (btnDownloadFiles) {
+		const selectorCheckedFileLink = `${selectorVisible}.${classFile}:has(${selectorChecked}) a`;
+		btnDownloadFiles.addEventListener('click', () => {
+			entryList.querySelectorAll(selectorCheckedFileLink).forEach(a => {
+				const dlLink = a.cloneNode();
+				dlLink.download = '';
+				dlLink.classList.add(classNone);
+				document.body.append(dlLink);
+				dlLink.click();
+				dlLink.remove();
+			});
+			resetSelection();
+		});
+	}
+
+	if (btnDelete && typeof confirmDelete === strFunction) {
+		btnDelete.addEventListener('click', function (e) {
+			if (!confirmDelete()) e.preventDefault();
+		});
 	}
 }
 

@@ -46,7 +46,7 @@ GET <path>?simple[&sort=key]
 
 举例：
 ```shell
-wget --recursive -nc -nH -np 'http://localhost/dir/?download'
+wget -r -nc -nH -np -R 'index.html?simple*' 'http://localhost/dir/?simple'
 ```
 
 # 为文件添加下载参数

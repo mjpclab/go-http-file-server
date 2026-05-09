@@ -1,30 +1,37 @@
 package frontend
 
 const DefaultCss = `
-html, body {
+html, body, form, h1, h2, h3, h4, h5, h6 {
 	margin: 0;
 	padding: 0;
-	background: #fff;
+}
+
+html {
+	--background-color: #fff;
+	background: var(--background-color);
 }
 
 body {
+	--major-font-size: 1.6em;
+	--major-padding: 0.8em 0.6em;
+	--minor-font-size: 1.4em;
+	--minor-padding: 0.5em;
+
 	color: #333;
 	font-size: 0.625em;
 	font-variant-ligatures: none;
-	font-variant-numeric: tabular-nums;
-	font-kerning: none;
 	text-size-adjust: none;
 	hyphens: none;
 	padding-block-end: 2em;
 }
 
 body, input, textarea, button {
-	font-family: "Cascadia Mono", Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", "Jetbrains Mono NL", monospace;
+	font-family: system-ui, "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", sans-serif;
 }
 
-form, h1, h2, h3, h4, h5, h6 {
-	margin: 0;
-	padding: 0;
+input, textarea, button {
+	color: inherit;
+	font-size: var(--minor-font-size);
 }
 
 ul, ol, li {
@@ -113,9 +120,9 @@ html.dragging::after {
 .path-list {
 	display: flex;
 	flex-wrap: wrap;
-	font-size: 1.5em;
+	font-size: var(--major-font-size);
 	line-height: 1.2;
-	border-block-end: 1px #999 solid;
+	border-block-end: 1px #ccc solid;
 }
 
 .path-list li {
@@ -128,11 +135,16 @@ html.dragging::after {
 	align-items: center;
 	justify-content: center;
 	min-width: 1em;
+	padding: var(--minor-padding);
 	word-break: break-all;
 }
 
 .path-list li:not(:last-child) a {
 	padding-inline-end: 1.2em;
+}
+
+.path-list li:last-child a {
+	color: #666;
 }
 
 .path-list li:not(:last-child) a::after {
@@ -307,95 +319,17 @@ html.dragging::after {
 	flex: 1 1 auto;
 }
 
-.action-list {
+.entry-form {
 	display: flex;
-	gap: 1em;
-	margin: 1em;
-	padding: 1em;
-}
-
-.action-list button {
-	position: relative;
-	padding-inline: 2.4em 1em;
-	padding-block: 0.5em;
-	appearance: none;
-	box-sizing: content-box;
-	block-size: 1.2em;
-	line-height: 1;
-	white-space: nowrap;
-	overflow: hidden;
-	border: 2px #f5f5f5 solid;
-	background: none;
-}
-
-.action-list button:enabled:hover {
-	border-color: #ddd;
-}
-
-.action-list .archive::before,
-.action-list .archive::after {
-	--arrow-edge: 0.4em;
-	--border-width: 2px;
-	--vert-bar-offset: 0.7em;
-	--vert-bar-size: 0.8em;
-
-	content: '';
-	position: absolute;
-	inset-inline-start: 0.9em;
-	inline-size: var(--arrow-edge);
-	border: 0 #aaa solid;
-}
-
-.action-list .archive::before {
-	inset-block-start: var(--vert-bar-offset);
-	block-size: var(--vert-bar-size);
-	border-inline-end-width: var(--border-width);
-}
-
-.action-list .archive::after {
-	margin-inline-start: calc(-1.5 * var(--border-width));
-	margin-block-start: calc(-1 * var(--border-width));
-	inset-block-start: calc(var(--vert-bar-offset) + var(--vert-bar-size) - var(--arrow-edge));
-	block-size: var(--arrow-edge);
-	border-width: var(--border-width);
-	border-inline-start-color: transparent;
-	border-block-start-color: transparent;
-	transform-origin: right bottom;
-	transform: rotate(45deg);
-}
-
-.action-list .delete:enabled:hover {
-	background: #fee;
-}
-
-.action-list .delete::before,
-.action-list .delete::after {
-	content: '';
-	position: absolute;
-	inset-inline-start: 0.8em;
-	inset-block-start: 1.05em;
-	inline-size: 1em;
-	border: 1px currentColor solid;
-	border-inline-width: 0;
-	color: #800000;
-}
-
-.action-list .delete:disabled::before,
-.action-list .delete:disabled::after {
-	opacity: 0.5;
-}
-
-.action-list .delete::before {
-	transform: rotate(45deg);
-}
-
-.action-list .delete::after {
-	transform: rotate(-45deg);
+	flex-direction: column;
 }
 
 .entry-list {
 	margin: 1em;
-	line-height: 1.2;
+	line-height: 2em;
+	font-variant-numeric: tabular-nums;
+	font-kerning: none;
+	font-family: "Cascadia Mono", Consolas, "Lucida Console", "San Francisco Mono", Menlo, Monaco, "Andale Mono", "DejaVu Sans Mono", "Jetbrains Mono NL", monospace;
 }
 
 .entry-list li {
@@ -403,7 +337,7 @@ html.dragging::after {
 }
 
 .entry-list a {
-	padding: 0.6em;
+	padding: var(--major-padding);
 }
 
 /* select */
@@ -566,7 +500,7 @@ html.dragging::after {
 .entry-list .name {
 	flex: 1 1 0;
 	margin-inline-start: 0;
-	font-size: 1.5em;
+	font-size: var(--major-font-size);
 	white-space: pre-wrap;
 	word-break: break-all;
 }
@@ -601,7 +535,7 @@ html.dragging::after {
 
 .entry-list .header .field {
 	display: inline-block;
-	font-size: 1.5em;
+	font-size: var(--minor-font-size);
 	color: #808080;
 	overflow: hidden;
 }
@@ -627,6 +561,7 @@ html.dragging::after {
 .entry-list .header .filter label input {
 	flex: 1 1 0;
 	inline-size: 0;
+	font-size: var(--minor-font-size);
 }
 
 .entry-list .header .filter label input:placeholder-shown {
@@ -667,6 +602,109 @@ html.dragging::after {
 	display: block;
 }
 
+.action-list {
+	position: sticky;
+	bottom: 0;
+	margin-inline: 1em;
+	padding: 1em;
+	align-self: flex-end;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 1em;
+	backdrop-filter: blur(0.5em);
+	mask-image: linear-gradient(to bottom, transparent, #000 0.6em);
+}
+
+.action-list a,
+.action-list button {
+	display: flex;
+	align-items: center;
+	padding: 0.5em;
+	box-sizing: content-box;
+	block-size: 1.2em;
+	line-height: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	border: 2px #f5f5f5 solid;
+	font-size: var(--minor-font-size);
+	background: var(--background-color);
+}
+
+.action-list a:hover,
+.action-list button:enabled:hover {
+	border-color: #ddd;
+}
+
+.action-list button {
+	position: relative;
+	appearance: none;
+
+	--padding-start: 2.4em;
+	--padding-end: 1em;
+	padding-inline: var(--padding-start) var(--padding-end);
+}
+
+.action-list button:disabled {
+	opacity: 0.5;
+}
+
+.action-list .download::before,
+.action-list .download::after {
+	--arrow-edge: 0.4em;
+	--border-width: 2px;
+	--vert-bar-offset: 0.7em;
+	--vert-bar-size: 0.8em;
+
+	content: '';
+	position: absolute;
+	inset-inline-start: calc(var(--padding-start) - 1.5em);
+	inline-size: var(--arrow-edge);
+	border: 0 #aaa solid;
+}
+
+.action-list .download::before {
+	inset-block-start: var(--vert-bar-offset);
+	block-size: var(--vert-bar-size);
+	border-inline-end-width: var(--border-width);
+}
+
+.action-list .download::after {
+	margin-inline-start: calc(-1.5 * var(--border-width));
+	margin-block-start: calc(-1 * var(--border-width));
+	inset-block-start: calc(var(--vert-bar-offset) + var(--vert-bar-size) - var(--arrow-edge));
+	block-size: var(--arrow-edge);
+	border-width: var(--border-width);
+	border-inline-start-color: transparent;
+	border-block-start-color: transparent;
+	transform-origin: right bottom;
+	transform: rotate(45deg);
+}
+
+.action-list .delete:enabled:hover {
+	background: #fee;
+}
+
+.action-list .delete::before,
+.action-list .delete::after {
+	content: '';
+	position: absolute;
+	inset-inline-start: calc(var(--padding-start) - 1.6em);
+	inset-block-start: 1.05em;
+	inline-size: 1em;
+	border: 1px currentColor solid;
+	border-inline-width: 0;
+	color: #800000;
+}
+
+.action-list .delete::before {
+	transform: rotate(45deg);
+}
+
+.action-list .delete::after {
+	transform: rotate(-45deg);
+}
+
 .error {
 	margin: 1em;
 	padding: 1em;
@@ -682,10 +720,7 @@ html.dragging::after {
 @media screen and (prefers-color-scheme: dark) {
 	html {
 		color-scheme: dark;
-	}
-
-	html, body {
-		background: #111;
+		--background-color: #111;
 	}
 
 	body {
@@ -712,9 +747,18 @@ html.dragging::after {
 		border-color: #555;
 	}
 
+	.path-list {
+		border-block-end-color: #333;
+	}
+
 	.path-list li:not(:last-child) a::after {
 		color: #555;
 	}
+
+	.path-list li:last-child a {
+		color: #aaa;
+	}
+
 
 	.tab button:hover {
 		background-color: #181818;
@@ -729,10 +773,12 @@ html.dragging::after {
 		background-color: #222;
 	}
 
+	.action-list a,
 	.action-list button {
 		border-color: #222;
 	}
 
+	.action-list a:hover,
 	.action-list button:enabled:hover {
 		border-color: #555;
 	}
@@ -793,12 +839,31 @@ html.dragging::after {
 }
 
 @media screen and (max-width: 450px) {
+	.action-list {
+		gap: 0.5em;
+		padding: 0.5em;
+	}
+
+	.action-list button {
+		--padding-start: 2em;
+		--padding-end: 0.6em;
+	}
+
 	.entry-list .header .time {
 		inline-size: 4.05em;
 	}
 }
 
 @media screen and (max-width: 375px) {
+	.action-list {
+		padding-inline: 0;
+	}
+
+	.action-list button {
+		--padding-start: 1.8em;
+		--padding-end: 0.4em;
+	}
+
 	.entry-list .header .filter {
 		display: none;
 	}
@@ -819,6 +884,10 @@ html.dragging::after {
 }
 
 @media print {
+	body {
+		padding-block-end: initial;
+	}
+
 	.login, .panel, .tab, .action-list, .toggle-select {
 		display: none;
 	}

@@ -35,6 +35,12 @@ func (ctx pathContext) QueryStringOfSort(sort string) string {
 	return copiedCtx.QueryString()
 }
 
+func (ctx pathContext) QueryStringOfDownload(download bool) string {
+	copiedCtx := ctx
+	copiedCtx.download = download
+	return copiedCtx.QueryString()
+}
+
 func (ctx pathContext) SubFileQueryString() string {
 	if ctx.download {
 		return "?download"
