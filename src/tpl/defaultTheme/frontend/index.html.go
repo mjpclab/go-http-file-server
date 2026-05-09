@@ -14,7 +14,6 @@ const DefaultTplStr = `
 <body class="{{if .IsRoot}}root-dir{{else}}sub-dir{{end}}">
 {{$contextQueryString := .Context.QueryString -}}
 {{$SubItemPrefix := .SubItemPrefix -}}
-{{$canSelect := and (or .CanArchive .CanDelete) (len .SubItemsHtml) -}}
 {{if not .IsSimple -}}
 <ol class="path-list" translate="no">
 	{{range .Paths -}}
@@ -50,9 +49,9 @@ const DefaultTplStr = `
 
 {{if .CanUpload -}}
 <script>
-	function showUploadDirFailMessage() {
-		alert('{{.Trans.UploadDirFailMessage}}');
-	}
+function showUploadDirFailMessage() {
+	alert('{{.Trans.UploadDirFailMessage}}');
+}
 </script>
 <div class="tab upload-type">
 	<button class="file active" title="{{.Trans.UploadFilesHint}}">{{.Trans.UploadFilesLabel}}</button>
@@ -70,23 +69,6 @@ const DefaultTplStr = `
 {{end -}}
 {{end -}}
 <form method="POST" class="entry-form" autocomplete="off">
-{{if and $canSelect (not .IsSimple)}}
-<div class="action-list">
-	{{if .CanArchive}}
-	<button class="archive" title="{{.Trans.ArchiveLabel}} .tar" formaction="{{.SubItemPrefix}}?tar">.tar</button>
-	<button class="archive" title="{{.Trans.ArchiveLabel}} .tgz" formaction="{{.SubItemPrefix}}?tgz">.tgz</button>
-	<button class="archive" title="{{.Trans.ArchiveLabel}} .zip" formaction="{{.SubItemPrefix}}?zip">.zip</button>
-	{{end}}
-	{{if .CanDelete}}
-	<script>
-		function confirmDelete() {
-			return confirm('{{.Trans.DeleteConfirm}}');
-		}
-	</script>
-	<button class="delete" title="{{.Trans.DeleteLabel}}" formaction="{{.SubItemPrefix}}?delete" disabled>{{.Trans.DeleteLabel}}</button>
-	{{end}}
-</div>
-{{end}}
 <ul class="entry-list">
 	{{if not .IsSimple -}}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
@@ -101,7 +83,7 @@ const DefaultTplStr = `
 		<a class="field size" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextSizeSort}}">{{.Trans.ListSizeLabel}}{{if eq $sortKey "s"}}&uarr;{{else if eq $sortKey "S"}}&darr;{{end}}</a>
 		<a class="field time" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTimeSort}}">{{.Trans.ListTimeLabel}}{{if eq $sortKey "t"}}&uarr;{{else if eq $sortKey "T"}}&darr;{{end}}</a>
 		</div>
-		{{if $canSelect}}<button type="button" class="toggle-select" title="{{.Trans.ToggleSelectLabel}}"></button>{{end}}
+		{{if .SubItemsHtml}}<button type="button" class="toggle-select" title="{{.Trans.ToggleSelectLabel}}"></button>{{end}}
 	</li>
 	<li class="parent">
 		<a href="{{if .IsRoot}}./{{else}}../{{end}}{{$contextQueryString}}" class="detail">
@@ -109,7 +91,7 @@ const DefaultTplStr = `
 		<span class="field size"></span>
 		<span class="field time"></span>
 		</a>
-		{{if $canSelect}}<label class="select" title="{{.Trans.SelectAllLabel}}"><input type="checkbox" class="select-all"></label>{{end}}
+		{{if .SubItemsHtml}}<label class="select" title="{{.Trans.SelectAllLabel}}"><input type="checkbox" class="select-all"></label>{{end}}
 	</li>
 	{{end -}}
 	{{range .SubItemsHtml -}}
@@ -119,10 +101,33 @@ const DefaultTplStr = `
 		<span class="field size">{{.DisplaySize}}</span>
 		<span class="field time">{{.DisplayTime}}</span>
 		</a>
-		{{if $canSelect}}<label class="select"><input type="checkbox" name="name" value="{{.Name}}"></label>{{end}}
+		<label class="select"><input type="checkbox" name="name" value="{{.Name}}"></label>
 	</li>
 	{{end -}}
 </ul>
+{{if and .SubItemsHtml (not .IsSimple)}}
+<section class="action-list">
+	{{if .CanArchive -}}
+	<button class="download archive" title="{{.Trans.ArchiveHint}} .tar" formaction="{{.SubItemPrefix}}?tar">.tar</button>
+	<button class="download archive" title="{{.Trans.ArchiveHint}} .tgz" formaction="{{.SubItemPrefix}}?tgz">.tgz</button>
+	<button class="download archive" title="{{.Trans.ArchiveHint}} .zip" formaction="{{.SubItemPrefix}}?zip">.zip</button>
+	{{end -}}
+	{{if .CanDelete -}}
+	<script>
+	function confirmDelete() {
+		return confirm('{{.Trans.DeleteConfirm}}');
+	}
+	</script>
+	<button class="delete" title="{{.Trans.DeleteLabel}}" formaction="{{.SubItemPrefix}}?delete" disabled>{{.Trans.DeleteLabel}}</button>
+	{{end -}}
+	<button type="button" class="download files" title="{{.Trans.DownloadHint}}" disabled>☑</button>
+	{{if .IsDownload -}}
+	<a href="{{.SubItemPrefix}}{{.Context.QueryStringOfDownload false}}" title="{{.Trans.LeaveDownloadModeHint}}">◀</a>
+	{{else -}}
+	<a href="{{.SubItemPrefix}}{{.Context.QueryStringOfDownload true}}" title="{{.Trans.EnterDownloadModeHint}}">▼</a>
+	{{end -}}
+</section>
+{{end}}
 </form>
 
 {{if ne .Status 200}}<div class="error">{{.Status}}
@@ -136,6 +141,11 @@ const DefaultTplStr = `
   {{.Trans.ErrorStatus -}}
 {{end}}</div>{{end}}
 
+{{if .ThemeOptions}}<script>
+const themeOptions = { {{range .ThemeOptions}}
+	"{{index . 0}}":"{{index . 1}}",{{end}}
+};
+</script>{{end}}
 <script type="module" src="{{.RootRelPath}}?asset=index.js" async="async"></script>
 </body>
 </html>
