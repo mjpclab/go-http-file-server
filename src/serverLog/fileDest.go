@@ -6,17 +6,15 @@ import (
 
 type fileDest struct {
 	fsPath string
-	file   *os.File
 	info   os.FileInfo
 	ch     chan []byte
 }
 
-func newFileDest(fsPath string, file *os.File, info os.FileInfo) *fileDest {
+func newFileDest(fsPath string, info os.FileInfo) *fileDest {
 	ch := make(chan []byte, logQueueSize)
 
 	dest := &fileDest{
 		fsPath: fsPath,
-		file:   file,
 		info:   info,
 		ch:     ch,
 	}
@@ -24,15 +22,18 @@ func newFileDest(fsPath string, file *os.File, info os.FileInfo) *fileDest {
 	return dest
 }
 
-func (dest *fileDest) serve() {
+func (dest *fileDest) serve(file *os.File) {
 	for payload := range dest.ch {
+		if payload == nil {
+			break
+		}
+
 		payload = append(payload, logEnding)
-		_, e := dest.file.Write(payload)
+		_, e := file.Write(payload)
 		if e != nil {
 			os.Stderr.WriteString(e.Error() + "\n")
 		}
 	}
-	dest.file.Close()
 }
 
 func (dest *fileDest) close() {

@@ -298,11 +298,14 @@ ghfs [options]
     Theme contents will be evaluated for each request.
     It is convenient for developing themes.
 
-    Notes for theme options:
+    Notes for theme source options:
         --theme and --theme-dir are mutually exclusive.
         --theme-dir is prior.
         Page template filename is always "index.html".
         Use "?asset=<asset-path>" to reference an asset in theme.
+--theme-option <separator><key><separator><value> ...
+    Configurable key-value pair options pass to the theme.
+    The available keys are defined by the theme itself.
 
 --hsts [<max-age>]
     Enable HSTS(HTTP Strict Transport Security).
@@ -373,7 +376,9 @@ Defaults to 256.
 To prevent outputting additional information on console, like accessible URLs, etc,
 set value to "1".
 
-## Shortcut key for built-in theme
+## Built-in theme
+
+### Shortcut keys
 - `←`, `→`: move focus between path items
 - `Ctrl`/`Opt` + `←`: move focus to first path item
 - `Ctrl`/`Opt` + `→`: move focus to last path item
@@ -384,3 +389,8 @@ set value to "1".
 - Repeat inputting same character will look for next file that prefixes with it. + `Shift` for reverse direction.
 - Non-repeat inputs will be remembered as a string in short time to look for next file prefix match. + `Shift` for reverse direction.
 - When upload is enabled, pasting(`Ctrl`/`Cmd` + `v`) image or text content will upload that content as a file.
+
+### Theme options
+
+- `uploadmaxbatchcount`(=2048): Maximum number of files to upload in a sub batch
+- `uploadmaxbatchsize`: Maximum size of a sub batch in bytes, e.g. "100M", "1G", unset or 0 for no limit

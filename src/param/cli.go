@@ -198,6 +198,9 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagValue("themedir", "--theme-dir", "GHFS_THEME_DIR", "", "external theme directory")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagValues("themeoptions", "--theme-option", "", nil, "theme option, <sep><key><sep><value>, e.g. :uploadbatchmaxsize:100m")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlagValue("hsts", "--hsts", "GHFS_HSTS", "", "enable HSTS(HTTP Strict Transport Security)")
 	serverError.CheckFatal(err)
 
@@ -344,6 +347,10 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		// aliases
 		strAlias, _ := result.GetStrings("aliases")
 		param.Aliases = SplitAllKeyValue(strAlias)
+
+		// theme options
+		strThemeOptions, _ := result.GetStrings("themeoptions")
+		param.ThemeOptions = SplitAllKeyValue(strThemeOptions)
 
 		// force dir slash
 		if result.HasKey("autodirslash") {

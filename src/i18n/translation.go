@@ -27,7 +27,10 @@ type Translation struct {
 	ToggleSelectLabel string
 	SelectAllLabel    string
 
-	ArchiveLabel string
+	ArchiveHint           string
+	DownloadHint          string
+	EnterDownloadModeHint string
+	LeaveDownloadModeHint string
 
 	DeleteLabel   string
 	DeleteConfirm string
@@ -65,7 +68,10 @@ var translationEnUs = Translation{
 	ToggleSelectLabel: "Toggle select",
 	SelectAllLabel:    "Select all",
 
-	ArchiveLabel: "Archive",
+	ArchiveHint:           "Archive",
+	DownloadHint:          "Download",
+	EnterDownloadModeHint: "Enter download mode",
+	LeaveDownloadModeHint: "Leave download mode",
 
 	DeleteLabel:   "Delete",
 	DeleteConfirm: "Confirm delete?",
@@ -103,7 +109,10 @@ var translationZhSimp = Translation{
 	ToggleSelectLabel: "切换勾选",
 	SelectAllLabel:    "全选",
 
-	ArchiveLabel: "打包",
+	ArchiveHint:           "打包",
+	DownloadHint:          "下载",
+	EnterDownloadModeHint: "进入下载模式",
+	LeaveDownloadModeHint: "离开下载模式",
 
 	DeleteLabel:   "删除",
 	DeleteConfirm: "确认删除吗？",
@@ -141,7 +150,10 @@ var translationZhTrad = Translation{
 	ToggleSelectLabel: "切換勾選",
 	SelectAllLabel:    "全選",
 
-	ArchiveLabel: "打包",
+	ArchiveHint:           "打包",
+	DownloadHint:          "下載",
+	EnterDownloadModeHint: "進入下載模式",
+	LeaveDownloadModeHint: "離開下載模式",
 
 	DeleteLabel:   "刪除",
 	DeleteConfirm: "確認刪除嗎？",
