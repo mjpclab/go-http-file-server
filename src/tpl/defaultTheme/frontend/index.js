@@ -22,7 +22,7 @@ const Escape = 'Escape';
 const Space = ' ';
 const KEY_EVENT_SKIP_TAGS = ['INPUT', 'TEXTAREA'];
 
-const options = typeof themeOptions !== strUndef ? themeOptions : {};
+let options = {};
 
 let hasStorage = false;
 try {
@@ -1209,9 +1209,13 @@ function enableSelectActions() {
 	}
 }
 
-enableFilter();
-keepFocusOnBackwardForward();
-focusChildOnNavUp();
-enableKeyboardNavigate();
-enhanceUpload();
-enableSelectActions();
+export default function start(themeOptions) {
+	options = themeOptions || options;
+
+	enableFilter();
+	keepFocusOnBackwardForward();
+	focusChildOnNavUp();
+	enableKeyboardNavigate();
+	enhanceUpload();
+	enableSelectActions();
+}
