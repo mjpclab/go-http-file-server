@@ -1,8 +1,9 @@
 package src
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"strconv"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 func printAccessibleURLs(accessibleUrls [][]string) {

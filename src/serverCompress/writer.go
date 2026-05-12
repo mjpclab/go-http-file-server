@@ -4,8 +4,9 @@ import (
 	"compress/flate"
 	"compress/gzip"
 	"io"
-	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"net/http"
+
+	"mjpclab.dev/ghfs/src/acceptHeaders"
 )
 
 const contentIdentity = "identity"

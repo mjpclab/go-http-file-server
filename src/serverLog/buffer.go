@@ -1,8 +1,9 @@
 package serverLog
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"time"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 const logEnding = '\n'

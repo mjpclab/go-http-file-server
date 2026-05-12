@@ -1,10 +1,11 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 func newRestrictAccesses(pathHostsList [][]string) pathStringsList {

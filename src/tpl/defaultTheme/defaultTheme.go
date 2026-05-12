@@ -2,8 +2,9 @@ package defaultTheme
 
 import (
 	_ "embed"
-	"mjpclab.dev/ghfs/src/tpl/theme"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/tpl/theme"
 )
 
 //go:embed frontend/index.html

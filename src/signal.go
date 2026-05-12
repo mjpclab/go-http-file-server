@@ -1,11 +1,12 @@
 package src
 
 import (
-	"mjpclab.dev/ghfs/src/app"
-	"mjpclab.dev/ghfs/src/serverError"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"mjpclab.dev/ghfs/src/app"
+	"mjpclab.dev/ghfs/src/serverError"
 )
 
 func cleanupOnEnd(appInst *app.App) {

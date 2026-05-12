@@ -1,8 +1,9 @@
 package serverCompress
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 var compressibleTypes = []string{

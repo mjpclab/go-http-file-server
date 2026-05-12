@@ -1,11 +1,12 @@
 package param
 
 import (
+	"os"
+	"path/filepath"
+
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/serverError"
 	"mjpclab.dev/ghfs/src/util"
-	"os"
-	"path/filepath"
 )
 
 type Param struct {
