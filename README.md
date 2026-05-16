@@ -1,9 +1,11 @@
 # Go HTTP File Server
+
 Simple command line based HTTP file server to share local file system.
 
 ![Go HTTP File Server pages](doc/ghfs.gif)
 
 ## Usage Features
+
 - More friendly UI than Apache/Nginx directory index page
 - Adapt for mobile display
 - Single executable file
@@ -13,97 +15,117 @@ Simple command line based HTTP file server to share local file system.
 - Support location alias(mount another directory to URL location)
 
 ## Tech Features
+
 - Monolithic architecture
 - Stateless
 - Zero third-party dependency
 
 ## Compile
+
 Minimal required Go version is 1.9.
-Ensure this project is located at `GOPATH/src/mjpclab.dev/ghfs`.
-```sh
+Ensure this project is located at `GOPATH/src/mjpclab.dev/ghfs/`.
+
+```shell
 go build main.go
 ```
+
 Will generate executable file "main" in current directory.
 
-If default html template files under `src/tpl` changed, need to re-embed templates into go files:
+If built-in theme files under `src/tpl/defaultTheme/frontend/` changed, need to re-embed templates into go files:
+
 ```bash
 cd src
 make tpls
 ```
+
 Then compile the project like above.
 
 ## Examples
+
 Start server on port 8080, root directory is current working directory:
-```sh
+
+```shell
 ghfs -l 8080
 ``` 
 
 Start server on port 8080, root directory is /usr/share/doc:
-```sh
+
+```shell
 ghfs -l 8080 -r /usr/share/doc
 ```
 
 Start server on default port, root directory is /var/tmp, and allow upload files into ./data:
-```sh
+
+```shell
 ghfs -r /var/tmp -u /data
 # or
 ghfs -r /var/tmp --upload-dir /var/tmp/data
 ```
 
 Share files from /etc, but also mount /usr/share/doc to URL path /doc
-```sh
+
+```shell
 ghfs -r /etc -a :/doc:/usr/share/doc
 ```
 
 Start server on port 8080, serve for HTTPS protocol
-```sh
+
+```shell
 ghfs -k /path/to/certificate/key -c /path/to/certificate/file -l 8080
 ```
 
 Do not show hidden unix directories and files that starts with `.`.
 Tips: wrap wildcard by quotes to prevent expanding by shell.
-```sh
+
+```shell
 ghfs -H '.*'
 ```
 
 Show access log on console:
-```sh
+
+```shell
 ghfs -L -
 ```
 
 Http Basic Auth:
+
 - requires authentication for URL /files
 - username: user1, password: pass1
 - username: user2, password: pass2
-```sh
+
+```shell
 ghfs --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
 ```
 
 Share /data, grant upload permission on /data/upload to user "admin" and "root", others are read only:
-```sh
+
+```shell
 ghfs -r /data --user admin:adminpass root:rootpass user1:user1pass user2:user2pass --upload-user :/upload:admin:root
 ```
 
 Start 2 virtual hosts:
+
 - server 1
-    - listen on port 80 for http
-    - listen on port 443 for https
-        - cert file: /cert/server1.pem
-        - key file: /cert/server1.key
-    - hostname: server1.example.com
-    - root directory: /var/www/server1
+	- listen on port 80 for http
+	- listen on port 443 for https
+		- cert file: /cert/server1.pem
+		- key file: /cert/server1.key
+	- hostname: server1.example.com
+	- root directory: /var/www/server1
 - server 2
-    - listen on port 80 for http
-    - listen on port 443 for https
-        - cert file: /cert/server2.pem
-        - key file: /cert/server2.key
-    - hostname: server2.example.com
-    - root directory: /var/www/server2
-```sh
+	- listen on port 80 for http
+	- listen on port 443 for https
+		- cert file: /cert/server2.pem
+		- key file: /cert/server2.key
+	- hostname: server2.example.com
+	- root directory: /var/www/server2
+
+```shell
 ghfs --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.key --hostname server1.example.com -r /var/www/server1 ,, --listen-plain 80 --listen-tls 443 -c /cert/server2.pem -k /cert/server2.key --hostname server2.example.com -r /var/www/server2
 ```
 
 ## Usage
+
 ```
 ghfs [options]
 
@@ -362,23 +384,28 @@ ghfs [options]
 ## Environment variables
 
 ### GHFS_CPU_PROFILE_FILE
+
 Generate Go's CPU pprof profile to specific file path.
 
 ### GHFS_PID_FILE
+
 Specify PID file path. PID will be written into the file on application startup.
 
 ### GHFS_LOG_QUEUE_SIZE
+
 Specify the size of queue to hold logs that have not been written to destination.
 If it is full, sending logs will be blocked until the queue has free space.
 Defaults to 256.
 
 ### GHFS_QUIET
+
 To prevent outputting additional information on console, like accessible URLs, etc,
 set value to "1".
 
 ## Built-in theme
 
 ### Shortcut keys
+
 - `←`, `→`: move focus between path items
 - `Ctrl`/`Opt` + `←`: move focus to first path item
 - `Ctrl`/`Opt` + `→`: move focus to last path item

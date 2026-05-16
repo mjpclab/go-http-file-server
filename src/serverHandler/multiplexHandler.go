@@ -1,8 +1,9 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/param"
 	"net/http"
+
+	"mjpclab.dev/ghfs/src/param"
 )
 
 type multiplexHandler []*aliasHandler

@@ -46,7 +46,7 @@ GET <path>?simple[&sort=key]
 
 举例：
 ```shell
-wget -r -nc -nH -np -R 'index.html?simple*' 'http://localhost/dir/?simple'
+wget -r -nc -nH -np -l 30 -R 'index.html*' 'http://localhost/dir/?simple'
 ```
 
 # 为文件添加下载参数
@@ -56,7 +56,7 @@ GET <path>?download[&sort=key]
 为页面中的文件链接添加下载参数，使其可被下载，而不是显示其内容。
 
 # 下载单个文件
-通过输出`Content-Disposition`头，通知用户代理下载文件而不是显示其内容。
+通过输出`Content-Disposition`头，通知客户端下载文件而不是显示其内容。
 ```
 GET <path/to/file>?download[=filename]
 ```

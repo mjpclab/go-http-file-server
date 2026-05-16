@@ -1,14 +1,15 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/user"
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"regexp"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/user"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 func getQueryPrefix(rawQuery string) (queryPrefix string) {

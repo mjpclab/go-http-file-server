@@ -1,10 +1,11 @@
 package param
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 // SplitKeyValues

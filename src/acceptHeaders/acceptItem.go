@@ -1,9 +1,10 @@
 package acceptHeaders
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"strconv"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 const qualitySign = "q="

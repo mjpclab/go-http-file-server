@@ -2,9 +2,10 @@ package serverHandler
 
 import (
 	"bytes"
-	"mjpclab.dev/ghfs/src/util"
 	"os"
 	"sort"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 // compare dir func

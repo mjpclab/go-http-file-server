@@ -1,8 +1,9 @@
 package setting
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"os"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type Setting struct {

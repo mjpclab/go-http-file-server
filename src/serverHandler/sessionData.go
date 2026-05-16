@@ -2,15 +2,16 @@ package serverHandler
 
 import (
 	"html/template"
-	"mjpclab.dev/ghfs/src/acceptHeaders"
-	"mjpclab.dev/ghfs/src/i18n"
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/acceptHeaders"
+	"mjpclab.dev/ghfs/src/i18n"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type redirectAction int

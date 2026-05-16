@@ -1,8 +1,9 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type alias struct {

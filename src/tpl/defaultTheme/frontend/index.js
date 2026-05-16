@@ -22,7 +22,7 @@ const Escape = 'Escape';
 const Space = ' ';
 const KEY_EVENT_SKIP_TAGS = ['INPUT', 'TEXTAREA'];
 
-const options = typeof themeOptions !== strUndef ? themeOptions : {};
+let options = {};
 
 let hasStorage = false;
 try {
@@ -729,10 +729,10 @@ function enhanceUpload() {
 		const maxBatchCount = Math.max(0, Number(options['uploadmaxbatchcount'])) || 2048;
 		const maxBatchSize = Math.max(0, parseSize(options['uploadmaxbatchsize'])) || Infinity;
 
-		function uploadBatch(files) {
+		function uploadByBatches(files) {
 			const fieldName = fileInput.name;
 
-			const slices = [];
+			const batches = [];
 			let totalSize = 0;
 
 			let formData;
@@ -746,13 +746,13 @@ function enhanceUpload() {
 			resetBatch();
 			for (let i = 0; i < files.length; ++i) {
 				if (batchCount >= maxBatchCount) {
-					slices.push(formData);
+					batches.push({formData, size: batchSize});
 					resetBatch();
 				}
 
 				const {file, relativePath} = files[i];
 				if (batchCount > 0 && batchSize + file.size > maxBatchSize) {
-					slices.push(formData);
+					batches.push({formData, size: batchSize});
 					resetBatch();
 				}
 
@@ -762,27 +762,27 @@ function enhanceUpload() {
 				formData.append(fieldName, file, relativePath);
 			}
 			if (batchCount > 0) {
-				slices.push(formData);
+				batches.push({formData, size: batchSize});
 			}
-			if (slices.length === 0) return;
+			if (batches.length === 0) return;
 
 			let finishedSize = 0;
-			elProgress.style.width = '';
+			let currentSize = 0;
+			elProgress.style.inlineSize = '';
 			const onProgress = e => {
-				if (e.lengthComputable) {
-					const percent = 100 * (finishedSize + e.loaded) / totalSize;
-					elProgress.style.width = percent + '%';
+				if (e.lengthComputable && e.total > 0) {
+					const batchRatio = e.loaded / e.total;
+					const percent = 100 * (finishedSize + batchRatio * currentSize) / totalSize;
+					elProgress.style.inlineSize = percent + '%';
 				}
 			};
-			const onUploadSuccess = e => {
-				if (e.lengthComputable) {
-					finishedSize += e.total;
-				}
+			const onUploadSuccess = () => {
+				finishedSize += currentSize;
 			};
 			const {method, action} = form;
 			return new Promise(function (resolve, reject) {
 				const onFail = e => {
-					slices.length = 0;
+					batches.length = 0;
 					reject(e);
 				};
 				const onDownloadSuccess = e => {
@@ -791,16 +791,18 @@ function enhanceUpload() {
 						onFail({message: e.target.statusText || status});
 						return;
 					}
-					if (slices.length) {
-						uploadSlice(slices.shift());
+					if (batches.length) {
+						uploadBatch(batches.shift());
 						return;
 					}
 
-					elProgress.style.width = '100%';
+					elProgress.style.inlineSize = '100%';
 					resolve();
 				};
 
-				function uploadSlice(parts) {
+				function uploadBatch(batch) {
+					currentSize = batch.size;
+
 					const xhr = new XMLHttpRequest();
 					xhr.upload.addEventListener('progress', onProgress);
 					xhr.upload.addEventListener('error', onFail);
@@ -811,14 +813,14 @@ function enhanceUpload() {
 					xhr.addEventListener('load', onDownloadSuccess);
 					xhr.open(method, action);
 					xhr.setRequestHeader('accept', 'application/json');
-					xhr.send(parts);
+					xhr.send(batch.formData);
 				}
 
-				uploadSlice(slices.shift());
+				uploadBatch(batches.shift());
 			});
 		}
 
-		async function tryUploadBatch(getFilesResult) {
+		async function tryUploadByBatches(getFilesResult) {
 			if (!uploading) {
 				elUploadStatus.classList.remove(classFailed);
 				elUploadStatus.classList.add(classUploading);
@@ -836,7 +838,7 @@ function enhanceUpload() {
 					switchToFileMode();
 				}
 
-				await uploadBatch(files);
+				await uploadByBatches(files);
 				if (uploading === localUploading) {
 					location.reload();
 				}
@@ -856,11 +858,11 @@ function enhanceUpload() {
 		}
 
 		async function uploadFilesProgressively(filesResult) {
-			await tryUploadBatch(() => filesResult);
+			await tryUploadByBatches(() => filesResult);
 		}
 
 		async function uploadItemsProgressively(dataTransferItems) {
-			await tryUploadBatch(() => itemsToFiles(dataTransferItems));
+			await tryUploadByBatches(() => itemsToFiles(dataTransferItems));
 		}
 
 		return {uploadFilesProgressively, uploadItemsProgressively};
@@ -1209,9 +1211,13 @@ function enableSelectActions() {
 	}
 }
 
-enableFilter();
-keepFocusOnBackwardForward();
-focusChildOnNavUp();
-enableKeyboardNavigate();
-enhanceUpload();
-enableSelectActions();
+export default function start(themeOptions) {
+	options = themeOptions || options;
+
+	enableFilter();
+	keepFocusOnBackwardForward();
+	focusChildOnNavUp();
+	enableKeyboardNavigate();
+	enhanceUpload();
+	enableSelectActions();
+}

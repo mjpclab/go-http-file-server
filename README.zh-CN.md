@@ -1,9 +1,11 @@
 # Go HTTP File Server
+
 基于命令行的HTTP文件共享服务器。
 
 ![Go HTTP File Server pages](doc/ghfs.gif)
 
 ## 软件特色
+
 - 比Apache/Nginx更友好的目录列表
 - 适配移动设备显示
 - 单一可执行文件
@@ -13,96 +15,116 @@
 - 支持目录别名（将另一个目录挂载到某个URL路径）
 
 ## 技术特色
+
 - 单体架构
 - 无状态
 - 零第三方依赖
 
 ## 编译
+
 至少需要Go 1.9版本。
-确保该项目位于 `GOPATH/src/mjpclab.dev/ghfs`。
-```sh
+确保该项目位于 `GOPATH/src/mjpclab.dev/ghfs/`。
+
+```shell
 go build main.go
 ```
+
 会在当前目录生成"main"可执行文件。
 
-如果修改过`src/tpl`下的默认html模板，需要将其重新嵌入go文件：
+如果修改过`src/tpl/defaultTheme/frontend/`下的内置主题，需要将其重新嵌入go文件：
+
 ```bash
 cd src
 make tpls
 ```
+
 然后再像上面那样编译。
 
 ## 举例
+
 在8080端口启动服务器，根目录为当前工作目录：
-```sh
+
+```shell
 ghfs -l 8080
 ``` 
 
 在8080端口启动服务器，根目录为 /usr/share/doc：
-```sh
+
+```shell
 ghfs -l 8080 -r /usr/share/doc
 ```
 
 在默认端口启动服务器，根目录为/var/tmp，并允许上传文件到./data：
-```sh
+
+```shell
 ghfs -r /var/tmp -u /data
 # 或
 ghfs -r /var/tmp --upload-dir /var/tmp/data
 ```
 
 共享/etc下的文件，同时把/usr/share/doc挂载到URL路径/doc下：
-```sh
+
+```shell
 ghfs -r /etc -a :/doc:/usr/share/doc
 ```
 
 在8080端口启动服务器，使用HTTPS协议：
-```sh
+
+```shell
 ghfs -k /path/to/certificate/key -c /path/to/certificate/file -l 8080
 ```
 
 不显示`.`开头的unix隐藏目录和文件。提示：用引号括起通配符以避免shell展开：
-```sh
+
+```shell
 ghfs -H '.*'
 ```
 
 在命令行显示访问日志：
-```sh
+
+```shell
 ghfs -L -
 ```
 
 http基本验证：
+
 - 对URL /files 启用验证
 - 用户名：user1，密码：pass1
 - 用户名：user2，密码：pass2
-```sh
+
+```shell
 ghfs --auth /files --user user1:pass1 --user-sha1 user2:8be52126a6fde450a7162a3651d589bb51e9579d
 ```
 
 共享/data，授予用户“admin”和“root”在/data/upload的上传权限，其他用户只读：
-```sh
+
+```shell
 ghfs -r /data --user admin:adminpass root:rootpass user1:user1pass user2:user2pass --upload-user :/upload:admin:root
 ```
 
 启动2台虚拟主机：
+
 - 服务器1
-    - 在80端口提供http服务
-    - 在443端口提供https服务
-        - 证书文件：/cert/server1.pem
-        - 私钥文件：/cert/server1.key
-    - 主机名：server1.example.com
-    - 根目录：/var/www/server1
+	- 在80端口提供http服务
+	- 在443端口提供https服务
+		- 证书文件：/cert/server1.pem
+		- 私钥文件：/cert/server1.key
+	- 主机名：server1.example.com
+	- 根目录：/var/www/server1
 - 服务器2
-    - 在80端口提供http服务
-    - 在443端口提供https服务
-        - 证书文件：/cert/server2.pem
-        - 私钥文件：/cert/server2.key
-    - 主机名：server2.example.com
-    - 根目录：/var/www/server2
-```sh
+	- 在80端口提供http服务
+	- 在443端口提供https服务
+		- 证书文件：/cert/server2.pem
+		- 私钥文件：/cert/server2.key
+	- 主机名：server2.example.com
+	- 根目录：/var/www/server2
+
+```shell
 ghfs --listen-plain 80 --listen-tls 443 -c /cert/server1.pem -k /cert/server1.key --hostname server1.example.com -r /var/www/server1 ,, --listen-plain 80 --listen-tls 443 -c /cert/server2.pem -k /cert/server2.key --hostname server2.example.com -r /var/www/server2
 ```
 
 ## 使用方法
+
 ```
 ghfs [选项]
 
@@ -349,22 +371,27 @@ ghfs [选项]
 ## 环境变量
 
 ### GHFS_CPU_PROFILE_FILE
+
 生成Go的CPU pprof profile到指定的文件路径。
 
 ### GHFS_PID_FILE
+
 指定进程ID文件路径。进程ID会在应用启动时被写入文件。
 
 ### GHFS_LOG_QUEUE_SIZE
+
 指定日志队列的长度，用于临时保存暂未写入目的地的日志。
 如果队列满，日志发送将被阻塞，直到队列有空余空间。
 默认值为256。
 
 ### GHFS_QUIET
+
 为避免在控制台输出额外信息，例如可访问的URL等，可将值设为“1”。
 
 ## 内置主题
 
 ### 快捷键
+
 - `←`, `→`：使焦点在路径项之间移动
 - `Ctrl`/`Opt` + `←`：把焦点移动到第一个路径项
 - `Ctrl`/`Opt` + `→`：把焦点移动到最后一个路径项
