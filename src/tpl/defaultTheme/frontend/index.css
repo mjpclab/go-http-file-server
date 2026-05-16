@@ -284,6 +284,7 @@ html.dragging::after {
 	inset-block-start: 0;
 	inline-size: 0;
 	block-size: 100%;
+	max-inline-size: 100%;
 	background: #c9c;
 }
 

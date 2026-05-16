@@ -142,12 +142,13 @@ function showUploadDirFailMessage() {
 {{end}}
 </div>{{end}}
 
-{{if .ThemeOptions}}<script>
+<script type="module">
+import start from "{{.RootRelPath}}?asset=index.js";
 const themeOptions = { {{range .ThemeOptions}}
 	"{{index . 0}}":"{{index . 1}}",{{end}}
 };
-</script>{{end}}
-<script type="module" src="{{.RootRelPath}}?asset=index.js" async="async"></script>
+start(themeOptions);
+</script>
 </body>
 </html>
 `

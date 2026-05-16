@@ -25,7 +25,7 @@ const DefaultJs = "" +
 	"const Space = ' ';\n" +
 	"const KEY_EVENT_SKIP_TAGS = ['INPUT', 'TEXTAREA'];\n" +
 	"\n" +
-	"const options = typeof themeOptions !== strUndef ? themeOptions : {};\n" +
+	"let options = {};\n" +
 	"\n" +
 	"let hasStorage = false;\n" +
 	"try {\n" +
@@ -732,10 +732,10 @@ const DefaultJs = "" +
 	"		const maxBatchCount = Math.max(0, Number(options['uploadmaxbatchcount'])) || 2048;\n" +
 	"		const maxBatchSize = Math.max(0, parseSize(options['uploadmaxbatchsize'])) || Infinity;\n" +
 	"\n" +
-	"		function uploadBatch(files) {\n" +
+	"		function uploadByBatches(files) {\n" +
 	"			const fieldName = fileInput.name;\n" +
 	"\n" +
-	"			const slices = [];\n" +
+	"			const batches = [];\n" +
 	"			let totalSize = 0;\n" +
 	"\n" +
 	"			let formData;\n" +
@@ -749,13 +749,13 @@ const DefaultJs = "" +
 	"			resetBatch();\n" +
 	"			for (let i = 0; i < files.length; ++i) {\n" +
 	"				if (batchCount >= maxBatchCount) {\n" +
-	"					slices.push(formData);\n" +
+	"					batches.push({formData, size: batchSize});\n" +
 	"					resetBatch();\n" +
 	"				}\n" +
 	"\n" +
 	"				const {file, relativePath} = files[i];\n" +
 	"				if (batchCount > 0 && batchSize + file.size > maxBatchSize) {\n" +
-	"					slices.push(formData);\n" +
+	"					batches.push({formData, size: batchSize});\n" +
 	"					resetBatch();\n" +
 	"				}\n" +
 	"\n" +
@@ -765,27 +765,27 @@ const DefaultJs = "" +
 	"				formData.append(fieldName, file, relativePath);\n" +
 	"			}\n" +
 	"			if (batchCount > 0) {\n" +
-	"				slices.push(formData);\n" +
+	"				batches.push({formData, size: batchSize});\n" +
 	"			}\n" +
-	"			if (slices.length === 0) return;\n" +
+	"			if (batches.length === 0) return;\n" +
 	"\n" +
 	"			let finishedSize = 0;\n" +
-	"			elProgress.style.width = '';\n" +
+	"			let currentSize = 0;\n" +
+	"			elProgress.style.inlineSize = '';\n" +
 	"			const onProgress = e => {\n" +
-	"				if (e.lengthComputable) {\n" +
-	"					const percent = 100 * (finishedSize + e.loaded) / totalSize;\n" +
-	"					elProgress.style.width = percent + '%';\n" +
+	"				if (e.lengthComputable && e.total > 0) {\n" +
+	"					const batchRatio = e.loaded / e.total;\n" +
+	"					const percent = 100 * (finishedSize + batchRatio * currentSize) / totalSize;\n" +
+	"					elProgress.style.inlineSize = percent + '%';\n" +
 	"				}\n" +
 	"			};\n" +
-	"			const onUploadSuccess = e => {\n" +
-	"				if (e.lengthComputable) {\n" +
-	"					finishedSize += e.total;\n" +
-	"				}\n" +
+	"			const onUploadSuccess = () => {\n" +
+	"				finishedSize += currentSize;\n" +
 	"			};\n" +
 	"			const {method, action} = form;\n" +
 	"			return new Promise(function (resolve, reject) {\n" +
 	"				const onFail = e => {\n" +
-	"					slices.length = 0;\n" +
+	"					batches.length = 0;\n" +
 	"					reject(e);\n" +
 	"				};\n" +
 	"				const onDownloadSuccess = e => {\n" +
@@ -794,16 +794,18 @@ const DefaultJs = "" +
 	"						onFail({message: e.target.statusText || status});\n" +
 	"						return;\n" +
 	"					}\n" +
-	"					if (slices.length) {\n" +
-	"						uploadSlice(slices.shift());\n" +
+	"					if (batches.length) {\n" +
+	"						uploadBatch(batches.shift());\n" +
 	"						return;\n" +
 	"					}\n" +
 	"\n" +
-	"					elProgress.style.width = '100%';\n" +
+	"					elProgress.style.inlineSize = '100%';\n" +
 	"					resolve();\n" +
 	"				};\n" +
 	"\n" +
-	"				function uploadSlice(parts) {\n" +
+	"				function uploadBatch(batch) {\n" +
+	"					currentSize = batch.size;\n" +
+	"\n" +
 	"					const xhr = new XMLHttpRequest();\n" +
 	"					xhr.upload.addEventListener('progress', onProgress);\n" +
 	"					xhr.upload.addEventListener('error', onFail);\n" +
@@ -814,14 +816,14 @@ const DefaultJs = "" +
 	"					xhr.addEventListener('load', onDownloadSuccess);\n" +
 	"					xhr.open(method, action);\n" +
 	"					xhr.setRequestHeader('accept', 'application/json');\n" +
-	"					xhr.send(parts);\n" +
+	"					xhr.send(batch.formData);\n" +
 	"				}\n" +
 	"\n" +
-	"				uploadSlice(slices.shift());\n" +
+	"				uploadBatch(batches.shift());\n" +
 	"			});\n" +
 	"		}\n" +
 	"\n" +
-	"		async function tryUploadBatch(getFilesResult) {\n" +
+	"		async function tryUploadByBatches(getFilesResult) {\n" +
 	"			if (!uploading) {\n" +
 	"				elUploadStatus.classList.remove(classFailed);\n" +
 	"				elUploadStatus.classList.add(classUploading);\n" +
@@ -839,7 +841,7 @@ const DefaultJs = "" +
 	"					switchToFileMode();\n" +
 	"				}\n" +
 	"\n" +
-	"				await uploadBatch(files);\n" +
+	"				await uploadByBatches(files);\n" +
 	"				if (uploading === localUploading) {\n" +
 	"					location.reload();\n" +
 	"				}\n" +
@@ -859,11 +861,11 @@ const DefaultJs = "" +
 	"		}\n" +
 	"\n" +
 	"		async function uploadFilesProgressively(filesResult) {\n" +
-	"			await tryUploadBatch(() => filesResult);\n" +
+	"			await tryUploadByBatches(() => filesResult);\n" +
 	"		}\n" +
 	"\n" +
 	"		async function uploadItemsProgressively(dataTransferItems) {\n" +
-	"			await tryUploadBatch(() => itemsToFiles(dataTransferItems));\n" +
+	"			await tryUploadByBatches(() => itemsToFiles(dataTransferItems));\n" +
 	"		}\n" +
 	"\n" +
 	"		return {uploadFilesProgressively, uploadItemsProgressively};\n" +
@@ -1212,10 +1214,14 @@ const DefaultJs = "" +
 	"	}\n" +
 	"}\n" +
 	"\n" +
-	"enableFilter();\n" +
-	"keepFocusOnBackwardForward();\n" +
-	"focusChildOnNavUp();\n" +
-	"enableKeyboardNavigate();\n" +
-	"enhanceUpload();\n" +
-	"enableSelectActions();\n" +
+	"export default function start(themeOptions) {\n" +
+	"	options = themeOptions || options;\n" +
+	"\n" +
+	"	enableFilter();\n" +
+	"	keepFocusOnBackwardForward();\n" +
+	"	focusChildOnNavUp();\n" +
+	"	enableKeyboardNavigate();\n" +
+	"	enhanceUpload();\n" +
+	"	enableSelectActions();\n" +
+	"}\n" +
 	""

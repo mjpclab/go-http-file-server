@@ -1,8 +1,9 @@
 package app
 
 import (
-	"mjpclab.dev/ghfs/src/tpl/theme"
 	"path/filepath"
+
+	"mjpclab.dev/ghfs/src/tpl/theme"
 )
 
 func loadTheme(themePath string, themePool map[string]theme.Theme) (theme.Theme, []error) {

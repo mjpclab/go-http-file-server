@@ -1,9 +1,10 @@
 package defaultTheme
 
 import (
+	"strings"
+
 	"mjpclab.dev/ghfs/src/tpl/defaultTheme/frontend"
 	"mjpclab.dev/ghfs/src/tpl/theme"
-	"strings"
 )
 
 var DefaultTheme theme.MemTheme

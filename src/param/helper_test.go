@@ -1,10 +1,11 @@
 package param
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 func TestEntriesToUsers(t *testing.T) {

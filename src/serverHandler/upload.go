@@ -5,13 +5,14 @@ import (
 	"io"
 	"mime"
 	"mime/multipart"
-	"mjpclab.dev/ghfs/src/shimgo"
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/shimgo"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 const formFile = "file"

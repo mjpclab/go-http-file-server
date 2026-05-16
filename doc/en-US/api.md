@@ -47,7 +47,7 @@ It's convenient for tools like "wget" to download files recursively.
 
 Example:
 ```shell
-wget -r -nc -nH -np -R 'index.html?simple*' 'http://localhost/dir/?simple'
+wget -r -nc -nH -np -l 30 -R 'index.html*' 'http://localhost/dir/?simple'
 ```
 
 # Add download param to files
@@ -58,7 +58,7 @@ Add download parameter to file links in directory list page, which
 makes them downloadable instead of displaying content.
 
 # Download a file
-Notify user agent download a file rather than displaying its content,
+Notify client to download a file rather than displaying its content,
 by outputting `Content-Disposition` header.
 ```
 GET <path/to/file>?download[=filename]

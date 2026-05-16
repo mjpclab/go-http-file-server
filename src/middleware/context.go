@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"mjpclab.dev/ghfs/src/serverLog"
 	"os"
+
+	"mjpclab.dev/ghfs/src/serverLog"
 )
 
 type Context struct {

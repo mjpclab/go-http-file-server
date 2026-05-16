@@ -1,10 +1,11 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/shimgo"
-	"mjpclab.dev/ghfs/src/util"
 	"os"
 	"sort"
+
+	"mjpclab.dev/ghfs/src/shimgo"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 // compare dir func

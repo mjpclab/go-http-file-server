@@ -1,12 +1,13 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/shimgo"
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
 	"os"
 	"path"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/shimgo"
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type archiveCallback func(f *os.File, fInfo os.FileInfo, relPath string) error

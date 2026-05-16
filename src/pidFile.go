@@ -1,9 +1,10 @@
 package src
 
 import (
-	"mjpclab.dev/ghfs/src/serverError"
 	"os"
 	"strconv"
+
+	"mjpclab.dev/ghfs/src/serverError"
 )
 
 func writePidFile(pidFilePath string) (errs []error) {

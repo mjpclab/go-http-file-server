@@ -1,11 +1,12 @@
 package serverHandler
 
 import (
+	"net/http"
+	"strings"
+
 	"mjpclab.dev/ghfs/src/middleware"
 	"mjpclab.dev/ghfs/src/serverCompress"
 	"mjpclab.dev/ghfs/src/serverLog"
-	"net/http"
-	"strings"
 )
 
 type preprocessHandler struct {

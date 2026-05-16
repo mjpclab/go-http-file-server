@@ -1,8 +1,9 @@
 package serverHandler
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"net/http"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 type pathTransformHandler struct {

@@ -1,9 +1,10 @@
 package param
 
 import (
-	"mjpclab.dev/ghfs/src/util"
 	"path/filepath"
 	"strings"
+
+	"mjpclab.dev/ghfs/src/util"
 )
 
 // input element: "user" or "user:pass"
