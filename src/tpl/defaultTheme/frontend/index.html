@@ -74,7 +74,7 @@ function showUploadDirFailMessage() {
 		<a class="field name" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextNameSort}}">{{.Trans.ListNameLabel}}{{if eq $sortKey "n"}}&uarr;{{else if eq $sortKey "N"}}&darr;{{end}}</a>
 		<div class="filter">
 			<label><input type="text" autocomplete="off" spellcheck="false" accesskey="r" placeholder="{{.Trans.FilterLabel}}"></label>
-			<button type="button">X</button>
+			<button type="button">✕</button>
 		</div>
 		<a class="field type" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTypeSort}}">{{.Trans.ListTypeLabel}}{{if eq $sortKey "e"}}&uarr;{{else if eq $sortKey "E"}}&darr;{{end}}</a>
 		<a class="field size" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextSizeSort}}">{{.Trans.ListSizeLabel}}{{if eq $sortKey "s"}}&uarr;{{else if eq $sortKey "S"}}&darr;{{end}}</a>
