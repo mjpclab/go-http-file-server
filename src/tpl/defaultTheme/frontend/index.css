@@ -382,7 +382,7 @@ html.dragging::after {
 }
 
 .entry-list .select:hover {
-	background: #ffffff0c;
+	background: #0000000c;
 }
 
 .selecting .entry-list .select {
@@ -799,6 +799,10 @@ html.dragging::after {
 	.action-list .delete::before,
 	.action-list .delete::after {
 		color: #f99;
+	}
+
+	.entry-list .select:hover {
+		background: #ffffff0c;
 	}
 
 	.entry-list li:has(.select input:checked) {
