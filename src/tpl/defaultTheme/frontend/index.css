@@ -911,6 +911,10 @@ html.dragging::after {
 		print-color-adjust: exact;
 	}
 
+	a:hover, a:focus, a:hover:focus {
+		background: initial;
+	}
+
 	.login, .panel, .tab, .action-list, .toggle-select {
 		display: none;
 	}
@@ -929,6 +933,10 @@ html.dragging::after {
 
 	.entry-list .header .filter {
 		display: none;
+	}
+
+	.entry-list .select:hover {
+		background: initial;
 	}
 
 	.entry-list li {
