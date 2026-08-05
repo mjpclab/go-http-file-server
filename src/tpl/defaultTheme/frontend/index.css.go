@@ -385,7 +385,7 @@ html.dragging::after {
 }
 
 .entry-list .select:hover {
-	background: #ffffff0c;
+	background: #0000000c;
 }
 
 .selecting .entry-list .select {
@@ -510,6 +510,17 @@ html.dragging::after {
 	white-space: nowrap;
 	text-align: end;
 	color: #666;
+}
+
+.entry-list .file .size {
+	--border-color: #00000018;
+	--background-color: #00000010;
+
+	min-width: 3em;
+	border: 1px var(--border-color) solid;
+	padding: 0 0.5em;
+	background: linear-gradient(var(--background-color) 0 0) no-repeat;
+	background-size: calc(var(--file-size, 0) / var(--largest-file-size, 1) * 100%) 100%;
 }
 
 .entry-list .size:empty {
@@ -793,6 +804,10 @@ html.dragging::after {
 		color: #f99;
 	}
 
+	.entry-list .select:hover {
+		background: #ffffff0c;
+	}
+
 	.entry-list li:has(.select input:checked) {
 		background: #244;
 	}
@@ -824,6 +839,11 @@ html.dragging::after {
 
 	.entry-list .size {
 		color: #999;
+	}
+
+	.entry-list .file .size {
+		--border-color: #ffffff28;
+		--background-color: #ffffff20;
 	}
 
 	.entry-list .time {
@@ -873,6 +893,10 @@ html.dragging::after {
 		flex: 1 1 0;
 	}
 
+	.entry-list .file .size {
+		min-width: 2em;
+	}
+
 	.entry-list .detail .time span {
 		display: none;
 	}
@@ -887,6 +911,10 @@ html.dragging::after {
 @media print {
 	body {
 		padding-block-end: initial;
+	}
+
+	a:hover, a:focus, a:hover:focus {
+		background: initial;
 	}
 
 	.login, .panel, .tab, .action-list, .toggle-select {
@@ -907,6 +935,10 @@ html.dragging::after {
 
 	.entry-list .header .filter {
 		display: none;
+	}
+
+	.entry-list .select:hover {
+		background: initial;
 	}
 
 	.entry-list li {
