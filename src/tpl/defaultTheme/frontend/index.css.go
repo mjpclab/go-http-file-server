@@ -911,6 +911,11 @@ html.dragging::after {
 @media print {
 	body {
 		padding-block-end: initial;
+		print-color-adjust: exact;
+	}
+
+	a:hover, a:focus, a:hover:focus {
+		background: initial;
 	}
 
 	a:hover, a:focus, a:hover:focus {
