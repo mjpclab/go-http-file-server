@@ -49,6 +49,7 @@ type itemHtml struct {
 	Name        string
 	Type        template.HTML
 	Url         string
+	Size        int64
 	DisplayName template.HTML
 	DisplaySize template.HTML
 	DisplayTime template.HTML
@@ -112,13 +113,14 @@ type responseData struct {
 	Paths       []pathEntry
 	RootRelPath string
 
-	Item          os.FileInfo
-	SubItems      []os.FileInfo
-	AliasSubItems []os.FileInfo
-	SubItemsHtml  []itemHtml
-	SubItemPrefix string
-	SortState     SortState
-	Context       pathContext
+	Item            os.FileInfo
+	SubItems        []os.FileInfo
+	AliasSubItems   []os.FileInfo
+	LargestFileSize int64
+	SubItemsHtml    []itemHtml
+	SubItemPrefix   string
+	SortState       SortState
+	Context         pathContext
 
 	ThemeOptions [][2]string
 	Lang         string
@@ -599,12 +601,13 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		Paths:       pathEntries,
 		RootRelPath: rootRelPath,
 
-		Item:          item,
-		SubItems:      subItems,
-		AliasSubItems: aliasSubItems,
-		SubItemsHtml:  nil,
-		SubItemPrefix: subItemPrefix,
-		SortState:     sortState,
+		Item:            item,
+		SubItems:        subItems,
+		AliasSubItems:   aliasSubItems,
+		LargestFileSize: 0,
+		SubItemsHtml:    nil,
+		SubItemPrefix:   subItemPrefix,
+		SortState:       sortState,
 		Context: pathContext{
 			simple:      isSimple,
 			download:    isDownload,

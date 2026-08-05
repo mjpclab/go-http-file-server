@@ -69,15 +69,15 @@ function showUploadDirFailMessage() {
 {{end}}
 {{end}}
 <form method="POST" class="entry-form" autocomplete="off">
-<ul class="entry-list">
-	{{if not .IsSimple}}
+<ul class="entry-list" style="--largest-file-size:{{.LargestFileSize}}">
+	{{if not .IsSimple }}
 	<li class="header">{{$dirSort := .SortState.DirSort}}{{$sortKey := .SortState.Key}}
 		<div class="detail">
 		<a class="field dir" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextDirSort}}">{{.Trans.ListDirLabel}}{{if eq $dirSort -1}}&uarr;{{else if eq $dirSort 1}}&darr;{{end}}</a>
 		<a class="field name" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextNameSort}}">{{.Trans.ListNameLabel}}{{if eq $sortKey "n"}}&uarr;{{else if eq $sortKey "N"}}&darr;{{end}}</a>
 		<div class="filter">
 			<label><input type="text" autocomplete="off" spellcheck="false" accesskey="r" placeholder="{{.Trans.FilterLabel}}"></label>
-			<button type="button">X</button>
+			<button type="button">✕</button>
 		</div>
 		<a class="field type" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextTypeSort}}">{{.Trans.ListTypeLabel}}{{if eq $sortKey "e"}}&uarr;{{else if eq $sortKey "E"}}&darr;{{end}}</a>
 		<a class="field size" href="{{.SubItemPrefix}}{{.Context.QueryStringOfSort .SortState.NextSizeSort}}">{{.Trans.ListSizeLabel}}{{if eq $sortKey "s"}}&uarr;{{else if eq $sortKey "S"}}&darr;{{end}}</a>
@@ -96,7 +96,7 @@ function showUploadDirFailMessage() {
 	{{end}}
 	{{range .SubItemsHtml}}
 	<li class="{{.Type}}">
-		<a href="{{.Url}}" class="detail">
+		<a href="{{.Url}}" class="detail" style="--file-size:{{.Size}}">
 		<span class="field name" translate="no">{{.DisplayName}}</span>
 		<span class="field size">{{.DisplaySize}}</span>
 		<span class="field time">{{.DisplayTime}}</span>

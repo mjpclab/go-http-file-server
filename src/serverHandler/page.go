@@ -14,6 +14,8 @@ const typeDir = template.HTML("dir")
 const typeFile = template.HTML("file")
 
 func updateSubItemsHtml(data *responseData) {
+	data.LargestFileSize = 1 // file size ratio divider
+
 	length := len(data.SubItems)
 	if length == 0 {
 		return
@@ -29,6 +31,7 @@ func updateSubItemsHtml(data *responseData) {
 		var displayName template.HTML
 		var typ template.HTML
 		var url string
+		var size int64
 		var readableSize template.HTML
 
 		if info.IsDir() {
@@ -39,13 +42,19 @@ func updateSubItemsHtml(data *responseData) {
 			displayName = tplUtil.FormatFilename(name)
 			typ = typeFile
 			url = data.SubItemPrefix + tplUtil.FormatFileUrl(name) + fileSuffix
-			readableSize = tplUtil.FormatSize(info.Size())
+			size = info.Size()
+			readableSize = tplUtil.FormatSize(size)
+
+			if size > data.LargestFileSize {
+				data.LargestFileSize = size
+			}
 		}
 
 		data.SubItemsHtml[i] = itemHtml{
 			Name:        name,
 			Type:        typ,
 			Url:         url,
+			Size:        size,
 			DisplayName: displayName,
 			DisplaySize: readableSize,
 			DisplayTime: tplUtil.FormatTime(info.ModTime()),
