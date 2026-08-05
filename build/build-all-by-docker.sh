@@ -57,12 +57,12 @@ buildByDocker "$gover" "${builds[@]}"
 #builds=('darwin amd64 -10.15-catalina' 'darwin arm64 -10.15-catalina')
 #buildByDocker "$gover" "${builds[@]}"
 
-gover=1.20
-builds=()
-builds+=('windows 386 -7-8' 'windows amd64 -7-8')
+#gover=1.20
+#builds=()
+#builds+=('windows 386 -7-8' 'windows amd64 -7-8')
 #builds+=('windows amd64,v2 -7-8' 'windows amd64,v3 -7-8')
 #builds+=('darwin amd64 -10.13-high-sierra-10.14-mojave' 'darwin arm64 -10.13-high-sierra-10.14-mojave')
-buildByDocker "$gover" "${builds[@]}"
+#buildByDocker "$gover" "${builds[@]}"
 
 #gover=1.16
 #builds=('darwin amd64 -10.12-sierra' 'darwin arm64 -10.12-sierra')
