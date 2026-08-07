@@ -260,6 +260,12 @@ function enableKeyboardNavigate() {
 		return a;
 	}
 
+	function getWrapAroundFocusableSibling(container, isBackward, startA) {
+		const siblingA = getFocusableSibling(container, isBackward, startA);
+		if (siblingA) return siblingA;
+		return isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);
+	}
+
 	function getFocusablePageSibling(container, isBackward, pageHeight, startA) {
 		if (!container.childElementCount) return;
 		if (!startA) {
@@ -324,7 +330,7 @@ function enableKeyboardNavigate() {
 			if (textContent.startsWith(buf)) {
 				return a;
 			}
-		} while (a = getFocusableSibling(container, isBackward, a));
+		} while (a = getWrapAroundFocusableSibling(container, isBackward, a));
 	}
 
 	const ARROW_UP = 'ArrowUp';
