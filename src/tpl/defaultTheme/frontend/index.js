@@ -266,9 +266,9 @@ function enableKeyboardNavigate() {
 			startA = container.querySelector(':focus');
 		}
 		let startLI = startA && startA.closest('li');
-
 		if (!startLI) {
-			return getFirstFocusableSibling(container);
+			const siblingA = isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);
+			return siblingA;
 		}
 
 		let siblingLI = startLI;
