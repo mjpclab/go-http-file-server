@@ -225,6 +225,28 @@ function enableKeyboardNavigate() {
 		return;
 	}
 
+	function isUnavailableItem(li) {
+		return li.classList.contains(classNone) || li.classList.contains(classHeader);
+	}
+
+	function getFirstFocusableSibling(container) {
+		const a = container.querySelector(`:scope > li:not(.${classNone}):not(.${classHeader}) a`);
+		return a;
+	}
+
+	function getLastFocusableSibling(container) {
+		let li = container.lastElementChild;
+		while (li && isUnavailableItem(li)) {
+			li = li.previousElementSibling;
+		}
+		const a = li && li.querySelector('a');
+		return a;
+	}
+
+	function getDefaultFocusableSibling(container, isBackward) {
+		return isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);
+	}
+
 	function getFocusableSibling(container, isBackward, startA) {
 		if (!container.childElementCount) return;
 		if (!startA) {
@@ -232,8 +254,7 @@ function enableKeyboardNavigate() {
 		}
 		let siblingLI = startA && startA.closest('li');
 		if (!siblingLI) {
-			const siblingA = isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);
-			return siblingA;
+			return getDefaultFocusableSibling(container, isBackward);
 		}
 
 		while (true) {
@@ -246,24 +267,8 @@ function enableKeyboardNavigate() {
 		}
 	}
 
-	function getFirstFocusableSibling(container) {
-		const a = container.querySelector(`li:not(.${classNone}):not(.${classHeader}) a`);
-		return a;
-	}
-
-	function getLastFocusableSibling(container) {
-		let li = container.lastElementChild;
-		while (li && (li.classList.contains(classNone) || li.classList.contains(classHeader))) {
-			li = li.previousElementSibling;
-		}
-		const a = li && li.querySelector('a');
-		return a;
-	}
-
 	function getWrapAroundFocusableSibling(container, isBackward, startA) {
-		const siblingA = getFocusableSibling(container, isBackward, startA);
-		if (siblingA) return siblingA;
-		return isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);
+		return getFocusableSibling(container, isBackward, startA) || getDefaultFocusableSibling(container, isBackward);
 	}
 
 	function getFocusablePageSibling(container, isBackward, pageHeight, startA) {
@@ -273,8 +278,7 @@ function enableKeyboardNavigate() {
 		}
 		let startLI = startA && startA.closest('li');
 		if (!startLI) {
-			const siblingA = isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);
-			return siblingA;
+			return getDefaultFocusableSibling(container, isBackward);
 		}
 
 		let siblingLI = startLI;
@@ -283,10 +287,7 @@ function enableKeyboardNavigate() {
 		while (true) {
 			sib = isBackward ? sib.previousElementSibling : sib.nextElementSibling;
 			if (!sib) break;
-
-			const available = !sib.classList.contains(classNone) &&
-				!sib.classList.contains(classHeader);
-			if (!available) continue;
+			if (isUnavailableItem(sib)) continue;
 
 			const sibHeight = sib.offsetHeight;
 			if (accumHeight > 0 && accumHeight + sibHeight > pageHeight) break;
