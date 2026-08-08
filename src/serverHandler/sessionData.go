@@ -430,9 +430,27 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		isMutate = true
 	}
 
+	var outFileName string
+	isArchive := false
+	var arFmt archiveFormat
+	switch queryPrefix {
+	case "tar":
+		isArchive = true
+		arFmt = tarFmt
+		outFileName = ".tar"
+	case "tgz":
+		isArchive = true
+		arFmt = tgzFmt
+		outFileName = ".tar.gz"
+	case "zip":
+		isArchive = true
+		arFmt = zipFmt
+		outFileName = ".zip"
+	}
+
 	canIndex := authSuccess && redirectAction == noRedirect && h.index.match(vhostReqPath, fsPath, authUserId)
 
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex && !isMutate)
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex && !isMutate && !isArchive)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -459,24 +477,6 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 
 	itemName := getItemName(item, r, prefixReqPath)
 
-	var outFileName string
-
-	isArchive := false
-	var arFmt archiveFormat
-	switch queryPrefix {
-	case "tar":
-		isArchive = true
-		arFmt = tarFmt
-		outFileName = ".tar"
-	case "tgz":
-		isArchive = true
-		arFmt = tgzFmt
-		outFileName = ".tar.gz"
-	case "zip":
-		isArchive = true
-		arFmt = zipFmt
-		outFileName = ".zip"
-	}
 	if isArchive {
 		arName, _ := getQueryValue(query, queryPrefix)
 		if len(arName) > 0 {
