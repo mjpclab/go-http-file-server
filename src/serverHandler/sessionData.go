@@ -402,7 +402,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	redirectAction := noRedirect
-	if h.autoDirSlash > 0 && len(vhostReqPath) > 1 && item != nil {
+	if h.autoDirSlash > 0 && len(vhostReqPath) > 1 && item != nil && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
 		if item.IsDir() {
 			if prefixReqPath[len(prefixReqPath)-1] != '/' {
 				redirectAction = addSlashSuffix
@@ -414,8 +414,25 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		}
 	}
 
+	isUpload := false
+	isMkdir := false
+	isDelete := false
+	isMutate := false
+	switch queryPrefix {
+	case "upload":
+		isUpload = true
+		isMutate = true
+	case "mkdir":
+		isMkdir = true
+		isMutate = true
+	case "delete":
+		isDelete = true
+		isMutate = true
+	}
+
 	canIndex := authSuccess && redirectAction == noRedirect && h.index.match(vhostReqPath, fsPath, authUserId)
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex)
+
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex && !isMutate)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -443,22 +460,6 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	itemName := getItemName(item, r, prefixReqPath)
 
 	var outFileName string
-
-	isUpload := false
-	isMkdir := false
-	isDelete := false
-	isMutate := false
-	switch queryPrefix {
-	case "upload":
-		isUpload = true
-		isMutate = true
-	case "mkdir":
-		isMkdir = true
-		isMutate = true
-	case "delete":
-		isDelete = true
-		isMutate = true
-	}
 
 	isArchive := false
 	var arFmt archiveFormat
