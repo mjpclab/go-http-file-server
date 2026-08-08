@@ -21,7 +21,7 @@ func newRestrictAccesses(pathHostsList [][]string) pathStringsList {
 	return restricts
 }
 
-func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath string, file *os.File, item os.FileInfo) (restrict, allow bool) {
+func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath string, file *os.File, item os.FileInfo, isDynamicContent bool) (restrict, allow bool) {
 	if h.globalRestrictAccess == nil && len(h.restrictAccessUrls) == 0 && len(h.restrictAccessDirs) == 0 {
 		return false, true
 	}
@@ -32,7 +32,7 @@ func (h *aliasHandler) isAllowAccess(r *http.Request, reqUrlPath, reqFsPath stri
 		sourceHost = reqHeader.Get("Origin")
 	}
 
-	if len(sourceHost) == 0 && !shouldServeAsContent(file, item) {
+	if len(sourceHost) == 0 && !isDynamicContent && !shouldServeAsContent(file, item) {
 		return true, true
 	}
 

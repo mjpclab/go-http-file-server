@@ -464,7 +464,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		}
 	}
 
-	restrictAccess, allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item)
+	restrictAccess, allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item, isArchive)
 	vary := "accept, accept-encoding"
 	if restrictAccess {
 		vary += ", referer, origin"
