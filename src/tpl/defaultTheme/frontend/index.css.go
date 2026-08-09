@@ -911,7 +911,6 @@ html.dragging::after {
 @media print {
 	body {
 		padding-block-end: initial;
-		print-color-adjust: exact;
 	}
 
 	a:hover, a:focus, a:hover:focus {
@@ -930,8 +929,20 @@ html.dragging::after {
 		margin-inline: 0;
 	}
 
+	.entry-list li {
+		break-inside: avoid;
+	}
+
+	.entry-list li.parent {
+		display: none;
+	}
+
 	.entry-list .header {
 		position: relative;
+	}
+
+	.entry-list .header .detail {
+		print-color-adjust: exact;
 	}
 
 	.entry-list .header .name {
@@ -942,16 +953,12 @@ html.dragging::after {
 		display: none;
 	}
 
+	.entry-list .file .size {
+		print-color-adjust: exact;
+	}
+
 	.entry-list .select:hover {
 		background: initial;
-	}
-
-	.entry-list li {
-		break-inside: avoid;
-	}
-
-	.entry-list li.parent {
-		display: none;
 	}
 }
 `
