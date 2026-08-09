@@ -228,6 +228,28 @@ const DefaultJs = "" +
 	"		return;\n" +
 	"	}\n" +
 	"\n" +
+	"	function isUnavailableItem(li) {\n" +
+	"		return li.classList.contains(classNone) || li.classList.contains(classHeader);\n" +
+	"	}\n" +
+	"\n" +
+	"	function getFirstFocusableSibling(container) {\n" +
+	"		const a = container.querySelector(`:scope > li:not(.${classNone}):not(.${classHeader}) a`);\n" +
+	"		return a;\n" +
+	"	}\n" +
+	"\n" +
+	"	function getLastFocusableSibling(container) {\n" +
+	"		let li = container.lastElementChild;\n" +
+	"		while (li && isUnavailableItem(li)) {\n" +
+	"			li = li.previousElementSibling;\n" +
+	"		}\n" +
+	"		const a = li && li.querySelector('a');\n" +
+	"		return a;\n" +
+	"	}\n" +
+	"\n" +
+	"	function getDefaultFocusableSibling(container, isBackward) {\n" +
+	"		return isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);\n" +
+	"	}\n" +
+	"\n" +
 	"	function getFocusableSibling(container, isBackward, startA) {\n" +
 	"		if (!container.childElementCount) return;\n" +
 	"		if (!startA) {\n" +
@@ -235,8 +257,7 @@ const DefaultJs = "" +
 	"		}\n" +
 	"		let siblingLI = startA && startA.closest('li');\n" +
 	"		if (!siblingLI) {\n" +
-	"			const siblingA = isBackward ? getLastFocusableSibling(container) : getFirstFocusableSibling(container);\n" +
-	"			return siblingA;\n" +
+	"			return getDefaultFocusableSibling(container, isBackward);\n" +
 	"		}\n" +
 	"\n" +
 	"		while (true) {\n" +
@@ -249,18 +270,8 @@ const DefaultJs = "" +
 	"		}\n" +
 	"	}\n" +
 	"\n" +
-	"	function getFirstFocusableSibling(container) {\n" +
-	"		const a = container.querySelector(`li:not(.${classNone}):not(.${classHeader}) a`);\n" +
-	"		return a;\n" +
-	"	}\n" +
-	"\n" +
-	"	function getLastFocusableSibling(container) {\n" +
-	"		let li = container.lastElementChild;\n" +
-	"		while (li && (li.classList.contains(classNone) || li.classList.contains(classHeader))) {\n" +
-	"			li = li.previousElementSibling;\n" +
-	"		}\n" +
-	"		const a = li && li.querySelector('a');\n" +
-	"		return a;\n" +
+	"	function getWrapAroundFocusableSibling(container, isBackward, startA) {\n" +
+	"		return getFocusableSibling(container, isBackward, startA) || getDefaultFocusableSibling(container, isBackward);\n" +
 	"	}\n" +
 	"\n" +
 	"	function getFocusablePageSibling(container, isBackward, pageHeight, startA) {\n" +
@@ -269,9 +280,8 @@ const DefaultJs = "" +
 	"			startA = container.querySelector(':focus');\n" +
 	"		}\n" +
 	"		let startLI = startA && startA.closest('li');\n" +
-	"\n" +
 	"		if (!startLI) {\n" +
-	"			return getFirstFocusableSibling(container);\n" +
+	"			return getDefaultFocusableSibling(container, isBackward);\n" +
 	"		}\n" +
 	"\n" +
 	"		let siblingLI = startLI;\n" +
@@ -280,10 +290,7 @@ const DefaultJs = "" +
 	"		while (true) {\n" +
 	"			sib = isBackward ? sib.previousElementSibling : sib.nextElementSibling;\n" +
 	"			if (!sib) break;\n" +
-	"\n" +
-	"			const available = !sib.classList.contains(classNone) &&\n" +
-	"				!sib.classList.contains(classHeader);\n" +
-	"			if (!available) continue;\n" +
+	"			if (isUnavailableItem(sib)) continue;\n" +
 	"\n" +
 	"			const sibHeight = sib.offsetHeight;\n" +
 	"			if (accumHeight > 0 && accumHeight + sibHeight > pageHeight) break;\n" +
@@ -327,7 +334,7 @@ const DefaultJs = "" +
 	"			if (textContent.startsWith(buf)) {\n" +
 	"				return a;\n" +
 	"			}\n" +
-	"		} while (a = getFocusableSibling(container, isBackward, a));\n" +
+	"		} while (a = getWrapAroundFocusableSibling(container, isBackward, a));\n" +
 	"	}\n" +
 	"\n" +
 	"	const ARROW_UP = 'ArrowUp';\n" +
