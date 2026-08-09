@@ -11,6 +11,7 @@ import (
 
 	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
+	"mjpclab.dev/ghfs/src/shimgo"
 	"mjpclab.dev/ghfs/src/util"
 )
 
@@ -406,7 +407,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	redirectAction := noRedirect
-	if h.autoDirSlash > 0 && len(vhostReqPath) > 1 && item != nil && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
+	if h.autoDirSlash > 0 && len(vhostReqPath) > 1 && item != nil && (r.Method == shimgo.Net_Http_MethodGet || r.Method == shimgo.Net_Http_MethodHead) {
 		if item.IsDir() {
 			if prefixReqPath[len(prefixReqPath)-1] != '/' {
 				redirectAction = addSlashSuffix
