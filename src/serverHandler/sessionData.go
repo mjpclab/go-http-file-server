@@ -402,7 +402,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 	}
 
 	redirectAction := noRedirect
-	if h.autoDirSlash > 0 && len(vhostReqPath) > 1 && item != nil {
+	if h.autoDirSlash > 0 && len(vhostReqPath) > 1 && item != nil && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
 		if item.IsDir() {
 			if prefixReqPath[len(prefixReqPath)-1] != '/' {
 				redirectAction = addSlashSuffix
@@ -413,36 +413,6 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 			}
 		}
 	}
-
-	canIndex := authSuccess && redirectAction == noRedirect && h.index.match(vhostReqPath, fsPath, authUserId)
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex)
-	if _statIdxErr != nil {
-		errs = append(errs, _statIdxErr)
-		status = getStatusByErr(_statIdxErr)
-	} else if indexFile != nil {
-		if indexItem != nil {
-			file.Close()
-			file = indexFile
-			item = indexItem
-		} else {
-			indexFile.Close()
-		}
-	}
-
-	restrictAccess, allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item)
-	vary := "accept, accept-encoding"
-	if restrictAccess {
-		vary += ", referer, origin"
-	}
-	if !allowAccess {
-		status = http.StatusForbidden
-	}
-
-	canIndex = canIndex && allowAccess
-
-	itemName := getItemName(item, r, prefixReqPath)
-
-	var outFileName string
 
 	isUpload := false
 	isMkdir := false
@@ -460,6 +430,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		isMutate = true
 	}
 
+	var outFileName string
 	isArchive := false
 	var arFmt archiveFormat
 	switch queryPrefix {
@@ -476,6 +447,36 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		arFmt = zipFmt
 		outFileName = ".zip"
 	}
+
+	canIndex := authSuccess && redirectAction == noRedirect && h.index.match(vhostReqPath, fsPath, authUserId)
+
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex && !isMutate && !isArchive)
+	if _statIdxErr != nil {
+		errs = append(errs, _statIdxErr)
+		status = getStatusByErr(_statIdxErr)
+	} else if indexFile != nil {
+		if indexItem != nil {
+			file.Close()
+			file = indexFile
+			item = indexItem
+		} else {
+			indexFile.Close()
+		}
+	}
+
+	restrictAccess, allowAccess := h.isAllowAccess(r, vhostReqPath, fsPath, file, item, isArchive)
+	vary := "accept, accept-encoding"
+	if restrictAccess {
+		vary += ", referer, origin"
+	}
+	if !allowAccess {
+		status = http.StatusForbidden
+	}
+
+	canIndex = canIndex && allowAccess
+
+	itemName := getItemName(item, r, prefixReqPath)
+
 	if isArchive {
 		arName, _ := getQueryValue(query, queryPrefix)
 		if len(arName) > 0 {
