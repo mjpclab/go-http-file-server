@@ -34,10 +34,11 @@ type Param struct {
 	AuthDirs      []string
 	AuthDirsUsers [][]string // [][path, user...]
 
-	IndexUrls      []string
-	IndexUrlsUsers [][]string // [][path, user...]
-	IndexDirs      []string
-	IndexDirsUsers [][]string // [][path, user...]
+	GlobalList    bool
+	ListUrls      []string
+	ListUrlsUsers [][]string // [][path, user...]
+	ListDirs      []string
+	ListDirsUsers [][]string // [][path, user...]
 
 	GlobalUpload    bool
 	UploadUrls      []string
@@ -152,11 +153,11 @@ func (param *Param) Normalize() (errs []error) {
 	// dir indexes
 	param.DirIndexes = normalizeFilenames(param.DirIndexes)
 
-	// auth/index/upload/mkdir/delete/archive/cors urls/dirs
+	// auth/list/upload/mkdir/delete/archive/cors urls/dirs
 	param.AuthUrls = NormalizeUrlPaths(param.AuthUrls)
 	param.AuthDirs = NormalizeFsPaths(param.AuthDirs)
-	param.IndexUrls = NormalizeUrlPaths(param.IndexUrls)
-	param.IndexDirs = NormalizeFsPaths(param.IndexDirs)
+	param.ListUrls = NormalizeUrlPaths(param.ListUrls)
+	param.ListDirs = NormalizeFsPaths(param.ListDirs)
 	param.UploadUrls = NormalizeUrlPaths(param.UploadUrls)
 	param.UploadDirs = NormalizeFsPaths(param.UploadDirs)
 	param.MkdirUrls = NormalizeUrlPaths(param.MkdirUrls)
@@ -168,15 +169,15 @@ func (param *Param) Normalize() (errs []error) {
 	param.CorsUrls = NormalizeUrlPaths(param.CorsUrls)
 	param.CorsDirs = NormalizeFsPaths(param.CorsDirs)
 
-	// auth/index/upload/mkdir/delete/archive urls/dirs users
+	// auth/list/upload/mkdir/delete/archive urls/dirs users
 	param.AuthUrlsUsers, es = normalizeAllPathValues(param.AuthUrlsUsers, true, util.NormalizeUrlPath, nil)
 	errs = append(errs, es...)
 	param.AuthDirsUsers, es = normalizeAllPathValues(param.AuthDirsUsers, true, filepath.Abs, nil)
 	errs = append(errs, es...)
 
-	param.IndexUrlsUsers, es = normalizeAllPathValues(param.IndexUrlsUsers, false, util.NormalizeUrlPath, nil)
+	param.ListUrlsUsers, es = normalizeAllPathValues(param.ListUrlsUsers, false, util.NormalizeUrlPath, nil)
 	errs = append(errs, es...)
-	param.IndexDirsUsers, es = normalizeAllPathValues(param.IndexDirsUsers, false, filepath.Abs, nil)
+	param.ListDirsUsers, es = normalizeAllPathValues(param.ListDirsUsers, false, filepath.Abs, nil)
 	errs = append(errs, es...)
 
 	param.UploadUrlsUsers, es = normalizeAllPathValues(param.UploadUrlsUsers, false, util.NormalizeUrlPath, nil)

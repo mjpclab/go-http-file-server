@@ -97,7 +97,7 @@ type responseData struct {
 	IsSimple   bool
 	IsDownload bool
 
-	CanIndex     bool
+	CanList      bool
 	CanUpload    bool
 	CanMkdir     bool
 	CanDelete    bool
@@ -448,9 +448,9 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		outFileName = ".zip"
 	}
 
-	canIndex := authSuccess && redirectAction == noRedirect && h.index.match(vhostReqPath, fsPath, authUserId)
+	canList := authSuccess && redirectAction == noRedirect && h.list.match(vhostReqPath, fsPath, authUserId)
 
-	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canIndex && !isMutate && !isArchive)
+	indexFile, indexItem, _statIdxErr := h.statIndexFile(vhostReqPath, fsPath, item, canList && !isMutate && !isArchive)
 	if _statIdxErr != nil {
 		errs = append(errs, _statIdxErr)
 		status = getStatusByErr(_statIdxErr)
@@ -473,7 +473,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		status = http.StatusForbidden
 	}
 
-	canIndex = canIndex && allowAccess
+	canList = canList && allowAccess
 
 	itemName := getItemName(item, r, prefixReqPath)
 
@@ -496,14 +496,14 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		}
 	}
 
-	generateSubItems := canIndex && !isMutate && !isArchive && NeedResponseBody(r.Method)
+	generateSubItems := canList && !isMutate && !isArchive && NeedResponseBody(r.Method)
 	subItems, _readdirErr := readdir(file, item, generateSubItems)
 	if _readdirErr != nil {
 		errs = append(errs, _readdirErr)
 		status = http.StatusInternalServerError
 	}
 
-	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, generateSubItems, canIndex)
+	subItems, aliasSubItems, _mergeErrs := h.mergeAlias(vhostReqPath, item, subItems, generateSubItems, canList)
 	if len(_mergeErrs) > 0 {
 		errs = append(errs, _mergeErrs...)
 		status = http.StatusInternalServerError
@@ -582,7 +582,7 @@ func (h *aliasHandler) getSessionData(r *http.Request) (session *sessionContext,
 		IsSimple:   isSimple,
 		IsDownload: isDownload,
 
-		CanIndex:     canIndex,
+		CanList:      canList,
 		CanUpload:    canUpload,
 		CanMkdir:     canMkdir,
 		CanDelete:    canDelete,
