@@ -8,7 +8,7 @@ func getValue(source map[string][]string, key string) (value string, foundKey, f
 	foundValue = len(values) > 0
 
 	if foundKey && foundValue {
-		value = values[0]
+		value = values[len(values)-1]
 	}
 
 	return

@@ -201,3 +201,69 @@ func TestGetStringsKeepsValuelessKey(t *testing.T) {
 		}
 	})
 }
+
+// the last value wins when an option is provided multiple times
+func TestGetValueUsesLastValue(t *testing.T) {
+	newResult := func(t *testing.T, args []string) *ParseResult {
+		t.Helper()
+
+		s := NewSimpleOptionSet()
+
+		adds := []error{
+			s.AddFlagValue("single", "--single", "", "", ""),
+			s.AddFlagValues("many", "--many", "", nil, ""),
+			s.AddFlagValues("manyint", "--many-int", "", nil, ""),
+		}
+		for _, err := range adds {
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		return s.Parse(args, nil)
+	}
+
+	t.Run("multi values read as single value", func(t *testing.T) {
+		value, found := newResult(t, []string{"--many", "v1", "v2", "v3"}).GetString("many")
+
+		if !found {
+			t.Fatal("found should be true")
+		}
+		if value != "v3" {
+			t.Errorf("got %q, want %q", value, "v3")
+		}
+	})
+
+	t.Run("option provided multiple times", func(t *testing.T) {
+		value, found := newResult(t, []string{"--many", "v1", "--many", "v2"}).GetString("many")
+
+		if !found {
+			t.Fatal("found should be true")
+		}
+		if value != "v2" {
+			t.Errorf("got %q, want %q", value, "v2")
+		}
+	})
+
+	t.Run("typed getter uses last value too", func(t *testing.T) {
+		value, found := newResult(t, []string{"--many-int", "1", "2", "3"}).GetInt("manyint")
+
+		if !found {
+			t.Fatal("found should be true")
+		}
+		if value != 3 {
+			t.Errorf("got %v, want %v", value, 3)
+		}
+	})
+
+	t.Run("single value option overrides previous", func(t *testing.T) {
+		value, found := newResult(t, []string{"--single", "a", "--single", "b"}).GetString("single")
+
+		if !found {
+			t.Fatal("found should be true")
+		}
+		if value != "b" {
+			t.Errorf("got %q, want %q", value, "b")
+		}
+	})
+}
