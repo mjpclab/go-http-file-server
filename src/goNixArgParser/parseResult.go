@@ -73,22 +73,22 @@ func (r *ParseResult) HasValue(key string) bool {
 //=============================
 
 func (r *ParseResult) GetString(key string) (value string, found bool) {
-	value, found = getValue(r.specifiedOptions, key)
+	value, found, _ = getValue(r.specifiedOptions, key)
 	if found {
 		return
 	}
 
-	value, found = getValue(r.envs, key)
+	value, found, _ = getValue(r.envs, key)
 	if found {
 		return
 	}
 
-	value, found = getValue(r.configOptions, key)
+	value, found, _ = getValue(r.configOptions, key)
 	if found {
 		return
 	}
 
-	value, found = getValue(r.defaults, key)
+	value, found, _ = getValue(r.defaults, key)
 	if found {
 		return
 	}
@@ -96,8 +96,32 @@ func (r *ParseResult) GetString(key string) (value string, found bool) {
 	return
 }
 
+func (r *ParseResult) GetStringHasValue(key string) (value string, foundKey, foundValue bool) {
+	value, foundKey, foundValue = getValue(r.specifiedOptions, key)
+	if foundKey && foundValue {
+		return
+	}
+
+	value, foundKey, foundValue = getValue(r.envs, key)
+	if foundKey && foundValue {
+		return
+	}
+
+	value, foundKey, foundValue = getValue(r.configOptions, key)
+	if foundKey && foundValue {
+		return
+	}
+
+	value, foundKey, foundValue = getValue(r.defaults, key)
+	if foundKey && foundValue {
+		return
+	}
+
+	return
+}
+
 func (r *ParseResult) GetBool(key string) (value bool, found bool) {
-	str, found := r.GetString(key)
+	str, found, _ := r.GetStringHasValue(key)
 	if !found {
 		return
 	}
@@ -106,7 +130,7 @@ func (r *ParseResult) GetBool(key string) (value bool, found bool) {
 }
 
 func (r *ParseResult) GetInt(key string) (value int, found bool) {
-	str, found := r.GetString(key)
+	str, found, _ := r.GetStringHasValue(key)
 	if !found {
 		return
 	}
@@ -115,7 +139,7 @@ func (r *ParseResult) GetInt(key string) (value int, found bool) {
 }
 
 func (r *ParseResult) GetUint(key string) (value uint, found bool) {
-	str, found := r.GetString(key)
+	str, found, _ := r.GetStringHasValue(key)
 	if !found {
 		return
 	}
@@ -124,7 +148,7 @@ func (r *ParseResult) GetUint(key string) (value uint, found bool) {
 }
 
 func (r *ParseResult) GetInt32(key string) (value int32, found bool) {
-	str, found := r.GetString(key)
+	str, found, _ := r.GetStringHasValue(key)
 	if !found {
 		return
 	}
@@ -133,7 +157,7 @@ func (r *ParseResult) GetInt32(key string) (value int32, found bool) {
 }
 
 func (r *ParseResult) GetUint32(key string) (value uint32, found bool) {
-	str, found := r.GetString(key)
+	str, found, _ := r.GetStringHasValue(key)
 	if !found {
 		return
 	}
@@ -142,7 +166,7 @@ func (r *ParseResult) GetUint32(key string) (value uint32, found bool) {
 }
 
 func (r *ParseResult) GetInt64(key string) (value int64, found bool) {
-	str, found := r.GetString(key)
+	str, found, _ := r.GetStringHasValue(key)
 	if !found {
 		return
 	}
@@ -151,7 +175,7 @@ func (r *ParseResult) GetInt64(key string) (value int64, found bool) {
 }
 
 func (r *ParseResult) GetUint64(key string) (value uint64, found bool) {
-	str, found := r.GetString(key)
+	str, found, _ := r.GetStringHasValue(key)
 	if !found {
 		return
 	}
@@ -160,7 +184,7 @@ func (r *ParseResult) GetUint64(key string) (value uint64, found bool) {
 }
 
 func (r *ParseResult) GetFloat64(key string) (value float64, found bool) {
-	str, found := r.GetString(key)
+	str, found, _ := r.GetStringHasValue(key)
 	if !found {
 		return
 	}

@@ -2,11 +2,12 @@ package goNixArgParser
 
 import "strconv"
 
-func getValue(source map[string][]string, key string) (value string, found bool) {
+func getValue(source map[string][]string, key string) (value string, foundKey, foundValue bool) {
 	var values []string
-	values, found = source[key]
+	values, foundKey = source[key]
+	foundValue = len(values) > 0
 
-	if found && len(values) > 0 {
+	if foundKey && foundValue {
 		value = values[0]
 	}
 
