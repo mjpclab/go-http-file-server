@@ -19,8 +19,8 @@ type vhostContext struct {
 	users            *user.List
 	authUrlsUsers    pathIntsList
 	authDirsUsers    pathIntsList
-	indexUrlsUsers   pathIntsList
-	indexDirsUsers   pathIntsList
+	listUrlsUsers    pathIntsList
+	listDirsUsers    pathIntsList
 	uploadUrlsUsers  pathIntsList
 	uploadDirsUsers  pathIntsList
 	mkdirUrlsUsers   pathIntsList
@@ -104,8 +104,8 @@ func NewVhostHandler(
 		users:            users,
 		authUrlsUsers:    pathUsernamesToPathUids(users, p.AuthUrlsUsers),
 		authDirsUsers:    pathUsernamesToPathUids(users, p.AuthDirsUsers),
-		indexUrlsUsers:   pathUsernamesToPathUids(users, p.IndexUrlsUsers),
-		indexDirsUsers:   pathUsernamesToPathUids(users, p.IndexDirsUsers),
+		listUrlsUsers:    pathUsernamesToPathUids(users, p.ListUrlsUsers),
+		listDirsUsers:    pathUsernamesToPathUids(users, p.ListDirsUsers),
 		uploadUrlsUsers:  pathUsernamesToPathUids(users, p.UploadUrlsUsers),
 		uploadDirsUsers:  pathUsernamesToPathUids(users, p.UploadDirsUsers),
 		mkdirUrlsUsers:   pathUsernamesToPathUids(users, p.MkdirUrlsUsers),

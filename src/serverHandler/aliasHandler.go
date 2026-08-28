@@ -42,7 +42,7 @@ type aliasHandler struct {
 	aliases    aliases
 
 	auth    *hierarchyAvailability
-	index   *hierarchyAvailability
+	list    *hierarchyAvailability
 	upload  *hierarchyAvailability
 	mkdir   *hierarchyAvailability
 	delete  *hierarchyAvailability
@@ -191,7 +191,7 @@ func newAliasHandler(
 		aliases:    allAliases.filterSuccessor(currentAlias.url),
 
 		auth:    newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalAuth, p.AuthUrls, vhostCtx.authUrlsUsers, p.AuthDirs, vhostCtx.authDirsUsers),
-		index:   newHierarchyAvailability(currentAlias.url, currentAlias.dir, false, p.IndexUrls, vhostCtx.indexUrlsUsers, p.IndexDirs, vhostCtx.indexDirsUsers),
+		list:    newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalList, p.ListUrls, vhostCtx.listUrlsUsers, p.ListDirs, vhostCtx.listDirsUsers),
 		upload:  newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalUpload, p.UploadUrls, vhostCtx.uploadUrlsUsers, p.UploadDirs, vhostCtx.uploadDirsUsers),
 		mkdir:   newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalMkdir, p.MkdirUrls, vhostCtx.mkdirUrlsUsers, p.MkdirDirs, vhostCtx.mkdirDirsUsers),
 		delete:  newHierarchyAvailability(currentAlias.url, currentAlias.dir, p.GlobalDelete, p.DeleteUrls, vhostCtx.deleteUrlsUsers, p.DeleteDirs, vhostCtx.deleteDirsUsers),
