@@ -911,6 +911,7 @@ html.dragging::after {
 @media print {
 	body {
 		padding-block-end: initial;
+		--major-padding: 0.6em;
 	}
 
 	a:hover, a:focus, a:hover:focus {
