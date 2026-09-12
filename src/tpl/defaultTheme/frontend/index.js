@@ -131,13 +131,17 @@ function enableFilter() {
 	// init
 	if (hasStorage) {
 		const prevSessionFilter = sessionStorage.getItem(location.pathname);
-		if (prevSessionFilter) {
-			input.value = prevSessionFilter;
-		}
 		if (prevSessionFilter !== null) {
 			sessionStorage.removeItem(location.pathname);
 		}
 
+		if (prevSessionFilter) {
+			input.value = prevSessionFilter;
+		}
+
+		window.addEventListener('pageshow', function (e) {
+			if (e.persisted) sessionStorage.removeItem(location.pathname);
+		});
 		window.addEventListener('pagehide', function () {
 			const inputValue = input.value;
 			if (inputValue) {
@@ -670,26 +674,25 @@ function enhanceUpload() {
 		if (hasStorage) {
 			const uploadTypeField = 'upload-type';
 			const prevUploadType = sessionStorage.getItem(uploadTypeField);
-			if (prevUploadType === dirFile) {
-				optDir && optDir.click();
-			} else if (prevUploadType === innerDirFile) {
-				optInnerDir && optInnerDir.click();
-			} else {
-				optFile && optFile.click();
-			}
-
 			if (prevUploadType !== null) {
 				sessionStorage.removeItem(uploadTypeField);
 			}
 
+			if (prevUploadType === dirFile) {
+				optDir && optDir.click();
+			} else if (prevUploadType === innerDirFile) {
+				optInnerDir && optInnerDir.click();
+			}
+
+			window.addEventListener('pageshow', function (e) {
+				if (e.persisted) sessionStorage.removeItem(uploadTypeField);
+			});
 			window.addEventListener('pagehide', function () {
 				const activeUploadType = fileInput.name;
 				if (activeUploadType !== file) {
 					sessionStorage.setItem(uploadTypeField, activeUploadType);
 				}
 			});
-		} else {
-			optFile && optFile.click();
 		}
 
 		function switchToFileMode() {
