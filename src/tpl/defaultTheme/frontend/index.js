@@ -130,20 +130,26 @@ function enableFilter() {
 
 	// init
 	if (hasStorage) {
-		const prevSessionFilter = sessionStorage.getItem(location.pathname);
-		if (prevSessionFilter) {
-			input.value = prevSessionFilter;
-		}
-		if (prevSessionFilter !== null) {
-			sessionStorage.removeItem(location.pathname);
-		}
-
-		window.addEventListener('pagehide', function () {
+		function saveFilter() {
 			const inputValue = input.value;
 			if (inputValue) {
 				sessionStorage.setItem(location.pathname, inputValue);
 			}
-		});
+		}
+
+		function loadFilter() {
+			const prevSessionFilter = sessionStorage.getItem(location.pathname);
+			if (prevSessionFilter === null) return;
+			sessionStorage.removeItem(location.pathname);
+
+			if (prevSessionFilter) {
+				input.value = prevSessionFilter;
+			}
+		}
+
+		loadFilter();
+		window.addEventListener('pageshow', loadFilter);
+		window.addEventListener('pagehide', saveFilter);
 	}
 	if (input.value) {
 		doFilter();
@@ -669,25 +675,31 @@ function enhanceUpload() {
 
 		if (hasStorage) {
 			const uploadTypeField = 'upload-type';
-			const prevUploadType = sessionStorage.getItem(uploadTypeField);
-			if (prevUploadType === dirFile) {
-				optDir && optDir.click();
-			} else if (prevUploadType === innerDirFile) {
-				optInnerDir && optInnerDir.click();
-			} else {
-				optFile && optFile.click();
-			}
 
-			if (prevUploadType !== null) {
-				sessionStorage.removeItem(uploadTypeField);
-			}
-
-			window.addEventListener('pagehide', function () {
+			function saveUploadType() {
 				const activeUploadType = fileInput.name;
 				if (activeUploadType !== file) {
 					sessionStorage.setItem(uploadTypeField, activeUploadType);
 				}
-			});
+			}
+
+			function loadUploadType() {
+				const prevUploadType = sessionStorage.getItem(uploadTypeField);
+				if (prevUploadType === null) return;
+				sessionStorage.removeItem(uploadTypeField);
+
+				if (prevUploadType === dirFile) {
+					optDir && optDir.click();
+				} else if (prevUploadType === innerDirFile) {
+					optInnerDir && optInnerDir.click();
+				} else {
+					optFile && optFile.click();
+				}
+			}
+
+			loadUploadType();
+			window.addEventListener('pageshow', loadUploadType);
+			window.addEventListener('pagehide', saveUploadType);
 		} else {
 			optFile && optFile.click();
 		}
