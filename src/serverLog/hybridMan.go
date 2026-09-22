@@ -4,20 +4,20 @@ import "os"
 
 const stdIO string = "-"
 
-type Man struct {
+type HybridMan struct {
 	fMan *FileMan
 	wMan *WriterMan
 }
 
-func (man *Man) ReOpenFiles() []error {
+func (man *HybridMan) ReOpen() []error {
 	return man.fMan.ReOpen()
 }
 
-func (man *Man) CloseFiles() {
+func (man *HybridMan) Close() {
 	man.fMan.Close()
 }
 
-func (man *Man) NewLogger(accessLog, errorLog string) (*Logger, []error) {
+func (man *HybridMan) NewLogger(accessLog, errorLog string) (*Logger, []error) {
 	var accChan, errChan loggerChan
 	var err error
 	var errs []error
@@ -44,11 +44,11 @@ func (man *Man) NewLogger(accessLog, errorLog string) (*Logger, []error) {
 		acc: accChan,
 		err: errChan,
 	}
-	return logger, nil
+	return logger, errs
 }
 
-func NewMan() *Man {
-	return &Man{
+func NewHybridMan() *HybridMan {
+	return &HybridMan{
 		fMan: NewFileMan(),
 		wMan: NewWriterMan(),
 	}

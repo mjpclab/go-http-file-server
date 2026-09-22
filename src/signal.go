@@ -25,7 +25,7 @@ func reInitOnHup(appInst *app.App) {
 
 	go func() {
 		for range chSignal {
-			errs := appInst.ReOpenLog()
+			errs := appInst.ReOpen()
 			if serverError.CheckError(errs...) {
 				appInst.Shutdown()
 				break

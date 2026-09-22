@@ -15,7 +15,7 @@ import (
 type App struct {
 	params   param.Params
 	vhostSvc *goVirtualHost.Service
-	logMan   *serverLog.Man
+	logMan   *serverLog.HybridMan
 }
 
 func (app *App) Open() []error {
@@ -31,7 +31,7 @@ func (app *App) Open() []error {
 
 func (app *App) Close() {
 	app.vhostSvc.Close()
-	app.logMan.CloseFiles()
+	app.logMan.Close()
 }
 
 func (app *App) Shutdown() {
@@ -39,11 +39,11 @@ func (app *App) Shutdown() {
 	app.vhostSvc.Shutdown(ctx)
 	cancel()
 
-	app.logMan.CloseFiles()
+	app.logMan.Close()
 }
 
-func (app *App) ReOpenLog() []error {
-	return app.logMan.ReOpenFiles()
+func (app *App) ReOpen() []error {
+	return app.logMan.ReOpen()
 }
 
 func (app *App) ReLoadCertificates() []error {
@@ -52,7 +52,7 @@ func (app *App) ReLoadCertificates() []error {
 
 func NewApp(params param.Params) (*App, []error) {
 	vhSvc := goVirtualHost.NewService()
-	logMan := serverLog.NewMan()
+	logMan := serverLog.NewHybridMan()
 	themePool := make(map[string]theme.Theme)
 
 	for _, p := range params {
