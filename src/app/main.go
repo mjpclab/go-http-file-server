@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net/http"
 	"time"
 
@@ -15,8 +17,12 @@ import (
 type App struct {
 	params   param.Params
 	vhostSvc *goVirtualHost.Service
-	logMan   *serverLog.HybridMan
+	logMan   serverLog.Man
 }
+
+type fnGetLogger func(paramIndex int, param *param.Param) (logger *serverLog.Logger, errs []error)
+
+var errWriterNumberNotMatchParams = errors.New("number of writers not equal to params")
 
 func (app *App) Open() []error {
 	errs := app.vhostSvc.Open()
@@ -35,7 +41,7 @@ func (app *App) Close() {
 }
 
 func (app *App) Shutdown() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*300)
 	app.vhostSvc.Shutdown(ctx)
 	cancel()
 
@@ -50,14 +56,13 @@ func (app *App) ReLoadCertificates() []error {
 	return app.vhostSvc.ReloadCertificates()
 }
 
-func NewApp(params param.Params) (*App, []error) {
+func newLogApp(params param.Params, logMan serverLog.Man, fnGetLogger fnGetLogger) (*App, []error) {
 	vhSvc := goVirtualHost.NewService()
-	logMan := serverLog.NewHybridMan()
 	themePool := make(map[string]theme.Theme)
 
-	for _, p := range params {
+	for i, p := range params {
 		// logger
-		logger, errs := logMan.NewLogger(p.AccessLog, p.ErrorLog)
+		logger, errs := fnGetLogger(i, p)
 		if len(errs) > 0 {
 			return nil, errs
 		}
@@ -114,4 +119,33 @@ func NewApp(params param.Params) (*App, []error) {
 		vhostSvc: vhSvc,
 		logMan:   logMan,
 	}, nil
+}
+
+func NewApp(params param.Params) (*App, []error) {
+	logMan := serverLog.NewHybridMan()
+	app, errs := newLogApp(params, logMan, func(paramIndex int, param *param.Param) (*serverLog.Logger, []error) {
+		return logMan.NewLogger(param.AccessLog, param.ErrorLog)
+	})
+	if len(errs) > 0 {
+		logMan.Close()
+		return nil, errs
+	}
+	return app, errs
+}
+
+func NewWriterLogApp(params param.Params, writers [][2]io.Writer) (*App, []error) {
+	if len(writers) != len(params) {
+		return nil, []error{errWriterNumberNotMatchParams}
+	}
+
+	logMan := serverLog.NewWriterMan()
+	app, errs := newLogApp(params, logMan, func(paramIndex int, param *param.Param) (*serverLog.Logger, []error) {
+		logger := logMan.NewLogger(writers[paramIndex][0], writers[paramIndex][1])
+		return logger, nil
+	})
+	if len(errs) > 0 {
+		logMan.Close()
+		return nil, errs
+	}
+	return app, errs
 }

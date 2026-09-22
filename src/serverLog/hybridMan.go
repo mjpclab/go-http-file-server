@@ -15,6 +15,7 @@ func (man *HybridMan) ReOpen() []error {
 
 func (man *HybridMan) Close() {
 	man.fMan.Close()
+	man.wMan.Close()
 }
 
 func (man *HybridMan) NewLogger(accessLog, errorLog string) (*Logger, []error) {

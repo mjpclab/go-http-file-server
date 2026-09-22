@@ -10,6 +10,10 @@ type WriterMan struct {
 	dests []*writerDest
 }
 
+func (wMan *WriterMan) ReOpen() []error {
+	return nil
+}
+
 func (wMan *WriterMan) Close() {
 	for _, dest := range wMan.dests {
 		dest.close()
@@ -43,6 +47,7 @@ func (wMan *WriterMan) newLogChan(w io.Writer) loggerChan {
 	return wMan.getWritingCh(w)
 }
 
+// NewLogger only accepts comparable Writers
 func (wMan *WriterMan) NewLogger(accLogWriter, errLogWriter io.Writer) *Logger {
 	accChan := wMan.newLogChan(accLogWriter)
 	errChan := wMan.newLogChan(errLogWriter)
