@@ -17,10 +17,10 @@ func (wMan *WriterMan) Close() {
 	wMan.wg.Wait()
 }
 
-func (wMan *WriterMan) getWritingCh(w io.Writer) (chan<- []byte, error) {
+func (wMan *WriterMan) getWritingCh(w io.Writer) chan<- []byte {
 	for _, dest := range wMan.dests {
 		if w == dest.w {
-			return dest.ch, nil
+			return dest.ch
 		}
 	}
 
@@ -33,41 +33,24 @@ func (wMan *WriterMan) getWritingCh(w io.Writer) (chan<- []byte, error) {
 		wMan.wg.Done()
 	}()
 
-	return dest.ch, nil
+	return dest.ch
 }
 
-func (wMan *WriterMan) newLogChan(w io.Writer) (loggerChan, error) {
-	var ch chan<- []byte
-	var err error
-
-	if w != nil {
-		ch, err = wMan.getWritingCh(w)
-		if err != nil {
-			return nil, err
-		}
+func (wMan *WriterMan) newLogChan(w io.Writer) loggerChan {
+	if w == nil {
+		return nil
 	}
-
-	return ch, nil
+	return wMan.getWritingCh(w)
 }
 
-func (wMan *WriterMan) NewLogger(accLogWriter, errLogWriter io.Writer) (*Logger, []error) {
-	var errs []error
-
-	accChan, err := wMan.newLogChan(accLogWriter)
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	errChan, err := wMan.newLogChan(errLogWriter)
-	if err != nil {
-		errs = append(errs, err)
-	}
-
+func (wMan *WriterMan) NewLogger(accLogWriter, errLogWriter io.Writer) *Logger {
+	accChan := wMan.newLogChan(accLogWriter)
+	errChan := wMan.newLogChan(errLogWriter)
 	logger := &Logger{
 		acc: accChan,
 		err: errChan,
 	}
-	return logger, nil
+	return logger
 }
 
 func NewWriterMan() *WriterMan {

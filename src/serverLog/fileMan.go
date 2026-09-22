@@ -130,17 +130,10 @@ func (fMan *FileMan) getWritingCh(fsPath string) (chan<- []byte, error) {
 }
 
 func (fMan *FileMan) newLogChan(fsPath string) (loggerChan, error) {
-	var ch chan<- []byte
-	var err error
-
-	if len(fsPath) > 0 {
-		ch, err = fMan.getWritingCh(fsPath)
-		if err != nil {
-			return nil, err
-		}
+	if len(fsPath) == 0 {
+		return nil, nil
 	}
-
-	return ch, nil
+	return fMan.getWritingCh(fsPath)
 }
 
 func (fMan *FileMan) NewLogger(accLogFilename, errLogFilename string) (*Logger, []error) {

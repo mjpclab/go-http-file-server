@@ -22,22 +22,22 @@ func (man *HybridMan) NewLogger(accessLog, errorLog string) (*Logger, []error) {
 	var err error
 	var errs []error
 
-	if accessLog != stdIO {
-		accChan, err = man.fMan.newLogChan(accessLog)
+	if accessLog == stdIO {
+		accChan = man.wMan.newLogChan(os.Stdout)
 	} else {
-		accChan, err = man.wMan.newLogChan(os.Stdout)
-	}
-	if err != nil {
-		errs = append(errs, err)
+		accChan, err = man.fMan.newLogChan(accessLog)
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
 
-	if errorLog != stdIO {
-		errChan, err = man.fMan.newLogChan(errorLog)
+	if errorLog == stdIO {
+		errChan = man.wMan.newLogChan(os.Stderr)
 	} else {
-		errChan, err = man.wMan.newLogChan(os.Stderr)
-	}
-	if err != nil {
-		errs = append(errs, err)
+		errChan, err = man.fMan.newLogChan(errorLog)
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
 
 	logger := &Logger{
