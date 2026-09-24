@@ -73,7 +73,9 @@ func lacksHeader(header http.Header, key string) bool {
 
 func getCleanFilePath(requestPath string) (filePath string, ok bool) {
 	filePath = path.Clean(requestPath)
-	ok = filePath == path.Base(filePath)
+	ok = filePath != "." && filePath != ".." &&
+		strings.IndexByte(filePath, '/') < 0 &&
+		(os.PathSeparator == '/' || strings.IndexByte(filePath, os.PathSeparator) < 0)
 
 	return
 }
