@@ -2,6 +2,7 @@
 
 cleanup() {
 	rm -f "$fs"/uploaded/[12]/*.tmp
+	rm -rf "$fs"/uploaded/1/tmpdir
 }
 
 source "$root"/lib.bash
@@ -21,6 +22,13 @@ echo -n 'uploaded/2/2.tmp' > "$file2"
 ls "$file2" &> /dev/null || fail "$file2 not exists"
 curl_post_status -d 'name=2.tmp' 'http://127.0.0.1:3003/2?delete' > /dev/null
 ls "$file2" &> /dev/null && fail "$file2 exists"
+
+subdir="$fs"/uploaded/1/tmpdir/sub
+mkdir -p "$subdir"
+for name in '..' '.' '/'; do
+	curl_post_status --data-urlencode "name=$name" 'http://127.0.0.1:3003/1/tmpdir/sub?delete' > /dev/null
+	ls -d "$subdir" &> /dev/null || fail "$subdir deleted by name=$name"
+done
 
 cleanup
 jobs -p | xargs kill &> /dev/null
