@@ -10,7 +10,7 @@ import (
 )
 
 func cleanupOnEnd(appInst *app.App) {
-	chSignal := make(chan os.Signal)
+	chSignal := make(chan os.Signal, 1)
 	signal.Notify(chSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
@@ -20,7 +20,7 @@ func cleanupOnEnd(appInst *app.App) {
 }
 
 func reInitOnHup(appInst *app.App) {
-	chSignal := make(chan os.Signal)
+	chSignal := make(chan os.Signal, 1)
 	signal.Notify(chSignal, syscall.SIGHUP)
 
 	go func() {
