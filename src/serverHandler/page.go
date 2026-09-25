@@ -3,6 +3,7 @@ package serverHandler
 import (
 	"html/template"
 	"net/http"
+	"net/url"
 
 	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
@@ -89,6 +90,7 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, session *ses
 		return
 	}
 
+	data.EscapedPrefixReqPath = (&url.URL{Path: session.prefixReqPath}).EscapedPath()
 	updateSubItemsHtml(data)
 	err := h.theme.RenderPage(w, data)
 	h.logError(err)
