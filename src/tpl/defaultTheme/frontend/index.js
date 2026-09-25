@@ -392,7 +392,7 @@ function enableKeyboardNavigate() {
 		return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);
 	}
 
-	const elHeader = entryList.querySelector('.' + classHeader);
+	const elHeader = entryList.querySelector('.' + classHeader) || document.createElement('div');
 	const elActionList = document.body.querySelector('.action-list') || document.createElement('div');
 	let headerHeight, bodyHeight, headerBodyHeight;
 	const updateHeights = () => {
