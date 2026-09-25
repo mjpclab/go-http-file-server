@@ -3,6 +3,7 @@ package serverLog
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -186,5 +187,42 @@ func TestFileMan(t *testing.T) {
 	errLogNew, _ := os.ReadFile(errLogFile.Name())
 	if !bytes.Equal(errLogNew, []byte("403 HOST I ACCESS DENIED\n403 HOST II ACCESS DENIED\n")) {
 		t.Error(string(errLogNew))
+	}
+}
+
+func TestFileManReOpenWithPendingLogs(t *testing.T) {
+	const count = 200
+	logPath := filepath.Join(t.TempDir(), "access.log")
+
+	man := NewFileMan()
+	logger, es := man.NewLogger(logPath, "")
+	if len(es) > 0 {
+		t.Fatal(es)
+	}
+
+	for i := 0; i < count; i++ {
+		logger.LogAccessString("before")
+	}
+	if err := os.Rename(logPath, logPath+".old"); err != nil {
+		t.Fatal(err)
+	}
+	if es := man.ReOpen(); len(es) > 0 {
+		t.Fatal(es)
+	}
+	for i := 0; i < count; i++ {
+		logger.LogAccessString("after")
+	}
+	man.Close()
+
+	oldLog, _ := os.ReadFile(logPath + ".old")
+	newLog, _ := os.ReadFile(logPath)
+	if n := bytes.Count(oldLog, []byte("after\n")); n > 0 {
+		t.Errorf("%d logs after ReOpen written to old file", n)
+	}
+	if n := bytes.Count(newLog, []byte("after\n")); n != count {
+		t.Errorf("new file has %d logs after ReOpen, expect %d", n, count)
+	}
+	if n := bytes.Count(oldLog, []byte("\n")) + bytes.Count(newLog, []byte("\n")); n != count*2 {
+		t.Errorf("total %d logs, expect %d", n, count*2)
 	}
 }

@@ -69,9 +69,8 @@ func (fMan *FileMan) ReOpen() []error {
 			continue
 		}
 		if file != nil && info != nil {
-			dest.ch <- nil
-			dest.info = info // notice: to avoid race condition, call NewLogger/ReOpen sequentially
-			fMan.serve(dest, file)
+			dest.fileCh <- file
+			dest.info = info // notice: to avoid race condition, call NewLogger/ReOpen/Close sequentially
 		}
 	}
 
@@ -89,7 +88,6 @@ func (fMan *FileMan) serve(dest *fileDest, file *os.File) {
 	fMan.wg.Add(1)
 	go func() {
 		dest.serve(file)
-		file.Close()
 		fMan.wg.Done()
 	}()
 }
