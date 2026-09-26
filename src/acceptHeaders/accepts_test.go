@@ -208,3 +208,23 @@ func TestParseAcceptEncoding2(t *testing.T) {
 		t.Error(preferred)
 	}
 }
+
+func TestParseAcceptWildcard(t *testing.T) {
+	accepts := ParseAccepts("*, br;q=0.5")
+	index, preferred, ok := accepts.GetPreferredValue([]string{"br", "gzip"})
+	if index != 0 || preferred != "br" || !ok {
+		t.Error(index, preferred, ok)
+	}
+
+	accepts = ParseAccepts("*;q=0.5, en")
+	index, preferred, ok = accepts.GetPreferredValue([]string{"zh-cn", "en"})
+	if index != 1 || preferred != "en" || !ok {
+		t.Error(index, preferred, ok)
+	}
+
+	accepts = ParseAccepts("*")
+	index, preferred, ok = accepts.GetPreferredValue([]string{"zh-cn", "en"})
+	if index != 0 || preferred != "zh-cn" || !ok {
+		t.Error(index, preferred, ok)
+	}
+}

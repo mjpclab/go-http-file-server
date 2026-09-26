@@ -100,9 +100,27 @@ func lacksHeader(header http.Header, key string) bool {
 	return len(header.Get(key)) == 0
 }
 
+// resolveLocalUrl resolves target against basePath.
+func resolveLocalUrl(target, host, basePath string) (localUrl string, ok bool) {
+	if len(target) == 0 {
+		return
+	}
+	targetUrl, err := url.Parse(target)
+	if err != nil || (len(targetUrl.Host) > 0 && targetUrl.Host != host) {
+		return
+	}
+
+	baseUrl := &url.URL{Path: basePath}
+	localUrl = baseUrl.ResolveReference(targetUrl).RequestURI()
+	ok = localUrl[0] == '/' && (len(localUrl) == 1 || (localUrl[1] != '/' && localUrl[1] != '\\'))
+	return
+}
+
 func getCleanFilePath(requestPath string) (filePath string, ok bool) {
 	filePath = path.Clean(requestPath)
-	ok = filePath == path.Base(filePath)
+	ok = filePath != "." && filePath != ".." &&
+		strings.IndexByte(filePath, '/') < 0 &&
+		(os.PathSeparator == '/' || strings.IndexByte(filePath, os.PathSeparator) < 0)
 
 	return
 }

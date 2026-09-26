@@ -108,10 +108,11 @@ type responseData struct {
 
 	Status int
 
-	IsRoot      bool
-	Path        string
-	Paths       []pathEntry
-	RootRelPath string
+	IsRoot               bool
+	Path                 string
+	EscapedPrefixReqPath string
+	Paths                []pathEntry
+	RootRelPath          string
 
 	Item            os.FileInfo
 	SubItems        []os.FileInfo

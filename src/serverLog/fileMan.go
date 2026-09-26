@@ -53,6 +53,7 @@ func matchOrOpenFile(fsPath string, match func(info os.FileInfo) bool) (file *os
 }
 
 type FileMan struct {
+	mu    sync.Mutex
 	wg    *sync.WaitGroup
 	dests []*fileDest
 }
@@ -60,6 +61,7 @@ type FileMan struct {
 func (fMan *FileMan) ReOpen() []error {
 	var errs []error
 
+	fMan.mu.Lock()
 	for _, dest := range fMan.dests {
 		file, info, err := matchOrOpenFile(dest.fsPath, func(info os.FileInfo) bool {
 			return os.SameFile(info, dest.info)
@@ -69,17 +71,22 @@ func (fMan *FileMan) ReOpen() []error {
 			continue
 		}
 		if file != nil && info != nil {
-			dest.ch <- nil
-			dest.info = info // notice: to avoid race condition, call NewLogger/ReOpen sequentially
-			fMan.serve(dest, file)
+			dest.fileCh <- file
+			dest.info = info
 		}
 	}
+	fMan.mu.Unlock()
 
 	return errs
 }
 
 func (fMan *FileMan) Close() {
-	for _, dest := range fMan.dests {
+	fMan.mu.Lock()
+	dests := fMan.dests
+	fMan.dests = nil
+	fMan.mu.Unlock()
+
+	for _, dest := range dests {
 		dest.close()
 	}
 	fMan.wg.Wait()
@@ -89,7 +96,6 @@ func (fMan *FileMan) serve(dest *fileDest, file *os.File) {
 	fMan.wg.Add(1)
 	go func() {
 		dest.serve(file)
-		file.Close()
 		fMan.wg.Done()
 	}()
 }
@@ -104,6 +110,8 @@ func (fMan *FileMan) getWritingCh(fsPath string) (chan<- []byte, error) {
 	var err error
 
 	var ch chan<- []byte
+	fMan.mu.Lock()
+	defer fMan.mu.Unlock()
 	file, info, err = matchOrOpenFile(fsPath, func(info os.FileInfo) bool {
 		for _, dest := range fMan.dests {
 			if os.SameFile(info, dest.info) {
@@ -130,17 +138,10 @@ func (fMan *FileMan) getWritingCh(fsPath string) (chan<- []byte, error) {
 }
 
 func (fMan *FileMan) newLogChan(fsPath string) (loggerChan, error) {
-	var ch chan<- []byte
-	var err error
-
-	if len(fsPath) > 0 {
-		ch, err = fMan.getWritingCh(fsPath)
-		if err != nil {
-			return nil, err
-		}
+	if len(fsPath) == 0 {
+		return nil, nil
 	}
-
-	return ch, nil
+	return fMan.getWritingCh(fsPath)
 }
 
 func (fMan *FileMan) NewLogger(accLogFilename, errLogFilename string) (*Logger, []error) {
@@ -160,7 +161,7 @@ func (fMan *FileMan) NewLogger(accLogFilename, errLogFilename string) (*Logger, 
 		acc: accChan,
 		err: errChan,
 	}
-	return logger, nil
+	return logger, errs
 }
 
 func NewFileMan() *FileMan {
