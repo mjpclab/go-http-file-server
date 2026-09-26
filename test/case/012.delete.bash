@@ -7,7 +7,7 @@ cleanup() {
 
 source "$root"/lib.bash
 
-"$ghfs" -l 3003 -r "$fs"/uploaded --delete /1 --delete-dir "$fs"/uploaded/2 &
+"$ghfs" -l 3003 -r "$fs"/uploaded --delete /1 --delete-dir "$fs"/uploaded/2 -E '' &
 sleep 0.05 # wait server ready
 cleanup
 
