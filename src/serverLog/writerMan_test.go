@@ -49,3 +49,10 @@ func TestWriterManNewLogger(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestWriterManCloseTwice(t *testing.T) {
+	man := NewWriterMan()
+	man.NewLogger(bytes.NewBuffer(nil), nil)
+	man.Close()
+	man.Close()
+}

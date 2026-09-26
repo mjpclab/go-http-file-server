@@ -6,6 +6,7 @@ import (
 )
 
 type WriterMan struct {
+	mu    sync.Mutex
 	wg    *sync.WaitGroup
 	dests []*writerDest
 }
@@ -15,13 +16,20 @@ func (wMan *WriterMan) ReOpen() []error {
 }
 
 func (wMan *WriterMan) Close() {
-	for _, dest := range wMan.dests {
+	wMan.mu.Lock()
+	dests := wMan.dests
+	wMan.dests = nil
+	wMan.mu.Unlock()
+
+	for _, dest := range dests {
 		dest.close()
 	}
 	wMan.wg.Wait()
 }
 
 func (wMan *WriterMan) getWritingCh(w io.Writer) chan<- []byte {
+	wMan.mu.Lock()
+	defer wMan.mu.Unlock()
 	for _, dest := range wMan.dests {
 		if w == dest.w {
 			return dest.ch

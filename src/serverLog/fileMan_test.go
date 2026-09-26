@@ -226,3 +226,70 @@ func TestFileManReOpenWithPendingLogs(t *testing.T) {
 		t.Errorf("total %d logs, expect %d", n, count*2)
 	}
 }
+
+func TestFileManReOpenAfterClose(t *testing.T) {
+	logPath := filepath.Join(t.TempDir(), "access.log")
+
+	man := NewFileMan()
+	if _, es := man.NewLogger(logPath, ""); len(es) > 0 {
+		t.Fatal(es)
+	}
+	man.Close()
+
+	if err := os.Rename(logPath, logPath+".old"); err != nil {
+		t.Fatal(err)
+	}
+
+	done := make(chan []error)
+	go func() {
+		done <- man.ReOpen()
+	}()
+	select {
+	case es := <-done:
+		if len(es) > 0 {
+			t.Error(es)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("ReOpen after Close should not block")
+	}
+
+	if _, err := os.Stat(logPath); !os.IsNotExist(err) {
+		t.Error("ReOpen after Close should not create log file", err)
+	}
+}
+
+func TestFileManCloseTwice(t *testing.T) {
+	man := NewFileMan()
+	if _, es := man.NewLogger(filepath.Join(t.TempDir(), "access.log"), ""); len(es) > 0 {
+		t.Fatal(es)
+	}
+	man.Close()
+	man.Close()
+}
+
+func TestFileManReOpenCloseConcurrently(t *testing.T) {
+	logPath := filepath.Join(t.TempDir(), "access.log")
+
+	man := NewFileMan()
+	logger, es := man.NewLogger(logPath, "")
+	if len(es) > 0 {
+		t.Fatal(es)
+	}
+	logger.LogAccessString("log")
+
+	done := make(chan struct{})
+	go func() {
+		for i := 0; i < 20; i++ {
+			os.Rename(logPath, logPath+".old")
+			man.ReOpen()
+		}
+		close(done)
+	}()
+	man.Close()
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("ReOpen should not block when Close concurrently")
+	}
+}
