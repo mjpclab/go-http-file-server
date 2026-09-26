@@ -18,6 +18,7 @@ buildByDocker() {
   docker run \
     --rm \
     --privileged \
+    --ulimit nofile=1024:1024 \
     -v "$prefix":"$ghfs" \
     -e EX_UID="$(id -u)" \
     -e EX_GID="$(id -g)" \
