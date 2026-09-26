@@ -161,7 +161,7 @@ func (fMan *FileMan) NewLogger(accLogFilename, errLogFilename string) (*Logger, 
 		acc: accChan,
 		err: errChan,
 	}
-	return logger, nil
+	return logger, errs
 }
 
 func NewFileMan() *FileMan {

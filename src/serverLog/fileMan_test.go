@@ -293,3 +293,17 @@ func TestFileManReOpenCloseConcurrently(t *testing.T) {
 		t.Fatal("ReOpen should not block when Close concurrently")
 	}
 }
+
+func TestFileManNewLoggerErrors(t *testing.T) {
+	dir := t.TempDir()
+
+	man := NewFileMan()
+	logger, es := man.NewLogger(dir, filepath.Join(dir, "error.log"))
+	if len(es) != 1 {
+		t.Error("directory as log file should return 1 error", es)
+	}
+	if logger == nil || logger.CanLogAccess() || !logger.CanLogError() {
+		t.Error("logger should only log error", logger)
+	}
+	man.Close()
+}
