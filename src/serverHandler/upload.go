@@ -19,7 +19,7 @@ const formFile = "file"
 const formDirFile = "dirfile"
 const formInnerDirFile = "innerdirfile"
 
-func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) string {
+func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) (string, error) {
 	if len(fsPrefix) == 0 {
 		fsPrefix = "/"
 	} else if fsPrefix[len(fsPrefix)-1] != '/' {
@@ -27,8 +27,12 @@ func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) stri
 	}
 
 	if !mustAppendSuffix {
-		if _, err := os.Lstat(fsPrefix + filename); os.IsNotExist(err) {
-			return filename
+		_, err := os.Lstat(fsPrefix + filename)
+		if os.IsNotExist(err) {
+			return filename, nil
+		}
+		if err != nil {
+			return "", err
 		}
 	}
 
@@ -36,12 +40,14 @@ func getAvailableFilename(fsPrefix, filename string, mustAppendSuffix bool) stri
 
 	for i := 1; ; i++ {
 		newFilename := filenamePrefix + "-" + strconv.Itoa(i) + filenameSuffix
-		if _, err := os.Lstat(fsPrefix + newFilename); os.IsNotExist(err) {
-			return newFilename
+		_, err := os.Lstat(fsPrefix + newFilename)
+		if os.IsNotExist(err) {
+			return newFilename, nil
+		}
+		if err != nil {
+			return "", err
 		}
 	}
-
-	return ""
 }
 
 // RFC 7578, Section 4.2 requires that if a filename is provided, the
@@ -157,12 +163,11 @@ func (h *aliasHandler) saveUploadFiles(authUserName, fsPrefix string, createDir,
 			}
 		}
 		if len(fsFilename) == 0 {
-			fsFilename = getAvailableFilename(filePrefix, filename, isFilenameAliased)
-		}
-		if len(fsFilename) == 0 {
-			err := errors.New("no available filename for " + filename)
-			errs = append(errs, err)
-			continue
+			fsFilename, err = getAvailableFilename(filePrefix, filename, isFilenameAliased)
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
 		}
 
 		fsPath := filepath.Join(filePrefix, fsFilename)

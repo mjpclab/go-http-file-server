@@ -3,6 +3,7 @@ package serverLog
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -187,4 +188,122 @@ func TestFileMan(t *testing.T) {
 	if !bytes.Equal(errLogNew, []byte("403 HOST I ACCESS DENIED\n403 HOST II ACCESS DENIED\n")) {
 		t.Error(string(errLogNew))
 	}
+}
+
+func TestFileManReOpenWithPendingLogs(t *testing.T) {
+	const count = 200
+	logPath := filepath.Join(t.TempDir(), "access.log")
+
+	man := NewFileMan()
+	logger, es := man.NewLogger(logPath, "")
+	if len(es) > 0 {
+		t.Fatal(es)
+	}
+
+	for i := 0; i < count; i++ {
+		logger.LogAccessString("before")
+	}
+	if err := os.Rename(logPath, logPath+".old"); err != nil {
+		t.Fatal(err)
+	}
+	if es := man.ReOpen(); len(es) > 0 {
+		t.Fatal(es)
+	}
+	for i := 0; i < count; i++ {
+		logger.LogAccessString("after")
+	}
+	man.Close()
+
+	oldLog, _ := os.ReadFile(logPath + ".old")
+	newLog, _ := os.ReadFile(logPath)
+	if n := bytes.Count(oldLog, []byte("after\n")); n > 0 {
+		t.Errorf("%d logs after ReOpen written to old file", n)
+	}
+	if n := bytes.Count(newLog, []byte("after\n")); n != count {
+		t.Errorf("new file has %d logs after ReOpen, expect %d", n, count)
+	}
+	if n := bytes.Count(oldLog, []byte("\n")) + bytes.Count(newLog, []byte("\n")); n != count*2 {
+		t.Errorf("total %d logs, expect %d", n, count*2)
+	}
+}
+
+func TestFileManReOpenAfterClose(t *testing.T) {
+	logPath := filepath.Join(t.TempDir(), "access.log")
+
+	man := NewFileMan()
+	if _, es := man.NewLogger(logPath, ""); len(es) > 0 {
+		t.Fatal(es)
+	}
+	man.Close()
+
+	if err := os.Rename(logPath, logPath+".old"); err != nil {
+		t.Fatal(err)
+	}
+
+	done := make(chan []error)
+	go func() {
+		done <- man.ReOpen()
+	}()
+	select {
+	case es := <-done:
+		if len(es) > 0 {
+			t.Error(es)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("ReOpen after Close should not block")
+	}
+
+	if _, err := os.Stat(logPath); !os.IsNotExist(err) {
+		t.Error("ReOpen after Close should not create log file", err)
+	}
+}
+
+func TestFileManCloseTwice(t *testing.T) {
+	man := NewFileMan()
+	if _, es := man.NewLogger(filepath.Join(t.TempDir(), "access.log"), ""); len(es) > 0 {
+		t.Fatal(es)
+	}
+	man.Close()
+	man.Close()
+}
+
+func TestFileManReOpenCloseConcurrently(t *testing.T) {
+	logPath := filepath.Join(t.TempDir(), "access.log")
+
+	man := NewFileMan()
+	logger, es := man.NewLogger(logPath, "")
+	if len(es) > 0 {
+		t.Fatal(es)
+	}
+	logger.LogAccessString("log")
+
+	done := make(chan struct{})
+	go func() {
+		for i := 0; i < 20; i++ {
+			os.Rename(logPath, logPath+".old")
+			man.ReOpen()
+		}
+		close(done)
+	}()
+	man.Close()
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("ReOpen should not block when Close concurrently")
+	}
+}
+
+func TestFileManNewLoggerErrors(t *testing.T) {
+	dir := t.TempDir()
+
+	man := NewFileMan()
+	logger, es := man.NewLogger(dir, filepath.Join(dir, "error.log"))
+	if len(es) != 1 {
+		t.Error("directory as log file should return 1 error", es)
+	}
+	if logger == nil || logger.CanLogAccess() || !logger.CanLogError() {
+		t.Error("logger should only log error", logger)
+	}
+	man.Close()
 }

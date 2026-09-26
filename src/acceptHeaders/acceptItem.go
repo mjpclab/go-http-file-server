@@ -16,27 +16,28 @@ type acceptItem struct {
 	quality int
 }
 
+func (item acceptItem) wildcardLevel() int {
+	if item.value == "*/*" || item.value == "*" {
+		return 2
+	}
+	if strings.HasSuffix(item.value, "/*") {
+		return 1
+	}
+	return 0
+}
+
 func (item acceptItem) less(other acceptItem) bool {
 	if item.quality != other.quality {
 		return item.quality > other.quality
 	}
-
-	if item.value != other.value {
-		if other.value == "*/*" {
-			return true
-		} else if strings.HasSuffix(other.value, "/*") && !strings.HasPrefix(item.value, "/*") {
-			return true
-		}
-	}
-
-	return false
+	return item.wildcardLevel() < other.wildcardLevel()
 }
 
 func (item acceptItem) match(value string) bool {
 	if item.value == value {
 		return true
 	}
-	if item.value == "*/*" {
+	if item.value == "*/*" || item.value == "*" {
 		return true
 	}
 	if !strings.HasSuffix(item.value, "/*") {

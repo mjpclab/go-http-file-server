@@ -121,6 +121,24 @@ func TestGetCleanFilePath(t *testing.T) {
 	if ok {
 		t.Error(cleanPath, ok)
 	}
+
+	for _, input := range []string{"", ".", "./", "..", "../", "dir/..", "../dir/../..", "dir/../../", "/", "//", "/file6"} {
+		cleanPath, ok = getCleanFilePath(input)
+		if ok {
+			t.Error(input, cleanPath)
+		}
+	}
+
+	cleanPath, ok = getCleanFilePath(`dir\..`)
+	if os.PathSeparator == '\\' {
+		if ok {
+			t.Error(cleanPath)
+		}
+	} else {
+		if cleanPath != `dir\..` || !ok {
+			t.Error(cleanPath, ok)
+		}
+	}
 }
 
 func TestGetCleanDirFilePath(t *testing.T) {

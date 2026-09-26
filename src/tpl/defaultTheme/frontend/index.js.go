@@ -134,13 +134,17 @@ const DefaultJs = "" +
 	"	// init\n" +
 	"	if (hasStorage) {\n" +
 	"		const prevSessionFilter = sessionStorage.getItem(location.pathname);\n" +
-	"		if (prevSessionFilter) {\n" +
-	"			input.value = prevSessionFilter;\n" +
-	"		}\n" +
 	"		if (prevSessionFilter !== null) {\n" +
 	"			sessionStorage.removeItem(location.pathname);\n" +
 	"		}\n" +
 	"\n" +
+	"		if (prevSessionFilter) {\n" +
+	"			input.value = prevSessionFilter;\n" +
+	"		}\n" +
+	"\n" +
+	"		window.addEventListener('pageshow', function (e) {\n" +
+	"			if (e.persisted) sessionStorage.removeItem(location.pathname);\n" +
+	"		});\n" +
 	"		window.addEventListener('pagehide', function () {\n" +
 	"			const inputValue = input.value;\n" +
 	"			if (inputValue) {\n" +
@@ -391,7 +395,7 @@ const DefaultJs = "" +
 	"		return getMatchedFocusableSibling(container, isBackward, currentLookupStartA, lookupKey || lookupBuffer);\n" +
 	"	}\n" +
 	"\n" +
-	"	const elHeader = entryList.querySelector('.' + classHeader);\n" +
+	"	const elHeader = entryList.querySelector('.' + classHeader) || document.createElement('div');\n" +
 	"	const elActionList = document.body.querySelector('.action-list') || document.createElement('div');\n" +
 	"	let headerHeight, bodyHeight, headerBodyHeight;\n" +
 	"	const updateHeights = () => {\n" +
@@ -673,26 +677,25 @@ const DefaultJs = "" +
 	"		if (hasStorage) {\n" +
 	"			const uploadTypeField = 'upload-type';\n" +
 	"			const prevUploadType = sessionStorage.getItem(uploadTypeField);\n" +
-	"			if (prevUploadType === dirFile) {\n" +
-	"				optDir && optDir.click();\n" +
-	"			} else if (prevUploadType === innerDirFile) {\n" +
-	"				optInnerDir && optInnerDir.click();\n" +
-	"			} else {\n" +
-	"				optFile && optFile.click();\n" +
-	"			}\n" +
-	"\n" +
 	"			if (prevUploadType !== null) {\n" +
 	"				sessionStorage.removeItem(uploadTypeField);\n" +
 	"			}\n" +
 	"\n" +
+	"			if (prevUploadType === dirFile) {\n" +
+	"				optDir && optDir.click();\n" +
+	"			} else if (prevUploadType === innerDirFile) {\n" +
+	"				optInnerDir && optInnerDir.click();\n" +
+	"			}\n" +
+	"\n" +
+	"			window.addEventListener('pageshow', function (e) {\n" +
+	"				if (e.persisted) sessionStorage.removeItem(uploadTypeField);\n" +
+	"			});\n" +
 	"			window.addEventListener('pagehide', function () {\n" +
 	"				const activeUploadType = fileInput.name;\n" +
 	"				if (activeUploadType !== file) {\n" +
 	"					sessionStorage.setItem(uploadTypeField, activeUploadType);\n" +
 	"				}\n" +
 	"			});\n" +
-	"		} else {\n" +
-	"			optFile && optFile.click();\n" +
 	"		}\n" +
 	"\n" +
 	"		function switchToFileMode() {\n" +

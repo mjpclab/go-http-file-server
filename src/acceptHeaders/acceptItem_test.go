@@ -199,4 +199,26 @@ func TestAcceptItemMatch(t *testing.T) {
 		t.Error()
 	}
 
+	item = acceptItem{"*", 1000}
+	if !item.match("gzip") {
+		t.Error()
+	}
+	if !item.match("zh-cn") {
+		t.Error()
+	}
+}
+
+func TestAcceptItemLess(t *testing.T) {
+	values := []string{"text/html", "gzip", "text/*", "image/*", "*/*", "*"}
+	rank := map[string]int{"text/html": 0, "gzip": 0, "text/*": 1, "image/*": 1, "*/*": 2, "*": 2}
+
+	for _, a := range values {
+		for _, b := range values {
+			itemA := acceptItem{a, defaultQuality}
+			itemB := acceptItem{b, defaultQuality}
+			if itemA.less(itemB) != (rank[a] < rank[b]) {
+				t.Errorf("less(%q, %q) = %v", a, b, itemA.less(itemB))
+			}
+		}
+	}
 }
