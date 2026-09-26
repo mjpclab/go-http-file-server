@@ -7,6 +7,7 @@ import (
 
 	"mjpclab.dev/ghfs/src/acceptHeaders"
 	"mjpclab.dev/ghfs/src/i18n"
+	"mjpclab.dev/ghfs/src/shimgo"
 	tplUtil "mjpclab.dev/ghfs/src/tpl/util"
 	"mjpclab.dev/ghfs/src/util"
 )
@@ -90,7 +91,7 @@ func (h *aliasHandler) page(w http.ResponseWriter, r *http.Request, session *ses
 		return
 	}
 
-	data.EscapedPrefixReqPath = (&url.URL{Path: session.prefixReqPath}).EscapedPath()
+	data.EscapedPrefixReqPath = shimgo.Net_Url_URL_EscapedPath(&url.URL{Path: session.prefixReqPath})
 	updateSubItemsHtml(data)
 	err := h.theme.RenderPage(w, data)
 	h.logError(err)

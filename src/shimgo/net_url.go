@@ -2,6 +2,7 @@ package shimgo
 
 import (
 	"bytes"
+	"net/url"
 	"strconv"
 )
 
@@ -56,6 +57,13 @@ func net_url_unhex(c byte) byte {
 
 func Net_Url_PathEscape(s string) string {
 	return net_url_escape(s, net_url_encodePathSegment)
+}
+
+func Net_Url_URL_EscapedPath(u *url.URL) string {
+	if u.Path == "*" {
+		return "*" // don't escape (Issue 11202)
+	}
+	return net_url_escape(u.Path, net_url_encodePath)
 }
 
 func net_url_escape(s string, mode net_url_encoding) string {
