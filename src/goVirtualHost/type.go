@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/http"
 	"sync"
-	"sync/atomic"
 )
 
 // init host info
@@ -60,7 +59,7 @@ type serveables []*serveable
 type vhost struct {
 	hostNames    []string
 	certKeyPaths certKeyPairs
-	loadedCerts  atomic.Value // certs, load from `certKeyPaths` + `certs`
+	loadedCerts  certs // load from `certKeyPaths` + `certs`
 	certs        certs
 	handler      http.Handler
 }
