@@ -139,11 +139,11 @@ func TestFileMan(t *testing.T) {
 
 	var es []error
 	man := NewFileMan()
-	logger1, es := man.NewLogger(accLogFile1.Name(), errLogFile.Name())
+	logger1, es := man.NewLogger(accLogFile1.Name(), "", errLogFile.Name())
 	if len(es) > 0 {
 		t.Fatal(es)
 	}
-	logger2, es := man.NewLogger(accLogFile2.Name(), errLogFile.Name())
+	logger2, es := man.NewLogger(accLogFile2.Name(), "", errLogFile.Name())
 	if len(es) > 0 {
 		t.Fatal(es)
 	}
@@ -195,7 +195,7 @@ func TestFileManReOpenWithPendingLogs(t *testing.T) {
 	logPath := filepath.Join(t.TempDir(), "access.log")
 
 	man := NewFileMan()
-	logger, es := man.NewLogger(logPath, "")
+	logger, es := man.NewLogger(logPath, "", "")
 	if len(es) > 0 {
 		t.Fatal(es)
 	}
@@ -231,7 +231,7 @@ func TestFileManReOpenAfterClose(t *testing.T) {
 	logPath := filepath.Join(t.TempDir(), "access.log")
 
 	man := NewFileMan()
-	if _, es := man.NewLogger(logPath, ""); len(es) > 0 {
+	if _, es := man.NewLogger(logPath, "", ""); len(es) > 0 {
 		t.Fatal(es)
 	}
 	man.Close()
@@ -260,7 +260,7 @@ func TestFileManReOpenAfterClose(t *testing.T) {
 
 func TestFileManCloseTwice(t *testing.T) {
 	man := NewFileMan()
-	if _, es := man.NewLogger(filepath.Join(t.TempDir(), "access.log"), ""); len(es) > 0 {
+	if _, es := man.NewLogger(filepath.Join(t.TempDir(), "access.log"), "", ""); len(es) > 0 {
 		t.Fatal(es)
 	}
 	man.Close()
@@ -271,7 +271,7 @@ func TestFileManReOpenCloseConcurrently(t *testing.T) {
 	logPath := filepath.Join(t.TempDir(), "access.log")
 
 	man := NewFileMan()
-	logger, es := man.NewLogger(logPath, "")
+	logger, es := man.NewLogger(logPath, "", "")
 	if len(es) > 0 {
 		t.Fatal(es)
 	}
@@ -298,7 +298,7 @@ func TestFileManNewLoggerErrors(t *testing.T) {
 	dir := t.TempDir()
 
 	man := NewFileMan()
-	logger, es := man.NewLogger(dir, filepath.Join(dir, "error.log"))
+	logger, es := man.NewLogger(dir, "", filepath.Join(dir, "error.log"))
 	if len(es) != 1 {
 		t.Error("directory as log file should return 1 error", es)
 	}

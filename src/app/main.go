@@ -124,7 +124,7 @@ func newLogApp(params param.Params, logMan serverLog.Man, fnGetLogger fnGetLogge
 func NewApp(params param.Params) (*App, []error) {
 	logMan := serverLog.NewHybridMan()
 	app, errs := newLogApp(params, logMan, func(paramIndex int, param *param.Param) (*serverLog.Logger, []error) {
-		return logMan.NewLogger(param.AccessLog, param.ErrorLog)
+		return logMan.NewLogger(param.AccessLog, param.MutationLog, param.ErrorLog)
 	})
 	if len(errs) > 0 {
 		logMan.Close()
@@ -133,14 +133,14 @@ func NewApp(params param.Params) (*App, []error) {
 	return app, errs
 }
 
-func NewWriterLogApp(params param.Params, writers [][2]io.Writer) (*App, []error) {
+func NewWriterLogApp(params param.Params, writers [][3]io.Writer) (*App, []error) {
 	if len(writers) != len(params) {
 		return nil, []error{errWriterNumberNotMatchParams}
 	}
 
 	logMan := serverLog.NewWriterMan()
 	app, errs := newLogApp(params, logMan, func(paramIndex int, param *param.Param) (*serverLog.Logger, []error) {
-		logger := logMan.NewLogger(writers[paramIndex][0], writers[paramIndex][1])
+		logger := logMan.NewLogger(writers[paramIndex][0], writers[paramIndex][1], writers[paramIndex][2])
 		return logger, nil
 	})
 	if len(errs) > 0 {

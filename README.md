@@ -350,6 +350,13 @@ ghfs [options]
     Set "-" to use stdout.
     Set to empty to disable access log.
 
+-M|--mutation-log <file>
+    Mutation log file, for operations that modify the file system,
+    including mkdir, upload and delete.
+    Set "-" to use stdout.
+    Set to empty to disable mutation log.
+    Defaults to "-".
+
 -E|--error-log <file>
     Error log file.
     Set "-" to use stderr.

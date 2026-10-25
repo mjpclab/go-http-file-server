@@ -228,6 +228,9 @@ func NewCliCmd() *goNixArgParser.Command {
 	err = options.AddFlagsValue("accesslog", []string{"-L", "--access-log"}, "GHFS_ACCESS_LOG", "", "access log file, use \"-\" for stdout")
 	serverError.CheckFatal(err)
 
+	err = options.AddFlagsValue("mutationlog", []string{"-M", "--mutation-log"}, "GHFS_MUTATION_LOG", "-", "mutation(mkdir/upload/delete) log file, use \"-\" for stdout")
+	serverError.CheckFatal(err)
+
 	err = options.AddFlagsValue("errorlog", []string{"-E", "--error-log"}, "GHFS_ERROR_LOG", "-", "error log file, use \"-\" for stderr")
 	serverError.CheckFatal(err)
 
@@ -346,6 +349,7 @@ func CmdResultsToParams(results []*goNixArgParser.ParseResult) (params Params, e
 		param.Theme, _ = result.GetString("theme")
 		param.ThemeDir, _ = result.GetString("themedir")
 		param.AccessLog, _ = result.GetString("accesslog")
+		param.MutationLog, _ = result.GetString("mutationlog")
 		param.ErrorLog, _ = result.GetString("errorlog")
 
 		// aliases

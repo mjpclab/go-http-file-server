@@ -99,8 +99,9 @@ type Param struct {
 	HideDirs  []string
 	HideFiles []string
 
-	AccessLog string
-	ErrorLog  string
+	AccessLog   string
+	MutationLog string
+	ErrorLog    string
 
 	PreMiddlewares  []middleware.Middleware
 	PostMiddlewares []middleware.Middleware
