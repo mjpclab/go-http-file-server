@@ -132,13 +132,14 @@ ghfs [options]
 -l|--listen <ip|port|:port|ip:port|socket> ...
     IP and port the server listens on, e.g. ":80" or "127.0.0.1:80".
     If --cert and --key are specified, port listens for TLS connection.
+    If IP is not specified, listen on all IPv4 and IPv6 interfaces.
     If port is not specified, use "80" for pure HTTP mode, or "443" for TLS mode.
     If value contains "/" then treat it as a unix socket file.
-    Flag "-l" or "--listen" can be ommitted.
+    Flag "-l" or "--listen" can be omitted.
 --listen-plain <ip|port|:port|ip:port|socket> ...
     Similar to --listen, but force to use non-TLS mode
 --listen-tls <ip|port|:port|ip:port|socket> ...
-    Similar to --listen, but force to use TLS mode, will failed if cert or key is not specified.
+    Similar to --listen, but force to use TLS mode, will fail if cert or key is not specified.
 
 --hostname <hostname> ...
     Specify hostname associated with current virtual host.
@@ -352,6 +353,13 @@ ghfs [options]
     Access log file.
     Set "-" to use stdout.
     Set to empty to disable access log.
+
+-M|--mutation-log <file>
+    Mutation log file, for operations that modify the file system,
+    including mkdir, upload and delete.
+    Set "-" to use stdout.
+    Set to empty to disable mutation log.
+    Defaults to "-".
 
 -E|--error-log <file>
     Error log file.

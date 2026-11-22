@@ -1,7 +1,6 @@
 package goNixArgParser
 
 import (
-	"bytes"
 	"io"
 	"path"
 )
@@ -164,7 +163,6 @@ func (c *Command) ParseGroups(specifiedArgs, configArgs []string) (results []*Pa
 
 func (c *Command) OutputHelp(w io.Writer) {
 	newline := []byte{'\n'}
-	buffer := &bytes.Buffer{}
 
 	name := c.Name()
 	if len(name) > 0 {
@@ -174,8 +172,8 @@ func (c *Command) OutputHelp(w io.Writer) {
 	if len(c.summary) > 0 {
 		io.WriteString(w, c.summary)
 	}
-	if buffer.Len() > 0 {
-		buffer.WriteByte('\n')
+	if len(name) > 0 || len(c.summary) > 0 {
+		w.Write(newline)
 	} else {
 		io.WriteString(w, "Usage:\n")
 	}
