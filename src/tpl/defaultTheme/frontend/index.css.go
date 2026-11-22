@@ -19,7 +19,6 @@ body {
 
 	color: #333;
 	font-size: 0.625em;
-	font-variant-ligatures: none;
 	text-size-adjust: none;
 	hyphens: none;
 	padding-block-end: 2em;
@@ -27,6 +26,8 @@ body {
 
 body, input, textarea, button {
 	font-family: system-ui, "Segoe UI", "Noto Sans", "Liberation Sans", "Helvetica Neue", sans-serif;
+	font-variant-ligatures: none;
+	font-variant-emoji: text;
 }
 
 input, textarea, button {
@@ -715,6 +716,11 @@ html.dragging::after {
 
 .action-list .delete::after {
 	transform: rotate(-45deg);
+}
+
+.action-list .download-mode {
+	inline-size: 1.2em;
+	justify-content: center;
 }
 
 .error {
