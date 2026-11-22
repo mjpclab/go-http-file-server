@@ -516,6 +516,7 @@ html.dragging::after {
 
 	min-width: 3em;
 	border: 1px var(--border-color) solid;
+	margin-block: -1px;
 	padding: 0 0.5em;
 	background: linear-gradient(var(--background-color) 0 0) no-repeat;
 	background-size: calc(var(--file-size, 0) / var(--largest-file-size, 1) * 100%) 100%;
