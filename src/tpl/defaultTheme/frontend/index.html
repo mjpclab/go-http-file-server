@@ -119,9 +119,9 @@ function showUploadDirFailMessage() {
 	{{end -}}
 	<button type="button" class="download files" title="{{.Trans.DownloadHint}}" disabled>☑</button>
 	{{if .IsDownload -}}
-	<a href="{{.SubItemPrefix}}{{.Context.QueryStringOfDownload false}}" title="{{.Trans.LeaveDownloadModeHint}}">◀</a>
+	<a href="{{.SubItemPrefix}}{{.Context.QueryStringOfDownload false}}" class="download-mode" title="{{.Trans.LeaveDownloadModeHint}}">◁</a>
 	{{else -}}
-	<a href="{{.SubItemPrefix}}{{.Context.QueryStringOfDownload true}}" title="{{.Trans.EnterDownloadModeHint}}">▼</a>
+	<a href="{{.SubItemPrefix}}{{.Context.QueryStringOfDownload true}}" class="download-mode" title="{{.Trans.EnterDownloadModeHint}}">▼</a>
 	{{end -}}
 </section>
 {{end}}

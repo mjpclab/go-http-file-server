@@ -29,11 +29,11 @@ func TestWriterManNewLogger(t *testing.T) {
 
 	man := NewWriterMan()
 
-	logger1 := man.NewLogger(acc1File, errFile)
+	logger1 := man.NewLogger(acc1File, nil, errFile)
 	logger1.LogAccessString("host 1 access allowed")
 	logger1.LogErrorString("host 1 access denied")
 
-	logger2 := man.NewLogger(acc2File, errFile)
+	logger2 := man.NewLogger(acc2File, nil, errFile)
 	logger2.LogAccessString("host 2 access allowed")
 	logger2.LogErrorString("host 2 access denied")
 
@@ -52,7 +52,7 @@ func TestWriterManNewLogger(t *testing.T) {
 
 func TestWriterManCloseTwice(t *testing.T) {
 	man := NewWriterMan()
-	man.NewLogger(bytes.NewBuffer(nil), nil)
+	man.NewLogger(bytes.NewBuffer(nil), nil, nil)
 	man.Close()
 	man.Close()
 }

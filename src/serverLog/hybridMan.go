@@ -18,8 +18,8 @@ func (man *HybridMan) Close() {
 	man.wMan.Close()
 }
 
-func (man *HybridMan) NewLogger(accessLog, errorLog string) (*Logger, []error) {
-	var accChan, errChan loggerChan
+func (man *HybridMan) NewLogger(accessLog, mutationLog, errorLog string) (*Logger, []error) {
+	var accChan, mutChan, errChan loggerChan
 	var err error
 	var errs []error
 
@@ -27,6 +27,15 @@ func (man *HybridMan) NewLogger(accessLog, errorLog string) (*Logger, []error) {
 		accChan = man.wMan.newLogChan(os.Stdout)
 	} else {
 		accChan, err = man.fMan.newLogChan(accessLog)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if mutationLog == stdIO {
+		mutChan = man.wMan.newLogChan(os.Stdout)
+	} else {
+		mutChan, err = man.fMan.newLogChan(mutationLog)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -43,6 +52,7 @@ func (man *HybridMan) NewLogger(accessLog, errorLog string) (*Logger, []error) {
 
 	logger := &Logger{
 		acc: accChan,
+		mut: mutChan,
 		err: errChan,
 	}
 	return logger, errs

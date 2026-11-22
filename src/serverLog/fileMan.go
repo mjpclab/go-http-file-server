@@ -144,10 +144,15 @@ func (fMan *FileMan) newLogChan(fsPath string) (loggerChan, error) {
 	return fMan.getWritingCh(fsPath)
 }
 
-func (fMan *FileMan) NewLogger(accLogFilename, errLogFilename string) (*Logger, []error) {
+func (fMan *FileMan) NewLogger(accLogFilename, mutLogFilename, errLogFilename string) (*Logger, []error) {
 	var errs []error
 
 	accChan, err := fMan.newLogChan(accLogFilename)
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	mutChan, err := fMan.newLogChan(mutLogFilename)
 	if err != nil {
 		errs = append(errs, err)
 	}
@@ -159,6 +164,7 @@ func (fMan *FileMan) NewLogger(accLogFilename, errLogFilename string) (*Logger, 
 
 	logger := &Logger{
 		acc: accChan,
+		mut: mutChan,
 		err: errChan,
 	}
 	return logger, errs

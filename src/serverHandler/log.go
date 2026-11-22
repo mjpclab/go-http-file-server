@@ -54,7 +54,7 @@ func logRequest(logger *serverLog.Logger, r *http.Request, statusCode int) {
 }
 
 func (h *aliasHandler) logMutate(username, action, detail string, r *http.Request) {
-	if !h.logger.CanLogAccess() {
+	if !h.logger.CanLogMutation() {
 		return
 	}
 
@@ -73,11 +73,11 @@ func (h *aliasHandler) logMutate(username, action, detail string, r *http.Reques
 	buf = append(buf, ':', ' ')          // 2 bytes
 	buf = append(buf, escapedDetail...)
 
-	h.logger.LogAccess(buf)
+	h.logger.LogMutation(buf)
 }
 
 func (h *aliasHandler) logUpload(username, filename, fsPath string, r *http.Request) {
-	if !h.logger.CanLogAccess() {
+	if !h.logger.CanLogMutation() {
 		return
 	}
 
@@ -97,7 +97,7 @@ func (h *aliasHandler) logUpload(username, filename, fsPath string, r *http.Requ
 	buf = append(buf, []byte(" -> ")...) // 4 bytes
 	buf = append(buf, escapedFsPath...)
 
-	h.logger.LogAccess(buf)
+	h.logger.LogMutation(buf)
 }
 
 func (h *aliasHandler) logArchive(filename, relPath string, r *http.Request) {

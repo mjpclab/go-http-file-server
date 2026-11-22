@@ -12,5 +12,7 @@ func (ch loggerChan) log(payload []byte) {
 	}
 }
 func (ch loggerChan) logString(payload string) {
-	ch.log([]byte(payload))
+	if len(payload) > 0 && ch.canLog() {
+		ch <- []byte(payload)
+	}
 }

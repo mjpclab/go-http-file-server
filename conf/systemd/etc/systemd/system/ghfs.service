@@ -10,6 +10,7 @@ ExecStart=/usr/local/bin/ghfs --config=/etc/ghfs.conf
 ExecReload=/bin/kill -s HUP $MAINPID
 KillSignal=SIGTERM
 KillMode=process
+LogsDirectory=ghfs
 
 [Install]
 WantedBy=multi-user.target

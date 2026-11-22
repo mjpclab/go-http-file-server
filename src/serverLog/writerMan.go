@@ -56,11 +56,13 @@ func (wMan *WriterMan) newLogChan(w io.Writer) loggerChan {
 }
 
 // NewLogger only accepts comparable Writers
-func (wMan *WriterMan) NewLogger(accLogWriter, errLogWriter io.Writer) *Logger {
+func (wMan *WriterMan) NewLogger(accLogWriter, mutLogWriter, errLogWriter io.Writer) *Logger {
 	accChan := wMan.newLogChan(accLogWriter)
+	mutChan := wMan.newLogChan(mutLogWriter)
 	errChan := wMan.newLogChan(errLogWriter)
 	logger := &Logger{
 		acc: accChan,
+		mut: mutChan,
 		err: errChan,
 	}
 	return logger
